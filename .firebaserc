@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "inkwell-alpha",
+    "inkwell-alpha": "inkwell-alpha"
+  },
+  "targets": {},
+  "etags": {}
+}
