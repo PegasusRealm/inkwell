@@ -365,8 +365,7 @@ onAuthStateChanged(auth, async (user) => {
     statusDiv.appendChild(avatarImg);
   }
 
-  const agreed = statusDoc.exists() && statusDoc.data().agreedToAlphaTerms;
-  const alreadyAgreed = sessionStorage.getItem("agreedToAlphaTerms") === "true";
+const agreed = true; // TEMPORARY BYPASS  const alreadyAgreed = sessionStorage.getItem("agreedToAlphaTerms") === "true";
 
   if (!agreed && !alreadyAgreed) {
     document.getElementById("agreementModal").style.display = "flex";
