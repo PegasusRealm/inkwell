@@ -241,16 +241,9 @@
       background-color: #f9f9f9;
     }
 
-    /* === InkWell Visual Theme Components === */
-    .card-block {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 1em;
-  margin-bottom: 2em;
-  background-color: #f9f9f9;
-}
+    
 
-.card-block p {
+    .card-block p {
   font-size: 1em;
   line-height: 1.6;
 }
@@ -315,7 +308,7 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    console.log("Current Firebase API key:", firebaseConfig.apiKey);
+
     const db = getFirestore(app);
     window.db = db;
     window.getDocs = getDocs;
@@ -345,6 +338,7 @@ window.acceptEmbeddedAgreement = async function () {
   }
 };
 
+
 // Enable the Accept button only when checkbox is checked
 document.addEventListener("DOMContentLoaded", () => {
   const embeddedCheckbox = document.getElementById("embeddedAgreementCheckbox");
@@ -361,7 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentUserId = null;
 
 onAuthStateChanged(auth, async (user) => {
-  console.log("Auth State Changed. User is:", user);
+
 
   if (!user) {
     const justLoggedOut = localStorage.getItem("userJustLoggedOut") === "true";
@@ -381,12 +375,24 @@ onAuthStateChanged(auth, async (user) => {
   window.currentUserId = user.uid;
   const userDocRef = doc(db, "users", user.uid);
   const userDoc = await getDoc(userDocRef);
+  // Ensure a users/{uid} document always exists (even for anonymous users)
+  if (!userDoc.exists()) {
+    await setDoc(userDocRef, {
+      email: user.email || "",
+      createdAt: serverTimestamp()
+    });
+  }
   const statusDocRef = doc(db, "userStatus", user.uid);
   const statusDoc = await getDoc(statusDocRef);
 
   // Display name / avatar
   const statusDiv = document.getElementById("userStatus");
-  statusDiv.textContent = `Journaling as: ${user.email}`;
+  const displayName = userDoc.exists() && userDoc.data().displayName;
+  statusDiv.textContent = displayName
+    ? `Journaling as: ${displayName}`
+    : user.email
+      ? `Journaling as: ${user.email}`
+      : "Journaling anonymously";
   if (userDoc.exists() && userDoc.data().avatarUrl) {
     const avatarImg = document.createElement("img");
     avatarImg.src = userDoc.data().avatarUrl;
@@ -398,12 +404,12 @@ onAuthStateChanged(auth, async (user) => {
     statusDiv.appendChild(avatarImg);
   }
 
-const agreed = statusDoc.exists() && statusDoc.data().agreedToAlphaTerms;
+  const agreed = statusDoc.exists() && statusDoc.data().agreedToAlphaTerms;
   if (!agreed) {
     document.getElementById("embeddedAgreementNotice").style.display = "block";
-document.getElementById("journalTab").style.display = "none";
-document.getElementById("tabButtons").style.display = "none";
-return;
+    document.getElementById("journalTab").style.display = "none";
+    document.getElementById("tabButtons").style.display = "none";
+    return;
   }
 
   // All checks passed, show main app
@@ -751,47 +757,7 @@ await setDoc(doc(db, "users", auth.currentUser.uid), {
       }
     }
 
-
-    async function acceptAgreement() {
-      const checkbox = document.getElementById("agreementCheckbox");
-      if (!checkbox.checked) {
-        alert("You must agree to continue.");
-        return;
-      }
-
-      try {
-        await setDoc(doc(db, "userStatus", currentUserId), {
-          agreedToAlphaTerms: true
-        }, { merge: true });
-
-        // Set sessionStorage flag so modal doesn't reappear this session
-        sessionStorage.setItem("agreedToAlphaTerms", "true");
-
-        const modal = document.getElementById("agreementModal");
-        if (modal) {
-          modal.style.display = "none";
-        }
-
-        // Enable access to main UI after accepting agreement
-        showTab('journalTab');
-        document.querySelector("main").style.display = "block";
-
-      } catch (error) {
-        console.error("Failed to save agreement acceptance:", error);
-        alert("Something went wrong. Please try again.");
-      }
-    }
-
-    // Robust binding for acceptAgreement with retry in case button not yet in DOM
-    function setupAgreementButtonListener() {
-      const agreeBtn = document.getElementById("acceptAgreementButton");
-      if (agreeBtn) {
-        agreeBtn.addEventListener("click", acceptAgreement);
-      } else {
-        // Retry binding if not found
-        setTimeout(setupAgreementButtonListener, 300);
-      }
-    }
+    
     let journalMode = 'manifest';
 
 window.setJournalMode = function (mode) {
@@ -811,7 +777,7 @@ window.setJournalMode = function (mode) {
     manifestBtn.style.color = "#333";
   }
 };
-    setupAgreementButtonListener();
+
     function showTab(tabId) {
       const tabs = ["journalTab", "calendarTab"];
       const buttons = {
@@ -971,7 +937,7 @@ async function showPromptsByDate(year, month, day) {
     window.generatePrompt = generatePrompt;
     window.signUp = signUp;
     window.signIn = signIn;
-    window.acceptAgreement = acceptAgreement;
+
 
 window.showSpinner = function (targetId, message = "Working...") {
   const el = document.getElementById(targetId);
@@ -1367,17 +1333,7 @@ window.askSophyToRefineManifest = async function () {
       <a href="https://www.inkwelljournal.io/alpha-beta-testers/" target="_blank" style="text-decoration: underline; color: #2A6D6D;">Alpha/Beta Tester Agreement</a>
     </p>
     <p>Contact support: <a href="mailto:support@inkwelljournal.io" style="text-decoration: underline; color: #2A6D6D;">support@inkwelljournal.io</a></p>
-</footer>
+  </footer>
 </body>
 </html>
 
-    /* Dark mode fixes for entry-preview gradient and text color */
-    @media (prefers-color-scheme: dark) {
-      .entry-preview,
-      .entry-preview * {
-        color: #CCCCCC !important;
-      }
-      .entry-preview::after {
-        background: linear-gradient(to right, transparent, #2A2A2A 50%);
-      }
-    }
