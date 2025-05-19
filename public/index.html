@@ -323,6 +323,38 @@ window.collection = collection;
     const storage = getStorage(app);
     const auth = getAuth(app);
     window.auth = auth;
+    window.currentUserId = null;
+// Handle embedded agreement button logic
+window.acceptEmbeddedAgreement = async function () {
+  const embeddedCheckbox = document.getElementById("embeddedAgreementCheckbox");
+  const acceptEmbeddedBtn = document.getElementById("acceptEmbeddedAgreementButton");
+
+  if (!embeddedCheckbox.checked || !window.currentUserId) return;
+
+  try {
+    await setDoc(doc(db, "userStatus", window.currentUserId), {
+      agreedToAlphaTerms: true
+    }, { merge: true });
+
+    document.getElementById("embeddedAgreementNotice").style.display = "none";
+    document.getElementById("journalTab").style.display = "block";
+    document.getElementById("tabButtons").style.display = "flex";
+  } catch (err) {
+    alert("Error saving agreement: " + err.message);
+    console.error("Detailed agreement save error:", err);
+  }
+};
+
+// Enable the Accept button only when checkbox is checked
+document.addEventListener("DOMContentLoaded", () => {
+  const embeddedCheckbox = document.getElementById("embeddedAgreementCheckbox");
+  const acceptEmbeddedBtn = document.getElementById("acceptEmbeddedAgreementButton");
+
+  embeddedCheckbox?.addEventListener("change", () => {
+    acceptEmbeddedBtn.disabled = !embeddedCheckbox.checked;
+  });
+});
+
     // Ensure functions is initialized after app
     const functions = getFunctions(app, "us-central1");
 
@@ -346,6 +378,7 @@ onAuthStateChanged(auth, async (user) => {
 
   // Signed in
   currentUserId = user.uid;
+  window.currentUserId = user.uid;
   const userDocRef = doc(db, "users", user.uid);
   const userDoc = await getDoc(userDocRef);
   const statusDocRef = doc(db, "userStatus", user.uid);
@@ -365,13 +398,12 @@ onAuthStateChanged(auth, async (user) => {
     statusDiv.appendChild(avatarImg);
   }
 
-const agreed = true; // TEMPORARY BYPASS  const alreadyAgreed = sessionStorage.getItem("agreedToAlphaTerms") === "true";
-
-  if (!agreed && !alreadyAgreed) {
-    document.getElementById("agreementModal").style.display = "flex";
-    document.getElementById("loginModal").style.display = "none";
-    document.querySelector("main").style.display = "none";
-    return;
+const agreed = statusDoc.exists() && statusDoc.data().agreedToAlphaTerms;
+  if (!agreed) {
+    document.getElementById("embeddedAgreementNotice").style.display = "block";
+document.getElementById("journalTab").style.display = "none";
+document.getElementById("tabButtons").style.display = "none";
+return;
   }
 
   // All checks passed, show main app
@@ -1126,6 +1158,20 @@ window.askSophyToRefineManifest = async function () {
     </div>
   </div>
   <main style="display: block;">
+    <div id="embeddedAgreementNotice" class="card-block" style="display: none; border: 2px dashed #FFA76D; background-color: #fff8f2;">
+  <h3 class="section-header" style="color: #FFA76D;">Action Required: Accept Alpha Testing Agreement</h3>
+  <p style="font-size: 0.9em;">Before you can use InkWell, please review and agree to the following:</p>
+  <ul>
+    <li><a href="https://www.pegasusrealm.com/terms-conditions/" target="_blank">Terms & Conditions</a></li>
+    <li><a href="https://www.pegasusrealm.com/privacy-policy/" target="_blank">Privacy Policy</a></li>
+    <li><a href="https://www.pegasusrealm.com/alpha-beta-testers/" target="_blank">Alpha/Beta Tester Agreement</a></li>
+  </ul>
+  <label style="display: block; margin-top: 1em;">
+    <input type="checkbox" id="embeddedAgreementCheckbox" />
+    I have read and agree to all three terms listed above.
+  </label>
+  <button class="btn" onclick="acceptEmbeddedAgreement()" id="acceptEmbeddedAgreementButton" disabled>Accept & Continue</button>
+</div>
     <div id="tabButtons" style="display: flex; gap: 1em; margin-bottom: 1em;">
         <button class="btn" id="journalTabButton" onclick="showTab('journalTab')" style="flex: 1;">Journal</button>
         <button class="btn" id="calendarTabButton" onclick="showTab('calendarTab')" style="flex: 1;">Past Entries</button>
