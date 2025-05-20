@@ -365,7 +365,12 @@ onAuthStateChanged(auth, async (user) => {
     } else {
       document.getElementById("loginModal").style.display = "flex";
     }
-    document.getElementById("agreementModal").style.display = "none";
+    document.querySelector("main").style.display = "none";
+    return;
+  }
+
+  // Guard: Only allow valid, non-anonymous users to access UI
+  if (!user || !user.uid || user.isAnonymous) {
     document.querySelector("main").style.display = "none";
     return;
   }
@@ -414,20 +419,14 @@ onAuthStateChanged(auth, async (user) => {
 
   // All checks passed, show main app
   document.getElementById("loginModal").style.display = "none";
-  document.getElementById("agreementModal").style.display = "none";
+  
   document.getElementById("goodbyeModal").style.display = "none";
   document.querySelector("main").style.display = "block";
-
+  showTab('journalTab');
   // loadPastEntries();  // Moved to showTab to defer loading until Past Entries tab is shown
   // loadJournalTimeline(); // Disabled: #journalTimeline no longer exists
 
-  // Load manifest statement for user if it exists
-  const manifestDoc = await getDoc(doc(db, "manifests", user.uid));
-  if (manifestDoc.exists()) {
-    const manifestData = manifestDoc.data();
-    document.getElementById("manifestInput").value = manifestData.statement || "";
-  }
-
+  
   buildCalendar();
 });
 
@@ -746,12 +745,9 @@ await setDoc(doc(db, "users", auth.currentUser.uid), {
       const password = document.getElementById("passwordInput").value;
       try {
         await signInWithEmailAndPassword(auth, email, password);
-        // alert("Logged in successfully!"); // Removed per instructions
-        // After successful login, update UI: hide login modal, show agreement modal, hide main
+        
         document.getElementById("loginModal").style.display = "none";
-        document.getElementById("agreementModal").style.display = "flex";
-        document.querySelector("main").style.display = "none";
-        // The Firebase auth listener will handle further UI logic
+        // UI state will be managed by onAuthStateChanged
       } catch (err) {
         alert("Login failed: " + err.message);
       }
@@ -796,6 +792,22 @@ window.setJournalMode = function (mode) {
         // loadPastEntries(); // Disabled to prevent forever-scroll and encourage calendar/search interaction
         document.getElementById("calendarEntries") && (document.getElementById("calendarEntries").innerHTML = "<p>Click a calendar date to view entries.</p>");
         document.getElementById("searchResults") && (document.getElementById("searchResults").innerHTML = "<p>Use Smart Search to explore your journal history.</p>");
+      } else if (tabId === "journalTab") {
+        const manifestInput = document.getElementById("manifestInput");
+        if (manifestInput && window.currentUserId) {
+          getDoc(doc(db, "manifests", window.currentUserId))
+            .then(manifestDoc => {
+              if (manifestDoc.exists()) {
+                manifestInput.value = manifestDoc.data().statement || "";
+                console.log("✅ Manifest loaded from showTab.");
+              } else {
+                console.log("ℹ️ No manifest found for this user.");
+              }
+            })
+            .catch(err => {
+              console.error("❌ Error loading manifest:", err);
+            });
+        }
       }
     }
 
@@ -938,6 +950,30 @@ async function showPromptsByDate(year, month, day) {
     window.signUp = signUp;
     window.signIn = signIn;
 
+// Modal close function for login modal
+window.loginModalClose = function () {
+  document.getElementById("loginModal").style.display = "none";
+  document.querySelector("main").style.display = "none";
+
+  // Optional toast-like feedback
+  const toast = document.createElement("div");
+  toast.textContent = "You must log in to access the journal.";
+  toast.style.position = "fixed";
+  toast.style.bottom = "20px";
+  toast.style.left = "50%";
+  toast.style.transform = "translateX(-50%)";
+  toast.style.backgroundColor = "#FFA76D";
+  toast.style.color = "#fff";
+  toast.style.padding = "1em 1.5em";
+  toast.style.borderRadius = "5px";
+  toast.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
+  toast.style.zIndex = "9999";
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.remove();
+  }, 4000);
+};
+
 
 window.showSpinner = function (targetId, message = "Working...") {
   const el = document.getElementById(targetId);
@@ -948,10 +984,11 @@ window.showSpinner = function (targetId, message = "Working...") {
     window.showTab = showTab;
     // Expose httpsCallable for use in non-module scripts
     window.httpsCallable = httpsCallable;
-    window.logOutUser = async function () {
+window.logOutUser = async function () {
   try {
     localStorage.setItem("userJustLoggedOut", "true");
     await auth.signOut();
+    document.querySelector("main").style.display = "none";
     setTimeout(() => {
       document.getElementById("goodbyeModal").style.display = "flex";
     }, 100);
@@ -1012,12 +1049,14 @@ async function askSophyAboutEntry() {
         return;
       }
 
+      window.showSpinner("manifestStatus", "Saving...");
+
       try {
         await setDoc(doc(db, "manifests", user.uid), {
           statement: text,
           timestamp: serverTimestamp()
         });
-        status.textContent = "Vision saved. You're building something meaningful.";
+        status.innerHTML = "✅ Vision saved. You're building something meaningful.";
         status.style.color = "#2A6D6D";
       } catch (error) {
         console.error("Error saving manifest:", error);
@@ -1078,39 +1117,7 @@ window.askSophyToRefineManifest = async function () {
     <p>Your space to reflect, write, and grow.</p>
   </header>
   <div id="userStatus" style="font-size: 0.9em; margin-bottom: 1em;"></div>
-  <div id="agreementModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: #2A6D6D; display: none; align-items: center; justify-content: center; z-index: 9999;">
-    <div class="card-block" style="max-width: 600px; width: 100%; max-height: 90%; overflow-y: auto; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
-      <h2 class="section-header" style="text-align: center;">InkWell Alpha Tester Agreement</h2>
-      <p style="font-size: 0.9em; line-height: 1.4;">
-        To proceed, you must read and agree to the following:
-      </p>
-      <ul style="font-size: 0.9em; margin-top: 1em;">
-        <li><a id="termsLink" href="https://www.pegasusrealm.com/terms-conditions/" target="_blank">Terms & Conditions</a></li>
-        <li><a id="privacyLink" href="https://www.pegasusrealm.com/privacy-policy/" target="_blank">Privacy Policy</a></li>
-        <li><a id="alphaLink" href="https://www.pegasusrealm.com/alpha-beta-testers/" target="_blank">Alpha/Beta Tester Agreement</a></li>
-      </ul>
-      <label style="display: block; margin-top: 1em;">
-        <input type="checkbox" id="agreementCheckbox" />
-        I have read and agree to all three terms listed above.
-      </label>
-      <button class="btn" id="acceptAgreementButton" style="margin-top: 1em;" disabled>Accept & Continue</button>
-      <script>
-        // Agreement links click tracking to enable Accept button only after all visited
-        const agreementLinks = ["termsLink", "privacyLink", "alphaLink"];
-        const visited = new Set();
-        agreementLinks.forEach(id => {
-          const link = document.getElementById(id);
-          link.addEventListener("click", () => {
-            visited.add(id);
-            if (visited.size === agreementLinks.length) {
-              document.getElementById("acceptAgreementButton").disabled = false;
-            }
-          });
-        });
-        document.getElementById("acceptAgreementButton")?.addEventListener("click", window.acceptAgreement);
-      </script>
-    </div>
-  </div>
+  
 
   <div id="loginModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 9999;">
     <div class="card-block" style="max-width: 400px; width: 90%; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
@@ -1120,7 +1127,7 @@ window.askSophyToRefineManifest = async function () {
       <input type="text" id="avatarUrlInput" placeholder="Avatar image URL (optional)" style="width: 100%; margin-bottom: 0.5em; padding: 0.5em;" />
       <button class="btn" onclick="signUp()" style="width: 100%; margin-bottom: 0.5em;">Sign Up</button>
       <button class="btn" onclick="signIn()" style="width: 100%;">Sign In</button>
-      <button class="btn" onclick="document.getElementById('loginModal').style.display='none'" style="width: 100%; margin-top: 1em;">Close</button>
+      <button class="btn" onclick="loginModalClose()" style="width: 100%; margin-top: 1em;">Close</button>
     </div>
   </div>
   <main style="display: block;">
@@ -1150,10 +1157,11 @@ window.askSophyToRefineManifest = async function () {
         </p>
         <textarea id="manifestInput" placeholder="Write your personal guiding statement..." style="width: 100%; height: 100px; margin-bottom: 0.5em; padding: 0.5em; border-radius: 5px; border: 1px solid #ccc;"></textarea>
         <button class="btn" onclick="saveManifest()">Save</button>
+        <p id="manifestStatus" style="margin-top: 0.5em; font-style: italic;"></p>
         <p id="manifestSuggestionLabel" style="font-weight: bold; margin-top: 1em;">Sophy’s Suggested Refinement:</p>
         <textarea id="manifestSuggestion" readonly style="width: 100%; height: 100px; margin-bottom: 0.5em; padding: 0.5em; border-radius: 5px; border: 1px dashed #aaa; background-color: #fdfdfd;"></textarea>
         <button class="btn" onclick="askSophyToRefineManifest()">Refine with Sophy</button>
-        <p id="manifestStatus" style="margin-top: 0.5em; font-style: italic;"></p>
+        
       </div>
       <div class="card-block">
         <!-- (Sophy prompt block moved below) -->

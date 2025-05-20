@@ -37,6 +37,10 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const entryId = urlParams.get("entryId");
+    if (!entryId) {
+      document.getElementById("entryContainer").innerHTML = "Missing or invalid entry ID.";
+      throw new Error("No entry ID provided in URL.");
+    }
     const entryContainer = document.getElementById("entryContainer");
     const statusMessage = document.getElementById("statusMessage");
 
@@ -46,7 +50,10 @@
         if (!doc.exists) {
           entryContainer.innerHTML = "Entry not found.";
         } else {
-          entryContainer.innerHTML = doc.data().text.replace(/\n/g, "<br/>");
+          const data = doc.data();
+          const createdAt = data.createdAt?.toDate().toLocaleString() || "Unknown time";
+          const textHtml = data.text.replace(/\n/g, "<br/>");
+          entryContainer.innerHTML = `<strong>Submitted on:</strong> ${createdAt}<br/><br/>${textHtml}`;
         }
       } catch (err) {
         entryContainer.innerHTML = "Error loading entry.";
@@ -55,12 +62,16 @@
     }
 
     async function submitReply() {
+      const replyButton = document.querySelector("button");
       const reply = document.getElementById("replyText").value.trim();
       if (!reply) {
         statusMessage.textContent = "Reply cannot be empty.";
         statusMessage.className = "error";
         return;
       }
+
+      replyButton.disabled = true;
+      replyButton.textContent = "Submitting...";
 
       try {
         await firebase.auth().signInAnonymously();
@@ -72,6 +83,9 @@
         statusMessage.textContent = "Error submitting reply.";
         statusMessage.className = "error";
         console.error(err);
+      } finally {
+        replyButton.disabled = false;
+        replyButton.textContent = "Submit Reply";
       }
     }
 
