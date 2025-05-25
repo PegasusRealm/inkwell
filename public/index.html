@@ -274,15 +274,7 @@
   background: linear-gradient(to right, transparent, white 50%);
 }
 
-    /* Coach reply styling for Past Entries */
-    .coach-reply {
-      background-color: #f0f8ff;
-      border-left: 4px solid #2A6D6D;
-      padding: 0.5em;
-      margin-top: 0.5em;
-      font-style: italic;
-      white-space: pre-wrap;
-    }
+
   </style>
   <script type="module">
     // Firebase App (the core Firebase SDK) is always required
@@ -294,7 +286,7 @@
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-functions.js";
+
 
     // Firebase configuration for InkWell Alpha
     const firebaseConfig = {
@@ -349,8 +341,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-    // Ensure functions is initialized after app
-    const functions = getFunctions(app, "us-central1");
+
 
     let currentUserId = null;
 
@@ -645,18 +636,7 @@ console.log("📬 Coach notified successfully.");
           console.warn("Skipping entry with missing or invalid createdAt:", entry);
           continue;
         }
-        const repliesSnapshot = await getDocs(collection(doc.ref, "coachReplies"));
-        let coachRepliesHtml = "";
-
-        repliesSnapshot.forEach(replyDoc => {
-          const replyData = replyDoc.data();
-          coachRepliesHtml += `
-            <div class="coach-reply">
-              👤 <strong>Coach reply:</strong><br/>
-              ${replyData.replyText}
-            </div>
-          `;
-        });
+        
 
         // Only entries with valid createdAt reach here
         const date = entry.createdAt.toDate().toLocaleString();
@@ -685,7 +665,7 @@ console.log("📬 Coach notified successfully.");
             ${entry.attachmentUrl ? `<p><a href="${entry.attachmentUrl}" target="_blank">View Attachment</a></p>` : ""}
             <button class="btn" onclick="editEntry('${doc.id}', \`${entry.text.replace(/`/g, "\\`")}\`)">Edit</button>
             <button class="btn" onclick="deleteEntry('${doc.id}')">Delete</button>
-            ${coachRepliesHtml}
+
           </div>
         `);
       }
@@ -981,9 +961,8 @@ window.showSpinner = function (targetId, message = "Working...") {
     el.innerHTML = `<span class="spinner"></span> ${message}`;
   }
 };
-    window.showTab = showTab;
-    // Expose httpsCallable for use in non-module scripts
-    window.httpsCallable = httpsCallable;
+window.showTab = showTab;
+// Expose logOutUser for logout button
 window.logOutUser = async function () {
   try {
     localStorage.setItem("userJustLoggedOut", "true");
@@ -1232,8 +1211,19 @@ window.askSophyToRefineManifest = async function () {
       // Smart search: embed query, fetch all entries, compare embeddings, sort by similarity, show top 5
       async function runSmartSearch() {
         // Ensure callable wrappers are defined
-        const logQuery = window._logQueryFn || (window._logQueryFn = httpsCallable(functions, "logSearchQuery"));
-        const queryText = document.getElementById("searchQuery").value.trim();
+const logQuery = async ({ query }) => {
+  try {
+    await fetch("https://us-central1-inkwell-alpha.cloudfunctions.net/logSearchQuery", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ query })
+    });
+  } catch (err) {
+    console.warn("Failed to log query (non-blocking):", err);
+  }
+};        const queryText = document.getElementById("searchQuery").value.trim();
         const resultsContainer = document.getElementById("searchResults");
         showSpinner("searchResults", "Searching...");
         if (!queryText || !auth?.currentUser?.uid) {

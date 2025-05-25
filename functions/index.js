@@ -299,8 +299,9 @@ exports.notifyCoachOfTaggedEntry = onRequest({ secrets: [SENDGRID_API_KEY] }, (r
   corsHandler(req, res, async () => {
     sgMail.setApiKey(SENDGRID_API_KEY.value());
     console.log("✅ SENDGRID_API_KEY loaded:", !!SENDGRID_API_KEY.value());
-    console.log("🧪 Raw entryId from body:", req.body?.entryId);
+
     const { entryId } = req.body;
+    console.log("🧪 Raw entryId from body:", entryId);
 
     if (!entryId) {
       console.error("❌ Missing entryId in request body.");
@@ -315,16 +316,16 @@ exports.notifyCoachOfTaggedEntry = onRequest({ secrets: [SENDGRID_API_KEY] }, (r
       }
 
       const entry = entryDoc.data();
-      const dateStr = entry.createdAt?.toDate().toLocaleString() || "Unknown date";
+      const dateStr = entry.createdAt?.toDate?.().toLocaleString?.() || "Unknown date";
       const manifest = entry.contextManifest || "";
       const entryText = entry.text?.substring(0, 1000) || "(No content)";
 
       const coachEmail = "coach@inkwelljournal.io";
       const msg = {
         to: coachEmail,
-        from: "coach@inkwelljournal.io",
+        from: "no-reply@inkwelljournal.io",
         subject: "New Journal Entry Tagged for Coach Review",
-        text: entryText,
+        text: `New journal entry tagged:\n\n${entryText}`,
         html: `
           <p><strong>Hi Coach,</strong></p>
           <p>A new entry has been tagged for your review on <strong>${dateStr}</strong>.</p>
