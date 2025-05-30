@@ -45,15 +45,17 @@
   </style>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
-      authDomain: "849610731668",
-      projectId: "849610731668",
+      authDomain: "inkwell-alpha.firebaseapp.com",
+      projectId: "inkwell-alpha",
     };
 
     const app = initializeApp(firebaseConfig);
+getAuth(app); // initializes auth layer to prevent Firestore transport errors
     const db = getFirestore(app);
 
     const urlParams = new URLSearchParams(window.location.search);

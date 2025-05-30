@@ -362,36 +362,38 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // Guard: Only allow valid, non-anonymous users to access UI
-  if (!user || !user.uid || user.isAnonymous) {
+  if (!user.uid || user.isAnonymous) {
     document.querySelector("main").style.display = "none";
     return;
   }
 
-  // Signed in
+
   currentUserId = user.uid;
   window.currentUserId = user.uid;
+
   const userDocRef = doc(db, "users", user.uid);
   const userDoc = await getDoc(userDocRef);
-  // Ensure a users/{uid} document always exists (even for anonymous users)
+
   if (!userDoc.exists()) {
     await setDoc(userDocRef, {
       email: user.email || "",
       createdAt: serverTimestamp()
     });
   }
+
   const statusDocRef = doc(db, "userStatus", user.uid);
   const statusDoc = await getDoc(statusDocRef);
 
-  // Display name / avatar
+
   const statusDiv = document.getElementById("userStatus");
-  const displayName = userDoc.exists() && userDoc.data().displayName;
+  const displayName = userDoc.data()?.displayName;
   statusDiv.textContent = displayName
     ? `Journaling as: ${displayName}`
     : user.email
       ? `Journaling as: ${user.email}`
       : "Journaling anonymously";
-  if (userDoc.exists() && userDoc.data().avatarUrl) {
+
+  if (userDoc.data()?.avatarUrl) {
     const avatarImg = document.createElement("img");
     avatarImg.src = userDoc.data().avatarUrl;
     avatarImg.alt = "User Avatar";
@@ -403,27 +405,67 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const agreed = statusDoc.exists() && statusDoc.data().agreedToAlphaTerms;
-const localAccepted = localStorage.getItem("alphaAgreementAccepted") === "true";
+  const localAccepted = localStorage.getItem("alphaAgreementAccepted") === "true";
 
-if (!agreed && !localAccepted) {
-  document.getElementById("embeddedAgreementNotice").style.display = "block";
-  document.getElementById("journalTab").style.display = "none";
-  document.getElementById("tabButtons").style.display = "none";
-  return;
-}
+  if (!agreed && !localAccepted) {
+    document.getElementById("embeddedAgreementNotice").style.display = "block";
+    document.getElementById("journalTab").style.display = "none";
+    document.getElementById("tabButtons").style.display = "none";
+    return;
+  }
 
-  // All checks passed, show main app
+
   document.getElementById("loginModal").style.display = "none";
-  
+
   document.getElementById("goodbyeModal").style.display = "none";
   document.querySelector("main").style.display = "block";
   showTab('journalTab');
-  // loadPastEntries();  // Moved to showTab to defer loading until Past Entries tab is shown
-  // loadJournalTimeline(); // Disabled: #journalTimeline no longer exists
 
-  
+
+
   buildCalendar();
+
+ // ✅ Check for new coach replies and show toast if present
+try {
+  const entriesRef = collection(db, "journalEntries");
+  const q = query(entriesRef, where("userId", "==", currentUserId), where("newCoachReply", "==", true));
+  const snap = await getDocs(q);
+
+  if (!snap.empty) {
+    const toast = document.createElement("div");
+    toast.textContent = "💬 You have a new reply from your coach!";
+    toast.style.position = "fixed";
+    toast.style.top = "20px";               // Show at top
+    toast.style.bottom = "";                // Clear bottom style
+    toast.style.left = "50%";
+    toast.style.transform = "translateX(-50%)";
+    toast.style.backgroundColor = "#FFA76D";
+    toast.style.color = "#fff";
+    toast.style.padding = "1em 1.5em";
+    toast.style.borderRadius = "5px";
+    toast.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
+    toast.style.zIndex = "9999";
+    document.body.appendChild(toast);
+    setTimeout(async () => {
+  toast.remove();
+
+  // 🔄 Clear newCoachReply flags from entries
+  try {
+    for (const doc of snap.docs) {
+      await updateDoc(doc.ref, { newCoachReply: false });
+    }
+    console.log("✅ Cleared newCoachReply flags.");
+  } catch (clearErr) {
+    console.warn("⚠️ Failed to clear coach reply flags:", clearErr);
+  }
+
+}, 6000);
+  }
+} catch (err) {
+  console.warn("Coach reply check failed:", err);
+}
 });
+
 
 window.onload = function () {
     window.saveJournalEntry = async function () {
@@ -655,18 +697,26 @@ console.log("📬 Coach notified successfully.");
           : "";
 
         const futureFlag = entry.maybeReviewLater
-          ? `<p style="font-size: 0.85em; color: #999;">🕊️ Flagged for future insight</p>`
-          : "";
+        const coachReplyNotice = entry.newCoachReply
+  ? `<p style="font-size: 0.85em; color: #FFA76D;">💬 New coach reply</p>`
+  : "";
         entriesHtml.push(`
           <div style="margin-bottom: 1em; padding: 1em; border: 1px solid #ccc; border-radius: 5px;">
             <p style="font-size: 0.9em; color: #999;">${date}</p>
             ${manifestBadge}
             ${coachTag}
             ${futureFlag}
+            ${coachReplyNotice}
             <div class="entry-preview">${entry.text}</div>
             <button class="btn" style="margin-top: 0.5em;" onclick="this.previousElementSibling.classList.toggle('entry-preview'); this.textContent = this.textContent === 'Read more' ? 'Collapse' : 'Read more';">Read more</button>
             ${tags}
             ${entry.attachmentUrl ? `<p><a href="${entry.attachmentUrl}" target="_blank">View Attachment</a></p>` : ""}
+            ${entry.newCoachReply ? `
+  <div class="coach-reply" style="margin-top: 1em; padding: 0.75em; border-left: 4px solid #FFA76D; background-color: #fff3ea; font-size: 0.95em;">
+    <strong>Coach replied:</strong>
+    <p>${entry.coachReplyText || "Your coach has replied. Expand to read more."}</p>
+  </div>
+` : ""}
             <button class="btn" onclick="editEntry('${doc.id}', \`${entry.text.replace(/`/g, "\\`")}\`)">Edit</button>
             <button class="btn" onclick="deleteEntry('${doc.id}')">Delete</button>
 
@@ -907,7 +957,18 @@ async function showPromptsByDate(year, month, day) {
     const data = doc.data();
     const savedDate = data.createdAt?.toDate().toDateString();
     if (savedDate === selectedDate) {
-      matches.push({ text: data.text, contextManifest: data.contextManifest });
+      const hasReply = !!data.coachResponse?.text;
+      const replyBlock = hasReply
+        ? `<div style="margin-top:0.5em; font-size:0.9em; background:#fff3ea; border-left:4px solid #FFA76D; padding:0.5em;">
+             <strong>Coach replied:</strong> ${data.coachResponse.text}
+           </div>`
+        : "";
+      matches.push({
+        text: data.text,
+        contextManifest: data.contextManifest,
+        replyBlock,
+        createdAt: data.createdAt?.toDate?.() || null
+      });
     }
   });
 
@@ -915,15 +976,16 @@ async function showPromptsByDate(year, month, day) {
     container.innerHTML += "<p>No entries found.</p>";
   } else {
     const ul = document.createElement("ul");
-    matches.forEach(entry => {
-      const li = document.createElement("li");
-      li.innerHTML = `
-        ${entry.contextManifest ? '✨ ' : ''}
-        <div class="entry-preview"><em>${entry.text}</em></div>
-        <button class="btn" style="margin-top: 0.5em;" onclick="this.previousElementSibling.classList.toggle('entry-preview'); this.textContent = this.textContent === 'Read more' ? 'Collapse' : 'Read more';">Read more</button>
-      `;
-      ul.appendChild(li);
-    });
+   matches.forEach(entry => {
+  const li = document.createElement("li");
+  li.innerHTML = `
+    ${entry.contextManifest ? '✨ ' : ''}
+    <div class="entry-preview"><em>${entry.text}</em></div>
+    ${entry.replyBlock || ""}
+    <button class="btn" style="margin-top: 0.5em;" onclick="this.previousElementSibling.classList.toggle('entry-preview'); this.textContent = this.textContent === 'Read more' ? 'Collapse' : 'Read more';">Read more</button>
+  `;
+  ul.appendChild(li);
+});
     container.appendChild(ul);
   }
 }

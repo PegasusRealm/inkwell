@@ -287,6 +287,11 @@ exports.saveCoachReply = onCall(async (data, context) => {
       coachUid
     });
 
+    await admin.firestore()
+      .collection("journalEntries")
+      .doc(entryId)
+      .update({ newCoachReply: true });
+
     return { success: true };
   } catch (error) {
     console.error("Error saving coach reply:", error);
