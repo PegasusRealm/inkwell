@@ -63,7 +63,7 @@ const systemPrompt = `You are Sophy, a supportive journaling assistant informed 
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Authorization": `Bearer ${OPENAI_API_KEY.value()}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -152,7 +152,7 @@ exports.refineManifest = onCall(async (data, context) => {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Authorization": `Bearer ${OPENAI_API_KEY.value()}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -224,7 +224,7 @@ exports.embedAndStoreEntry = onRequest({ secrets: [OPENAI_API_KEY] }, (req, res)
       }
 
       const embedding = result.data[0].embedding;
-      await admin.firestore().collection("entries").doc(entryId).set({
+      await admin.firestore().collection("journalEntries").doc(entryId).set({
         userId: uid,
         text,
         embedding,
@@ -298,7 +298,7 @@ exports.saveCoachReply = onCall(async (data, context) => {
 exports.notifyCoachOfTaggedEntry = onRequest({ secrets: [SENDGRID_API_KEY] }, (req, res) => {
   corsHandler(req, res, async () => {
     sgMail.setApiKey(SENDGRID_API_KEY.value());
-    console.log("✅ SENDGRID_API_KEY loaded:", !!SENDGRID_API_KEY.value());
+    console.log("✅ SendGrid API key configured.");
 
     const { entryId } = req.body;
     console.log("🧪 Raw entryId from body:", entryId);
@@ -310,6 +310,11 @@ exports.notifyCoachOfTaggedEntry = onRequest({ secrets: [SENDGRID_API_KEY] }, (r
 
     try {
       const entryDoc = await admin.firestore().collection("journalEntries").doc(entryId).get();
+     const lastNotified = entryDoc.data()?.coachNotifiedAt?.toDate?.();
+if (lastNotified && Date.now() - lastNotified.getTime() < 10 * 60 * 1000) {
+  console.warn("⏳ Email already sent recently. Skipping notification.");
+  return res.status(200).send("Already notified recently.");
+}
       if (!entryDoc.exists) {
         console.error("❌ Entry not found in Firestore for ID:", entryId);
         return res.status(404).send("Entry not found.");
@@ -319,30 +324,35 @@ exports.notifyCoachOfTaggedEntry = onRequest({ secrets: [SENDGRID_API_KEY] }, (r
       const dateStr = entry.createdAt?.toDate?.().toLocaleString?.() || "Unknown date";
       const manifest = entry.contextManifest || "";
       const entryText = entry.text?.substring(0, 1000) || "(No content)";
+      const timestampNote = `<p style="font-size:0.85em; color:#777;">This message was sent at: ${new Date().toLocaleString()}</p>`;
 
       const coachEmail = "coach@inkwelljournal.io";
       const msg = {
         to: coachEmail,
         from: "no-reply@inkwelljournal.io",
         subject: "New Journal Entry Tagged for Coach Review",
-        text: `New journal entry tagged:\n\n${entryText}`,
-        html: `
-          <p><strong>Hi Coach,</strong></p>
-          <p>A new entry has been tagged for your review on <strong>${dateStr}</strong>.</p>
-          ${manifest ? `<p><strong>Manifest:</strong> ${manifest}</p>` : ""}
-          <p><strong>Journal Entry Preview:</strong></p>
-          <blockquote style="background:#f9f9f9;padding:1em;border-left:4px solid #FFA76D;">
-            ${entryText.replace(/\n/g, "<br/>")}
-          </blockquote>
-          <p><a href="https://inkwelljournal.io/coach/reply?entryId=${entryId}">Click here to reply</a></p>
-          <hr/>
-          <p style="font-size:0.9em;color:#777;">
-            InkWell by Pegasus Realm • <a href="mailto:support@inkwelljournal.io">support@inkwelljournal.io</a>
-          </p>
-        `,
+        text: `Hi Coach,\n\nA new journal entry was tagged for your review on ${dateStr}.\n\n${manifest ? `Manifest: ${manifest}\n\n` : ""}Entry Preview:\n\n${entryText}\n\nReply: https://inkwelljournal.io/coach.html?entryId=${entryId}\n\n– InkWell by Pegasus Realm`,
+       html: `
+  <p><strong>Hi Coach,</strong></p>
+  <p>A new entry has been tagged for your review on <strong>${dateStr}</strong>.</p>
+  ${manifest ? `<p><strong>Manifest:</strong> ${manifest}</p>` : ""}
+  <p><strong>Journal Entry Preview:</strong></p>
+  <blockquote style="background:#f9f9f9;padding:1em;border-left:4px solid #FFA76D;">
+    ${entryText.replace(/\n/g, "<br/>")}
+  </blockquote>
+  <p><a href="https://inkwelljournal.io/coach.html?entryId=${entryId}">Click here to reply</a></p>
+  ${timestampNote}
+  <hr/>
+  <p style="font-size:0.9em;color:#777;">
+    InkWell by Pegasus Realm • <a href="mailto:support@inkwelljournal.io">support@inkwelljournal.io</a>
+  </p>
+`,
       };
 
       await sgMail.send(msg);
+      await admin.firestore().collection("journalEntries").doc(entryId).update({
+  coachNotifiedAt: admin.firestore.FieldValue.serverTimestamp()
+});
       console.log("✅ SendGrid email sent to:", coachEmail);
       return res.status(200).send("Coach notified.");
     } catch (err) {

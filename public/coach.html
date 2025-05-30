@@ -1,0 +1,109 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Coach Reply</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background-color: #f9f9f9;
+    }
+    .entry-box {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      margin-top: 1rem;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      background-color: #0077cc;
+      color: white;
+      cursor: pointer;
+    }
+    .confirmation {
+      margin-top: 1rem;
+      color: green;
+    }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
+      authDomain: "849610731668",
+      projectId: "849610731668",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const entryId = urlParams.get("entryId");
+
+    const entryBox = document.getElementById("entryText");
+    const responseForm = document.getElementById("responseForm");
+    const coachReply = document.getElementById("coachReply");
+    const confirmation = document.getElementById("confirmation");
+
+    async function loadEntry() {
+      const entryRef = doc(db, "journalEntries", entryId);
+      const entrySnap = await getDoc(entryRef);
+      if (entrySnap.exists()) {
+        entryBox.innerText = entrySnap.data().text || "No text found.";
+      } else {
+        entryBox.innerText = "Journal entry not found.";
+        responseForm.style.display = "none";
+      }
+    }
+
+    responseForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const responseText = coachReply.value.trim();
+      if (!responseText) return;
+
+      const entryRef = doc(db, "journalEntries", entryId);
+      await updateDoc(entryRef, {
+        coachResponse: {
+          text: responseText,
+          timestamp: serverTimestamp(),
+          coachId: "coach@inkwelljournal.io"
+        }
+      });
+      confirmation.innerText = "Response submitted successfully!";
+      coachReply.value = "";
+    });
+
+    loadEntry();
+  </script>
+</head>
+<body>
+  <div class="entry-box" id="entryText">Loading journal entry...</div>
+
+  <form id="responseForm">
+    <label for="coachReply"><strong>Your Response:</strong></label>
+    <textarea id="coachReply" required></textarea>
+    <button type="submit">Submit Response</button>
+  </form>
+
+  <div class="confirmation" id="confirmation"></div>
+</body>
+</html>

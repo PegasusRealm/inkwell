@@ -1,7 +1,8 @@
 {
   "projects": {
     "default": "inkwell-alpha",
-    "inkwell-alpha": "inkwell-alpha"
+    "inkwell-alpha": "inkwell-alpha",
+    "inkwellwebapp": "inkwell-alpha"
   },
   "targets": {},
   "etags": {}

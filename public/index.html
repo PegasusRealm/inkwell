@@ -316,18 +316,20 @@ window.acceptEmbeddedAgreement = async function () {
 
   if (!embeddedCheckbox.checked || !window.currentUserId) return;
 
-  try {
-    await setDoc(doc(db, "userStatus", window.currentUserId), {
-      agreedToAlphaTerms: true
-    }, { merge: true });
+ try {
+  localStorage.setItem("alphaAgreementAccepted", "true");
 
-    document.getElementById("embeddedAgreementNotice").style.display = "none";
-    document.getElementById("journalTab").style.display = "block";
-    document.getElementById("tabButtons").style.display = "flex";
-  } catch (err) {
-    alert("Error saving agreement: " + err.message);
-    console.error("Detailed agreement save error:", err);
-  }
+  await setDoc(doc(db, "userStatus", window.currentUserId), {
+    agreedToAlphaTerms: true
+  }, { merge: true });
+
+  document.getElementById("embeddedAgreementNotice").style.display = "none";
+  document.getElementById("journalTab").style.display = "block";
+  document.getElementById("tabButtons").style.display = "flex";
+} catch (err) {
+  alert("Error saving agreement: " + err.message);
+  console.error("Detailed agreement save error:", err);
+}
 };
 
 
@@ -401,12 +403,14 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const agreed = statusDoc.exists() && statusDoc.data().agreedToAlphaTerms;
-  if (!agreed) {
-    document.getElementById("embeddedAgreementNotice").style.display = "block";
-    document.getElementById("journalTab").style.display = "none";
-    document.getElementById("tabButtons").style.display = "none";
-    return;
-  }
+const localAccepted = localStorage.getItem("alphaAgreementAccepted") === "true";
+
+if (!agreed && !localAccepted) {
+  document.getElementById("embeddedAgreementNotice").style.display = "block";
+  document.getElementById("journalTab").style.display = "none";
+  document.getElementById("tabButtons").style.display = "none";
+  return;
+}
 
   // All checks passed, show main app
   document.getElementById("loginModal").style.display = "none";
