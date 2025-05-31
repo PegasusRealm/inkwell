@@ -7,6 +7,22 @@ const SENDGRID_API_KEY = defineSecret("SENDGRID_API_KEY");
 if (!getApps().length) {
   admin.initializeApp();
 }
+
+// Helper: Create user profile in Firestore if not exists
+async function createUserProfileIfNotExists(uid, email) {
+  const userDocRef = admin.firestore().collection("users").doc(uid);
+  const userDoc = await userDocRef.get();
+  if (!userDoc.exists) {
+    await userDocRef.set({
+      userId: uid,
+      email: email,
+      agreementAccepted: false,
+      userRole: "journaler"
+    });
+    return { created: true };
+  }
+  return { created: false };
+}
 const fetch = require("node-fetch");
 const cors = require("cors");
 const corsHandler = cors({ origin: true });
@@ -365,4 +381,22 @@ if (lastNotified && Date.now() - lastNotified.getTime() < 10 * 60 * 1000) {
       return res.status(500).send("Failed to notify coach.");
     }
   });
+});
+// Create user profile if not exists (callable)
+exports.createUserProfile = onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError("unauthenticated", "User must be authenticated.");
+  }
+  const { email } = data;
+  if (!email || typeof email !== "string") {
+    throw new functions.https.HttpsError("invalid-argument", "Email is required.");
+  }
+  try {
+    const result = await createUserProfileIfNotExists(uid, email);
+    return { success: true, created: result.created };
+  } catch (error) {
+    console.error("Error creating user profile:", error);
+    throw new functions.https.HttpsError("internal", "Failed to create user profile.");
+  }
 });
