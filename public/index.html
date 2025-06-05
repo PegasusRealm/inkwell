@@ -1522,8 +1522,14 @@ window.askSophyToRefineManifest = async function () {
 </div>
 <button class="btn" onclick="askSophyAboutEntry()">Ask Sophy for Reflection</button>
 
-<label for="attachment" style="margin-top: 1em; display: block;">Attach a photo or file:</label>
-<input type="file" id="attachment" accept=".png,.jpg,.jpeg,.gif,.pdf,.doc,.docx,image/*" style="margin-bottom: 1em;" multiple /><div id="attachmentPreview" style="margin-bottom: 1em;"></div>
+<p style="font-size: 1em; line-height: 1.6; margin-top: 1em;">
+  Attach one or more photos or files to enrich your journal entry. Multiple files can be selected before saving. Take your time; every small detail counts in your growth journey.
+</p>
+<label for="attachment" style="display: block; font-weight: 600;">
+  Select files to upload:
+</label>
+<input type="file" id="attachment" accept=".png,.jpg,.jpeg,.gif,.pdf,.doc,.docx,image/*" style="margin-bottom: 1em;" multiple />
+<div id="attachmentPreview" style="margin-bottom: 1em;"></div>
 
 <!-- Move coach review checkbox here, above Save button -->
 <label style="font-size: 0.85em; display: block; margin-top: 1em; margin-bottom: 0.5em;">
@@ -1669,7 +1675,7 @@ const logQuery = async ({ query }) => {
     <button class="btn" onclick="logOutUser()">Logout</button>
   </div>
   <footer style="margin-top: 2em; font-size: 0.85em; text-align: center;">
-    <p>© 2025 Pegasus Realm LLC. InkWell. All rights reserved.</p>
+    <p>© 2025 Pegasus Realm LLC. InkWell is your trusted journaling companion designed with evidence-based positive psychology principles to foster well-being, focus, and productivity—especially mindful of neurodivergent-friendly UI efficiency and clarity.</p>
     <p>
       <a href="https://www.inkwelljournal.io/privacy-policy/" target="_blank" style="text-decoration: underline; color: #2A6D6D;">Privacy Policy</a> |
       <a href="https://www.inkwelljournal.io/terms-conditions/" target="_blank" style="text-decoration: underline; color: #2A6D6D;">Terms and Conditions</a> |
