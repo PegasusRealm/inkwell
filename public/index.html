@@ -344,13 +344,10 @@
     const app = initializeApp(firebaseConfig);
 
     const db = getFirestore(app);
-    window.db = db;
-    window.getDocs = getDocs;
-window.collection = collection;
+
     const storage = getStorage(app);
     const auth = getAuth(app);
-    window.auth = auth;
-    window.currentUserId = null;
+    
 
     // === SESSION MANAGEMENT: Auto-logout on close/refresh and inactivity ===
     // Helper: logout only if signed in
@@ -417,6 +414,26 @@ window.collection = collection;
         if (warningTimeout) clearTimeout(warningTimeout);
       }
     });
+
+// Move showTab global function here (outside onAuthStateChanged)
+window.showTab = function(tabId) {
+  const tabs = ["journalTab", "calendarTab"];
+  const buttons = {
+    journalTab: document.getElementById("journalTabButton"),
+    calendarTab: document.getElementById("calendarTabButton")
+  };
+
+  tabs.forEach(id => {
+    document.getElementById(id).style.display = (id === tabId ? "block" : "none");
+    if (buttons[id]) {
+buttons[id].style.setProperty("background-color", id === tabId ? "#2A6D6D" : "#FFA76D", "important");      buttons[id].style.color = "white";
+    }
+  });
+
+  if (tabId === "calendarTab") {
+    buildCalendar();
+  }
+};
 // Handle embedded agreement button logic
 window.acceptEmbeddedAgreement = async function () {
   const embeddedCheckbox = document.getElementById("embeddedAgreementCheckbox");
@@ -489,7 +506,7 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  
+
   currentUserId = user.uid;
   window.currentUserId = user.uid;
 
