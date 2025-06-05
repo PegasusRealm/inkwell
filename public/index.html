@@ -464,12 +464,20 @@ onAuthStateChanged(auth, async (user) => {
   document.getElementById("embeddedAgreementNotice").style.display = "none";
 
   if (!user) {
-    // User is not signed in: always hide Alpha modal, show only login modal
+    const justLoggedOut = localStorage.getItem("userJustLoggedOut") === "true";
+
     document.getElementById("embeddedAgreementNotice").style.display = "none";
     document.getElementById("journalTab").style.display = "none";
     document.getElementById("tabButtons").style.display = "none";
-    document.getElementById("goodbyeModal").style.display = "none";
-    document.getElementById("loginModal").style.display = "flex";
+
+    if (justLoggedOut) {
+      document.getElementById("goodbyeModal").style.display = "flex";
+      localStorage.removeItem("userJustLoggedOut");
+      document.getElementById("loginModal").style.display = "none";
+    } else {
+      document.getElementById("loginModal").style.display = "flex";
+      document.getElementById("goodbyeModal").style.display = "none";
+    }
     document.querySelector("main").style.display = "none";
     return;
   }
@@ -1248,6 +1256,12 @@ window.loginModalClose = function () {
   }, 4000);
 };
 
+window.showLoginModal = function () {
+  document.getElementById("goodbyeModal").style.display = "none";
+  document.getElementById("loginModal").style.display = "flex";
+  document.getElementById("emailInput").value = "";
+  document.getElementById("passwordInput").value = "";
+};
 
 window.showSpinner = function (targetId, message = "Working...") {
   const el = document.getElementById(targetId);
@@ -1255,17 +1269,30 @@ window.showSpinner = function (targetId, message = "Working...") {
     el.innerHTML = `<span class="spinner"></span> ${message}`;
   }
 };
-window.showTab = showTab;
-// Expose logOutUser for logout button
+
 window.logOutUser = async function () {
+  console.log("Logout started.");
   try {
     localStorage.setItem("userJustLoggedOut", "true");
     await auth.signOut();
     document.querySelector("main").style.display = "none";
-    // Always hide the Alpha modal on logout
+    
     document.getElementById("embeddedAgreementNotice").style.display = "none";
     setTimeout(() => {
-      document.getElementById("goodbyeModal").style.display = "flex";
+      const modal = document.getElementById("goodbyeModal");
+      if (modal) {
+        modal.style.display = "flex";
+        modal.style.position = "fixed";
+        modal.style.top = "0";
+        modal.style.left = "0";
+        modal.style.width = "100vw";
+        modal.style.height = "100vh";
+        modal.style.background = "rgba(0,0,0,0.8)";
+        modal.style.color = "#2A6D6D";
+        modal.style.alignItems = "center";
+        modal.style.justifyContent = "center";
+        modal.style.zIndex = "9999";
+      }
     }, 100);
   } catch (err) {
     console.error("Logout failed:", err);
@@ -1384,8 +1411,8 @@ window.askSophyToRefineManifest = async function () {
       <h2 class="section-header">See You Soon!</h2>
       <p>Thanks for journaling with InkWell today.</p>
       <p>Take care, and don’t forget to stay positive.</p>
-      <button class="btn" onclick="location.reload()" style="margin-top: 1.5em;">Return to Login</button>
-    </div>
+<button class="btn" onclick="showLoginModal()" style="margin-top: 1.5em;">Return to Login</button>    
+</div>
   </div>
     <img src="/InkWell Logo NoBG.png" alt="InkWell Logo" style="max-height: 120px; margin-bottom: 1em;" />
     <p>Your space to reflect, write, and grow.</p>
@@ -1413,9 +1440,8 @@ window.askSophyToRefineManifest = async function () {
   <div id="loginModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 9999;">
     <div class="card-block" style="max-width: 400px; width: 90%; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
       <h3 class="section-header" style="text-align: center;">Login or Sign Up</h3>
-      <input type="email" id="emailInput" placeholder="Email" style="width: 100%; margin-bottom: 0.5em; padding: 0.5em;" />
-      <input type="password" id="passwordInput" placeholder="Password" style="width: 100%; margin-bottom: 0.5em; padding: 0.5em;" />
-
+      <input type="email" id="emailInput" placeholder="Email" autocomplete="off" ... />
+<input type="password" id="passwordInput" placeholder="Password" autocomplete="off" ... />
       <button class="btn" onclick="signUp()" style="width: 100%; margin-bottom: 0.5em;">Sign Up</button>
       <button class="btn" onclick="signIn()" style="width: 100%;">Sign In</button>
       <button class="btn" onclick="loginModalClose()" style="width: 100%; margin-top: 1em;">Close</button>
