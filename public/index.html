@@ -567,6 +567,26 @@ onAuthStateChanged(auth, async (user) => {
   document.getElementById("tabButtons").style.display = "flex";
   document.getElementById("journalTab").style.display = "block";
   document.querySelector("main").style.display = "block";
+
+  // Always refresh Manifest Statement after login
+  if (window.currentUserId) {
+    try {
+      const manifestDoc = await getDoc(doc(db, "manifests", window.currentUserId));
+      const manifestInput = document.getElementById("manifestInput");
+      if (manifestDoc.exists() && manifestInput) {
+        manifestInput.value = manifestDoc.data().statement || "";
+        console.log("✅ Manifest loaded after login.");
+      } else if (manifestInput) {
+        manifestInput.value = "";
+        console.log("ℹ️ No manifest found after login.");
+      }
+    } catch (err) {
+      console.error("❌ Error loading manifest after login:", err);
+      const manifestInput = document.getElementById("manifestInput");
+      if (manifestInput) manifestInput.value = "";
+    }
+  }
+
   setTimeout(() => showTab('journalTab'), 20);
 
 
