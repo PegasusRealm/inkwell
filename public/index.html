@@ -1087,6 +1087,8 @@ window.setJournalMode = function (mode) {
       if (tabId === "calendarTab") {
         // Always build calendar when switching to calendarTab
         buildCalendar();
+        // Always refresh Past Entries UI using loadPastEntries
+        loadPastEntries();
         document.getElementById("calendarEntries") && (document.getElementById("calendarEntries").innerHTML = "<p>Click a calendar date to view entries.</p>");
         document.getElementById("searchResults") && (document.getElementById("searchResults").innerHTML = "<p>Use Smart Search to explore your journal history.</p>");
       } else if (tabId === "journalTab") {
@@ -1189,8 +1191,12 @@ async function buildCalendar() {
       td.style.backgroundColor = "#FFE5B4"; // Light highlight to mark the date
       td.title = "Journal entry";
     }
-    td.onclick = () => showPromptsByDate(window.displayedYear, window.displayedMonth, day);
-    row.appendChild(td);
+td.onclick = () => {
+  // Option 1: just always reload full past entries (easiest, consistent)
+  loadPastEntries();
+  // Option 2: pass a date to a new, filtered version of loadPastEntries if desired
+  // loadPastEntries({ year: window.displayedYear, month: window.displayedMonth, day });
+};    row.appendChild(td);
   }
   calendarTable.appendChild(row);
   container.appendChild(calendarTable);
