@@ -431,8 +431,11 @@ buttons[id].style.setProperty("background-color", id === tabId ? "#2A6D6D" : "#F
   });
 
   if (tabId === "calendarTab") {
-    buildCalendar();
-  }
+  buildCalendar();
+  loadPastEntries(); // <-- ADD THIS LINE
+  document.getElementById("calendarEntries") && (document.getElementById("calendarEntries").innerHTML = "<p>Click a calendar date to view entries.</p>");
+  document.getElementById("searchResults") && (document.getElementById("searchResults").innerHTML = "<p>Use Smart Search to explore your journal history.</p>");
+}
 };
 // Handle embedded agreement button logic
 window.acceptEmbeddedAgreement = async function () {
@@ -708,6 +711,8 @@ window.onload = function () {
       }
       // Add to Firestore and get the new doc ref
       // Always set userId field, and ensure queries always filter by userId
+      console.log("Attachments array about to be saved:", attachments);
+console.log("entryData about to be saved:", entryData);
       const docRef = await addDoc(collection(db, "journalEntries"), entryData);
       console.log("📘 Created entry ID:", docRef.id);
       if (entryData.coachReview) {
@@ -810,7 +815,7 @@ window.onload = function () {
     }
     import { query, where, orderBy, getDocs, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-    async function loadPastEntries() {
+   async function loadPastEntries() {
       const pastEntriesContainer = document.getElementById("pastEntries");
       pastEntriesContainer.innerHTML = "<p>Loading entries...</p>";
       const entriesRef = collection(db, "journalEntries");
@@ -849,6 +854,7 @@ window.onload = function () {
       const entriesHtml = [];
       for (const doc of snapshot.docs) {
         const entry = doc.data();
+        console.log("Entry in Past Entries render:", entry);
         // Skip entries with missing or invalid createdAt
         if (!entry.createdAt?.toDate) {
           console.warn("Skipping entry with missing or invalid createdAt:", entry);
@@ -872,25 +878,29 @@ window.onload = function () {
           ? `<p style="font-size: 0.85em; color: #FFA76D;">💬 New coach reply</p>`
           : "";
 
-        // Attachment rendering logic (multiple or legacy single attachment)
+        // --- Attachment rendering logic: start ---
         let attachmentHtml = "";
         if (Array.isArray(entry.attachments) && entry.attachments.length > 0) {
-          // Multiple attachments
           attachmentHtml = `<div style="margin-top:0.5em; display: flex; flex-wrap: wrap; gap: 0.5em;">`;
           for (const file of entry.attachments) {
             const filename = file.name || getFileNameFromUrl(file.url);
             const ext = getFileExtension(filename);
             if (isImageExtension(ext)) {
+              // Image: thumbnail + link
               attachmentHtml += `
                 <div style="display:inline-block; text-align:center;">
-                  <img src="${file.url}" alt="${filename || 'Attachment'}" style="max-width:80px; max-height:80px; border-radius:4px; border:1px solid #ddd; display:block; margin-bottom:0.25em;" />
-                  <a href="${file.url}" target="_blank" style="font-size:0.85em; color:#2A6D6D; text-decoration:underline; display:block;">${filename}</a>
+                  <a href="${file.url}" target="_blank" title="Click to view full image">
+                    <img src="${file.url}" alt="${filename}" style="max-width:80px; max-height:80px; border-radius:4px; border:1px solid #ddd; display:block; margin-bottom:0.25em;" />
+                  </a>
+                  <a href="${file.url}" target="_blank" style="font-size:0.85em; color:#2A6D6D; text-decoration:underline;">${filename}</a>
                 </div>
               `;
             } else {
+              // Other file: icon + link
               attachmentHtml += `
-                <div style="display:inline-block;">
-                  <a href="${file.url}" target="_blank" style="font-size:0.95em; color:#2A6D6D; text-decoration:underline;">${filename}</a>
+                <div style="display:inline-block; text-align:center;">
+                  <span style="font-size:2em;">📄</span>
+                  <a href="${file.url}" target="_blank" style="font-size:0.85em; color:#2A6D6D; text-decoration:underline;" title="Click to download/view">${filename}</a>
                 </div>
               `;
             }
@@ -907,46 +917,49 @@ window.onload = function () {
           if (isImageExtension(ext)) {
             // Display image thumbnail
             attachmentHtml = `<div style="margin-top:0.5em;">
-                <img src="${entry.attachmentUrl}" alt="${filename || 'Attachment'}" style="max-width:80px; max-height:80px; border-radius:4px; border:1px solid #ddd; display:block; margin-bottom:0.25em;" />
-                <a href="${entry.attachmentUrl}" target="_blank" style="font-size:0.85em; color:#2A6D6D; text-decoration:underline;">View Full Image</a>
+                <a href="${entry.attachmentUrl}" target="_blank" title="Click to view full image">
+                  <img src="${entry.attachmentUrl}" alt="${filename || 'Attachment'}" style="max-width:80px; max-height:80px; border-radius:4px; border:1px solid #ddd; display:block; margin-bottom:0.25em;" />
+                </a>
+                <a href="${entry.attachmentUrl}" target="_blank" style="font-size:0.85em; color:#2A6D6D; text-decoration:underline;">${filename || 'View Full Image'}</a>
               </div>`;
           } else {
             // Display download link with filename if possible, fallback to "Download Attachment"
             const label = filename || "Download Attachment";
             attachmentHtml = `<div style="margin-top:0.5em;">
+                <span style="font-size:2em;">📄</span>
                 <a href="${entry.attachmentUrl}" target="_blank" style="font-size:0.95em; color:#2A6D6D; text-decoration:underline;">${label}</a>
               </div>`;
           }
         }
+        // --- Attachment rendering logic: end ---
 
         entriesHtml.push(`
-          <div style="margin-bottom: 1em; padding: 1em; border: 1px solid #ccc; border-radius: 5px;">
-            <p style="font-size: 0.9em; color: #999;">${date}</p>
-            ${manifestBadge}
-            ${coachTag}
-            ${futureFlag}
-            ${coachReplyNotice}
-            <div class="entry-preview">${entry.text}</div>
-            <button class="btn" style="margin-top: 0.5em;" onclick="this.previousElementSibling.classList.toggle('entry-preview'); this.textContent = this.textContent === 'Read more' ? 'Collapse' : 'Read more';">Read more</button>
-            ${attachmentHtml}
-            ${tags}
-            
-            ${entry.newCoachReply ? `
-  <div class="coach-reply" style="margin-top: 1em; padding: 0.75em; border-left: 4px solid #FFA76D; background-color: #fff3ea; font-size: 0.95em;">
-    <strong>Coach replied:</strong>
-    <p>${entry.coachReplyText || "Your coach has replied. Expand to read more."}</p>
+  <div style="margin-bottom: 1em; padding: 1em; border: 1px solid #ccc; border-radius: 5px;">
+    <p style="font-size: 0.9em; color: #999;">${date}</p>
+    ${manifestBadge}
+    ${coachTag}
+    ${futureFlag}
+    ${coachReplyNotice}
+    <div class="entry-preview">${entry.text}</div>
+    <button class="btn" style="margin-top: 0.5em;" onclick="this.previousElementSibling.classList.toggle('entry-preview'); this.textContent = this.textContent === 'Read more' ? 'Collapse' : 'Read more';">Read more</button>
+    ${attachmentHtml}
+    ${tags}
+    ${entry.newCoachReply ? `
+      <div class="coach-reply" style="margin-top: 1em; padding: 0.75em; border-left: 4px solid #FFA76D; background-color: #fff3ea; font-size: 0.95em;">
+        <strong>Coach replied:</strong>
+        <p>${entry.coachReplyText || "Your coach has replied. Expand to read more."}</p>
+      </div>
+    ` : ""}
+    <button class="btn" onclick="editEntry('${doc.id}', \`${entry.text.replace(/`/g, "\\`")}\`)">Edit</button>
+    <button class="btn" onclick="deleteEntry('${doc.id}')">Delete</button>
   </div>
-` : ""}
-            <button class="btn" onclick="editEntry('${doc.id}', \`${entry.text.replace(/`/g, "\\`")}\`)">Edit</button>
-            <button class="btn" onclick="deleteEntry('${doc.id}')">Delete</button>
-
-          </div>
-        `);
+`);
       }
 
       pastEntriesContainer.innerHTML = entriesHtml.join("");
+    
     }
-
+ window.loadPastEntries = loadPastEntries;
     window.deleteEntry = async function (docId) {
       if (!confirm("Are you sure you want to delete this entry?")) return;
       try {
