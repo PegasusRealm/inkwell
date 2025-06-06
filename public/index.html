@@ -319,6 +319,8 @@
 
   </style>
   <script type="module">
+    // --- Smart Search imports ---
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-functions.js";
     // Firebase App (the core Firebase SDK) is always required
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
@@ -342,11 +344,14 @@
     };
 
     const app = initializeApp(firebaseConfig);
+window.app = app;
 
-    const db = getFirestore(app);
+const db = getFirestore(app);
+window.db = db;
 
-    const storage = getStorage(app);
-    const auth = getAuth(app);
+const storage = getStorage(app);
+const auth = getAuth(app);
+window.auth = auth;
     
 
     // === SESSION MANAGEMENT: Auto-logout on close/refresh and inactivity ===
@@ -470,11 +475,13 @@ document.addEventListener("DOMContentLoaded", () => {
   embeddedCheckbox?.addEventListener("change", () => {
     acceptEmbeddedBtn.disabled = !embeddedCheckbox.checked;
   });
+
+  // Disable search button by default (safer inside DOMContentLoaded)
+  const searchBtn = document.getElementById("searchBtn");
+  if (searchBtn) searchBtn.disabled = true;
 });
 
-
-
-    let currentUserId = null;
+let currentUserId = null;
 
 onAuthStateChanged(auth, async (user) => {
   // DEBUG: Log when onAuthStateChanged handler runs and user object
@@ -499,6 +506,13 @@ onAuthStateChanged(auth, async (user) => {
       document.getElementById("goodbyeModal").style.display = "none";
     }
     document.querySelector("main").style.display = "none";
+    // Disable Smart Search button and function for logged-out users
+    const searchBtn = document.getElementById("searchBtn");
+    if (searchBtn) searchBtn.disabled = true;
+    window.runSmartSearch = function () { alert("You must be logged in."); };
+    const searchInput = document.getElementById("searchQuery");
+    if (searchInput) searchInput.value = "";
+    // Clear the Smart Search field on logout
     return;
   }
 
@@ -506,6 +520,10 @@ onAuthStateChanged(auth, async (user) => {
   if (!user.uid || user.isAnonymous) {
     document.getElementById("embeddedAgreementNotice").style.display = "none";
     document.querySelector("main").style.display = "none";
+    // Disable Smart Search button and function for anonymous users
+    const searchBtn = document.getElementById("searchBtn");
+    if (searchBtn) searchBtn.disabled = true;
+    window.runSmartSearch = function () { alert("You must be logged in."); };
     return;
   }
 
@@ -567,6 +585,10 @@ onAuthStateChanged(auth, async (user) => {
   document.getElementById("tabButtons").style.display = "flex";
   document.getElementById("journalTab").style.display = "block";
   document.querySelector("main").style.display = "block";
+  // Enable Smart Search button only for logged-in users (not anonymous)
+  const searchBtn = document.getElementById("searchBtn");
+  if (searchBtn) searchBtn.disabled = false;
+  window.runSmartSearch = runSmartSearch;
 
   // Always refresh Manifest Statement after login
   if (window.currentUserId) {
@@ -834,6 +856,120 @@ console.log("entryData about to be saved:", entryData);
       }
     }
     import { query, where, orderBy, getDocs, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+    // --- SMART SEARCH LOGIC ---
+    // Only one import for getFunctions, httpsCallable at the top.
+    // Define runSmartSearch globally and attach it to window.
+    async function runSmartSearch() {
+      const queryText = document.getElementById("searchQuery").value.trim();
+      const resultsContainer = document.getElementById("searchResults");
+      window.showSpinner && showSpinner("searchResults", "Searching...");
+
+   
+      const user = window.auth?.currentUser;
+      if (!queryText) {
+        resultsContainer.innerHTML = "<p>Please enter a search phrase.</p>";
+        return;
+      }
+      if (!user) {
+        resultsContainer.innerHTML = "<p>You must be logged in to use Smart Search.</p>";
+        return;
+      }
+
+    try {
+      // Log the search query with HTTPS endpoint before embedding
+      const idToken = await user.getIdToken();
+
+      await fetch("https://us-central1-inkwell-alpha.cloudfunctions.net/logSearchQuery", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ query: queryText })
+      });
+
+      // 1. Embed the query using HTTPS endpoint directly, with ID token
+      const embedResp = await fetch("https://us-central1-inkwell-alpha.cloudfunctions.net/embedAndStoreEntry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ text: queryText, entryId: "search-query" })
+      });
+        if (!embedResp.ok) {
+          throw new Error("Failed to get embedding for query.");
+        }
+        const embedResult = await embedResp.json();
+        const queryEmbedding = embedResult.embedding;
+        if (!queryEmbedding || !Array.isArray(queryEmbedding)) {
+          throw new Error("Failed to get embedding for query.");
+        }
+        // 2. Fetch all user's journal entries with embeddings (use modular Firestore)
+        const db = window.db;
+        const currentUserId = window.currentUserId;
+        const entriesRef = collection(db, "journalEntries");
+        const q = query(entriesRef, where("userId", "==", currentUserId));
+        const snapshot = await getDocs(q);
+        const entries = [];
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          // Only consider entries with an embedding array
+          if (Array.isArray(data.embedding)) {
+            entries.push({
+              id: docSnap.id,
+              text: data.text,
+              tags: data.tags,
+              createdAt: data.createdAt,
+              embedding: data.embedding,
+              contextManifest: data.contextManifest
+            });
+          }
+        });
+        if (entries.length === 0) {
+          resultsContainer.innerHTML = "<p>No entries with embeddings found. Try saving a new entry first.</p>";
+          return;
+        }
+        // 3. Calculate cosine similarity for each entry
+        function cosineSimilarity(a, b) {
+          let dot = 0, normA = 0, normB = 0;
+          for (let i = 0; i < a.length; i++) {
+            dot += a[i] * b[i];
+            normA += a[i] * a[i];
+            normB += b[i] * b[i];
+          }
+          if (normA === 0 || normB === 0) return 0;
+          return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+        }
+        for (const entry of entries) {
+          entry.sim = cosineSimilarity(queryEmbedding, entry.embedding);
+        }
+        // 4. Sort by similarity descending, pick top 5
+        const top = entries.sort((a, b) => b.sim - a.sim).slice(0, 5);
+        // 5. Render results
+        if (top.length === 0) {
+          resultsContainer.innerHTML = "<p>No similar entries found.</p>";
+          return;
+        }
+        let html = "<ol>";
+        for (const entry of top) {
+          const dateStr = entry.createdAt?.toDate?.().toLocaleString?.() || "";
+          html += `<li style="margin-bottom: 1em;">
+            <div style="font-size:0.85em; color:#999;">${dateStr}</div>
+            ${entry.contextManifest ? `<div style="font-size:0.85em; color:#2A6D6D;">✨ Manifest: "${entry.contextManifest}"</div>` : ""}
+            <div class="entry-preview">${entry.text}</div>
+            <div style="font-size:0.8em; color:#888;">Similarity: ${(entry.sim*100).toFixed(1)}%</div>
+            ${entry.tags ? `<div style="font-size:0.8em; color:#666;">Tags: ${entry.tags.join(", ")}</div>` : ""}
+          </li>`;
+        }
+        html += "</ol>";
+        resultsContainer.innerHTML = html;
+      } catch (err) {
+        console.error("Smart search error:", err);
+        document.getElementById("searchResults").innerHTML = "<p>Sorry, something went wrong with smart search.</p>";
+      }
+    }
+    window.runSmartSearch = runSmartSearch;
 
    async function loadPastEntries() {
       const pastEntriesContainer = document.getElementById("pastEntries");
@@ -1350,6 +1486,8 @@ window.logOutUser = async function () {
         modal.style.zIndex = "9999";
       }
     }, 100);
+    const searchInput = document.getElementById("searchQuery");
+if (searchInput) searchInput.value = "";
   } catch (err) {
     console.error("Logout failed:", err);
     alert("Logout failed.");
@@ -1588,125 +1726,21 @@ window.askSophyToRefineManifest = async function () {
       <button class="btn" onclick="changeMonth(1)">Next →</button>
     </div>
     <div id="calendarContainer"></div>
-    <div id="pastEntries" style="margin-top: 1em;"></div>
+    
 
-    <!-- Smart Search Bar UI -->
+<!-- Smart Search Bar UI -->
     <div class="card-block" style="margin-top: 2em;">
       <h3 class="section-header">Smart Search Your Journal</h3>
       <input type="text" id="searchQuery" placeholder="e.g., burnout last week, goals, feeling stuck" style="width: 100%; padding: 0.5em; margin-bottom: 0.5em; border-radius: 5px; border: 1px solid #ccc;" />
-      <button class="btn" onclick="runSmartSearch()">Search</button>
+      <button class="btn" id="searchBtn" onclick="runSmartSearch()" disabled>Search</button>
       <div id="searchResults" style="margin-top: 1em;"></div>
     </div>
-    <script>
-      // Smart search: embed query, fetch all entries, compare embeddings, sort by similarity, show top 5
-      async function runSmartSearch() {
-        // Ensure callable wrappers are defined
-const logQuery = async ({ query }) => {
-  try {
-    await fetch("https://us-central1-inkwell-alpha.cloudfunctions.net/logSearchQuery", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ query })
-    });
-  } catch (err) {
-    console.warn("Failed to log query (non-blocking):", err);
-  }
-};        const queryText = document.getElementById("searchQuery").value.trim();
-        const resultsContainer = document.getElementById("searchResults");
-        showSpinner("searchResults", "Searching...");
-        if (!queryText || !auth?.currentUser?.uid) {
-          resultsContainer.innerHTML = "<p>Please enter a search phrase.</p>";
-          return;
-        }
-        try {
-          // Log the search query with Firebase callable function before embedding
-          await logQuery({ query: queryText });
-          // 1. Embed the query using HTTPS endpoint directly, with ID token
-          const user = auth.currentUser;
-          if (!user) throw new Error("User not authenticated.");
-          const idToken = await user.getIdToken();
-          const embedResp = await fetch("https://us-central1-inkwell-alpha.cloudfunctions.net/embedAndStoreEntry", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${idToken}`
-            },
-            body: JSON.stringify({ text: queryText })
-          });
-          if (!embedResp.ok) {
-            throw new Error("Failed to get embedding for query.");
-          }
-          const embedResult = await embedResp.json();
-          const queryEmbedding = embedResult.embedding;
-          if (!queryEmbedding || !Array.isArray(queryEmbedding)) {
-            throw new Error("Failed to get embedding for query.");
-          }
-          // 2. Fetch all user's journal entries with embeddings
-          const entriesRef = collection(db, "journalEntries");
-          const q = query(entriesRef, where("userId", "==", currentUserId));
-          const snapshot = await getDocs(q);
-          const entries = [];
-          snapshot.forEach(docSnap => {
-            const data = docSnap.data();
-            // Only consider entries with an embedding array
-            if (Array.isArray(data.embedding)) {
-              entries.push({
-                id: docSnap.id,
-                text: data.text,
-                tags: data.tags,
-                createdAt: data.createdAt,
-                embedding: data.embedding,
-                contextManifest: data.contextManifest
-              });
-            }
-          });
-          if (entries.length === 0) {
-            resultsContainer.innerHTML = "<p>No entries with embeddings found. Try saving a new entry first.</p>";
-            return;
-          }
-          // 3. Calculate cosine similarity for each entry
-          function cosineSimilarity(a, b) {
-            let dot = 0, normA = 0, normB = 0;
-            for (let i = 0; i < a.length; i++) {
-              dot += a[i] * b[i];
-              normA += a[i] * a[i];
-              normB += b[i] * b[i];
-            }
-            if (normA === 0 || normB === 0) return 0;
-            return dot / (Math.sqrt(normA) * Math.sqrt(normB));
-          }
-          for (const entry of entries) {
-            entry.sim = cosineSimilarity(queryEmbedding, entry.embedding);
-          }
-          // 4. Sort by similarity descending, pick top 5
-          const top = entries.sort((a, b) => b.sim - a.sim).slice(0, 5);
-          // 5. Render results
-          if (top.length === 0) {
-            resultsContainer.innerHTML = "<p>No similar entries found.</p>";
-            return;
-          }
-          let html = "<ol>";
-          for (const entry of top) {
-            const dateStr = entry.createdAt?.toDate?.().toLocaleString?.() || "";
-            html += `<li style="margin-bottom: 1em;">
-              <div style="font-size:0.85em; color:#999;">${dateStr}</div>
-              ${entry.contextManifest ? `<div style="font-size:0.85em; color:#2A6D6D;">✨ Manifest: "${entry.contextManifest}"</div>` : ""}
-              <div class="entry-preview">${entry.text}</div>
-              <div style="font-size:0.8em; color:#888;">Similarity: ${(entry.sim*100).toFixed(1)}%</div>
-              ${entry.tags ? `<div style="font-size:0.8em; color:#666;">Tags: ${entry.tags.join(", ")}</div>` : ""}
-            </li>`;
-          }
-          html += "</ol>";
-          resultsContainer.innerHTML = html;
-        } catch (err) {
-          console.error("Smart search error:", err);
-          document.getElementById("searchResults").innerHTML = "<p>Sorry, something went wrong with smart search.</p>";
-        }
-      }
-    </script>
 
+    <div id="pastEntries" style="margin-top: 1em;"></div>
+
+    
+
+    
   </div>
 </div>
   </main>

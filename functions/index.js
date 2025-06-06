@@ -1,6 +1,6 @@
 const { defineSecret } = require("firebase-functions/params"); 
 const { getApps } = require("firebase-admin/app");
-const { onCall, onRequest } = require("firebase-functions/v2/https");
+const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 const sgMail = require("@sendgrid/mail");
 const SENDGRID_API_KEY = defineSecret("SENDGRID_API_KEY");
@@ -29,8 +29,13 @@ const corsHandler = cors({ origin: true });
 
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 
-exports.generatePrompt = onRequest({ secrets: [OPENAI_API_KEY] }, (req, res) => {
-  corsHandler(req, res, async () => {
+exports.generatePrompt = onRequest({ secrets: [OPENAI_API_KEY] }, async (req, res) => {
+  res.set('Access-Control-Allow-Origin', 'https://inkwell-alpha.web.app');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.status(204).send('');
+
+  try {
     const { topic } = req.body;
     console.log("Received prompt request for topic:", topic);
 
@@ -38,85 +43,88 @@ exports.generatePrompt = onRequest({ secrets: [OPENAI_API_KEY] }, (req, res) => 
       ? `Give me a journaling prompt about: ${topic}`
       : "Give me a creative journaling prompt to help reflect on today.";
 
-    try {
-console.log("OPENAI_API_KEY exists:", !!OPENAI_API_KEY.value());      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${OPENAI_API_KEY.value()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [{ role: "user", content: promptContent }],
-          max_tokens: 60,
-          temperature: 0.7,
-        }),
-      });
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENAI_API_KEY.value()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: promptContent }],
+        max_tokens: 60,
+        temperature: 0.7,
+      }),
+    });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("OpenAI API error:", errorText);
-        throw new Error(`OpenAI API error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      res.status(200).json({ prompt: data.choices[0].message.content.trim() });
-    } catch (error) {
-      console.error("Prompt generation failed:", error.message);
-      res.status(500).json({ error: "Prompt generation failed" });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("OpenAI API error:", errorText);
+      throw new Error(`OpenAI API error: ${response.statusText}`);
     }
-  });
+
+    const data = await response.json();
+    res.status(200).json({ prompt: data.choices[0].message.content.trim() });
+  } catch (error) {
+    res.set('Access-Control-Allow-Origin', 'https://inkwell-alpha.web.app');
+    res.status(500).json({ error: "Prompt generation failed" });
+  }
 });
 
-exports.askSophy = onRequest({ secrets: [OPENAI_API_KEY] }, (req, res) => {
-  corsHandler(req, res, async () => {
+exports.askSophy = onRequest({ secrets: [OPENAI_API_KEY] }, async (req, res) => {
+  res.set('Access-Control-Allow-Origin', 'https://inkwell-alpha.web.app');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.status(204).send('');
+
+  try {
     const { entry } = req.body;
     console.log("Received reflection request for entry:", entry);
 
-const systemPrompt = `You are Sophy, a supportive journaling assistant informed by Gestalt Therapy, Positive Psychology, SAMHSA’s Eight Dimensions of Wellness, Kukulu Kumuhana, and Atomic Habits. Respond with warmth and empathy. Keep your reflections brief, focused, and emotionally clear — no more than 2–3 ideas at once. Break thoughts into short, readable paragraphs. Avoid overwhelming the user. If helpful, suggest small, practical actions that build momentum over time.`;
-    try {
-      console.log("OPENAI_API_KEY exists:", !!OPENAI_API_KEY.value());
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${OPENAI_API_KEY.value()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-4",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: entry }
-          ],
-          max_tokens: 500,
-          temperature: 0.8,
-        }),
-      });
+    const systemPrompt = `You are Sophy, a supportive journaling assistant informed by Gestalt Therapy, Positive Psychology, SAMHSA’s Eight Dimensions of Wellness, Kukulu Kumuhana, and Atomic Habits. Respond with warmth and empathy. Keep your reflections brief, focused, and emotionally clear — no more than 2–3 ideas at once. Break thoughts into short, readable paragraphs. Avoid overwhelming the user. If helpful, suggest small, practical actions that build momentum over time.`;
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("OpenAI API error:", errorText);
-        throw new Error(`OpenAI API error: ${response.statusText}`);
-      }
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENAI_API_KEY.value()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: entry }
+        ],
+        max_tokens: 500,
+        temperature: 0.8,
+      }),
+    });
 
-      const data = await response.json();
-      res.status(200).json({ insight: data.choices[0].message.content.trim() });
-    } catch (error) {
-      console.error("Reflection generation failed:", error.message);
-      res.status(500).json({ insight: "Sophy couldn't reflect right now." });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("OpenAI API error:", errorText);
+      throw new Error(`OpenAI API error: ${response.statusText}`);
     }
-  });
+
+    const data = await response.json();
+    res.status(200).json({ insight: data.choices[0].message.content.trim() });
+  } catch (error) {
+    console.error("Reflection generation failed:", error.message);
+    res.set('Access-Control-Allow-Origin', 'https://inkwell-alpha.web.app');
+    res.status(500).json({ insight: "Sophy couldn't reflect right now." });
+  }
 });
+
 // Save manifest statement for authenticated user
 exports.saveManifest = onCall(async (data, context) => {
   const uid = context.auth?.uid;
   if (!uid) {
-    throw new functions.https.HttpsError("unauthenticated", "User must be authenticated.");
+    throw new HttpsError("unauthenticated", "User must be authenticated.");
   }
 
   const { statement } = data;
   if (!statement || typeof statement !== "string") {
-    throw new functions.https.HttpsError("invalid-argument", "Manifest statement must be a non-empty string.");
+    throw new HttpsError("invalid-argument", "Manifest statement must be a non-empty string.");
   }
 
   try {
@@ -127,7 +135,7 @@ exports.saveManifest = onCall(async (data, context) => {
     return { success: true };
   } catch (error) {
     console.error("Error saving manifest:", error);
-    throw new functions.https.HttpsError("internal", "Failed to save manifest.");
+    throw new HttpsError("internal", "Failed to save manifest.");
   }
 });
 
@@ -135,7 +143,7 @@ exports.saveManifest = onCall(async (data, context) => {
 exports.loadManifest = onCall(async (data, context) => {
   const uid = context.auth?.uid;
   if (!uid) {
-    throw new functions.https.HttpsError("unauthenticated", "User must be authenticated.");
+    throw new HttpsError("unauthenticated", "User must be authenticated.");
   }
 
   try {
@@ -146,7 +154,7 @@ exports.loadManifest = onCall(async (data, context) => {
     return { statement: doc.data().statement || "" };
   } catch (error) {
     console.error("Error loading manifest:", error);
-    throw new functions.https.HttpsError("internal", "Failed to load manifest.");
+    throw new HttpsError("internal", "Failed to load manifest.");
   }
 });
 
@@ -154,12 +162,12 @@ exports.loadManifest = onCall(async (data, context) => {
 exports.refineManifest = onCall(async (data, context) => {
   const uid = context.auth?.uid;
   if (!uid) {
-    throw new functions.https.HttpsError("unauthenticated", "User must be authenticated.");
+    throw new HttpsError("unauthenticated", "User must be authenticated.");
   }
 
   const { statement } = data;
   if (!statement || typeof statement !== "string") {
-    throw new functions.https.HttpsError("invalid-argument", "Manifest statement must be a non-empty string.");
+    throw new HttpsError("invalid-argument", "Manifest statement must be a non-empty string.");
   }
 
   const prompt = `Please help refine this personal manifest statement to make it meaningful, clear, and inspiring:\n"${statement}"`;
@@ -192,17 +200,18 @@ exports.refineManifest = onCall(async (data, context) => {
     return { refined: data.choices[0].message.content.trim() };
   } catch (error) {
     console.error("Manifest refinement failed:", error.message);
-    throw new functions.https.HttpsError("internal", "Failed to refine manifest.");
+    throw new HttpsError("internal", "Failed to refine manifest.");
   }
 });
 
 exports.embedAndStoreEntry = onRequest({ secrets: [OPENAI_API_KEY] }, (req, res) => {
-  res.set("Access-Control-Allow-Origin", "*");
-  if (req.method === "OPTIONS") {
-    res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    return res.status(204).send("");
-  }
+  res.set("Access-Control-Allow-Origin", "https://inkwell-alpha.web.app");
+res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+if (req.method === "OPTIONS") {
+  return res.status(204).send("");
+}
+  
 
   corsHandler(req, res, async () => {
     console.log("Received body:", req.body);
@@ -255,39 +264,80 @@ exports.embedAndStoreEntry = onRequest({ secrets: [OPENAI_API_KEY] }, (req, res)
   });
 });
 // Log search query function
-exports.logSearchQuery = onCall(async (data, context) => {
-  const uid = context.auth?.uid;
-  if (!uid) {
-    throw new functions.https.HttpsError("unauthenticated", "User must be authenticated.");
+exports.logSearchQuery = onRequest(async (req, res) => {
+  // CORS: Always set these headers FIRST!
+  res.set('Access-Control-Allow-Origin', 'https://inkwell-alpha.web.app');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  // Preflight support
+  if (req.method === 'OPTIONS') {
+    return res.status(204).send('');
   }
 
-  const { query } = data;
-  if (!query || typeof query !== "string") {
-    throw new functions.https.HttpsError("invalid-argument", "Query must be a non-empty string.");
-  }
+  // Log the entry for debugging
+  console.log("logSearchQuery called. Method:", req.method, "Body:", req.body);
+  console.log("DEBUG req.headers:", req.headers);
 
   try {
-    await admin.firestore().collection("searchLogs").add({
+    // Enforce POST only
+    if (req.method !== 'POST') {
+      console.warn("Method not allowed:", req.method);
+      return res.status(405).json({ error: "Method not allowed" });
+    }
+
+    // Extract Bearer token
+    const authHeader = req.headers.authorization || '';
+    const idToken = authHeader.startsWith('Bearer ') ? authHeader.split('Bearer ')[1] : null;
+    if (!idToken) {
+      console.warn("Missing token in Authorization header.");
+      return res.status(401).json({ error: 'Unauthorized: Missing token' });
+    }
+    let decoded;
+    try {
+      decoded = await admin.auth().verifyIdToken(idToken);
+    } catch (e) {
+      console.error("Failed to verify ID token:", e.message);
+      return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+    }
+    if (!decoded || !decoded.uid) {
+      console.warn("Decoded token missing UID");
+      return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+    }
+    const uid = decoded.uid;
+
+    // Validate input
+    const { query } = req.body;
+    if (!query || typeof query !== 'string') {
+      console.warn("Query missing or not a string:", req.body);
+      return res.status(400).json({ error: 'Query must be a non-empty string.' });
+    }
+
+    // Save to Firestore
+    await admin.firestore().collection('searchLogs').add({
       userId: uid,
       query,
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
-    return { success: true };
+    console.log("Logged search query for user:", uid, "query:", query);
+    return res.status(200).json({ success: true });
   } catch (error) {
     console.error("Error logging search query:", error);
-    throw new functions.https.HttpsError("internal", "Failed to log search query.");
+    // Even on error, repeat CORS headers just in case
+    res.set('Access-Control-Allow-Origin', 'https://inkwell-alpha.web.app');
+    return res.status(500).json({ error: "Failed to log search query." });
   }
 });
 
 exports.saveCoachReply = onCall(async (data, context) => {
   const coachUid = context.auth?.uid;
   if (!coachUid) {
-    throw new functions.https.HttpsError("unauthenticated", "Coach must be authenticated.");
+    throw new HttpsError("unauthenticated", "Coach must be authenticated.");
   }
 
   const { entryId, replyText } = data;
   if (!entryId || !replyText || typeof replyText !== "string") {
-    throw new functions.https.HttpsError("invalid-argument", "Entry ID and reply text are required.");
+    throw new HttpsError("invalid-argument", "Entry ID and reply text are required.");
   }
 
   try {
@@ -311,7 +361,7 @@ exports.saveCoachReply = onCall(async (data, context) => {
     return { success: true };
   } catch (error) {
     console.error("Error saving coach reply:", error);
-    throw new functions.https.HttpsError("internal", "Failed to save coach reply.");
+    throw new HttpsError("internal", "Failed to save coach reply.");
   }
 });
 
@@ -386,17 +436,17 @@ if (lastNotified && Date.now() - lastNotified.getTime() < 10 * 60 * 1000) {
 exports.createUserProfile = onCall(async (data, context) => {
   const uid = context.auth?.uid;
   if (!uid) {
-    throw new functions.https.HttpsError("unauthenticated", "User must be authenticated.");
+    throw new HttpsError("unauthenticated", "User must be authenticated.");
   }
   const { email } = data;
   if (!email || typeof email !== "string") {
-    throw new functions.https.HttpsError("invalid-argument", "Email is required.");
+    throw new HttpsError("invalid-argument", "Email is required.");
   }
   try {
     const result = await createUserProfileIfNotExists(uid, email);
     return { success: true, created: result.created };
   } catch (error) {
     console.error("Error creating user profile:", error);
-    throw new functions.https.HttpsError("internal", "Failed to create user profile.");
+    throw new HttpsError("internal", "Failed to create user profile.");
   }
 });
