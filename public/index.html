@@ -7,168 +7,320 @@
   <link href="https://fonts.googleapis.com/css2?family=Alice&display=swap" rel="stylesheet" />
   <style>
     :root {
+      /* Brand (Cyan/Teal) */
+      --brand-primary: #2A6972;
+      --brand-secondary: #388b97;
+      --brand-alt: #3f9caa;
+      --brand-outline: #4f4f4f;
+      --font-main: #4f4f4f;
+      --font-accent: #2A6972;
+      --font-white: #ffffff;
       --title-font: 'Helvetica Neue', sans-serif;
       --body-font: 'Alice', serif;
-      --dark-title: #2A2A2A;
-      --dark-text: #555555;
-      --light-text: #999999;
-    }
 
-    .btn {
-  margin-top: 0.5em;
-  padding: 0.5em 1em;
-  font-size: 0.95em;
-  background-color: #FFA76D;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-.btn:hover {
-  background-color: #e8965e;
-}
+      /* Backgrounds (Light) */
+      --bg-light: #89C9D4;
+      --bg-light-alt: #aedae2;
+      --bg-card: #ffffff;
+      --bg-muted: #f6fbfc;
 
-    h1, h2, h3, h4, h5 {
-      font-family: var(--title-font);
-      color: var(--dark-title);
-      font-weight: 600;
-    }
+      /* Muted Info */
+      --info-muted: #388b97;
+      --info-bg: #eaf6fb;
 
-    p, label, input, textarea, button {
-      font-family: var(--body-font);
-      color: var(--dark-text);
+      /* Accent (Sophy, coach) */
+      --accent: #d49489;
+      --accent-dark: #72332;
+
+      /* Buttons */
+      --btn-bg: #2A6972;
+      --btn-hover: #388b97;
+      --btn-font: #ffffff;
+
+      /* Border */
+      --border: #aedae2;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --dark-title: #FFFFFF;
-        --dark-text: #CCCCCC;
-        --light-text: #999999;
+        --bg-light: #15363a;
+        --bg-light-alt: #23585f;
+        --bg-card: #1c474d;
+        --bg-muted: #23585f;
+        --font-main: #ffffff;
+        --font-accent: #3f9caa;
+        --brand-primary: #2A6972;
+        --brand-secondary: #388b97;
+        --brand-alt: #3f9caa;
+        --brand-outline: #4f4f4f;
+        --info-muted: #3f9caa;
+        --info-bg: #23585f;
+        --accent: #d49489;
+        --accent-dark: #72332;
+        --btn-bg: #388b97;
+        --btn-hover: #2A6972;
+        --btn-font: #ffffff;
+        --border: #2A6972;
       }
-
-      h1, h2, h3, h4, h5 {
-        color: var(--dark-title);
-      }
-
-      p, label, input, textarea, button {
-        color: var(--dark-text);
-      }
-
-      /* Ensure journal entry preview text is visible when collapsed in dark mode */
-      .entry-preview,
-      .entry-preview * {
-        color: #CCCCCC !important;
-      }
-
-      .coach-reply {
-        background-color: #2a2a2a;
-        border-left: 4px solid #FFA76D;
-        color: #CCCCCC;
-      }
+    }
+    html[data-theme='dark'] {
+      --bg-light: #15363a;
+      --bg-light-alt: #23585f;
+      --bg-card: #1c474d;
+      --bg-muted: #23585f;
+      --font-main: #ffffff;
+      --font-accent: #3f9caa;
+      --brand-primary: #2A6972;
+      --brand-secondary: #388b97;
+      --brand-alt: #3f9caa;
+      --brand-outline: #4f4f4f;
+      --info-muted: #3f9caa;
+      --info-bg: #23585f;
+      --accent: #d49489;
+      --accent-dark: #72332;
+      --btn-bg: #388b97;
+      --btn-hover: #2A6972;
+      --btn-font: #ffffff;
+      --border: #2A6972;
+    }
+    html[data-theme='light'] {
+      --bg-light: #89C9D4;
+      --bg-light-alt: #aedae2;
+      --bg-card: #ffffff;
+      --bg-muted: #f6fbfc;
+      --font-main: #4f4f4f;
+      --font-accent: #2A6972;
+      --brand-primary: #2A6972;
+      --brand-secondary: #388b97;
+      --brand-alt: #3f9caa;
+      --brand-outline: #4f4f4f;
+      --info-muted: #388b97;
+      --info-bg: #eaf6fb;
+      --accent: #d49489;
+      --accent-dark: #72332;
+      --btn-bg: #2A6972;
+      --btn-hover: #388b97;
+      --btn-font: #ffffff;
+      --border: #aedae2;
     }
 
     body {
       margin: 0;
+      background: var(--bg-light);
+      color: var(--font-main);
       font-family: var(--body-font);
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 2em;
     }
-    /* Light mode styles */
-    @media (prefers-color-scheme: light) {
-      body {
-        background-color: #EAF6FB;
-        color: #2A6D6D;
-      }
-      main {
-        background: white;
-        color: inherit;
-      }
-      input,
-      textarea {
-        background-color: #fff;
-        border: 1px solid #ccc;
-      }
-      button {
-        background-color: #FFA76D;
-        color: white;
-      }
-      button:hover {
-        background-color: #e8965e;
-      }
+
+    main {
+      background: var(--bg-card);
+      color: var(--font-main);
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(49, 122, 133, 0.07);
+      padding: 2em;
+      max-width: 600px;
+      width: 100%;
     }
 
-    /* Dark mode styles */
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #1E1E1E;
-        color: #CCCCCC;
-      }
-      main {
-        background: #2A2A2A;
-        color: inherit;
-      }
-      input,
-      textarea {
-        background-color: #333;
-        border: 1px solid #666;
-      }
-      button {
-        background-color: #FFA76D;
-        color: white;
-      }
-      button:hover {
-        background-color: #e8965e;
-      }
-      /* Override calendar text color for dark mode for better visibility */
-      #calendarTab th,
-#calendarTab td,
-#calendarTab p,
-#calendarTab h2,
-#calendarTab h3 {
-  color: var(--dark-text);
-}
-      /* Fix dark mode text color for Favorite Prompts block */
-      #favoritePromptsList,
-      #favoritePromptsList p,
-      details summary {
-        color: var(--dark-text);
-      }
-      /* Footer copyright and links dark mode override */
-      footer,
-      footer p,
-      footer a {
-        color: #EAF6FB !important;
-      }
-    }
     header {
       text-align: center;
       margin-bottom: 2em;
+      color: var(--font-main);
     }
+
+    h1, h2, h3, h4, h5 {
+      font-family: var(--title-font);
+      color: var(--brand-primary);
+      font-weight: 600;
+    }
+
     h1 {
-      color: #FFA76D;
       font-size: 2.5em;
     }
-    main {
-      background: white;
-      padding: 2em;
-      border-radius: 10px;
-      max-width: 600px;
-      width: 100%;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      color: inherit;
+
+    p, label, input, textarea, button {
+      font-family: var(--body-font);
+      color: var(--font-main);
     }
+
+    .section-header {
+      font-size: 1.2em;
+      color: var(--brand-primary);
+      margin-top: 0;
+      margin-bottom: 0.5em;
+    }
+
+    .subtext-muted {
+      font-size: 0.85em;
+      color: var(--info-muted);
+      font-style: italic;
+      margin-top: 0.25em;
+    }
+
+    .sophy-info {
+      background: #fff;
+      color: var(--info-muted);
+      font-style: italic;
+      border-radius: 5px;
+      padding: 0.75em 1em;
+      border: 1px solid var(--border);
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+      font-size: 0.95em;
+    }
+
+    .card-block {
+      background: var(--bg-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1em;
+      margin-bottom: 2em;
+    }
+    .card-block p {
+      font-size: 1em;
+      line-height: 1.6;
+    }
+
+    footer, footer p, footer a {
+      color: var(--info-muted) !important;
+    }
+
+    /* Buttons */
+    .btn {
+      background-color: var(--btn-bg);
+      color: var(--btn-font);
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      padding: 0.5em 1em;
+      font-size: 0.95em;
+      margin-top: 0.5em;
+      transition: background 0.2s;
+      outline: 2px solid var(--brand-outline);
+    }
+    .btn:hover {
+      background-color: var(--btn-hover);
+    }
+    .btn:active, .btn:focus {
+      outline: 2px solid var(--accent);
+    }
+
+    /* Tab active and inactive styles: shades of primary brand color */
+    .tab-btn {
+      background-color: var(--brand-secondary);
+      color: var(--font-white);
+      border: none;
+      border-radius: 5px 5px 0 0;
+      padding: 0.5em 1em;
+      font-size: 1em;
+      margin-bottom: -1px;
+      transition: background 0.2s;
+      position: relative;
+      z-index: 1;
+      font-weight: 500;
+    }
+    .tab-btn.active {
+      background-color: var(--brand-primary);
+      color: var(--font-white);
+      font-weight: bold;
+      z-index: 2;
+    }
+
+    /* Sophy-themed button: accent color, works for both light and dark */
+    .btn-sophy {
+      background-color: var(--accent);
+      color: var(--btn-font);
+      outline: 2px solid var(--accent-dark);
+      transition: background 0.2s;
+    }
+    .btn-sophy:hover,
+    .btn-sophy:focus {
+      background-color: var(--accent-dark);
+      color: var(--font-white);
+    }
+
+    /* Theme-specific Sophy hover/focus overrides (complementary accent) */
+    html[data-theme='light'] .btn-sophy:hover,
+    html[data-theme='light'] .btn-sophy:focus {
+      background-color: #723332; /* dark complementary */
+      color: #fff;
+    }
+    html[data-theme='dark'] .btn-sophy:hover,
+    html[data-theme='dark'] .btn-sophy:focus {
+      background-color: #723332 !important; /* dark complementary, more visible */
+      color: #fff !important;
+    }
+
+    /* Inputs/textareas */
+    input, textarea {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--font-main);
+      border-radius: 5px;
+      padding: 0.5em;
+    }
+    input:focus, textarea:focus {
+      border: 1.5px solid var(--brand-primary);
+      outline: none;
+    }
+
     textarea {
       width: 100%;
       height: 200px;
-      padding: 1em;
-      font-family: 'Alice', serif;
+      
       font-size: 1em;
-      border: 1px solid #ccc;
-      border-radius: 5px;
       resize: vertical;
     }
+
+    /* Accent and AI highlight (Sophy, coach) */
+    #generatedPrompt,
+    #sophyInsight,
+    .coach-reply,
+    .ai-highlight,
+    .sophy-accent {
+      color: var(--accent-dark);
+      background: var(--accent);
+      border-left: 4px solid var(--accent-dark);
+      padding: 0.75em 1em;
+      border-radius: 5px;
+      font-style: italic;
+    }
+
+    /* Modals and overlays */
+    #embeddedAgreementNotice,
+    #loginModal,
+    #goodbyeModal {
+      background: rgba(21, 54, 58, 0.85) !important;
+      color: var(--font-white);
+    }
+    #embeddedAgreementNotice .card-block,
+    #loginModal .card-block,
+    #goodbyeModal .card-block {
+      background: var(--bg-card);
+      color: var(--font-main);
+      border: 2px dashed var(--brand-primary);
+    }
+
+    /* Calendar overrides */
+    #calendarTab th,
+    #calendarTab td,
+    #calendarTab p,
+    #calendarTab h2,
+    #calendarTab h3 {
+      color: var(--font-main);
+    }
+
+    /* Pop-up and toast notifications */
+    .toast {
+      background: var(--accent);
+      color: var(--font-white);
+      border-radius: 5px;
+
+    }
+
 
     /* Flash confirmation animation for journal entry */
     .flash-confirmation {
@@ -181,26 +333,41 @@
     }
 
     .spinner {
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  border: 2px solid rgba(255, 167, 109, 0.3);
-  border-top-color: #FFA76D;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-right: 0.5em;
-}
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      border: 2px solid rgba(49, 122, 133, 0.15);
+      border-top-color: var(--btn-bg);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 0.5em;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-    /* Mobile Responsive Styles */
+    .entry-preview {
+      max-height: 4.5em;
+      overflow: hidden;
+      position: relative;
+    }
+    .entry-preview::after {
+      content: "...";
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(to right, transparent, var(--bg-card) 50%);
+    }
+
+    /* Responsive: Inherit colors for mobile, too */
     @media (max-width: 600px) {
       body {
         padding: 1em;
+        background: var(--bg-light-alt);
       }
 
       main {
+        background: var(--bg-card);
         padding: 1em;
         max-width: 100%;
         border-radius: 0;
@@ -232,91 +399,45 @@
     html {
       transition: background-color 0.3s ease, color 0.3s ease;
     }
-    /* === InkWell Visual Theme Components === */
-    .card-block {
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 1em;
-      margin-bottom: 2em;
-      background-color: #f9f9f9;
-    }
-
-    /* Fullscreen overlay for Alpha Agreement modal - perfectly center modal */
-    #embeddedAgreementNotice {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0,0,0,0.85);
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      
-    }
-    #embeddedAgreementNotice .card-block {
-      background-color: #fff8f2;
-      border: 2px dashed #FFA76D;
-      max-width: 500px;
-      width: 90%;
-      min-width: 0;
-      text-align: center;
-      box-shadow: 0 0 24px rgba(0,0,0,0.15);
-      margin: 0; /* Remove margin that could affect centering */
-      padding: 2em 1.5em;
-      box-sizing: border-box;
-    }
-
-    /* Ensure modal is centered on all screen sizes (mobile responsive) */
-    @media (max-width: 600px) {
-      #embeddedAgreementNotice .card-block {
-        max-width: 98vw;
-        width: 98vw;
-        padding: 1.25em 0.5em;
-      }
-    }
-
-    
-
-    .card-block p {
-  font-size: 1em;
-  line-height: 1.6;
+/* User theme override (takes priority over prefers-color-scheme) */
+html[data-theme='light'] {
+  color-scheme: light;
 }
-    .section-header {
-      font-size: 1.2em;
-      color: #2A6D6D;
-      margin-top: 0;
+html[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+    /* Custom checkboxes using accent color */
+    input[type="checkbox"] {
+      accent-color: var(--accent);
+      width: 1.1em;
+      height: 1.1em;
+      vertical-align: middle;
+      margin-right: 0.4em;
+      border-radius: 3px;
+      transition: accent-color 0.2s;
+    }
+    input[type="checkbox"]:focus {
+      outline: 2px solid var(--accent-dark);
+      outline-offset: 1px;
+    }
+
+    .coach-tag-label {
+      display: block;
+      margin-top: 1em;
       margin-bottom: 0.5em;
+      font-size: 1em;
+      font-weight: 600;
+      border-left: 3px solid var(--accent);
+      padding-left: 0.75em;
+      color: var(--accent-dark);
+      background: rgba(212,148,137,0.08);
+      border-radius: 3px;
+      transition: background 0.2s;
     }
-
-    .subtext-muted {
-      font-size: 0.85em;
-      color: #CCCCCC;
-      font-style: italic;
-      margin-top: 0.25em;
+    .coach-tag-label:hover {
+      background: rgba(212,148,137,0.18);
     }
-
-    .entry-preview {
-  max-height: 4.5em;
-  overflow: hidden;
-  position: relative;
-}
-    .entry-preview::after {
-  content: "...";
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  background: linear-gradient(to right, transparent, white 50%);
-}
-#journalTabButton {
-  background-color: #2A6D6D !important;
-  color: white !important;
-}
-#calendarTabButton {
-  background-color: #FFA76D !important;
-  color: white !important;
-}
-
   </style>
   <script type="module">
     // --- Smart Search imports ---
@@ -353,6 +474,33 @@ const storage = getStorage(app);
 const auth = getAuth(app);
 window.auth = auth;
     
+// ... all your Firebase and other imports above ...
+
+// === THEME TOGGLE LOGIC ===
+function applyTheme(mode) {
+  document.documentElement.removeAttribute('data-theme');
+  if (mode === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  } else if (mode === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+  // 'default' means use system preference only
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const themeSelect = document.getElementById('themeModeSelect');
+  if (!themeSelect) return;
+  // Load saved mode
+  const savedMode = localStorage.getItem('inkwell-theme-mode') || 'default';
+  themeSelect.value = savedMode;
+  applyTheme(savedMode);
+
+  themeSelect.addEventListener('change', function () {
+    localStorage.setItem('inkwell-theme-mode', this.value);
+    applyTheme(this.value);
+  });
+});
+
 
     // === SESSION MANAGEMENT: Auto-logout on close/refresh and inactivity ===
     // Helper: logout only if signed in
@@ -430,17 +578,28 @@ window.showTab = function(tabId) {
 
   tabs.forEach(id => {
     document.getElementById(id).style.display = (id === tabId ? "block" : "none");
-    if (buttons[id]) {
-buttons[id].style.setProperty("background-color", id === tabId ? "#2A6D6D" : "#FFA76D", "important");      buttons[id].style.color = "white";
-    }
+    // Remove direct style overrides for tab background and color; rely on CSS classes
+    // if (buttons[id]) {
+    //   buttons[id].style.setProperty("background-color", id === tabId ? "#2A6D6D" : "#FFA76D", "important");
+    //   buttons[id].style.color = "white";
+    // }
   });
 
+  // Remove all active classes from tab buttons, then set active on the selected
+  if (buttons.journalTab) buttons.journalTab.classList.remove("active");
+  if (buttons.calendarTab) buttons.calendarTab.classList.remove("active");
+  if (tabId === "journalTab" && buttons.journalTab) {
+    buttons.journalTab.classList.add("active");
+  } else if (tabId === "calendarTab" && buttons.calendarTab) {
+    buttons.calendarTab.classList.add("active");
+  }
+
   if (tabId === "calendarTab") {
-  buildCalendar();
-  loadPastEntries(); // <-- ADD THIS LINE
-  document.getElementById("calendarEntries") && (document.getElementById("calendarEntries").innerHTML = "<p>Click a calendar date to view entries.</p>");
-  document.getElementById("searchResults") && (document.getElementById("searchResults").innerHTML = "<p>Use Smart Search to explore your journal history.</p>");
-}
+    buildCalendar();
+    loadPastEntries();
+    document.getElementById("calendarEntries") && (document.getElementById("calendarEntries").innerHTML = "<p>Click a calendar date to view entries.</p>");
+    document.getElementById("searchResults") && (document.getElementById("searchResults").innerHTML = "<p>Use Smart Search to explore your journal history.</p>");
+  }
 };
 // Handle embedded agreement button logic
 window.acceptEmbeddedAgreement = async function () {
@@ -639,6 +798,7 @@ onAuthStateChanged(auth, async (user) => {
       setTimeout(async () => {
         toast.remove();
 
+        
         // 🔄 Clear newCoachReply flags from entries
         try {
           for (const doc of snap.docs) {
@@ -1100,10 +1260,10 @@ console.log("entryData about to be saved:", entryData);
     <button class="btn" style="margin-top: 0.5em;" onclick="this.previousElementSibling.classList.toggle('entry-preview'); this.textContent = this.textContent === 'Read more' ? 'Collapse' : 'Read more';">Read more</button>
     ${attachmentHtml}
     ${tags}
-    ${entry.newCoachReply ? `
-      <div class="coach-reply" style="margin-top: 1em; padding: 0.75em; border-left: 4px solid #FFA76D; background-color: #fff3ea; font-size: 0.95em;">
+    ${(entry.coachResponse && entry.coachResponse.text) ? `
+      <div class="coach-reply" style="margin-top: 1em; padding: 0.75em; border-left: 4px solid var(--accent-dark); background-color: var(--accent); color: var(--accent-dark); font-size: 0.95em; border-radius:5px; font-style:italic;">
         <strong>Coach replied:</strong>
-        <p>${entry.coachReplyText || "Your coach has replied. Expand to read more."}</p>
+        <p>${entry.coachResponse.text}</p>
       </div>
     ` : ""}
     <button class="btn" onclick="editEntry('${doc.id}', \`${entry.text.replace(/`/g, "\\`")}\`)">Edit</button>
@@ -1235,11 +1395,17 @@ window.setJournalMode = function (mode) {
 
       tabs.forEach(id => {
         document.getElementById(id).style.display = (id === tabId ? "block" : "none");
-        if (buttons[id]) {
-          buttons[id].style.backgroundColor = (id === tabId ? "#2A6D6D" : "#FFA76D");
-          buttons[id].style.color = (id === tabId ? "white" : "white");
-        }
+        
       });
+
+      // Remove all active classes from tab buttons, then set active on the selected
+      document.getElementById("journalTabButton").classList.remove("active");
+      document.getElementById("calendarTabButton").classList.remove("active");
+      if (tabId === "journalTab") {
+        document.getElementById("journalTabButton").classList.add("active");
+      } else if (tabId === "calendarTab") {
+        document.getElementById("calendarTabButton").classList.add("active");
+      }
       if (tabId === "calendarTab") {
         // Always build calendar when switching to calendarTab
         buildCalendar();
@@ -1344,9 +1510,11 @@ async function buildCalendar() {
     // Add highlight if this day has a journal entry
     const key = `${window.displayedYear}-${String(window.displayedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     if (markedDates.has(key)) {
-      td.style.backgroundColor = "#FFE5B4"; // Light highlight to mark the date
-      td.title = "Journal entry";
-    }
+  // Use theme variable for primary highlight (brand-secondary)
+  td.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--brand-secondary').trim();
+  td.style.color = '#fff';
+  td.title = "Journal entry";
+}
 td.onclick = () => {
   // Option 1: just always reload full past entries (easiest, consistent)
   loadPastEntries();
@@ -1600,23 +1768,31 @@ window.askSophyToRefineManifest = async function () {
 </head>
 <body>
   <header>
-  <div id="goodbyeModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: #2A6D6D; display: none; align-items: center; justify-content: center; z-index: 9999;">
-    <div class="card-block" style="max-width: 500px; width: 90%; text-align: center;">
-      <h2 class="section-header">See You Soon!</h2>
-      <p>Thanks for journaling with InkWell today.</p>
-      <p>Take care, and don’t forget to stay positive.</p>
-<button class="btn" onclick="showLoginModal()" style="margin-top: 1.5em;">Return to Login</button>    
-</div>
-  </div>
+    <div id="goodbyeModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; z-index: 9999;">
+      <div class="card-block" style="max-width: 500px; width: 90%; text-align: center;">
+        <h2 class="section-header">See You Soon!</h2>
+        <p>Thanks for journaling with InkWell today.</p>
+        <p>Take care, and don’t forget to stay positive.</p>
+        <button class="btn" onclick="showLoginModal()" style="margin-top: 1.5em;">Return to Login</button>
+      </div>
+    </div>
     <img src="/InkWell Logo NoBG.png" alt="InkWell Logo" style="max-height: 120px; margin-bottom: 1em;" />
     <p>Your space to reflect, write, and grow.</p>
   </header>
   <div id="userStatus" style="font-size: 0.9em; margin-bottom: 1em;"></div>
 
+<div id="colorModeToggle" style="margin-bottom:1em;">
+  <label for="themeModeSelect" style="font-size:0.9em;">Theme:</label>
+  <select id="themeModeSelect" style="margin-left:0.5em;">
+    <option value="default">Default</option>
+    <option value="light">Light</option>
+    <option value="dark">Dark</option>
+  </select>
+</div>
 
   <div id="embeddedAgreementNotice">
     <div class="card-block">
-      <h3 class="section-header" style="color: #FFA76D;">Action Required: Accept Alpha Testing Agreement</h3>
+      <h3 class="section-header" style="color: var(--brand-primary);">Action Required: Accept Alpha Testing Agreement</h3>
       <p style="font-size: 0.9em;">Before you can use InkWell, please review and agree to the following:</p>
       <div style="display: flex; flex-direction: column; gap: 0.5em; align-items: center; margin-bottom: 1em;">
   <a href="https://www.pegasusrealm.com/terms-conditions/" target="_blank" style="text-align: center;">Terms & Conditions</a>
@@ -1631,11 +1807,11 @@ window.askSophyToRefineManifest = async function () {
     </div>
   </div>
 
-  <div id="loginModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 9999;">
-    <div class="card-block" style="max-width: 400px; width: 90%; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
+  <div id="loginModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="card-block" style="max-width: 400px; width: 90%;">
       <h3 class="section-header" style="text-align: center;">Login or Sign Up</h3>
-      <input type="email" id="emailInput" placeholder="Email" autocomplete="off" ... />
-<input type="password" id="passwordInput" placeholder="Password" autocomplete="off" ... />
+      <input type="email" id="emailInput" placeholder="Email" autocomplete="off" />
+      <input type="password" id="passwordInput" placeholder="Password" autocomplete="off" />
       <button class="btn" onclick="signUp()" style="width: 100%; margin-bottom: 0.5em;">Sign Up</button>
       <button class="btn" onclick="signIn()" style="width: 100%;">Sign In</button>
       <button class="btn" onclick="loginModalClose()" style="width: 100%; margin-top: 1em;">Close</button>
@@ -1643,8 +1819,8 @@ window.askSophyToRefineManifest = async function () {
   </div>
   <main style="display: block;">
     <div id="tabButtons" style="display: flex; gap: 1em; margin-bottom: 1em;">
-        <button class="btn" id="journalTabButton" onclick="showTab('journalTab')" style="flex: 1;">Journal</button>
-        <button class="btn" id="calendarTabButton" onclick="showTab('calendarTab')" style="flex: 1;">Past Entries</button>
+        <button class="btn tab-btn active" id="journalTabButton" onclick="showTab('journalTab')" style="flex: 1;">Journal</button>
+        <button class="btn tab-btn" id="calendarTabButton" onclick="showTab('calendarTab')" style="flex: 1;">Past Entries</button>
       </div>
     <div id="journalTab">
       <div class="card-block">
@@ -1655,8 +1831,8 @@ window.askSophyToRefineManifest = async function () {
         <textarea id="manifestInput" placeholder="Write your personal guiding statement..." style="width: 100%; height: 100px; margin-bottom: 0.5em; padding: 0.5em; border-radius: 5px; border: 1px solid #ccc;"></textarea>
         
         <p id="manifestStatus" style="margin-top: 0.5em; font-style: italic;"></p>
-        <button class="btn" onclick="askSophyToRefineManifest()">Refine with Sophy</button>
-        <p id="manifestSuggestionLabel" style="font-weight: bold; margin-top: 1em;">Sophy’s Suggested Refinement:</p>
+        <button class="btn btn-sophy" onclick="askSophyToRefineManifest()">Refine with Sophy</button>
+        <p id="manifestSuggestionLabel" class="subtext-muted" style="font-weight: bold; margin-top: 1em;">Sophy’s Suggested Refinement:</p>
         <textarea id="manifestSuggestion" readonly style="width: 100%; height: 100px; margin-bottom: 0.5em; padding: 0.5em; border-radius: 5px; border: 1px dashed #aaa; background-color: #fdfdfd;"></textarea>
         <button class="btn" onclick="saveManifest()">Save</button>
       </div>
@@ -1668,15 +1844,15 @@ window.askSophyToRefineManifest = async function () {
         <p>
           Use this space to reflect on your Manifest Statement or free journal. Below, you'll find optional tools to enhance your entry — you can ask Sophy for a writing prompt or upload images and files to enrich your thoughts or support your manifesting process.
         </p>
-        <div id="journalModeToggle" style="display: flex; justify-content: center; gap: 1em; margin-bottom: 2em; padding-bottom: 0.5em;">
-          <button class="btn" id="manifestModeButton" onclick="setJournalMode('manifest')" style="flex: 1; background-color: #2A6D6D; color: white;">Focus on Manifesting</button>
-          <button class="btn" id="freeModeButton" onclick="setJournalMode('free')" style="flex: 1; background-color: #ccc; color: #333;">Free Journal</button>
-        </div>
+      <div id="journalModeToggle" style="display: flex; justify-content: center; gap: 1em; margin-bottom: 2em; padding-bottom: 0.5em;">
+        <button class="btn" id="manifestModeButton" onclick="setJournalMode('manifest')" style="flex: 1;">Focus on Manifesting</button>
+        <button class="btn" id="freeModeButton" onclick="setJournalMode('free')" style="flex: 1;">Free Journal</button>
+      </div>
         <!-- (Attachment input and preview moved below) -->
             <p class="subtext-muted" style="margin-top: 1em;">If you want a topic or some inspiration, <strong>Sophy</strong> can suggest ideas — you can even give her a topic to focus on.</p>
       <input type="text" id="promptTopic" placeholder="Enter a topic, mood, or leave blank" style="width: 100%; margin-bottom: 0.5em; padding: 0.5em; border-radius: 5px; border: 1px solid #ccc;" />
-      <button class="btn" onclick="generatePrompt()">Ask Sophy for a Prompt</button>
-      <p id="generatedPrompt" style="font-style: italic; color: #2A6D6D; margin-top: 0.5em; padding-left: 1em;">
+      <button class="btn btn-sophy" onclick="generatePrompt()">Ask Sophy for a Prompt</button>
+      <p id="generatedPrompt" class="subtext-muted sophy-info">
         Sophy's suggestion will appear here.
       </p>
       <label style="font-size: 0.85em; display: block; margin-top: 0.5em; margin-bottom: 0.5em;">
@@ -1693,11 +1869,11 @@ window.askSophyToRefineManifest = async function () {
   Include Sophy's reflection in my journal
 </label>
 
-<div id="entryStatus" style="font-size: 0.85em; color: #2A6D6D; margin-top: 0.5em;"></div>
-<div id="sophyInsight" style="font-style: italic; color: #2A6D6D; margin: 1em 0; white-space: pre-wrap;">
+<div id="entryStatus" style="font-size: 0.85em; margin-top: 0.5em;"></div>
+<div id="sophyInsight" class="subtext-muted sophy-info" style="white-space: pre-wrap;">
   Sophy's Reflection will appear here after you ask for guidance.
 </div>
-<button class="btn" onclick="askSophyAboutEntry()">Ask Sophy for Reflection</button>
+<button class="btn btn-sophy" onclick="askSophyAboutEntry()">Ask Sophy for Reflection</button>
 
 <p style="font-size: 1em; line-height: 1.6; margin-top: 1em;">
   Attach one or more photos or files to enrich your journal entry. Multiple files can be selected before saving. Take your time; every small detail counts in your growth journey.
@@ -1709,7 +1885,7 @@ window.askSophyToRefineManifest = async function () {
 <div id="attachmentPreview" style="margin-bottom: 1em;"></div>
 
 <!-- Move coach review checkbox here, above Save button -->
-<label style="font-size: 0.85em; display: block; margin-top: 1em; margin-bottom: 0.5em;">
+<label class="coach-tag-label">
   <input type="checkbox" id="coachReviewCheckbox" />
   Tag this entry for my coach
 </label>
@@ -1720,7 +1896,7 @@ window.askSophyToRefineManifest = async function () {
     </div>
 <div id="calendarTab" style="display: none;">
   <div class="card-block">
-    <h3 class="section-header" style="text-align: center; color: #2A6D6D;">Journal Calendar</h3>
+    <h3 class="section-header" style="text-align: center;">Journal Calendar</h3>
     <div id="calendarControls" style="text-align: center; margin-bottom: 1em;">
       <button class="btn" onclick="changeMonth(-1)">← Previous</button>
       <button class="btn" onclick="changeMonth(1)">Next →</button>
@@ -1731,7 +1907,7 @@ window.askSophyToRefineManifest = async function () {
 <!-- Smart Search Bar UI -->
     <div class="card-block" style="margin-top: 2em;">
       <h3 class="section-header">Smart Search Your Journal</h3>
-      <input type="text" id="searchQuery" placeholder="e.g., burnout last week, goals, feeling stuck" style="width: 100%; padding: 0.5em; margin-bottom: 0.5em; border-radius: 5px; border: 1px solid #ccc;" />
+      <input type="text" id="searchQuery" placeholder="e.g., burnout last week, goals, feeling stuck" style="width: 100%; margin-bottom: 0.5em;" />
       <button class="btn" id="searchBtn" onclick="runSmartSearch()" disabled>Search</button>
       <div id="searchResults" style="margin-top: 1em;"></div>
     </div>
@@ -1748,13 +1924,21 @@ window.askSophyToRefineManifest = async function () {
     <button class="btn" onclick="logOutUser()">Logout</button>
   </div>
   <footer style="margin-top: 2em; font-size: 0.85em; text-align: center;">
-    <p>© 2025 Pegasus Realm LLC. InkWell is your trusted journaling companion designed with evidence-based positive psychology principles to foster well-being, focus, and productivity—especially mindful of neurodivergent-friendly UI efficiency and clarity.</p>
+    <span style="display: block; margin-bottom: 0.2em;">
+      © 2025 Pegasus Realm LLC.
+    </span>
+    <span style="display: block; margin-bottom: 0.2em;">
+      InkWell is your trusted journaling companion, designed with evidence-based positive psychology principles to foster well-being, focus, and productivity.
+    </span>
+    <span style="display: block;">
+      Especially mindful of neurodivergent-friendly UI efficiency and clarity.
+    </span>
     <p>
-      <a href="https://www.inkwelljournal.io/privacy-policy/" target="_blank" style="text-decoration: underline; color: #2A6D6D;">Privacy Policy</a> |
-      <a href="https://www.inkwelljournal.io/terms-conditions/" target="_blank" style="text-decoration: underline; color: #2A6D6D;">Terms and Conditions</a> |
-      <a href="https://www.inkwelljournal.io/alpha-beta-testers/" target="_blank" style="text-decoration: underline; color: #2A6D6D;">Alpha/Beta Tester Agreement</a>
+      <a href="https://www.inkwelljournal.io/privacy-policy/" target="_blank" style="text-decoration: underline;">Privacy Policy</a> |
+      <a href="https://www.inkwelljournal.io/terms-conditions/" target="_blank" style="text-decoration: underline;">Terms and Conditions</a> |
+      <a href="https://www.inkwelljournal.io/alpha-beta-testers/" target="_blank" style="text-decoration: underline;">Alpha/Beta Tester Agreement</a>
     </p>
-    <p>Contact support: <a href="mailto:support@inkwelljournal.io" style="text-decoration: underline; color: #2A6D6D;">support@inkwelljournal.io</a></p>
+    <p>Contact support: <a href="mailto:support@inkwelljournal.io" style="text-decoration: underline;">support@inkwelljournal.io</a></p>
   </footer>
 </body>
 </html>

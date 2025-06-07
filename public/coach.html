@@ -1,6 +1,7 @@
-
-
 <!DOCTYPE html>
+
+
+
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -44,9 +45,10 @@
     }
   </style>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+   
+   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+   import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
@@ -55,7 +57,9 @@
     };
 
     const app = initializeApp(firebaseConfig);
-getAuth(app); // initializes auth layer to prevent Firestore transport errors
+    const auth = getAuth(app);
+    // Force logout for demo/dev to ensure login modal always shows
+    auth.signOut();
     const db = getFirestore(app);
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -77,6 +81,40 @@ getAuth(app); // initializes auth layer to prevent Firestore transport errors
       }
     }
 
+window.addEventListener("DOMContentLoaded", () => {
+
+// Show login modal if not logged in
+
+function showCoachLoginModal(msg = "") {
+  document.getElementById("coachLoginModal").style.display = "flex";
+  if (msg) document.getElementById("coachLoginError").textContent = msg;
+}
+function hideCoachLoginModal() {
+  document.getElementById("coachLoginModal").style.display = "none";
+  document.getElementById("coachLoginError").textContent = "";
+}
+
+onAuthStateChanged(auth, user => {
+  console.log('Logged in user UID:', user?.uid, 'Email:', user?.email);
+  if (!user) {
+    showCoachLoginModal();
+  } else {
+    hideCoachLoginModal();
+    loadEntry();
+  }
+});
+
+document.getElementById("coachLoginBtn").onclick = async () => {
+  const email = document.getElementById("coachEmail").value.trim();
+  const password = document.getElementById("coachPassword").value;
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    hideCoachLoginModal();
+  } catch (err) {
+    document.getElementById("coachLoginError").textContent = err.message;
+  }
+};
+
     responseForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const responseText = coachReply.value.trim();
@@ -88,16 +126,28 @@ getAuth(app); // initializes auth layer to prevent Firestore transport errors
           text: responseText,
           timestamp: serverTimestamp(),
           coachId: "coach@inkwelljournal.io"
-        }
+        },
+        newCoachReply: true
       });
       confirmation.innerText = "Response submitted successfully!";
       coachReply.value = "";
     });
 
-    loadEntry();
+    // loadEntry();
+});
   </script>
 </head>
 <body>
+
+  <div id="coachLoginModal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(21,54,58,0.88);z-index:9999;display:none;align-items:center;justify-content:center;">
+  <div style="background:#fff;color:#2A6972;padding:2em 2em 1.5em 2em;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.09);max-width:340px;width:90%;">
+    <h3 style="margin-top:0;margin-bottom:1em;text-align:center;">Coach Login</h3>
+    <input id="coachEmail" type="email" placeholder="Email" style="width:100%;margin-bottom:0.5em;padding:0.6em;border-radius:5px;border:1px solid #aedae2;">
+    <input id="coachPassword" type="password" placeholder="Password" style="width:100%;margin-bottom:1em;padding:0.6em;border-radius:5px;border:1px solid #aedae2;">
+    <button id="coachLoginBtn" style="width:100%;background:#2A6972;color:#fff;padding:0.7em;border:none;border-radius:5px;font-size:1em;">Log In</button>
+    <div id="coachLoginError" style="color:#d49489;margin-top:1em;min-height:1.3em;text-align:center;"></div>
+  </div>
+</div>
   <div class="entry-box" id="entryText">Loading journal entry...</div>
 
   <form id="responseForm">
@@ -107,5 +157,13 @@ getAuth(app); // initializes auth layer to prevent Firestore transport errors
   </form>
 
   <div class="confirmation" id="confirmation"></div>
+<button id="logoutBtn" style="position:fixed;bottom:2em;right:2em;z-index:10000;">Log Out</button>
+<script>
+  document.getElementById("logoutBtn").onclick = () => {
+    import('https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js').then(({ getAuth }) => {
+      getAuth().signOut().then(() => window.location.reload());
+    });
+  };
+</script>
 </body>
 </html>
