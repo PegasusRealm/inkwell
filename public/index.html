@@ -438,6 +438,38 @@ html[data-theme='dark'] {
     .coach-tag-label:hover {
       background: rgba(212,148,137,0.18);
     }
+.logo-hero {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 1.5em auto;
+  height: 360px;
+  position: relative;
+}
+.logo-image {
+  display: block;
+  max-height: 240px;
+  width: auto;
+  border-radius: 26px;
+  box-shadow: 0 4px 32px rgba(42,105,114,0.18);
+  z-index: 2;
+  position: relative;
+}
+
+/* Radial background only in light mode for logo visibility */
+html[data-theme='light'] .logo-hero::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 330px;
+  height: 330px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255,255,255,0.82) 75%, rgba(137,201,212,0.18) 100%);
+  border-radius: 50%;
+  z-index: 1;
+  pointer-events: none;
+}
   </style>
   <script type="module">
     // --- Smart Search imports ---
@@ -1776,7 +1808,13 @@ window.askSophyToRefineManifest = async function () {
         <button class="btn" onclick="showLoginModal()" style="margin-top: 1.5em;">Return to Login</button>
       </div>
     </div>
-    <img src="/InkWell Logo NoBG.png" alt="InkWell Logo" style="max-height: 120px; margin-bottom: 1em;" />
+   <div class="logo-hero">
+  <img 
+    src="/InkWell Logo NoBG.png" 
+    alt="InkWell Logo" 
+    class="logo-image"
+  />
+</div>
     <p>Your space to reflect, write, and grow.</p>
   </header>
   <div id="userStatus" style="font-size: 0.9em; margin-bottom: 1em;"></div>
