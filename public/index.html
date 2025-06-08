@@ -210,7 +210,7 @@
 
     /* Tab active and inactive styles: shades of primary brand color */
     .tab-btn {
-      background-color: var(--brand-secondary);
+      background-color: var(--brand-primary);
       color: var(--font-white);
       border: none;
       border-radius: 5px 5px 0 0;
@@ -223,7 +223,7 @@
       font-weight: 500;
     }
     .tab-btn.active {
-      background-color: var(--brand-primary);
+      background-color: var(--brand-secondary);
       color: var(--font-white);
       font-weight: bold;
       z-index: 2;
@@ -252,6 +252,28 @@
     html[data-theme='dark'] .btn-sophy:focus {
       background-color: #723332 !important; /* dark complementary, more visible */
       color: #fff !important;
+    }
+
+    /* Sign In/Sign Up button styles for login modal */
+    .login-btn-signin {
+      background-color: var(--brand-secondary) !important;
+      color: var(--btn-font) !important;
+    }
+    .login-btn-signin:hover,
+    .login-btn-signin:focus {
+      background-color: #5bb7c8 !important;
+      color: var(--btn-font) !important;
+      filter: brightness(1.09);
+    }
+    .login-btn-signup {
+      background-color: var(--btn-bg) !important;
+      color: var(--btn-font) !important;
+    }
+    .login-btn-signup:hover,
+    .login-btn-signup:focus {
+      background-color: var(--brand-secondary) !important;
+      color: var(--btn-font) !important;
+      filter: brightness(1.07);
     }
 
     /* Inputs/textareas */
@@ -396,6 +418,30 @@
         font-size: 1em;
       }
     }
+    /* Tighter file upload UI for mobile */
+    @media (max-width: 600px) {
+      .card-block {
+        padding: 0.5em !important;
+      }
+      label[for="attachment"] {
+        font-size: 1em;
+        margin-bottom: 0.5em;
+      }
+      #attachment {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+      }
+      #attachmentPreview {
+        max-width: 100% !important;
+      }
+      .card-block {
+        max-width: 100vw;
+        box-sizing: border-box;
+        overflow-x: auto;
+      }
+    }
     html {
       transition: background-color 0.3s ease, color 0.3s ease;
     }
@@ -438,38 +484,65 @@ html[data-theme='dark'] {
     .coach-tag-label:hover {
       background: rgba(212,148,137,0.18);
     }
-.logo-hero {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0 auto 1.5em auto;
-  height: 360px;
-  position: relative;
-}
-.logo-image {
-  display: block;
-  max-height: 240px;
-  width: auto;
-  border-radius: 26px;
-  box-shadow: 0 4px 32px rgba(42,105,114,0.18);
-  z-index: 2;
-  position: relative;
-}
+  .logo-hero {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 2.6em auto;
+    width: 324px;
+    height: 324px;
+    position: relative;
+    /* Deep/wide drop shadow for logo container */
+    box-shadow: 0 8px 44px 0 rgba(255,255,255,0.135), 0 12px 60px 0 rgba(137,201,212,0.07);
+    border-radius: 28px;
+    background: none;
+    margin-bottom: 2.6em;
+  }
+  .logo-image {
+    display: block;
+    max-width: 276px;
+    max-height: 276px;
+    width: auto;
+    height: auto;
+    border-radius: 26px;
+    box-shadow: none;
+    z-index: 2;
+    position: relative;
+  }
 
-/* Radial background only in light mode for logo visibility */
-html[data-theme='light'] .logo-hero::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 330px;
-  height: 330px;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(circle, rgba(255,255,255,0.82) 75%, rgba(137,201,212,0.18) 100%);
-  border-radius: 50%;
-  z-index: 1;
-  pointer-events: none;
-}
+  /* Unified soft radial background for logo - ALL THEMES */
+  .logo-hero::before,
+  html[data-theme='light'] .logo-hero::before,
+  html[data-theme='dark'] .logo-hero::before,
+  :root:not([data-theme='dark']):not([data-theme='light']) .logo-hero::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 240px;
+    height: 240px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(255,255,255,0.92) 80%, rgba(137,201,212,0.17) 100%);
+    border-radius: 50%;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* Drop shadow for logo-hero in dark and light theme overrides */
+  html[data-theme='dark'] .logo-hero {
+    box-shadow: 0 8px 44px 0 rgba(255,255,255,0.135), 0 12px 60px 0 rgba(137,201,212,0.07);
+  }
+  html[data-theme='light'] .logo-hero {
+    box-shadow: 0 4px 32px 0 rgba(42, 105, 114, 0.26), 0 6px 44px 0 rgba(72, 109, 112, 0.15);
+  }
+  :root:not([data-theme='light']) .logo-hero {
+    box-shadow: 0 8px 44px 0 rgba(255,255,255,0.135), 0 12px 60px 0 rgba(137,201,212,0.07);
+  }
+    #attachment {
+      width: 90%;
+      max-width: 330px;
+      min-width: 140px;
+    }
   </style>
   <script type="module">
     // --- Smart Search imports ---
@@ -1808,14 +1881,19 @@ window.askSophyToRefineManifest = async function () {
         <button class="btn" onclick="showLoginModal()" style="margin-top: 1.5em;">Return to Login</button>
       </div>
     </div>
-   <div class="logo-hero">
-  <img 
-    src="/InkWell Logo NoBG.png" 
-    alt="InkWell Logo" 
-    class="logo-image"
-  />
-</div>
-    <p>Your space to reflect, write, and grow.</p>
+    <div class="logo-hero">
+      <img 
+        src="/InkWell Logo.png" 
+        alt="InkWell Logo" 
+        class="logo-image"
+      />
+    </div>
+    <p style="margin-top: -0.7em; margin-bottom: 1.62em; font-size: 1.13em; color: var(--info-muted); letter-spacing: 0.02em; text-align: center;">
+      Your space to reflect, write, and grow.
+    </p>
+    <div style="display: flex; justify-content: center; margin-bottom: 1em;">
+      <button class="btn" id="aboutInkwellBtn" style="font-size:0.97em; font-weight:500;">What is InkWell?</button>
+    </div>
   </header>
   <div id="userStatus" style="font-size: 0.9em; margin-bottom: 1em;"></div>
 
@@ -1850,8 +1928,8 @@ window.askSophyToRefineManifest = async function () {
       <h3 class="section-header" style="text-align: center;">Login or Sign Up</h3>
       <input type="email" id="emailInput" placeholder="Email" autocomplete="off" />
       <input type="password" id="passwordInput" placeholder="Password" autocomplete="off" />
-      <button class="btn" onclick="signUp()" style="width: 100%; margin-bottom: 0.5em;">Sign Up</button>
-      <button class="btn" onclick="signIn()" style="width: 100%;">Sign In</button>
+      <button class="btn login-btn-signin" onclick="signIn()" style="width: 100%; margin-bottom: 0.5em;">Sign In</button>
+      <button class="btn login-btn-signup" onclick="signUp()" style="width: 100%;">Sign Up</button>
       <button class="btn" onclick="loginModalClose()" style="width: 100%; margin-top: 1em;">Close</button>
     </div>
   </div>
@@ -1961,6 +2039,12 @@ window.askSophyToRefineManifest = async function () {
   <div style="text-align: center; margin-top: 2em;">
     <button class="btn" onclick="logOutUser()">Logout</button>
   </div>
+  <div style="text-align: center; margin: 2em 0 1em 0; font-size: 1em; color: var(--info-muted); font-style: italic;">
+    InkWell is still in its design and growth phase — your feedback truly matters!<br/>
+    If you have comments, questions, concerns, or upgrade ideas,<br/>
+    please email us at the support address below.<br/>
+    We're committed to making InkWell the most intuitive and supportive journaling and manifesting app possible.
+  </div>
   <footer style="margin-top: 2em; font-size: 0.85em; text-align: center;">
     <span style="display: block; margin-bottom: 0.2em;">
       © 2025 Pegasus Realm LLC.
@@ -1976,8 +2060,109 @@ window.askSophyToRefineManifest = async function () {
       <a href="https://www.inkwelljournal.io/terms-conditions/" target="_blank" style="text-decoration: underline;">Terms and Conditions</a> |
       <a href="https://www.inkwelljournal.io/alpha-beta-testers/" target="_blank" style="text-decoration: underline;">Alpha/Beta Tester Agreement</a>
     </p>
+    <div style="display: flex; justify-content: center; align-items: flex-start; gap: 4em; margin-bottom: 1.3em;">
+      <!-- Pegasus Realm block -->
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <img src="/PR Logo WHITE.svg" alt="Pegasus Realm Logo" width="54" height="54" style="margin-bottom: 0.5em;"/>
+        <div style="display:flex; gap:10px; margin-top:0;">
+          <!-- PR IG -->
+          <a href="https://www.instagram.com/pegasus.realm/" target="_blank" aria-label="Pegasus Realm Instagram">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" style="vertical-align:middle;">
+              <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor"/>
+              <circle cx="12" cy="12" r="5" stroke="currentColor"/>
+              <circle cx="17" cy="7" r="1.3" fill="currentColor"/>
+            </svg>
+          </a>
+          <!-- PR LI -->
+          <a href="https://www.linkedin.com/company/pegasus-realm" target="_blank" aria-label="Pegasus Realm LinkedIn">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" style="vertical-align:middle;">
+              <rect x="2" y="2" width="20" height="20" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <rect x="6" y="9.5" width="2.5" height="7.5" rx="1.1"/>
+              <circle cx="7.25" cy="7" r="1.3"/>
+              <rect x="11" y="11.2" width="2.5" height="5.8" rx="1.1"/>
+              <path d="M13.25 13.1c0-1.32 2.5-1.42 2.5 0v4.2" fill="none" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+      <!-- Adam Grimm block -->
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <img src="/AG Silhouette.svg" alt="Adam Grimm Logo" width="54" height="54" style="margin-bottom: 0.5em;"/>
+        <div style="display:flex; gap:10px; margin-top:0;">
+          <!-- AG IG -->
+          <a href="https://www.instagram.com/gestaltinsight/" target="_blank" aria-label="Adam Grimm Instagram">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" style="vertical-align:middle;">
+              <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor"/>
+              <circle cx="12" cy="12" r="5" stroke="currentColor"/>
+              <circle cx="17" cy="7" r="1.3" fill="currentColor"/>
+            </svg>
+          </a>
+          <!-- AG LI -->
+          <a href="https://www.linkedin.com/in/adamgrimm808/" target="_blank" aria-label="Adam Grimm LinkedIn">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" style="vertical-align:middle;">
+              <rect x="2" y="2" width="20" height="20" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <rect x="6" y="9.5" width="2.5" height="7.5" rx="1.1"/>
+              <circle cx="7.25" cy="7" r="1.3"/>
+              <rect x="11" y="11.2" width="2.5" height="5.8" rx="1.1"/>
+              <path d="M13.25 13.1c0-1.32 2.5-1.42 2.5 0v4.2" fill="none" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
     <p>Contact support: <a href="mailto:support@inkwelljournal.io" style="text-decoration: underline;">support@inkwelljournal.io</a></p>
-  </footer>
+    </footer>
+  <div id="aboutInkwellModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(21,54,58,0.86); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; color:#2A6972; padding:2em 1.3em 1.5em 1.3em; border-radius:10px; max-width:560px; width:92%; max-height:86vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.13);">
+      <h2 style="margin-top:0; text-align:center;">About InkWell</h2>
+      <div style="font-size:1em; line-height:1.65; margin-bottom:1.2em;">
+        <strong>InkWell</strong> is part of the Pegasus Realm wellness ecosystem—designed for individuals, coaches, counselors, and mental health practitioners seeking science-backed, intuitive tools for growth.
+        <hr style="margin:1em 0;"/>
+        <h3 style="font-size:1.09em;">Why Manifest Statements?</h3>
+        At the heart of InkWell is your Manifest Statement: a personal guiding vision. This method draws on <strong>goal-setting theory</strong> and positive psychology, helping you translate intentions into action through evidence-based habit building and self-reflection.<br/>
+        <span style="font-size:0.98em; color:#388b97;">
+          <em>Research shows written goals and expressive journaling increase achievement, resilience, and emotional well-being.</em>
+        </span>
+        <hr style="margin:1em 0;"/>
+        <h3 style="font-size:1.09em;">The Power of Journaling</h3>
+        Journaling improves clarity, well-being, and positive behavior change. It’s linked to increased self-awareness, reduced anxiety, and improved coping skills.<br/>
+        <span style="font-size:0.98em; color:#388b97;">
+          <em>References: Pennebaker & Smyth (2016), Baikie & Wilhelm (2005), Locke & Latham (2002)</em>
+        </span>
+        <hr style="margin:1em 0;"/>
+        <h3 style="font-size:1.09em;">Sophy: Your AI Guide</h3>
+        Sophy supports you with <b>positive psychology</b> strategies, evidence-based habit support, and guidance from both Western and Hawaiian models of wellness.<br/>
+        <ul style="font-size:0.97em; margin:0.5em 0 0 1em;">
+          <li><b>SAMHSA’s 8 Dimensions of Wellness</b> – holistic, practical, and evidence-based.</li>
+          <li><b>Kūkulu Kumuhana</b> – rooted in Native Hawaiian wisdom, emphasizing collective well-being, connectedness, and purpose through culture and community.</li>
+        </ul>
+        Sophy motivates and supports you as you work toward your goals, blending proven frameworks with the spirit of aloha.
+        <hr style="margin:1em 0;"/>
+        <h3 style="font-size:1.09em;">Feeling Overwhelmed?</h3>
+        Try the <strong>Aloha Wellness Guide™</strong> at <a href="https://www.alohawellness.guide" target="_blank" style="color:#2A6972;text-decoration:underline;">alohawellness.guide</a> for simple, beginner-friendly wellness tips. InkWell is best for those ready to deepen their journey and set actionable goals.
+        <hr style="margin:1em 0;"/>
+        <h3 style="font-size:1.09em;">About the Founder</h3>
+        <div style="font-size: 0.98em; line-height:1.55; margin:0.7em 0;">
+        Adam Grimm’s journey into wellness began during a transformative period in his life, leading to a 20-year career in the U.S. Air Force. As an Explosive Ordnance Disposal (EOD) Technician, Adam served in active war zones and led the response team at Daniel K. Inouye (Honolulu) International Airport, developing resilience and leadership skills under intense pressure. Following his medical retirement in 2021, Adam channeled his experiences into advancing mental health and wellness initiatives in Hawai‘i.<br/><br/>
+        Adam earned his Bachelor’s degree in Psychology from the University of Hawai‘i at Mānoa, where he contributed to the CDC-funded Overdose Data to Action (OD2A)-Care Coordination and Capacity Building (C3) Project. His work focused on combating the opioid epidemic across O‘ahu, Kaua‘i, and Moloka‘i by fostering collaboration among law enforcement, educational institutions, and local organizations.<br/><br/>
+        Adam also served as a research assistant for three years, delving into organizational wellness, lived experience, and preventative care within Hawai‘i’s non-profit sector. Now pursuing his Doctorate in Clinical Psychology at the Hawai‘i School of Professional Psychology at Chaminade University, Adam balances his academic pursuits with his role at Hawai‘i Neuropsychology, where he supports patients with diverse mental health needs.<br/><br/>
+        He has begun in-person psychoeducation sessions about wellness and action at the Present Mind Institute Hawaii, in Kaneohe, that you can participate in.<br/><br/>
+        In addition, Adam is the founder of Pegasus Realm, a wellness research and consulting company dedicated to improving well-being through innovative, evidence-based practices. His work focuses on creating holistic wellness strategies for individuals and organizations, blending research, coaching, and a deep understanding of lived experience to enhance quality of life and foster adaptability and equity.
+        </div>
+        <hr style="margin:1em 0;"/>
+        <div style="font-size:0.96em; text-align:center; color:#2A6972;">
+          <b>For questions, feedback, or upgrade ideas:<br/>
+          <a href="mailto:support@inkwelljournal.io" style="color:#2A6972; text-decoration:underline;">support@inkwelljournal.io</a></b>
+        </div>
+      </div>
+      <button class="btn" onclick="document.getElementById('aboutInkwellModal').style.display='none'">Close</button>
+    </div>
+  </div>
+<script>
+  document.getElementById("aboutInkwellBtn").onclick = function() {
+    document.getElementById("aboutInkwellModal").style.display = "flex";
+  };
+</script>
 </body>
 </html>
 
