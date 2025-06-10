@@ -153,6 +153,16 @@
       margin-bottom: 0.5em;
     }
 
+    /* Override section-header color in dark mode for readability */
+    @media (prefers-color-scheme: dark) {
+      .section-header {
+        color: #FDF7F1; /* soft off-white for readability */
+      }
+    }
+    html[data-theme='dark'] .section-header {
+      color: #FDF7F1 !important;
+    }
+
     .subtext-muted {
       font-size: 0.85em;
       color: var(--info-muted);
@@ -483,6 +493,16 @@ html[data-theme='dark'] {
     }
     .coach-tag-label:hover {
       background: rgba(212,148,137,0.18);
+    }
+
+    /* Override default text selection color to match theme */
+    ::selection {
+      background: var(--brand-secondary);
+      color: #ffffff;
+    }
+    ::-moz-selection {
+      background: var(--brand-secondary);
+      color: #ffffff;
     }
   .logo-hero {
     display: flex;
@@ -998,9 +1018,21 @@ window.onload = function () {
         entryData.attachments = attachments;
       }
 
-      const promptText = document.getElementById("generatedPrompt")?.textContent;
-      if (promptText?.includes("Sophy suggests:")) {
-        entryData.promptUsed = promptText.split(":").slice(1).join(":").trim();
+      // Stricter prompt extraction and validation
+      const promptElement = document.getElementById("generatedPrompt");
+      const promptTextRaw = promptElement?.textContent?.trim();
+      const promptText = promptTextRaw?.replace(/^Sophy suggests:\s*/, "").replace(/^"|"$/g, "").trim();
+
+      const isValidPrompt =
+        promptText &&
+        promptText.toLowerCase() !== "undefined" &&
+        promptText.toLowerCase() !== "sophy is thinking..." &&
+        promptText.length > 5;
+
+      if (document.getElementById("autoInsertPrompt")?.checked && isValidPrompt) {
+        entryData.promptUsed = promptText;
+      } else if (document.getElementById("autoInsertPrompt")?.checked) {
+        console.log("ℹ️ No valid Sophy prompt to save — continuing without one.");
       }
 
       if (document.getElementById("coachReviewCheckbox")?.checked) {
@@ -1019,7 +1051,8 @@ window.onload = function () {
       // Add to Firestore and get the new doc ref
       // Always set userId field, and ensure queries always filter by userId
       console.log("Attachments array about to be saved:", attachments);
-console.log("entryData about to be saved:", entryData);
+      console.log("entryData about to be saved:", entryData);
+      console.log("🧪 FINAL entryData before saving:", entryData);
       const docRef = await addDoc(collection(db, "journalEntries"), entryData);
       console.log("📘 Created entry ID:", docRef.id);
       if (entryData.coachReview) {
@@ -1093,9 +1126,9 @@ console.log("entryData about to be saved:", entryData);
       }
 
       const promptElement = document.getElementById("generatedPrompt");
-      // Set "Sophy is thinking..." in green italic before fetching
+      // Set "Sophy is thinking..." in white color for dark mode, italic before fetching
       promptElement.textContent = "Sophy is thinking...";
-      promptElement.style.color = "#2A6D6D";
+      promptElement.style.color = "#FDF7F1";
       promptElement.style.fontStyle = "italic";
       try {
         const response = await fetch("https://us-central1-inkwell-alpha.cloudfunctions.net/generatePrompt", {
@@ -1109,10 +1142,11 @@ console.log("entryData about to be saved:", entryData);
           const data = await response.json();
           const prompt = data.prompt.trim();
           promptElement.textContent = `Sophy suggests: "${prompt}"`;
-          if (document.getElementById("autoInsertPrompt")?.checked) {
-            const textarea = document.getElementById("journal");
-            textarea.value = `"${prompt}"\n\n` + textarea.value;
-          }
+          document.getElementById("autoInsertPrompt").checked = true;
+          // if (document.getElementById("autoInsertPrompt")?.checked) {
+          //   const textarea = document.getElementById("journal");
+          //   textarea.value = `"${prompt}"\n\n` + textarea.value;
+          // }
         } else {
           promptElement.textContent = "Sorry, something went wrong fetching the prompt.";
         }
@@ -1121,6 +1155,15 @@ console.log("entryData about to be saved:", entryData);
       }
     }
     import { query, where, orderBy, getDocs, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+    
+    window.replaceWithSuggestion = function () {
+  const suggestion = document.getElementById("manifestSuggestion")?.value;
+  if (suggestion) {
+    document.getElementById("manifestInput").value = suggestion;
+  }
+};
+    
+    
     // --- SMART SEARCH LOGIC ---
     // Only one import for getFunctions, httpsCallable at the top.
     // Define runSmartSearch globally and attach it to window.
@@ -1362,10 +1405,14 @@ console.log("entryData about to be saved:", entryData);
     ${futureFlag}
     ${coachReplyNotice}
     <div class="entry-preview">${entry.text}</div>
-    <button class="btn" style="margin-top: 0.5em;" onclick="this.previousElementSibling.classList.toggle('entry-preview'); this.textContent = this.textContent === 'Read more' ? 'Collapse' : 'Read more';">Read more</button>
+    <button class="btn" style="margin-top: 0.5em;" onclick="
+      const preview = this.previousElementSibling;
+      preview.classList.toggle('expanded');
+      this.textContent = this.textContent === 'Read more' ? 'Collapse' : 'Read more';
+    ">Read more</button>
     ${attachmentHtml}
     ${tags}
-    ${(entry.coachResponse && entry.coachResponse.text) ? `
+    ${(entry.coachResponse?.text) ? `
       <div class="coach-reply" style="margin-top: 1em; padding: 0.75em; border-left: 4px solid var(--accent-dark); background-color: var(--accent); color: var(--accent-dark); font-size: 0.95em; border-radius:5px; font-style:italic;">
         <strong>Coach replied:</strong>
         <p>${entry.coachResponse.text}</p>
@@ -1424,37 +1471,91 @@ console.log("entryData about to be saved:", entryData);
 
 
     async function signUp() {
-      const email = document.getElementById("emailInput").value;
-      const password = document.getElementById("passwordInput").value;
-      try {
-        await createUserWithEmailAndPassword(auth, email, password);
+      setTimeout(async () => {
+        const email = document.querySelector('input[name="email"]')?.value?.trim();
+        const password = document.querySelector('input[name="password"]')?.value || "";
+        console.log("📧 Email:", email);
+        console.log("🔒 Password:", password ? "●●●●●" : "(empty)");
 
-        await setDoc(doc(db, "users", auth.currentUser.uid), {
-  email: auth.currentUser.email,
-  userRole: "journaler",
-  agreementAccepted: false
-});
-       
-        // TODO: Allow users to set a display name and avatar image for personalization
-        document.getElementById("loginModal").style.display = "none";
-        document.getElementById("userStatus").textContent = `Journaling as: ${auth.currentUser.email}`;
-      } catch (err) {
-        alert("Error signing up: " + err.message);
-      }
+        if (!email || !password) {
+          alert("Please enter both email and password.");
+          return;
+        }
+
+        try {
+          await createUserWithEmailAndPassword(auth, email, password);
+          await setDoc(doc(db, "users", auth.currentUser.uid), {
+            email: auth.currentUser.email,
+            userRole: "journaler",
+            agreementAccepted: false
+          });
+          document.getElementById("loginModal").style.display = "none";
+          document.getElementById("userStatus").textContent = `Journaling as: ${auth.currentUser.email}`;
+        } catch (err) {
+          alert("Error signing up: " + err.message);
+        }
+      }, 100); // allow autofill to populate fields
     }
 
-    async function signIn() {
-      const email = document.getElementById("emailInput").value;
-      const password = document.getElementById("passwordInput").value;
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        
-        document.getElementById("loginModal").style.display = "none";
-        // UI state will be managed by onAuthStateChanged
-      } catch (err) {
-        alert("Login failed: " + err.message);
-      }
+    // Helper for autofill: waits for both email and password to be filled by browser autofill or user
+    function waitForAutofill(resolve) {
+      const emailInput = document.querySelector('input[name="email"]');
+      const passwordInput = document.querySelector('input[name="password"]');
+      let attempts = 0;
+
+      const interval = setInterval(() => {
+        const email = emailInput?.value?.trim();
+        const password = passwordInput?.value?.trim();
+        if (email && password) {
+          clearInterval(interval);
+          resolve({ email, password });
+        } else if (++attempts > 20) {
+          clearInterval(interval);
+          resolve({ email: email || '', password: password || '' });
+        }
+      }, 100);
     }
+
+    // Helper to normalize login input (removes ZW chars, trims, smart quotes, outer quotes, Unicode normalization)
+    function normalizeInput(str) {
+      return String(str)
+        .trim()
+        .replace(/\u200B/g, '') // remove zero-width characters
+        .replace(/[\u2018\u2019]/g, "'") // smart single quotes
+        .replace(/[\u201C\u201D]/g, '"') // smart double quotes
+        .replace(/^["']|["']$/g, '') // outer quotes
+        .normalize("NFKC");
+    }
+
+// Expose signIn globally and add debugging logs for Safari Web Inspector
+window.signIn = async function signIn() {
+  console.log("🔥 signIn() function triggered");
+
+  const { email: rawEmail, password: rawPassword } = await new Promise(waitForAutofill);
+
+  console.log("📧 Raw Email:", JSON.stringify(rawEmail));
+  console.log("🔒 Raw Password:", JSON.stringify(rawPassword));
+
+  // Clean and normalize email and password using helper
+  const email = normalizeInput(rawEmail);
+  const password = normalizeInput(rawPassword);
+
+  console.log("✅ Cleaned Email (normalized):", email);
+  console.log("✅ Cleaned Password (normalized):", password);
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    console.log("✅ Login successful");
+    window.location.href = '/home.html';
+  } catch (error) {
+    console.error("❌ Login failed:", error.code, error.message);
+    if (error.code === "auth/invalid-credential") {
+      alert("Login failed: Invalid credentials.\nIf you're using autofill, please retype your email and password manually.");
+    } else {
+      alert(`Login failed: ${error.code}`);
+    }
+  }
+};
 
     
     let journalMode = 'manifest';
@@ -1911,23 +2012,31 @@ window.askSophyToRefineManifest = async function () {
       <h3 class="section-header" style="color: var(--brand-primary);">Action Required: Accept Alpha Testing Agreement</h3>
       <p style="font-size: 0.9em;">Before you can use InkWell, please review and agree to the following:</p>
       <div style="display: flex; flex-direction: column; gap: 0.5em; align-items: center; margin-bottom: 1em;">
-  <a href="https://www.pegasusrealm.com/terms-conditions/" target="_blank" style="text-align: center;">Terms & Conditions</a>
-  <a href="https://www.pegasusrealm.com/privacy-policy/" target="_blank" style="text-align: center;">Privacy Policy</a>
-  <a href="https://www.pegasusrealm.com/alpha-beta-testers/" target="_blank" style="text-align: center;">Alpha/Beta Tester Agreement</a>
+  <a href="https://www.pegasusrealm.com/terms-conditions/" target="_blank" style="text-align: center; color: #388b97;">Terms & Conditions</a>
+  <a href="https://www.pegasusrealm.com/privacy-policy/" target="_blank" style="text-align: center; color: #388b97;">Privacy Policy</a>
+  <a href="https://www.pegasusrealm.com/alpha-beta-testers/" target="_blank" style="text-align: center; color: #388b97;">Alpha/Beta Tester Agreement</a>
 </div>
       <label style="display: block; margin-top: 1em;">
         <input type="checkbox" id="embeddedAgreementCheckbox" />
         I have read and agree to all three terms listed above.
       </label>
-      <button class="btn" onclick="acceptEmbeddedAgreement()" id="acceptEmbeddedAgreementButton" disabled>Accept & Continue</button>
+      <div style="display: flex; justify-content: center; margin-top: 1em;">
+        <button class="btn" onclick="acceptEmbeddedAgreement()" id="acceptEmbeddedAgreementButton" disabled style="margin-left: auto; margin-right: auto;">Accept & Continue</button>
+      </div>
+      <div style="font-size: 0.81em; color: #7B6047; text-align: center; line-height: 1.5; margin-top: 1.2em;">
+        <strong>Disclaimer:</strong> InkWell Alpha is an experimental platform for journaling and manifesting. It is not a substitute for professional mental health or medical advice. By using InkWell, you agree that your data will be handled in accordance with our <a href="https://www.pegasusrealm.com/privacy-policy/" target="_blank" style="color: #388b97; text-decoration: underline;">Privacy Policy</a>, and you accept all risks associated with participating in an early-stage alpha release.
+      </div>
     </div>
   </div>
 
   <div id="loginModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; z-index: 9999;">
     <div class="card-block" style="max-width: 400px; width: 90%;">
       <h3 class="section-header" style="text-align: center;">Login or Sign Up</h3>
-      <input type="email" id="emailInput" placeholder="Email" autocomplete="off" />
-      <input type="password" id="passwordInput" placeholder="Password" autocomplete="off" />
+      <input type="email" id="emailInput" name="email" placeholder="Email" autocomplete="email" />
+      <input type="password" id="passwordInput" name="password" placeholder="Password" autocomplete="current-password" />
+      <p style="font-size: 0.8em; color: var(--info-muted); margin-top: 0.5em;">
+        ⚠️ Safari autofill may cause login issues. If login fails, please retype your email and password manually.
+      </p>
       <button class="btn login-btn-signin" onclick="signIn()" style="width: 100%; margin-bottom: 0.5em;">Sign In</button>
       <button class="btn login-btn-signup" onclick="signUp()" style="width: 100%;">Sign Up</button>
       <button class="btn" onclick="loginModalClose()" style="width: 100%; margin-top: 1em;">Close</button>
@@ -1944,15 +2053,19 @@ window.askSophyToRefineManifest = async function () {
         <p style="font-size: 1em; line-height: 1.6; margin-top: 1em;">
           This Manifest Statement is your personal guiding goal or vision. It is visible to your coach and to Sophy so they can help you stay aligned and work toward it. You can ask Sophy or a coach to help you write or refine this statement at any time.
         </p>
-        <textarea id="manifestInput" placeholder="Write your personal guiding statement..." style="width: 100%; height: 100px; margin-bottom: 0.5em; padding: 0.5em; border-radius: 5px; border: 1px solid #ccc;"></textarea>
+        <textarea id="manifestInput" placeholder="Write your personal guiding statement..." style="width: 100%; height: 100px; margin-bottom: 0.5em; padding: 0.5em; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; max-width: 100%;"></textarea>
         
         <p id="manifestStatus" style="margin-top: 0.5em; font-style: italic;"></p>
         <button class="btn btn-sophy" onclick="askSophyToRefineManifest()">Refine with Sophy</button>
-        <p id="manifestSuggestionLabel" class="subtext-muted" style="font-weight: bold; margin-top: 1em;">Sophy’s Suggested Refinement:</p>
-        <textarea id="manifestSuggestion" readonly style="width: 100%; height: 100px; margin-bottom: 0.5em; padding: 0.5em; border-radius: 5px; border: 1px dashed #aaa; background-color: #fdfdfd;"></textarea>
+        <p id="manifestSuggestionLabel" class="subtext-muted" style="font-weight: bold; margin-top: 1em;">
+          Sophy’s Suggested Refinement: <span style="font-weight: normal;">It won’t overwrite your original statement unless you click "Use This Suggestion".</span>
+        </p>
+        <textarea id="manifestSuggestion" readonly style="width: 100%; height: 100px; margin-bottom: 0.5em; padding: 0.75em 1em; border-radius: 5px; border-left: 4px solid var(--accent-dark); background-color: var(--accent); color: var(--accent-dark); font-style: italic; box-sizing: border-box; max-width: 100%;"></textarea>
+        <button class="btn" onclick="replaceWithSuggestion()">Use This Suggestion</button>
         <button class="btn" onclick="saveManifest()">Save</button>
       </div>
       <div class="card-block">
+
         <!-- (Sophy prompt block moved below) -->
       </div>
       <div class="card-block">
@@ -1967,13 +2080,11 @@ window.askSophyToRefineManifest = async function () {
         <!-- (Attachment input and preview moved below) -->
             <p class="subtext-muted" style="margin-top: 1em;">If you want a topic or some inspiration, <strong>Sophy</strong> can suggest ideas — you can even give her a topic to focus on.</p>
       <input type="text" id="promptTopic" placeholder="Enter a topic, mood, or leave blank" style="width: 100%; margin-bottom: 0.5em; padding: 0.5em; border-radius: 5px; border: 1px solid #ccc;" />
-      <button class="btn btn-sophy" onclick="generatePrompt()">Ask Sophy for a Prompt</button>
-      <p id="generatedPrompt" class="subtext-muted sophy-info">
-        Sophy's suggestion will appear here.
-      </p>
+      <button class="btn btn-sophy" onclick="generatePrompt()" style="color: #ffffff;">Ask Sophy for a Prompt</button>
+      <p id="generatedPrompt" class="sophy-info" style="color: #FDF7F1 !important;"></p>
       <label style="font-size: 0.85em; display: block; margin-top: 0.5em; margin-bottom: 0.5em;">
-        <input type="checkbox" id="autoInsertPrompt" checked />
-        Include this prompt in my journal
+        <input type="checkbox" id="autoInsertPrompt" />
+        Save this Prompt in my Journal Entry
       </label>
 
       
@@ -1982,14 +2093,27 @@ window.askSophyToRefineManifest = async function () {
 <textarea id="journal" placeholder="Write your thoughts here..." style="width: 100%; box-sizing: border-box; margin-bottom: 0.5em;"></textarea>
 <label style="font-size: 0.85em; display: block; margin-top: 0.5em;">
   <input type="checkbox" id="autoInsertReflection" checked />
-  Include Sophy's reflection in my journal
+  Save this Reflection in my Journal Entry
 </label>
 
 <div id="entryStatus" style="font-size: 0.85em; margin-top: 0.5em;"></div>
-<div id="sophyInsight" class="subtext-muted sophy-info" style="white-space: pre-wrap;">
-  Sophy's Reflection will appear here after you ask for guidance.
-</div>
+
 <button class="btn btn-sophy" onclick="askSophyAboutEntry()">Ask Sophy for Reflection</button>
+<div id="sophyInsight" class="sophy-info" style="white-space: pre-wrap;"></div>
+<button class="btn" onclick="replaceJournalWithReflection()">Use This Reflection</button>
+
+<script>
+  window.replaceJournalWithReflection = function () {
+    const insight = document.getElementById("sophyInsight")?.textContent;
+    if (
+      insight &&
+      !insight.includes("Sophy's Reflection will appear here") &&
+      !insight.includes("Please write something in your journal")
+    ) {
+      document.getElementById("journal").value = insight;
+    }
+  };
+</script>
 
 <p style="font-size: 1em; line-height: 1.6; margin-top: 1em;">
   Attach one or more photos or files to enrich your journal entry. Multiple files can be selected before saving. Take your time; every small detail counts in your growth journey.
