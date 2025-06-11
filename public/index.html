@@ -1546,7 +1546,9 @@ window.signIn = async function signIn() {
   try {
     await signInWithEmailAndPassword(auth, email, password);
     console.log("✅ Login successful");
-    window.location.href = '/home.html';
+    // Hide login modal instead of redirecting (UI will update via onAuthStateChanged)
+    document.getElementById("loginModal").style.display = "none";
+    // window.location.href = '/home.html';
   } catch (error) {
     console.error("❌ Login failed:", error.code, error.message);
     if (error.code === "auth/invalid-credential") {
