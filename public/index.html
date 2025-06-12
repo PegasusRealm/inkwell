@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
+        authDomain: "inkwell-alpha.firebaseapp.com",
+        projectId: "inkwell-alpha",
+        appId: "1:1066466790954:web:adc4e0a397295cb7c520eb"
+      };
+
+      firebase.initializeApp(firebaseConfig);
+    </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>InkWell</title>
@@ -576,18 +591,7 @@ html[data-theme='dark'] {
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-
-
-    // Firebase configuration for InkWell Alpha
-    const firebaseConfig = {
-      apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
-      authDomain: "inkwell-alpha.firebaseapp.com",
-      projectId: "inkwell-alpha",
-      storageBucket: "inkwell-alpha.firebasestorage.app",
-      messagingSenderId: "849610731668",
-      appId: "1:849610731668:web:f06d1a63f0db6391674481",
-      measurementId: "G-KHHZRVB7EJ"
-    };
+    import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
     const app = initializeApp(firebaseConfig);
 window.app = app;
@@ -943,6 +947,98 @@ onAuthStateChanged(auth, async (user) => {
 
 
 window.onload = function () {
+  // === InkOutLoud Voice Input Integration ===
+  const voiceBtn = document.getElementById("voiceBtn");
+  const voiceStatus = document.getElementById("voiceStatus");
+  const journalEntry = document.getElementById("journal");
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    if (voiceBtn) voiceBtn.disabled = true;
+    if (voiceStatus) voiceStatus.textContent = "InkOutLoud requires Chrome or Edge.";
+  } else {
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+
+    let isListening = false;
+    let stopTimeout = null;
+
+    recognition.onstart = () => {
+      if (voiceStatus) voiceStatus.textContent = "🎤 Listening... Tap again to stop.";
+      if (voiceBtn) voiceBtn.textContent = "🛑 Stop InkOutLoud";
+    };
+
+    recognition.onresult = async (event) => {
+      const transcript = event.results[event.results.length - 1][0].transcript;
+      if (voiceStatus) voiceStatus.textContent = "🧠 Cleaning up your voice entry...";
+
+      try {
+        const user = auth?.currentUser;
+        if (!user) {
+          console.warn("User not signed in. Cannot clean transcript.");
+          if (voiceStatus) voiceStatus.textContent = "⚠️ You must be logged in to use voice journaling.";
+          return;
+        }
+
+        const idToken = await user.getIdToken();
+        const response = await fetch("https://us-central1-inkwell-alpha.cloudfunctions.net/cleanVoiceTranscript", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          },
+          body: JSON.stringify({ rawText: transcript })
+        });
+
+        const data = await response.json();
+        if (data.cleanedText) {
+          if (journalEntry) {
+            journalEntry.value += (journalEntry.value ? " " : "") + data.cleanedText;
+          }
+          if (voiceStatus) voiceStatus.textContent = "✅ Voice entry added.";
+        } else {
+          throw new Error("No cleaned text received.");
+        }
+      } catch (err) {
+        console.error("🛑 Error cleaning voice transcript:", err);
+        if (voiceStatus) voiceStatus.textContent = "❌ Failed to clean voice input.";
+      }
+    };
+
+    recognition.onerror = (event) => {
+      if (voiceStatus) voiceStatus.textContent = "❌ Error: " + event.error;
+    };
+
+    recognition.onend = () => {
+      if (isListening) {
+        recognition.start(); // Auto-restart if session ends prematurely
+      }
+    };
+
+    if (voiceBtn) {
+      voiceBtn.onclick = () => {
+        if (!isListening) {
+          recognition.start();
+          isListening = true;
+          voiceBtn.textContent = "🛑 Stop InkOutLoud";
+
+          stopTimeout = setTimeout(() => {
+            recognition.stop();
+            isListening = false;
+            voiceBtn.textContent = "🎙️ Try InkOutLoud";
+          }, 90000); // 90 seconds
+        } else {
+          recognition.stop();
+          isListening = false;
+          voiceBtn.textContent = "🎙️ Try InkOutLoud";
+          if (stopTimeout) clearTimeout(stopTimeout);
+        }
+      };
+    }
+  }
   window.saveJournalEntry = async function () {
     const textarea = document.getElementById("journal");
     const text = textarea.value.trim();
@@ -1172,7 +1268,7 @@ window.onload = function () {
       const resultsContainer = document.getElementById("searchResults");
       window.showSpinner && showSpinner("searchResults", "Searching...");
 
-   
+      
       const user = window.auth?.currentUser;
       if (!queryText) {
         resultsContainer.innerHTML = "<p>Please enter a search phrase.</p>";
@@ -1183,28 +1279,28 @@ window.onload = function () {
         return;
       }
 
-    try {
-      // Log the search query with HTTPS endpoint before embedding
-      const idToken = await user.getIdToken();
+      try {
+        // Log the search query with HTTPS endpoint before embedding
+        const idToken = await user.getIdToken();
 
-      await fetch("https://us-central1-inkwell-alpha.cloudfunctions.net/logSearchQuery", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({ query: queryText })
-      });
+        await fetch("https://us-central1-inkwell-alpha.cloudfunctions.net/logSearchQuery", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({ query: queryText })
+        });
 
-      // 1. Embed the query using HTTPS endpoint directly, with ID token
-      const embedResp = await fetch("https://us-central1-inkwell-alpha.cloudfunctions.net/embedAndStoreEntry", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${idToken}`
-        },
-        body: JSON.stringify({ text: queryText, entryId: "search-query" })
-      });
+        // 1. Embed the query using HTTPS endpoint directly, with ID token
+        const embedResp = await fetch("https://us-central1-inkwell-alpha.cloudfunctions.net/embedAndStoreEntry", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          },
+          body: JSON.stringify({ text: queryText, entryId: "search-query" })
+        });
         if (!embedResp.ok) {
           throw new Error("Failed to get embedding for query.");
         }
@@ -1259,18 +1355,31 @@ window.onload = function () {
           resultsContainer.innerHTML = "<p>No similar entries found.</p>";
           return;
         }
-        let html = "<ol>";
+        let html = "";
         for (const entry of top) {
-          const dateStr = entry.createdAt?.toDate?.().toLocaleString?.() || "";
-          html += `<li style="margin-bottom: 1em;">
-            <div style="font-size:0.85em; color:#999;">${dateStr}</div>
-            ${entry.contextManifest ? `<div style="font-size:0.85em; color:#2A6D6D;">✨ Manifest: "${entry.contextManifest}"</div>` : ""}
-            <div class="entry-preview">${entry.text}</div>
-            <div style="font-size:0.8em; color:#888;">Similarity: ${(entry.sim*100).toFixed(1)}%</div>
-            ${entry.tags ? `<div style="font-size:0.8em; color:#666;">Tags: ${entry.tags.join(", ")}</div>` : ""}
-          </li>`;
+          const dateObj = entry.createdAt?.toDate?.();
+          let dateStr = "";
+          if (dateObj && typeof dateObj.toLocaleDateString === "function") {
+            // Format as: May 1, 2025
+            const options = { year: "numeric", month: "long", day: "numeric" };
+            dateStr = dateObj.toLocaleDateString(undefined, options);
+          }
+          const similarity = (entry.sim * 100).toFixed(1);
+          // Show only first 200 chars as snippet
+          const snippet = entry.text ? entry.text.slice(0, 200) + (entry.text.length > 200 ? "..." : "") : "";
+          // Full text (HTML-escaped for safety)
+          const fullText = entry.text || "";
+          html += `
+<div class="search-result" onclick="toggleExpand(this)" style="cursor:pointer; margin-bottom:1em; border-bottom:1px solid #ccc; padding-bottom:0.5em;">
+  <div class="entry-header" style="font-weight:bold;">${dateStr}${similarity ? " – Similarity: " + similarity + "%" : ""}</div>
+  ${entry.contextManifest ? `<div style="font-size:0.85em; color:#2A6D6D;">✨ Manifest: "${entry.contextManifest}"</div>` : ""}
+  <div class="entry-snippet">${snippet}</div>
+  <div class="entry-full" style="display:none; margin-top:0.5em;">${fullText.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>")}</div>
+  ${entry.tags ? `<div style="font-size:0.8em; color:#666;">Tags: ${entry.tags.join(", ")}</div>` : ""}
+</div>
+`;
         }
-        html += "</ol>";
+
         resultsContainer.innerHTML = html;
       } catch (err) {
         console.error("Smart search error:", err);
@@ -1278,6 +1387,7 @@ window.onload = function () {
       }
     }
     window.runSmartSearch = runSmartSearch;
+
 
    async function loadPastEntries() {
       const pastEntriesContainer = document.getElementById("pastEntries");
@@ -1527,38 +1637,32 @@ window.onload = function () {
         .normalize("NFKC");
     }
 
-// Expose signIn globally and add debugging logs for Safari Web Inspector
-window.signIn = async function signIn() {
-  console.log("🔥 signIn() function triggered");
+// Expose signIn globally, now wrapped with reCAPTCHA v2 invisible
+window.signIn = function signIn() {
+  grecaptcha.ready(async () => {  // ← make this async
+    const rawEmail = document.getElementById("emailInput").value;
+    const rawPassword = document.getElementById("passwordInput").value;
 
-  const { email: rawEmail, password: rawPassword } = await new Promise(waitForAutofill);
+    const email = normalizeInput(rawEmail);
+    const password = normalizeInput(rawPassword);
 
-  console.log("📧 Raw Email:", JSON.stringify(rawEmail));
-  console.log("🔒 Raw Password:", JSON.stringify(rawPassword));
+    console.log("✅ Cleaned Email (normalized):", email);
+    console.log("✅ Cleaned Password (normalized):", password);
 
-  // Clean and normalize email and password using helper
-  const email = normalizeInput(rawEmail);
-  const password = normalizeInput(rawPassword);
-
-  console.log("✅ Cleaned Email (normalized):", email);
-  console.log("✅ Cleaned Password (normalized):", password);
-
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    console.log("✅ Login successful");
-    // Hide login modal instead of redirecting (UI will update via onAuthStateChanged)
-    document.getElementById("loginModal").style.display = "none";
-    // window.location.href = '/home.html';
-  } catch (error) {
-    console.error("❌ Login failed:", error.code, error.message);
-    if (error.code === "auth/invalid-credential") {
-      alert("Login failed: Invalid credentials.\nIf you're using autofill, please retype your email and password manually.");
-    } else {
-      alert(`Login failed: ${error.code}`);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      console.log("✅ Login successful");
+      document.getElementById("loginModal").style.display = "none";
+    } catch (error) {
+      console.error("❌ Login failed:", error.code, error.message);
+      if (error.code === "auth/invalid-credential") {
+        alert("Login failed: Invalid credentials.\nIf you're using autofill, please retype your email and password manually.");
+      } else {
+        alert(`Login failed: ${error.code}`);
+      }
     }
-  }
+  });
 };
-
     
     let journalMode = 'manifest';
 
@@ -1972,6 +2076,28 @@ window.askSophyToRefineManifest = async function () {
 };
 // Ensure calendar is built after defining all functions
 // (Note: initial buildCalendar and showTab('journalTab') are called by auth listener after login)
+    // --- Password Reset Handler ---
+    document.addEventListener("DOMContentLoaded", () => {
+      const forgotBtn = document.getElementById("forgotPasswordBtn");
+      if (forgotBtn) {
+        forgotBtn.onclick = async () => {
+          const email = document.getElementById("emailInput").value.trim();
+          const msgBox = document.getElementById("passwordResetMsg");
+
+          if (!email) {
+            msgBox.textContent = "Please enter your email above first.";
+            return;
+          }
+
+          try {
+            await sendPasswordResetEmail(auth, email);
+            msgBox.textContent = "✅ Password reset email sent!";
+          } catch (error) {
+            msgBox.textContent = "⚠️ " + error.message;
+          }
+        };
+      }
+    });
   </script>
 </head>
 <body>
@@ -2036,10 +2162,16 @@ window.askSophyToRefineManifest = async function () {
       <h3 class="section-header" style="text-align: center;">Login or Sign Up</h3>
       <input type="email" id="emailInput" name="email" placeholder="Email" autocomplete="email" />
       <input type="password" id="passwordInput" name="password" placeholder="Password" autocomplete="current-password" />
-      <p style="font-size: 0.8em; color: var(--info-muted); margin-top: 0.5em;">
-        ⚠️ Safari autofill may cause login issues. If login fails, please retype your email and password manually.
-      </p>
-      <button class="btn login-btn-signin" onclick="signIn()" style="width: 100%; margin-bottom: 0.5em;">Sign In</button>
+      <button id="forgotPasswordBtn" style="margin-top:0.5em; background:none; color:#2A6972; border:none; font-size:0.9em; text-decoration:underline; cursor:pointer;">
+        Forgot password?
+      </button>
+      <div id="passwordResetMsg" style="font-size:0.85em; color:#2A6972; text-align:center; margin-top:0.5em;"></div>
+      <div class="g-recaptcha"
+     data-sitekey="6LeCel0rAAAAAJVIplFBKgyy0oO-bYd2wr2_wqxI"
+     data-theme="light">
+</div>
+
+<button id="loginBtn" class="btn login-btn-signin" onclick="signIn()" style="width: 100%; margin-bottom: 0.5em;">Login</button>
       <button class="btn login-btn-signup" onclick="signUp()" style="width: 100%;">Sign Up</button>
       <button class="btn" onclick="loginModalClose()" style="width: 100%; margin-top: 1em;">Close</button>
     </div>
@@ -2090,7 +2222,10 @@ window.askSophyToRefineManifest = async function () {
       </label>
 
       
-
+<button id="voiceBtn" class="btn" style="margin-bottom: 0.5em;">
+  🎙️ Try InkOutLoud
+</button>
+<div id="voiceStatus" style="font-size:0.85em; color:#2A6972; margin-bottom:1em;"></div>
 <label for="journal" style="margin-top:1em; display:block; font-weight:600;">Journal Entry:</label>
 <textarea id="journal" placeholder="Write your thoughts here..." style="width: 100%; box-sizing: border-box; margin-bottom: 0.5em;"></textarea>
 <label style="font-size: 0.85em; display: block; margin-top: 0.5em;">
@@ -2288,6 +2423,37 @@ window.askSophyToRefineManifest = async function () {
   document.getElementById("aboutInkwellBtn").onclick = function() {
     document.getElementById("aboutInkwellModal").style.display = "flex";
   };
+</script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script>
+  // Safari autofill workaround: force field re-evaluation on focus
+  document.querySelectorAll("input").forEach((input) => {
+    input.addEventListener("focus", () => {
+      input.value = input.value; // nudges Safari to reprocess autofill
+    });
+  });
+</script>
+<script>
+  document.getElementById("aboutInkwellBtn").onclick = function() {
+    document.getElementById("aboutInkwellModal").style.display = "flex";
+  };
+
+  // Safari autofill workaround: force field re-evaluation on focus
+  document.querySelectorAll("input").forEach((input) => {
+    input.addEventListener("focus", () => {
+      input.value = input.value;
+    });
+  });
+
+  // --- Expand/collapse handler for search results ---
+  function toggleExpand(el) {
+    const full = el.querySelector(".entry-full");
+    if (!full) return;
+    full.style.display = full.style.display === "none" ? "block" : "none";
+  }
+</script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script>
 </script>
 </body>
 </html>
