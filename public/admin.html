@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InkWell Admin - Practitioner Approvals</title>
+    <style>
+        :root {
+            --brand-primary: #2A6972;
+            --brand-secondary: #388b97;
+            --brand-light: #4A9BA8;
+            --brand-lighter: #7BB8C4;
+            --brand-primary-rgba: rgba(42, 105, 114, 0.3);
+            --brand-primary-light-rgba: rgba(42, 105, 114, 0.1);
+        }
+        
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 2em; 
+            background: #f8f9fa; 
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 2em; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        h1 { 
+            color: var(--brand-primary); 
+            text-align: center; 
+        }
+        .request-card { 
+            border: 1px solid #e9ecef; 
+            border-radius: 8px; 
+            padding: 1.5em; 
+            margin: 1em 0; 
+            background: #f8f9fa; 
+            border-left: 4px solid var(--brand-primary);
+        }
+        .request-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 1em; 
+        }
+        .status-pending { color: #856404; background: #fff3cd; padding: 0.25em 0.5em; border-radius: 4px; font-size: 0.8em; }
+        .btn { 
+            padding: 0.5em 1em; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 0 0.25em; 
+            transition: background-color 0.3s ease;
+        }
+        .btn-approve { 
+            background: var(--brand-primary); 
+            color: white; 
+        }
+        .btn-approve:hover {
+            background: #1e5055;
+        }
+        .btn-deny { 
+            background: #dc3545; 
+            color: white; 
+        }
+        .btn-deny:hover {
+            background: #c82333;
+        }
+        .btn-logout { 
+            background: #6c757d; 
+            color: white; 
+            float: right; 
+        }
+        .btn-logout:hover {
+            background: #5a6268;
+        }
+        .details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1em; }
+        .detail-item { margin-bottom: 0.5em; }
+        .detail-label { font-weight: bold; color: #333; }
+        .empty-state { text-align: center; padding: 3em; color: #666; }
+        .login-form { 
+            max-width: 400px; 
+            margin: 2em auto; 
+            padding: 2em; 
+            border: 1px solid #e9ecef; 
+            border-radius: 8px; 
+            background: #f8f9fa; 
+        }
+        .form-field { 
+            margin-bottom: 1em; 
+        }
+        .form-field label { 
+            display: block; 
+            margin-bottom: 0.5em; 
+            font-weight: 600; 
+            color: var(--brand-primary); 
+        }
+        .form-field input { 
+            width: 100%; 
+            padding: 0.6em; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+        }
+        .form-field input:focus {
+            border-color: var(--brand-primary);
+            outline: none;
+            box-shadow: 0 0 0 2px var(--brand-primary-light-rgba);
+        }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2em; }
+        .admin-info { color: #666; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🩺 Practitioner Approval Dashboard</h1>
+        
+        <div id="loginSection">
+            <div class="login-form">
+                <div style="text-align: center; margin-bottom: 1.5em;">
+                    <div style="color: var(--brand-primary); font-size: 2em; margin-bottom: 0.5em;">🔐</div>
+                    <h3 style="color: var(--brand-primary); margin: 0;">Admin Access Required</h3>
+                    <p style="color: #666; font-size: 0.9em; margin: 0.5em 0;">Authorized administrators only</p>
+                </div>
+                
+                <div class="form-field">
+                    <label for="adminEmail">Admin Email:</label>
+                    <input type="email" id="adminEmail" placeholder="Enter admin email address" autocomplete="username">
+                </div>
+                
+                <div class="form-field">
+                    <label for="adminPassword">Password:</label>
+                    <input type="password" id="adminPassword" placeholder="Enter admin password" autocomplete="current-password">
+                </div>
+                
+                <button onclick="adminLogin()" class="btn btn-approve" style="width: 100%; padding: 0.75em;">
+                    🔓 Authenticate
+                </button>
+                
+                <div id="loginError" style="color: #dc3545; margin-top: 1em; min-height: 1.2em; font-size: 0.9em;"></div>
+                
+                <div style="margin-top: 1.5em; padding-top: 1em; border-top: 1px solid #eee; text-align: center;">
+                    <p style="color: #888; font-size: 0.85em; margin: 0;">
+                        🔒 Secure access for practitioner management<br>
+                        Contact <a href="mailto:support@inkwelljournal.io" style="color: var(--brand-primary);">support@inkwelljournal.io</a> for access issues
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="dashboardSection" style="display: none;">
+            <div class="admin-header">
+                <div class="admin-info">
+                    👋 Welcome, <span id="adminDisplayName">Administrator</span>
+                </div>
+                <button onclick="adminLogout()" class="btn btn-logout">
+                    🚪 Logout
+                </button>
+            </div>
+            <div id="requestsList"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, query, where, getDocs, doc, updateDoc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        // Use current Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
+            authDomain: "inkwell-alpha.firebaseapp.com",
+            projectId: "inkwell-alpha",
+            storageBucket: "inkwell-alpha.firebasestorage.app",
+            messagingSenderId: "849610731668",
+            appId: "1:849610731668:web:f06d1a63f0db6391674481",
+            measurementId: "G-KHHZRVB7EJ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Enhanced admin login with Firestore validation
+        window.adminLogin = async () => {
+            const email = document.getElementById('adminEmail').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            
+            // Clear previous errors
+            errorDiv.textContent = '';
+            
+            if (!email || !password) {
+                errorDiv.textContent = '⚠️ Please enter both email and password';
+                return;
+            }
+            
+            try {
+                // First, authenticate with Firebase Auth
+                console.log('🔐 Attempting admin authentication...');
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                // Check if user has admin role in Firestore
+                console.log('👤 Checking admin permissions for:', user.uid);
+                const adminDoc = await getDoc(doc(db, 'users', user.uid));
+                
+                if (!adminDoc.exists()) {
+                    throw new Error('User profile not found');
+                }
+                
+                const userData = adminDoc.data();
+                console.log('📋 User data:', { userRole: userData.userRole, email: userData.email });
+                
+                // Verify admin role
+                if (userData.userRole !== 'admin') {
+                    // Sign out the user since they don't have admin access
+                    await signOut(auth);
+                    throw new Error('Access denied: Administrator privileges required');
+                }
+                
+                // Success! Show admin dashboard
+                console.log('✅ Admin authentication successful');
+                document.getElementById('adminDisplayName').textContent = userData.displayName || email;
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('dashboardSection').style.display = 'block';
+                loadPendingRequests();
+                
+            } catch (error) {
+                console.error('❌ Admin login error:', error);
+                
+                let errorMessage = 'Authentication failed';
+                
+                if (error.code === 'auth/user-not-found') {
+                    errorMessage = '❌ Admin account not found';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMessage = '❌ Invalid password';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = '❌ Invalid email format';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage = '⏱️ Too many failed attempts. Please wait before trying again';
+                } else if (error.message.includes('Access denied')) {
+                    errorMessage = '🚫 Access denied: Administrator privileges required';
+                } else {
+                    errorMessage = `❌ ${error.message}`;
+                }
+                
+                errorDiv.textContent = errorMessage;
+            }
+        };
+
+        // Admin logout
+        window.adminLogout = async () => {
+            try {
+                await signOut(auth);
+                document.getElementById('loginSection').style.display = 'block';
+                document.getElementById('dashboardSection').style.display = 'none';
+                document.getElementById('adminEmail').value = '';
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('loginError').textContent = '';
+                console.log('👋 Admin logged out successfully');
+            } catch (error) {
+                console.error('❌ Logout error:', error);
+                alert('Error logging out. Please refresh the page.');
+            }
+        };
+
+        async function loadPendingRequests() {
+            const requestsList = document.getElementById('requestsList');
+            requestsList.innerHTML = '<p>🔄 Loading pending requests...</p>';
+            
+            try {
+                const q = query(collection(db, 'practitionerRequests'), where('status', '==', 'pending_approval'));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    requestsList.innerHTML = `
+                        <div class="empty-state">
+                            <h3>✅ No Pending Requests</h3>
+                            <p>All practitioner registrations have been processed.</p>
+                            <p style="font-size: 0.9em; color: #666; margin-top: 1em;">
+                                📧 New registrations will appear here and trigger email notifications
+                            </p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    html += createRequestCard(doc.id, data);
+                });
+                
+                requestsList.innerHTML = html;
+                console.log(`📋 Loaded ${snapshot.size} pending request(s)`);
+                
+            } catch (error) {
+                console.error('❌ Error loading requests:', error);
+                requestsList.innerHTML = '<p style="color: #dc3545;">❌ Error loading requests. Please refresh the page.</p>';
+            }
+        }
+
+        function createRequestCard(requestId, data) {
+            const requestedDate = data.requestedAt?.toDate?.() 
+                ? data.requestedAt.toDate().toLocaleDateString() + ' ' + data.requestedAt.toDate().toLocaleTimeString()
+                : 'Unknown date';
+            
+            return `
+                <div class="request-card">
+                    <div class="request-header">
+                        <h3 style="margin: 0; color: var(--brand-primary);">${data.fullName || 'Unknown Name'}</h3>
+                        <span class="status-pending">⏳ Pending Approval</span>
+                    </div>
+                    
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">📧 Email:</span> ${data.email || 'Not provided'}
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">🎓 Credentials:</span> ${data.credentials || 'Not provided'}
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">🏥 Practice Type:</span> ${data.practiceType || 'Not provided'}
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">📜 License #:</span> ${data.licenseNumber || 'Not provided'}
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">📍 Location:</span> ${data.practiceLocation || 'Not provided'}
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">📅 Registered:</span> ${requestedDate}
+                        </div>
+                    </div>
+                    
+                    ${data.practiceDescription ? `
+                        <div style="margin-top: 1em; padding: 1em; background: #f8f9fa; border-radius: 4px; border-left: 4px solid var(--brand-primary);">
+                            <span class="detail-label">📝 Practice Description:</span><br>
+                            <em>"${data.practiceDescription}"</em>
+                        </div>
+                    ` : ''}
+                    
+                    <div style="margin-top: 1.5em; text-align: center;">
+                        <button onclick="processPractitioner('${requestId}', 'approved')" class="btn btn-approve">
+                            ✅ Approve Practitioner
+                        </button>
+                        <button onclick="processPractitioner('${requestId}', 'denied')" class="btn btn-deny">
+                            ❌ Deny Registration
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.processPractitioner = async (requestId, action) => {
+            const confirmMessage = action === 'approved' 
+                ? '✅ Are you sure you want to APPROVE this practitioner registration?' 
+                : '❌ Are you sure you want to DENY this practitioner registration?';
+                
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            try {
+                console.log(`🔄 Processing practitioner ${requestId} with action: ${action}`);
+                
+                // Update the practitioner request status
+                await updateDoc(doc(db, 'practitionerRequests', requestId), {
+                    status: action,
+                    processedAt: new Date(),
+                    processedBy: auth.currentUser?.email || 'Unknown admin'
+                });
+                
+                if (action === 'approved') {
+                    // Get the practitioner request data
+                    const requestDoc = await getDoc(doc(db, 'practitionerRequests', requestId));
+                    const requestData = requestDoc.data();
+                    
+                    // Add to approved practitioners collection
+                    await setDoc(doc(db, 'approvedPractitioners', requestId), {
+                        name: requestData.fullName,
+                        email: requestData.email,
+                        credentials: requestData.credentials,
+                        practiceType: requestData.practiceType,
+                        licenseNumber: requestData.licenseNumber,
+                        practiceLocation: requestData.practiceLocation,
+                        practiceDescription: requestData.practiceDescription,
+                        approvedAt: new Date(),
+                        approvedBy: auth.currentUser?.email,
+                        status: 'active'
+                    });
+                    
+                    // Update user role to practitioner (if user document exists)
+                    try {
+                        const userDoc = doc(db, 'users', requestData.userId);
+                        await updateDoc(userDoc, {
+                            userRole: 'practitioner',
+                            practitionerStatus: 'approved'
+                        });
+                        console.log('✅ Updated user role to practitioner');
+                    } catch (userUpdateError) {
+                        console.warn('⚠️ Could not update user role:', userUpdateError);
+                    }
+                    
+                    alert('✅ Practitioner approved successfully!\n\nThey have been added to the approved practitioners list and can now receive client journal entries.');
+                } else {
+                    alert('❌ Practitioner registration denied.\n\nThe applicant will be notified of the decision.');
+                }
+                
+                // Reload the list
+                loadPendingRequests();
+                
+            } catch (error) {
+                console.error('❌ Error processing practitioner:', error);
+                alert('❌ Error processing request. Please try again.');
+            }
+        };
+
+        // Auto-load if already logged in and has admin role
+        auth.onAuthStateChanged(async user => {
+            if (user) {
+                try {
+                    // Check if user has admin role
+                    const adminDoc = await getDoc(doc(db, 'users', user.uid));
+                    if (adminDoc.exists() && adminDoc.data().userRole === 'admin') {
+                        document.getElementById('adminDisplayName').textContent = 
+                            adminDoc.data().displayName || user.email;
+                        document.getElementById('loginSection').style.display = 'none';
+                        document.getElementById('dashboardSection').style.display = 'block';
+                        loadPendingRequests();
+                        console.log('✅ Auto-login successful for admin:', user.email);
+                    } else {
+                        // User is logged in but not an admin, sign them out
+                        await signOut(auth);
+                    }
+                } catch (error) {
+                    console.error('⚠️ Error checking admin status:', error);
+                    await signOut(auth);
+                }
+            }
+        });
+
+        // Allow Enter key to submit login form
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && document.getElementById('loginSection').style.display !== 'none') {
+                adminLogin();
+            }
+        });
+    </script>
+</body>
+</html>

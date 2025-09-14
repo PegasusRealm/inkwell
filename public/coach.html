@@ -6,12 +6,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Coach Reply</title>
+  <title>Practitioner Portal</title>
   <style>
+    :root {
+      --brand-primary: #2A6972;
+      --brand-secondary: #388b97;
+      --brand-light: #4A9BA8;
+      --brand-lighter: #7BB8C4;
+      --brand-primary-rgba: rgba(42, 105, 114, 0.3);
+      --brand-primary-light-rgba: rgba(42, 105, 114, 0.08);
+      --brand-primary-border-rgba: rgba(42, 105, 114, 0.2);
+    }
+    
     body {
       font-family: sans-serif;
       padding: 2rem;
-      background-color: #f9f9f9;
+      background-color: #f8f9fa;
     }
     .entry-box {
       background: #fff;
@@ -43,95 +53,492 @@
       margin-top: 1rem;
       color: green;
     }
+
+    /* Login modal input styling */
+    #coachEmail:focus, #coachPassword:focus {
+      border-color: var(--brand-primary) !important;
+      outline: none;
+      box-shadow: 0 0 0 3px var(--brand-primary-rgba);
+      background: #fff !important;
+    }
+    
+    /* Login button hover effect */
+    #coachLoginBtn:hover {
+      background: linear-gradient(135deg, #1e5055, #2d7580) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px var(--brand-primary-rgba) !important;
+    }
+
+  /* Submit Response button hover effect */
+  button[type="submit"]:hover {
+    background-color: #1e5055 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--brand-primary-rgba);
+  }
+  
+  /* Logout button hover effect */
+  #logoutBtn:hover {
+    background-color: #5a6268 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(108,117,125,0.3);
+  }
+  
+  /* Textarea focus styling */
+  #coachReply:focus {
+    border-color: var(--brand-primary) !important;
+    outline: none;
+    box-shadow: 0 0 0 3px var(--brand-primary-rgba);
+  }
+
+  /* Spinner animation */
+  .spinner {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    border: 2px solid rgba(42, 105, 114, 0.15);
+    border-top-color: var(--brand-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 0.5em;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
   </style>
+
+
+
+
+
   <script type="module">
    
-   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-   import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+   console.log('🚀 COACH.HTML SCRIPT LOADED - VERSION 2.0 - HTTP FUNCTION');
+   
+   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+   import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+   import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
-      authDomain: "inkwell-alpha.firebaseapp.com",
-      projectId: "inkwell-alpha",
-    };
+const CONFIG = {
+  firebase: {
+    apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
+    authDomain: "inkwell-alpha.firebaseapp.com",
+    projectId: "inkwell-alpha",
+    storageBucket: "inkwell-alpha.appspot.com"
+  },
+};
 
-    const app = initializeApp(firebaseConfig);
+    const app = initializeApp(CONFIG.firebase); // ✅ clean and safe
     const auth = getAuth(app);
-    // Force logout for demo/dev to ensure login modal always shows
-    auth.signOut();
+
     const db = getFirestore(app);
+    const functions = getFunctions(app, 'us-central1'); // Specify the correct region
+
+    console.log('🔧 Firebase initialized:', { 
+      app: app.name, 
+      auth: !!auth, 
+      db: !!db, 
+      functions: !!functions,
+      currentOrigin: window.location.origin
+    });
 
     const urlParams = new URLSearchParams(window.location.search);
-    const entryId = urlParams.get("entryId");
+    let entryId = urlParams.get("entryId");
+
+    console.log('🔍 URL Parameters (RAW):', { 
+      fullURL: window.location.href,
+      search: window.location.search,
+      entryId: entryId,
+      entryIdType: typeof entryId,
+      entryIdLength: entryId ? entryId.length : 'null'
+    });
+
+    // Sanitize and validate entryId
+    if (entryId) {
+      entryId = entryId.trim();
+      console.log('🧹 Sanitized entryId:', entryId, 'length:', entryId.length);
+    }
 
     const entryBox = document.getElementById("entryText");
     const responseForm = document.getElementById("responseForm");
     const coachReply = document.getElementById("coachReply");
     const confirmation = document.getElementById("confirmation");
 
-    async function loadEntry() {
-      const entryRef = doc(db, "journalEntries", entryId);
-      const entrySnap = await getDoc(entryRef);
-      if (entrySnap.exists()) {
-        const entryData = entrySnap.data();
-        const userId = entryData.userId;
-        let userEmail = "Unknown user";
+    // Global authentication state variables
+    let isUserAuthenticated = false;
+    let currentAuthenticatedUser = null;
 
-        if (userId) {
-          try {
-            const userDoc = await getDoc(doc(db, "users", userId));
-            if (userDoc.exists()) {
-              userEmail = userDoc.data().email || userEmail;
-            }
-          } catch (e) {
-            console.warn("Failed to fetch user email:", e);
-          }
-        }
-
-        entryBox.innerHTML = `
-          <div style="background:#f1fafa; padding:0.5em 1em; border-left:4px solid #2A6972; margin-bottom:0.5em;">
-            👤 <strong>${userEmail}</strong>
-          </div>
-          <div>${entryData.text || "No text found."}</div>
-        `;
+    function showCoachLoginModal(msg = "") {
+      document.getElementById("coachLoginModal").style.display = "flex";
+      const errorDiv = document.getElementById("coachLoginError");
+      if (msg) {
+        errorDiv.textContent = msg;
+        errorDiv.style.display = "block";
       } else {
-        entryBox.innerText = "Journal entry not found.";
+        errorDiv.style.display = "none";
+      }
+    }
+    function hideCoachLoginModal() {
+      document.getElementById("coachLoginModal").style.display = "none";
+      document.getElementById("coachLoginError").textContent = "";
+      document.getElementById("coachLoginError").style.display = "none";
+    }
+
+    async function loadEntry() {
+      console.log('🚀 loadEntry called with entryId:', entryId, 'type:', typeof entryId);
+      
+      // SECURITY: Double-check authentication before loading patient data
+      const currentUser = auth.currentUser;
+      if (!currentUser || !isUserAuthenticated) {
+        console.error('🚫 SECURITY VIOLATION: Attempted to load patient data without authentication');
+        entryBox.innerHTML = `
+          <div style="color: #D32F2F; padding: 2em; text-align: center; background: #FFEBEE; border-radius: 8px;">
+            <h3>🔒 Access Denied</h3>
+            <p>You must be authenticated to view patient data.</p>
+            <p>Please log in with valid credentials.</p>
+          </div>
+        `;
+        responseForm.style.display = "none";
+        showCoachLoginModal("Please sign in to access client information.");
+        return;
+      }
+      
+      // Validate entryId exists and is not empty
+      if (!entryId || entryId === '' || entryId === 'null' || entryId === 'undefined') {
+        console.log('ℹ️ No entryId provided - showing coach dashboard');
+       entryBox.innerHTML = `
+    <div style="background:#f8f9fa; padding:0.75em 1em; border-left:4px solid var(--brand-primary); margin-bottom:1em; border: 1px solid #e9ecef; border-radius: 5px;">
+      <div style="display: flex; align-items: center; gap: 0.75em;">
+        ${avatar ? `<img src="${avatar}" alt="User avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">` : ''}
+        <div>
+          <strong style="color:var(--brand-primary);">${username || 'Unknown User'}</strong>
+          <div style="font-size:0.85em;color:#666;">${userIdDisplay}</div>
+        </div>
+      </div>
+    </div>
+    <details open style="margin-bottom:1em;">
+      <summary><strong class="section-label">📝 Journal Entry</strong></summary>
+      <div style="padding-top:0.5em;line-height:1.6;">${entryData.text || "No content available"}</div>
+    </details>
+    ${manifestDataHTML ? `
+      <details open style="margin-bottom:1em;">
+        <summary><strong class="section-label">🎯 WISH Framework</strong></summary>
+        <div style="padding-top:0.5em;">${manifestDataHTML}</div>
+      </details>
+    ` : ''}
+   <details open style="margin-bottom:1em;">
+  <summary><strong class="section-label">🌟 Linked Manifest</strong></summary>
+  <div style="padding-top:0.5em;">${manifestText}</div>
+</details>
+    <details open style="margin-bottom:1em;">
+      <summary><strong class="section-label">🔍 Prompt Used</strong></summary>
+      <div style="padding-top:0.5em;">${entryData.promptUsed || "None"}</div>
+    </details>
+    <details open style="margin-bottom:1em;">
+      <summary><strong class="section-label">📎 Attachments</strong></summary>
+      <div style="padding-top:0.5em;">${attachmentsHTML || "None"}</div>
+    </details>
+  `;
+        responseForm.style.display = "none";
+        return;
+      }
+      
+      try {
+        console.log('🔍 Creating Firebase document reference for entryId:', entryId);
+        let username = "";
+        let avatar = "";
+        let userIdDisplay = "";
+        
+        // Add extra validation before creating the doc reference
+        if (typeof entryId !== 'string') {
+          throw new Error(`EntryId must be a string, got ${typeof entryId}: ${entryId}`);
+        }
+        
+        const entryRef = doc(db, "journalEntries", entryId);
+        console.log('✅ Document reference created successfully');
+        
+        const entrySnap = await getDoc(entryRef);
+        console.log('📄 Document snapshot retrieved, exists:', entrySnap.exists);
+        if (entrySnap.exists) {
+          const entryData = entrySnap.data();
+          const userId = entryData.userId;
+          let manifestText = "None";
+          let attachmentsHTML = "";
+
+          if (userId) {
+            try {
+              const userDoc = await getDoc(doc(db, "users", userId));
+              if (userDoc.exists) {
+                const data = userDoc.data();
+                username = data.signupUsername || data.displayName || "";
+                avatar = data.avatar || "";
+                userIdDisplay = userId;
+              }
+            } catch (e) {
+              console.warn("Failed to fetch user data:", e);
+            }
+          }
+
+         try {
+  // 1. Check for full manifest data first, then fallback to contextManifest
+  if (entryData.manifestData && typeof entryData.manifestData === "object") {
+    const manifest = entryData.manifestData;
+    const parts = [];
+    
+    if (manifest.wish) parts.push(`Want: ${manifest.wish}`);
+    if (manifest.outcome) parts.push(`Imagine: ${manifest.outcome}`);
+    if (manifest.opposition) parts.push(`Snags: ${manifest.opposition}`);
+    if (manifest.plan) parts.push(`How: ${manifest.plan}`);
+    
+    if (parts.length > 0) {
+      manifestText = parts.join(" | ");
+    }
+  } else if (typeof entryData.contextManifest === "string" && entryData.contextManifest.trim()) {
+    // Fallback to contextManifest for older entries
+    manifestText = entryData.contextManifest;
+  }
+
+  // 2. Full manifest data (if available)
+  let manifestDataHTML = "";
+  if (entryData.manifestData && typeof entryData.manifestData === "object") {
+    console.log("📝 Found manifestData:", entryData.manifestData);
+    const manifest = entryData.manifestData;
+    
+    manifestDataHTML = `
+      <div style="background: linear-gradient(135deg, var(--brand-primary-light-rgba) 0%, rgba(42,105,114,0.12) 100%); border: 1px solid var(--brand-primary-border-rgba); border-radius: 8px; padding: 1.5em; margin: 1em 0;">
+        <h4 style="color: var(--brand-primary); margin: 0 0 1em 0; display: flex; align-items: center; gap: 0.5em;">
+          <span>🎯</span> WISH Framework Data
+        </h4>
+        
+        ${manifest.wish ? `
+          <div style="margin-bottom: 1em;">
+            <strong style="color: var(--brand-primary);">🎯 Want:</strong>
+            <p style="margin: 0.25em 0 0 0; padding: 0.75em; background: rgba(255,255,255,0.7); border-radius: 4px; line-height: 1.4;">${manifest.wish}</p>
+          </div>
+        ` : ''}
+        
+        ${manifest.outcome ? `
+          <div style="margin-bottom: 1em;">
+            <strong style="color: var(--brand-primary);">✨ Imagine:</strong>
+            <p style="margin: 0.25em 0 0 0; padding: 0.75em; background: rgba(255,255,255,0.7); border-radius: 4px; line-height: 1.4;">${manifest.outcome}</p>
+          </div>
+        ` : ''}
+        
+        ${manifest.opposition ? `
+          <div style="margin-bottom: 1em;">
+            <strong style="color: var(--brand-primary);">🚧 Snags:</strong>
+            <p style="margin: 0.25em 0 0 0; padding: 0.75em; background: rgba(255,255,255,0.7); border-radius: 4px; line-height: 1.4;">${manifest.opposition}</p>
+          </div>
+        ` : ''}
+        
+        ${manifest.plan ? `
+          <div style="margin-bottom: 0;">
+            <strong style="color: var(--brand-primary);">📋 How:</strong>
+            <p style="margin: 0.25em 0 0 0; padding: 0.75em; background: rgba(255,255,255,0.7); border-radius: 4px; line-height: 1.4;">${manifest.plan}</p>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  // 3. File attachments
+  if (Array.isArray(entryData.attachments)) {
+    attachmentsHTML = `<ul>`;
+    entryData.attachments.forEach(file => {
+      attachmentsHTML += `<li><a href="${file.url}" target="_blank" rel="noopener">${file.name || "View file"}</a></li>`;
+    });
+    attachmentsHTML += `</ul>`;
+  }
+} catch (err) {
+  console.warn("🛠️ Optional data failed to load:", err);
+}
+
+
+          entryBox.innerHTML = `
+    <div style="background:#f8f9fa; padding:0.75em 1em; border-left:4px solid var(--brand-primary); margin-bottom:1em; border: 1px solid #e9ecef; border-radius: 5px;">
+      <div style="display: flex; align-items: center; gap: 0.75em;">
+        ${avatar ? 
+          `<img src="${avatar}" alt="User Avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--brand-primary);" onerror="this.style.display='none';" />` : 
+          `<div style="width: 40px; height: 40px; border-radius: 50%; background-color: var(--brand-primary); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2em;">${(username || "U").charAt(0).toUpperCase()}</div>`
+        }
+        <div>
+          <strong>${username || "Unnamed User"}</strong><br/>
+          <code style="font-size:0.85em; color: #666;">${userIdDisplay}</code>
+        </div>
+      </div>
+    </div>
+    <details open style="margin-bottom:1em;">
+     <summary><strong class="section-label">🗂️ Linked Manifest</strong></summary>
+      <div style="padding-top:0.5em;">${manifestText}</div>
+    </details>
+    <details open style="margin-bottom:1em;">
+      <summary><strong class="section-label">📓 Journal Entry</strong></summary>
+      <div style="padding-top:0.5em;">${entryData.text || "No text found."}</div>
+    </details>
+    <details open style="margin-bottom:1em;">
+      <summary><strong class="section-label">📝 Prompt Used</strong></summary>
+      <div style="padding-top:0.5em;">${entryData.promptUsed || "None"}</div>
+    </details>
+    <details open style="margin-bottom:1em;">
+      <summary><strong class="section-label">📎 Attachments</strong></summary>
+      <div style="padding-top:0.5em;">${attachmentsHTML || "None"}</div>
+    </details>
+  `;
+          // Show the response form after successfully loading the entry
+          responseForm.style.display = "block";
+        } else {
+          entryBox.innerHTML = `
+            <div style="color: #D32F2F; padding: 2em; text-align: center; background: #FFEBEE; border-radius: 8px;">
+              <h3>❌ Entry Not Found</h3>
+              <p>The requested journal entry could not be found.</p>
+              <p>It may have been deleted or you may not have permission to view it.</p>
+            </div>
+          `;
+          responseForm.style.display = "none";
+        }
+      } catch (error) {
+        console.error('❌ Error loading entry:', error);
+        entryBox.innerHTML = `
+          <div style="color: #D32F2F; padding: 2em; text-align: center; background: #FFEBEE; border-radius: 8px;">
+            <h3>❌ Loading Error</h3>
+            <p>Failed to load the journal entry.</p>
+            <p><strong>Error:</strong> ${error.message}</p>
+            <p>Please try refreshing the page or contact support if this problem persists.</p>
+          </div>
+
+        `;
+
         responseForm.style.display = "none";
       }
     }
 
-window.addEventListener("DOMContentLoaded", () => {
+    // Function to load practitioner status and journal entry
+    function loadPractitionerStatus() {
+      console.log('🔍 loadPractitionerStatus called');
+      
+      // Only proceed if user is authenticated
+      if (!isUserAuthenticated || !currentAuthenticatedUser) {
+        console.log('👤 User not authenticated yet, waiting...');
+        return;
+      }
+      
+      // Check if there's an entryId to load
+      const urlParams = new URLSearchParams(window.location.search);
+      entryId = urlParams.get("entryId"); // Update global entryId variable
+      
+      if (entryId) {
+        console.log('📝 EntryId found, loading entry:', entryId);
+        loadEntry();
+      } else {
+        console.log('📋 No entryId, showing coach dashboard');
+        // Show general coach dashboard
+        const entryBox = document.getElementById("entryText");
+        entryBox.innerHTML = `
+          <div style="text-align: center; padding: 2em; color: var(--brand-primary);">
+            <h3>👩‍⚕️ Practitioner Portal</h3>
+            <p>Welcome to the practitioner dashboard.</p>
+            <p>When clients tag entries for review, you'll receive email notifications with direct links to view and respond to their journal entries.</p>
+          </div>
+        `;
+      }
+    }
 
-// Show login modal if not logged in
+// SECURITY: Force fresh authentication for HIPAA compliance
+// Clear any existing authentication session on page load
+console.log('🔒 SECURITY: Forcing fresh authentication for clinical compliance');
+signOut(auth).catch(err => console.log('No existing session to clear:', err));
 
-function showCoachLoginModal(msg = "") {
-  document.getElementById("coachLoginModal").style.display = "flex";
-  if (msg) document.getElementById("coachLoginError").textContent = msg;
-}
-function hideCoachLoginModal() {
-  document.getElementById("coachLoginModal").style.display = "none";
-  document.getElementById("coachLoginError").textContent = "";
-}
+// Always show login modal initially
+showCoachLoginModal("Welcome! Please sign in to access your practitioner portal.");
 
-onAuthStateChanged(auth, user => {
-  console.log('Logged in user UID:', user?.uid, 'Email:', user?.email);
+// Authentication state listener
+onAuthStateChanged(auth, (user) => {
+  console.log('🔥 Full user object:', user);
+  
+  currentAuthenticatedUser = user;
+  isUserAuthenticated = !!user;
+  
   if (!user) {
-    showCoachLoginModal();
+    console.log('🚫 No user authenticated, showing login modal');
+    isUserAuthenticated = false;
+    currentAuthenticatedUser = null;
+    showCoachLoginModal("Welcome! Please sign in to continue.");
   } else {
+    console.log('✅ User authenticated, hiding login modal and loading status');
+    isUserAuthenticated = true;
+    currentAuthenticatedUser = user;
     hideCoachLoginModal();
-    loadEntry();
+    loadPractitionerStatus();
   }
 });
 
 document.getElementById("coachLoginBtn").onclick = async () => {
   const email = document.getElementById("coachEmail").value.trim();
   const password = document.getElementById("coachPassword").value;
+  
+ // Basic email validation for coaches/practitioners
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if (!emailRegex.test(email)) {
+  document.getElementById("coachLoginError").textContent = "Please enter a valid email address.";
+  return;
+}
+  
   try {
-    await signInWithEmailAndPassword(auth, email, password);
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    console.log('🔑 Sign in successful:', userCredential.user);
+    
+    // SECURITY: Set session timeout for clinical compliance (30 minutes)
+    setTimeout(() => {
+      console.log('🕒 Session timeout - logging out for security');
+      signOut(auth);
+      showCoachLoginModal("Your session has timed out for security. Please sign in again.");
+    }, 30 * 60 * 1000); // 30 minutes
+    
     hideCoachLoginModal();
+    
+    // Ensure coach user has correct role in Firestore
+    try {
+      console.log('🔧 Ensuring coach role for user:', userCredential.user.uid);
+      const userDocRef = doc(db, 'users', userCredential.user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (!userDoc.exists()) {
+        console.log('🆕 Creating new coach user document');
+        await setDoc(userDocRef, {
+          userId: userCredential.user.uid,
+          email: userCredential.user.email,
+          userRole: 'coach',
+          agreementAccepted: true,
+          createdAt: new Date()
+        });
+      } else {
+        const userData = userDoc.data();
+        if (userData.userRole !== 'coach') {
+          console.log('🔄 Updating user role to coach');
+          await updateDoc(userDocRef, { userRole: 'coach' });
+        }
+      }
+      console.log('✅ Coach role verified/updated');
+    } catch (roleError) {
+      console.error('⚠️ Failed to set coach role:', roleError);
+      // Don't block login for this, but log the issue
+    }
+    
+    // Load the practitioner status and entry after successful login
+    isUserAuthenticated = true;
+    currentAuthenticatedUser = userCredential.user;
+    loadPractitionerStatus();
   } catch (err) {
+    console.error('🚫 Sign in failed:', err);
     document.getElementById("coachLoginError").textContent = err.message;
+  }
+};
+
+// Spinner function for status updates
+window.showSpinner = function (targetId, message = "Working...") {
+  const el = document.getElementById(targetId);
+  if (el) {
+    el.innerHTML = `<span class="spinner"></span> ${message}`;
   }
 };
 
@@ -140,50 +547,181 @@ document.getElementById("coachLoginBtn").onclick = async () => {
       const responseText = coachReply.value.trim();
       if (!responseText) return;
 
-      const entryRef = doc(db, "journalEntries", entryId);
-      await updateDoc(entryRef, {
-        coachResponse: {
-          text: responseText,
-          timestamp: serverTimestamp(),
-          coachId: "coach@inkwelljournal.io"
-        },
-        newCoachReply: true
-      });
-      confirmation.innerText = "Response submitted successfully!";
-      coachReply.value = "";
+      // Clear any previous status
+      const status = document.getElementById("responseSubmitStatus");
+
+      // Validate entryId exists
+      if (!entryId) {
+        console.error('❌ Cannot submit reply: entryId is null');
+        status.textContent = "Error: Missing entry ID. Please check the link and try again.";
+        status.style.color = "red";
+        return;
+      }
+
+      // Show spinner while processing
+      window.showSpinner("responseSubmitStatus", "Submitting response...");
+
+      try {
+        // Verify user is authenticated before calling the function
+        console.log('🔍 Form submission - Auth check:', {
+          isUserAuthenticated,
+          currentAuthenticatedUser,
+          authCurrentUser: auth.currentUser,
+          entryId: entryId,
+          responseTextLength: responseText.length
+        });
+
+        if (!isUserAuthenticated || !currentAuthenticatedUser) {
+          console.log('🚫 User not authenticated, showing login modal');
+          status.textContent = "Please sign in to submit your response.";
+          status.style.color = "red";
+          setTimeout(() => status.innerHTML = "", 4000);
+          showCoachLoginModal("Please sign in to submit your response.");
+          return;
+        }
+
+        // Double-check with auth.currentUser
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          console.log('🚫 auth.currentUser is null, showing login modal');
+          status.textContent = "Please sign in again to continue.";
+          status.style.color = "red";
+          setTimeout(() => status.innerHTML = "", 4000);
+          showCoachLoginModal("Please sign in again to continue.");
+          return;
+        }
+
+        console.log('🔍 Current user state:', {
+          user: currentUser,
+          uid: currentUser?.uid,
+          email: currentUser?.email,
+          entryId: entryId,
+          responseText: responseText.substring(0, 50) + "..."
+        });
+
+        // Ensure the user's ID token is fresh
+        const idToken = await currentUser.getIdToken(true);
+        console.log('🔑 Got fresh ID token:', idToken?.substring(0, 20) + "...");
+
+        // Use HTTP function instead of callable function to avoid CORS issues
+        const functionUrl = 'https://us-central1-inkwell-alpha.cloudfunctions.net/saveCoachReplyHTTP';
+        console.log('📞 Calling saveCoachReplyHTTP with:', { entryId, replyText: responseText });
+        
+        const response = await fetch(functionUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
+          },
+          body: JSON.stringify({
+            entryId: entryId,
+            replyText: responseText
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('✅ saveCoachReplyHTTP result:', result);
+        
+        // Show success message in status
+        status.innerHTML = "✅ Response submitted successfully!";
+        status.style.color = "var(--brand-primary)";
+        
+        // Also update the old confirmation element for backward compatibility
+        confirmation.innerText = "Response submitted successfully!";
+        confirmation.style.color = "green";
+        
+        // Clear the textarea
+        coachReply.value = "";
+        
+        // Clear status after 5 seconds
+        setTimeout(() => status.innerHTML = "", 5000);
+        
+      } catch (error) {
+        console.error("❌ Error saving coach reply:", error);
+        
+        // Show error in status
+        status.textContent = `Failed to submit response: ${error.message}`;
+        status.style.color = "red";
+        
+        // Also update the old confirmation element for backward compatibility
+        confirmation.innerText = `Error: ${error.message}`;
+        confirmation.style.color = "red";
+        
+        // Clear status after 4 seconds
+        setTimeout(() => status.innerHTML = "", 4000);
+      }
     });
 
-    // loadEntry();
-});
+
+// Logout function (within module scope to access auth)
+document.getElementById("logoutBtn").onclick = async () => {
+  try {
+    console.log('🚪 Logging out coach...');
+    await signOut(auth);
+    console.log('✅ Coach logout successful');
+    window.location.href = '/coach.html'; // Redirect back to coach page (will show login modal)
+  } catch (error) {
+    console.error('❌ Coach logout failed:', error);
+    alert('Logout failed. Please try again.');
+  }
+};
   </script>
 </head>
 <body>
-
-  <div id="coachLoginModal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(21,54,58,0.88);z-index:9999;display:none;align-items:center;justify-content:center;">
-  <div style="background:#fff;color:#2A6972;padding:2em 2em 1.5em 2em;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.09);max-width:340px;width:90%;">
-    <h3 style="margin-top:0;margin-bottom:1em;text-align:center;">Coach Login</h3>
-    <input id="coachEmail" type="email" placeholder="Email" style="width:100%;margin-bottom:0.5em;padding:0.6em;border-radius:5px;border:1px solid #aedae2;">
-    <input id="coachPassword" type="password" placeholder="Password" style="width:100%;margin-bottom:1em;padding:0.6em;border-radius:5px;border:1px solid #aedae2;">
-    <button id="coachLoginBtn" style="width:100%;background:#2A6972;color:#fff;padding:0.7em;border:none;border-radius:5px;font-size:1em;">Log In</button>
-    <div id="coachLoginError" style="color:#d49489;margin-top:1em;min-height:1.3em;text-align:center;"></div>
+  <div id="coachLoginModal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:linear-gradient(135deg, var(--brand-primary-rgba), rgba(61,139,149,0.85));backdrop-filter:blur(8px);z-index:9999;display:flex;align-items:center;justify-content:center;">
+  <div style="background:#fff;color:var(--brand-primary);padding:3em 2.5em 2.5em 2.5em;border-radius:16px;box-shadow:0 20px 40px var(--brand-primary-rgba);max-width:420px;width:90%;position:relative;">
+    <div style="text-align:center;margin-bottom:2em;">
+      <h2 style="margin:0;color:var(--brand-primary);font-size:1.8em;font-weight:300;margin-bottom:0.5em;">✨ Welcome</h2>
+      <p style="color:#667;font-size:1em;margin:0;line-height:1.4;">Access your practitioner portal to support your clients' wellness journey</p>
+    </div>
+    
+    <div style="margin-bottom:1.5em;">
+      <label style="display:block;color:var(--brand-primary);font-weight:500;margin-bottom:0.5em;font-size:0.9em;">Email Address</label>
+      <input id="coachEmail" type="email" placeholder="your.email@inkwelljournal.io" style="width:100%;padding:1em;border-radius:10px;border:2px solid #e1f4f6;background:#fafbfc;font-size:1em;transition:border-color 0.3s ease;box-sizing:border-box;">
+    </div>
+    
+    <div style="margin-bottom:2em;">
+      <label style="display:block;color:var(--brand-primary);font-weight:500;margin-bottom:0.5em;font-size:0.9em;">Password</label>
+      <input id="coachPassword" type="password" placeholder="Enter your password" style="width:100%;padding:1em;border-radius:10px;border:2px solid #e1f4f6;background:#fafbfc;font-size:1em;transition:border-color 0.3s ease;box-sizing:border-box;">
+    </div>
+    
+    <button id="coachLoginBtn" style="width:100%;background:linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));color:#fff;padding:1em;border:none;border-radius:10px;font-size:1.1em;font-weight:500;cursor:pointer;transition:all 0.3s ease;box-shadow:0 4px 15px var(--brand-primary-rgba);">
+      🌟 Sign In
+    </button>
+    
+    <div id="coachLoginError" style="color:#e74c3c;margin-top:1.5em;min-height:1.3em;text-align:center;font-size:0.9em;background:#fdf2f2;padding:0.75em;border-radius:8px;border-left:4px solid #e74c3c;display:none;"></div>
+    
+    <div style="text-align:center;margin-top:2em;padding-top:1.5em;border-top:1px solid #f0f8f9;">
+      <p style="color:#8fa8ac;font-size:0.85em;margin:0;line-height:1.4;">
+        🔐 Secure access for wellness practitioners<br>
+        
+      </p>
+    </div>
   </div>
 </div>
   <div class="entry-box" id="entryText">Loading journal entry...</div>
 
-  <form id="responseForm">
-    <label for="coachReply"><strong>Your Response:</strong></label>
-    <textarea id="coachReply" required></textarea>
-    <button type="submit">Submit Response</button>
+ <form id="responseForm" style="margin-top: 1.5em; padding: 1.5em; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+    <label for="coachReply" style="display: block; margin-bottom: 0.75em; font-weight: 600; color: var(--brand-primary); font-size: 1em;"><strong>💬 Your Response:</strong></label>
+    <textarea id="coachReply" required style="width: 100%; min-height: 120px; padding: 0.75em; border: 1px solid #aedae2; border-radius: 5px; background-color: white; color: #333; font-size: 0.95em; box-sizing: border-box; resize: vertical; font-family: inherit; line-height: 1.5; margin-bottom: 1em;"></textarea>
+    <button type="submit" style="background-color: var(--brand-primary); color: white; border: none; padding: 0.75em 1.5em; border-radius: 5px; font-weight: 500; cursor: pointer; font-size: 1em; transition: background-color 0.3s ease;">
+      📤 Submit Response
+    </button>
+    <span id="responseSubmitStatus" style="margin-left:10px;font-style:italic;"></span>
   </form>
 
-  <div class="confirmation" id="confirmation"></div>
-<button id="logoutBtn" style="position:fixed;bottom:2em;right:2em;z-index:10000;">Log Out</button>
-<script>
-  document.getElementById("logoutBtn").onclick = () => {
-    import('https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js').then(({ getAuth }) => {
-      getAuth().signOut().then(() => window.location.reload());
-    });
-  };
-</script>
+  <div class="confirmation" id="confirmation" style="margin-top: 1em; padding: 0.75em; text-align: center; font-weight: 500;"></div>
+
+<div style="text-align: right; margin-top: 2em; padding: 1em;">
+  <button id="logoutBtn" style="background-color: #6c757d; color: white; border: none; padding: 0.75em 1.25em; border-radius: 5px; font-weight: 500; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s ease;">
+    🚪 Log Out
+  </button>
+</div>
+</div>
 </body>
 </html>

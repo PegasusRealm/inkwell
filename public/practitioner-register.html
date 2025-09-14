@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InkWell - Practitioner Registration</title>
+    <style>
+        :root {
+            --brand-primary: #2A6972;
+            --brand-secondary: #388b97;
+            --brand-light: #4A9BA8;
+            --brand-lighter: #7BB8C4;
+            --brand-primary-rgba: rgba(42, 105, 114, 0.3);
+            --brand-primary-light-rgba: rgba(42, 105, 114, 0.1);
+        }
+        
+        body {
+            font-family: 'Alice', serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 2em;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 2em;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 2em;
+        }
+        .logo img {
+            max-height: 120px;
+        }
+        h1 {
+            color: var(--brand-primary);
+            text-align: center;
+            margin-bottom: 1.5em;
+            font-size: 1.8em;
+        }
+        .invitation-info {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5em;
+            margin-bottom: 2em;
+            border-left: 4px solid var(--brand-primary);
+        }
+        .form-group {
+            margin-bottom: 1.5em;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5em;
+            font-weight: 600;
+            color: #333;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75em;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+            background: white;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--brand-primary);
+            outline: none;
+            box-shadow: 0 0 0 2px var(--brand-primary-light-rgba);
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .btn {
+            background: var(--brand-primary);
+            color: white;
+            border: none;
+            padding: 1em 2em;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #1e5055;
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 1em;
+            text-align: center;
+            font-weight: 500;
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 0.75em;
+            border-radius: 4px;
+            margin-bottom: 1em;
+        }
+        .required {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="InkWell-Logo.png" alt="InkWell">
+        </div>
+        
+        <h1>Practitioner Registration</h1>
+        
+        <div id="invitationInfo" class="invitation-info">
+            <p><strong>Loading invitation details...</strong></p>
+        </div>
+        
+        <div id="errorMessage" class="error" style="display: none;"></div>
+        
+        <form id="registrationForm" style="display: none;">
+            <div class="form-group">
+                <label for="email">Email Address <span class="required">*</span></label>
+                <input type="email" id="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Create Password <span class="required">*</span></label>
+                <input type="password" id="password" required minlength="6">
+            </div>
+            
+            <div class="form-group">
+                <label for="fullName">Full Name <span class="required">*</span></label>
+                <input type="text" id="fullName" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="credentials">Professional Credentials</label>
+                <input type="text" id="credentials" placeholder="e.g., LCSW, PhD, MD, LPC, ACC">
+                <small style="color: #666;">Include relevant licenses or certifications</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="practiceType">Practice Type <span class="required">*</span></label>
+                <select id="practiceType" required>
+                    <option value="">Select practice type...</option>
+                    <option value="clinical_psychologist">Clinical Psychologist</option>
+                    <option value="counselor">Licensed Counselor/Therapist</option>
+                    <option value="psychiatrist">Psychiatrist</option>
+                    <option value="social_worker">Clinical Social Worker</option>
+                    <option value="life_coach">Life Coach</option>
+                    <option value="wellness_coach">Wellness Coach</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="licenseNumber">License Number (if applicable)</label>
+                <input type="text" id="licenseNumber" placeholder="Professional license number">
+            </div>
+            
+            <div class="form-group">
+                <label for="practiceLocation">Practice Location</label>
+                <input type="text" id="practiceLocation" placeholder="City, State/Country">
+            </div>
+            
+            <div class="form-group">
+                <label for="practiceDescription">Brief Practice Description</label>
+                <textarea id="practiceDescription" placeholder="Briefly describe your practice, specialties, or approach..."></textarea>
+            </div>
+            
+            <button type="submit" class="btn" id="submitBtn">
+                Complete Registration
+            </button>
+            
+            <div id="status" class="status"></div>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, setDoc, serverTimestamp, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+       const firebaseConfig = {
+    apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
+    authDomain: "inkwell-alpha.firebaseapp.com",
+    projectId: "inkwell-alpha",
+    storageBucket: "inkwell-alpha.firebasestorage.app",
+    messagingSenderId: "849610731668",
+    appId: "1:849610731668:web:f06d1a63f0db6391674481",
+    measurementId: "G-KHHZRVB7EJ"
+};
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Get invitation token from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        if (!token) {
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('errorMessage').textContent = 'Invalid invitation link. Please contact support.';
+        } else {
+            loadInvitation();
+        }
+
+async function loadInvitation() {
+    try {
+        console.log("Loading invitation for token:", token);
+        
+        const inviteDoc = await getDoc(doc(db, 'practitionerInvitations', token));
+        console.log("Invitation document exists:", inviteDoc.exists);
+        
+        if (!inviteDoc.exists) {
+            throw new Error('Invitation not found or expired. Please contact support.');
+        }
+        
+        const inviteData = inviteDoc.data();
+        console.log("Invitation data:", inviteData);
+        
+        if (inviteData.status !== 'pending') {
+            throw new Error('This invitation has already been used or is no longer valid.');
+        }
+        
+        // Display invitation info
+        document.getElementById('invitationInfo').innerHTML = `
+            <div style="background: #e8f5e8; border: 1px solid #4caf50; padding: 1em; border-radius: 8px;">
+                <p><strong>✅ Valid Invitation Found!</strong></p>
+                <p><strong>Invitation from:</strong> ${inviteData.fromUserName || 'InkWell User'}</p>
+                <p><strong>Email:</strong> ${inviteData.fromUserEmail || 'Not provided'}</p>
+                <p>You've been invited to join InkWell as <strong>${inviteData.practitionerName}</strong>'s practitioner.</p>
+            </div>
+        `;
+        
+        // Pre-fill email and name
+        document.getElementById('email').value = inviteData.practitionerEmail || '';
+        document.getElementById('fullName').value = inviteData.practitionerName || '';
+        
+        // Show form
+        document.getElementById('registrationForm').style.display = 'block';
+        
+    } catch (error) {
+        console.error("Error loading invitation:", error);
+        document.getElementById('errorMessage').style.display = 'block';
+        document.getElementById('errorMessage').textContent = `❌ ${error.message}`;
+        
+        // Add debugging info
+        document.getElementById('errorMessage').innerHTML += `
+            <br><br><small style="color: #666;">
+                Debug info: Token = ${token}<br>
+                Error: ${error.message}<br>
+                If this persists, please contact support with this information.
+            </small>
+        `;
+    }
+}
+
+
+
+
+
+        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const status = document.getElementById('status');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating Account...';
+            status.innerHTML = '<span style="color: #2A6972;">Processing registration...</span>';
+            
+            try {
+                const formData = {
+                    email: document.getElementById('email').value.trim(),
+                    password: document.getElementById('password').value,
+                    fullName: document.getElementById('fullName').value.trim(),
+                    credentials: document.getElementById('credentials').value.trim(),
+                    practiceType: document.getElementById('practiceType').value,
+                    licenseNumber: document.getElementById('licenseNumber').value.trim(),
+                    practiceLocation: document.getElementById('practiceLocation').value.trim(),
+                    practiceDescription: document.getElementById('practiceDescription').value.trim()
+                };
+                
+                // Create Firebase Auth account
+                const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+                const user = userCredential.user;
+                
+                // Create practitioner request document
+                await setDoc(doc(db, 'practitionerRequests', user.uid), {
+                    userId: user.uid,
+                    invitationToken: token,
+                    email: formData.email,
+                    fullName: formData.fullName,
+                    credentials: formData.credentials,
+                    practiceType: formData.practiceType,
+                    licenseNumber: formData.licenseNumber,
+                    practiceLocation: formData.practiceLocation,
+                    practiceDescription: formData.practiceDescription,
+                    status: 'pending_approval',
+                    requestedAt: serverTimestamp()
+                });
+                
+                // Create basic user document
+                await setDoc(doc(db, 'users', user.uid), {
+                    userId: user.uid,
+                    email: formData.email,
+                    displayName: formData.fullName,
+                    signupUsername: formData.fullName,
+                    userRole: 'practitioner_pending',
+                    agreementAccepted: true,
+                    createdAt: serverTimestamp()
+                });
+                
+                // Update invitation status
+                await updateDoc(doc(db, 'practitionerInvitations', token), {
+                    status: 'registered',
+                    practitionerId: user.uid,
+                    registeredAt: serverTimestamp()
+                });
+                
+status.innerHTML = `
+    <div style="background: linear-gradient(135deg, #e8f5e8 0%, #d4f5d4 100%); border: 1px solid #4caf50; border-left: 6px solid #2A6972; padding: 2em; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <div style="text-align: center; margin-bottom: 1.5em;">
+            <div style="font-size: 3em; color: #2A6972; margin-bottom: 0.5em;">🌟</div>
+            <h2 style="color: #2A6972; margin: 0; font-size: 1.8em; font-weight: 600;">Welcome Aboard, ${formData.fullName}!</h2>
+        </div>
+        
+        <div style="background: rgba(255,255,255,0.7); padding: 1.5em; border-radius: 8px; margin-bottom: 1.5em;">
+            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.3em;">✅ Registration Complete</h3>
+            <p style="margin: 0.5em 0; color: #333;">Your InkWell practitioner account has been successfully created and is now <strong>pending approval</strong>. You'll receive an email confirmation within 24-48 hours once your credentials are verified.</p>
+        </div>
+        
+        <div style="background: rgba(42,105,114,0.05); padding: 1.5em; border-radius: 8px; border-left: 4px solid #2A6972; margin-bottom: 1.5em;">
+            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.2em;">📋 How InkWell Works</h3>
+            <ul style="margin: 0; padding-left: 1.5em; color: #444; line-height: 1.6;">
+                <li><strong>Client Selection:</strong> Your clients will hand-select specific journal entries they want to share with you</li>
+                <li><strong>Email Notifications:</strong> When a client shares an entry, you'll receive an email with a secure link</li>
+                <li><strong>Review & Respond:</strong> Click the link to read the entry and all associated context (mood, tags, etc.)</li>
+                <li><strong>One-Time Reply:</strong> You can provide one thoughtful response per shared entry</li>
+                <li><strong>Secure Communication:</strong> All interactions are HIPAA-compliant and encrypted</li>
+            </ul>
+        </div>
+        
+        <div style="background: rgba(255,255,255,0.9); padding: 1.5em; border-radius: 8px; border: 1px solid #ddd;">
+            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.1em;">💡 What's Next?</h3>
+            <div style="display: grid; grid-template-columns: auto 1fr; gap: 0.5em 1em; align-items: start;">
+                <span style="color: #2A6972; font-weight: bold;">1.</span>
+                <span>Await approval confirmation email</span>
+                <span style="color: #2A6972; font-weight: bold;">2.</span>
+                <span>Complete any additional verification steps (if required)</span>
+                <span style="color: #2A6972; font-weight: bold;">3.</span>
+                <span>Start receiving client journal entries and providing support</span>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 1.5em; padding-top: 1.5em; border-top: 1px solid rgba(42,105,114,0.2);">
+            <p style="margin: 0.5em 0; color: #666; font-size: 0.95em;">
+                <strong>Questions or need support?</strong><br>
+                Contact our team at <a href="mailto:support@inkwelljournal.io" style="color: #2A6972; text-decoration: none; font-weight: 600;">support@inkwelljournal.io</a>
+            </p>
+            <p style="margin: 0.5em 0 0 0; color: #888; font-size: 0.85em; font-style: italic;">
+                Thank you for joining the InkWell community of mental health professionals.
+            </p>
+        </div>
+    </div>
+`;
+                // Hide form
+                document.getElementById('registrationForm').style.display = 'none';
+                
+            } catch (error) {
+                console.error('Registration error:', error);
+                status.innerHTML = `<span style="color: #dc3545;">Error: ${error.message}</span>`;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Complete Registration';
+            }
+        });
+    </script>
+</body>
+</html>

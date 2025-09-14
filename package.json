@@ -1,5 +1,19 @@
 {
+  "name": "inkwell-alpha",
+  "version": "1.0.0",
+  "description": "Firebase project for InkWell app",
+  "scripts": {
+    "start": "firebase emulators:start",
+    "dev": "firebase emulators:start --only auth,firestore,functions,hosting",
+    "deploy": "firebase deploy",
+    "deploy:rules": "firebase deploy --only firestore:rules",
+    "watch:rules": "chokidar 'firestore.rules' -c 'firebase deploy --only firestore:rules'"
+  },
   "dependencies": {
+    "dotenv": "^16.5.0",
     "firebase": "^11.6.1"
+  },
+  "devDependencies": {
+    "chokidar-cli": "^3.0.0"
   }
 }

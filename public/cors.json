@@ -1,0 +1,20 @@
+[
+  {
+    "origin": [
+      "https://inkwell-alpha.web.app", 
+      "https://inkwell-alpha.firebaseapp.com",
+      "https://inkwelljournal.io"
+    ],
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "x-goog-meta-custom",
+      "x-goog-upload-protocol",
+      "x-goog-upload-command",
+      "x-goog-upload-header-content-length",
+      "x-goog-upload-offset"
+    ],
+    "method": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "maxAgeSeconds": 3600
+  }
+]
