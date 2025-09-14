@@ -677,6 +677,18 @@
       background-color: var(--bg-light-alt);
       color: var(--font-main);
     }
+    
+    /* Fix signup modal for light theme */
+    #signupModal .card-block {
+      background: white !important;
+      color: #2D3748 !important;
+    }
+    
+    /* Fix login modal for light theme */
+    #loginModal .card-block {
+      background: white !important;
+      color: #2D3748 !important;
+    }
     #loginModal::before {
   content: "";
   position: fixed;
@@ -694,7 +706,8 @@
     html[data-theme='dark'] #goodbyeModal,
     html[data-theme='dark'] #userSettingsModal,
     html[data-theme='dark'] #manifestDataModal,
-    html[data-theme='dark'] #reflectionDataModal {
+    html[data-theme='dark'] #reflectionDataModal,
+    html[data-theme='dark'] #aboutInkwellModal {
       background-color: rgba(21, 54, 58, 0.85);
       color: var(--font-white);
     }
@@ -838,6 +851,56 @@
 
     html[data-theme='dark'] #loginModal a:hover {
       color: #7BB8C4 !important;
+    }
+
+    /* Enhanced Dark Theme for About InkWell Modal */
+    html[data-theme='dark'] #aboutInkwellModal > div {
+      background: rgba(21, 54, 58, 0.95) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(42,105,114,0.3) !important;
+      backdrop-filter: blur(10px) !important;
+    }
+
+    html[data-theme='dark'] #aboutInkwellModal h2 {
+      color: #7BB8C4 !important;
+    }
+
+    html[data-theme='dark'] #aboutInkwellModal h3 {
+      color: #89C9D4 !important;
+    }
+
+    html[data-theme='dark'] #aboutInkwellModal p,
+    html[data-theme='dark'] #aboutInkwellModal div {
+      color: rgba(137, 201, 212, 0.9) !important;
+    }
+
+    html[data-theme='dark'] #aboutInkwellModal strong {
+      color: #7BB8C4 !important;
+    }
+
+    html[data-theme='dark'] #aboutInkwellModal span {
+      color: rgba(137, 201, 212, 0.8) !important;
+    }
+
+    html[data-theme='dark'] #aboutInkwellModal em {
+      color: rgba(137, 201, 212, 0.7) !important;
+    }
+
+    html[data-theme='dark'] #aboutInkwellModal hr {
+      border-color: rgba(137, 201, 212, 0.3) !important;
+    }
+
+    html[data-theme='dark'] #aboutInkwellModal .btn {
+      background: linear-gradient(135deg, rgba(42, 105, 114, 0.8) 0%, rgba(30, 80, 85, 0.9) 100%) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(137, 201, 212, 0.4) !important;
+      box-shadow: 0 2px 8px rgba(137, 201, 212, 0.2) !important;
+    }
+
+    html[data-theme='dark'] #aboutInkwellModal .btn:hover {
+      background: linear-gradient(135deg, rgba(42, 105, 114, 0.9) 0%, rgba(30, 80, 85, 1) 100%) !important;
+      box-shadow: 0 0 12px rgba(137, 201, 212, 0.4) !important;
+      transform: translateY(-1px) !important;
     }
 
     /* Dark mode instruction sections - white background for readability */
@@ -3949,8 +4012,8 @@ if (planSuggestion) planSuggestion.textContent = "";
   // Show confirmation
   const manifestSaveStatus = document.getElementById("manifestSaveStatus");
   if (manifestSaveStatus) {
-    manifestSaveStatus.innerHTML = "🗑️ Manifest cleared";
-    manifestSaveStatus.style.color = "#D4A574";
+    manifestSaveStatus.innerHTML = "✨ Ready for your next WISH";
+    manifestSaveStatus.style.color = "#2A6972";
     setTimeout(() => {
       manifestSaveStatus.innerHTML = "";
       manifestSaveStatus.style.color = "";
@@ -5603,79 +5666,91 @@ window.askSophyToRefine = async function (section) {
     // Customize prompt based on section
     switch(section) {
       case 'wish':
-        prompt = `You are Sophy, an encouraging journaling assistant. Help refine this user's want using comprehensive WISH framework guidance and strategic thinking:
+        prompt = `You are Sophy, a supportive journaling assistant and WISH coach. Analyze this user's Wish and provide guidance on how well it aligns with effective WISH principles:
 
-STRATEGIC APPROACHES FOR FINDING YOUR WISH:
+WISH EVALUATION CRITERIA:
 
-1. START WITH WHAT MATTERS MOST: Think about an area where you genuinely want change—career, relationships, wellness, or learning. The wish should feel exciting and meaningful, and ideally be challenging but achievable.
+1. BE SPECIFIC AND REALISTIC - Is it concrete rather than vague? Achievable with current abilities?
+2. PERSONAL AND INSPIRING - Does it resonate personally? Is it challenging but possible?
+3. FOCUS ON ONE PRIORITY - Is it singular and focused rather than multiple goals?
+4. IMMEDIATE AND ACTIONABLE - Can it be acted on in the next few weeks/months?
 
-2. BREAK IT DOWN: If the goal feels too large or vague, split it into smaller, more specific wishes. For instance, "build a network" can become "attend one event this month".
+User's Wish: ${input}
 
-3. LISTEN TO YOUR MOTIVATION: If a wish feels forced or uninspiring, discard it and try another that sparks genuine excitement. Imagining the best possible outcome can help test whether the wish fits authentically.
+Please evaluate their wish against these criteria and provide specific, actionable advice on how to strengthen it. Consider:
+- What's working well in their current wish?
+- Which criteria could be improved and how?
+- Specific suggestions to make it more effective for WISH
 
-4. EMBRACE IMPERFECTION: The wish does not need to be perfect or permanent. WOOP is effective for both small and large goals as long as it feels personally relevant and within reach.
+Provide your guidance as helpful coaching advice, not a rewrite. Help them understand what makes a strong wish and how they can refine theirs.
 
-PRACTICAL REFINEMENT TIPS:
-- Be specific: Avoid vague wishes ("be healthier"); clarify what that looks like for you ("run a 5K," "cook healthy dinners twice a week").
-- Use emotional resonance: Choose the wish that energizes you when you visualize success
-- Consider timeframe: Ideally achievable within 90 days, but trust their judgment for longer goals
-- Ensure authenticity: The wish should feel personally meaningful, not imposed by others
-
-GUIDANCE QUESTIONS TO CONSIDER:
-- "If you could change one thing in your work/life right now, what would it be?"
-- "What area of change feels both exciting and meaningful to you?"
-- "When you imagine achieving this, does it feel energizing or forced?"
-
-Original want: ${input}
-
-Please help refine this want to be more specific, meaningful, and achievable while preserving their original intention. Consider the strategic approaches above to help them create a wish that feels authentic, exciting, and within reach.
-
-IMPORTANT: Return ONLY the refined version without any explanations, comments, or follow-up questions. Do not include phrases like "Let me know if you'd like to discuss further" or "Would you like me to help with..." Just provide the improved version.`;
+IMPORTANT: Provide coaching guidance and advice only. Do not rewrite their wish for them. Help them understand how to improve it themselves.`;
         break;
       case 'outcome':
-        prompt = `You are Sophy, an encouraging journaling assistant. Help refine this user's imagination using the WISH framework guidance:
+        prompt = `You are Sophy, a supportive journaling assistant and WISH coach. Analyze this user's Imagine and provide guidance on how well it aligns with effective WISH principles:
 
-Imagine Guidelines:
-- Help them imagine the best possible outcome if their wish is fulfilled
-- Encourage them to describe, visualize, and emotionally connect with success
-- Ask "What's the best thing that would happen if you achieved your wish?"
-- Encourage vivid, sensory details and feelings to strengthen motivation
+IMAGINE EVALUATION CRITERIA:
 
-Original imagination: ${input}
+1. VISUALIZE VIVIDLY - Does it include detailed imagery of what life will look like and how success will feel?
+2. MAKE IT PERSONAL - Does it deeply matter to them and reflect their values?
+3. BE CONCRETE AND SPECIFIC - Is it tangible and observable rather than abstract?
+4. SAVOR THE FEELING - Does it capture emotions, sensations, and achievement feelings?
 
-Please rewrite this to include more vivid, sensory details and emotional connection to their success.
+User's Imagine: ${input}
 
-IMPORTANT: Return ONLY the refined version without any explanations, comments, or follow-up questions. Do not include phrases like "Let me know if you'd like to discuss further" or "Would you like me to help with..." Just provide the improved version.`;
+Please evaluate their imagination against these criteria and provide specific, actionable advice on how to strengthen it. Consider:
+- What vivid details are already present vs. missing?
+- How could they make it more personally meaningful?
+- Where could they add concrete, observable elements?
+- How might they better capture the emotional experience of success?
+
+Provide coaching guidance to help them create a more motivating and compelling vision of their success.
+
+IMPORTANT: Provide coaching guidance and advice only. Do not rewrite their imagination for them. Help them understand how to make it more vivid and motivating themselves.`;
         break;
       case 'opposition':
-        prompt = `You are Sophy, an encouraging journaling assistant. Help refine this user's snags using the WISH framework guidance:
+        prompt = `You are Sophy, a supportive journaling assistant and WISH coach. Analyze this user's Snags and provide guidance on how well it aligns with effective WISH principles:
 
-Snags Guidelines:
-- Help them consider main internal obstacles that could stop them (e.g., procrastination, self-doubt)
-- Focus on obstacles within themselves—not just external circumstances
-- Ask "What is it within you that might prevent you from realizing your wish?"
-- Remind them it's normal to experience internal resistance
+SNAGS EVALUATION CRITERIA:
 
-Original snags: ${input}
+1. BE HONEST AND REFLECTIVE - Does it focus on internal roadblocks (self-doubt, procrastination, habits) rather than external circumstances?
+2. MAKE IT SPECIFIC AND CLEAR - Is it concrete and specific rather than vague generalities?
+3. FOCUS ON THE MOST RELEVANT OBSTACLE - Is it the one most likely to derail progress?
+4. CONNECT EMOTION AND BEHAVIOR - Does it describe patterns, triggers, or how the obstacle typically manifests?
 
-Please rewrite this to focus more on internal obstacles they have control over while being encouraging.
+User's Snags: ${input}
 
-IMPORTANT: Return ONLY the refined version without any explanations, comments, or follow-up questions. Do not include phrases like "Let me know if you'd like to discuss further" or "Would you like me to help with..." Just provide the improved version.`;
+Please evaluate their snags against these criteria and provide specific, actionable advice on how to strengthen them. Consider:
+- Are they focusing on internal vs. external snags?
+- How could they be more specific about the snag's pattern?
+- Is this truly the most likely barrier to derail their progress?
+- How might they better describe when and how this snag shows up?
+
+Provide coaching guidance to help them identify the most relevant internal snag they can actually address.
+
+IMPORTANT: Provide coaching guidance and advice only. Do not rewrite their snags for them. Help them understand how to identify and articulate their most critical internal barrier.`;
         break;
       case 'plan':
-        prompt = `You are Sophy, an encouraging journaling assistant. Help refine this user's how plan using the WISH framework guidance:
+        prompt = `You are Sophy, a supportive journaling assistant and WISH coach. Analyze this user's How and provide guidance on how well it aligns with effective WISH principles:
 
-How Guidelines:
-- Support them in creating "If-Then" plans: "If [obstacle] happens, then I will [take this action]"
-- Encourage concrete, actionable steps for when obstacles arise
-- Example: "If I start procrastinating, then I will set a 10-minute timer to just get started"
-- The plan should feel doable and specific
+HOW EVALUATION CRITERIA:
 
-Original plan: ${input}
+1. USE "IF-THEN" IMPLEMENTATION INTENTIONS - Is it structured as "If [snag] happens, then I will [specific action]"?
+2. MAKE IT SPECIFIC AND FEASIBLE - Is it one clear, realistic action they can do in their daily context?
+3. KEEP IT SIMPLE - Is it concise and focused on one main coping strategy?
+4. PREPARE TO EXECUTE IMMEDIATELY - Can they visualize and immediately act when the snag appears?
 
-Please rewrite this as specific "If-Then" statements that are concrete and actionable.
+User's How: ${input}
 
-IMPORTANT: Return ONLY the refined version without any explanations, comments, or follow-up questions. Do not include phrases like "Let me know if you'd like to discuss further" or "Would you like me to help with..." Just provide the improved version.`;
+Please evaluate their plan against these criteria and provide specific, actionable advice on how to strengthen it. Consider:
+- Does it follow the if-then format linking snag to action?
+- Is the planned action specific, realistic, and doable for them?
+- Is it simple enough to remember and execute in the moment?
+- How could they make it more immediately actionable?
+
+Provide coaching guidance to help them create a more effective implementation intention that will actually work when they encounter their snag.
+
+IMPORTANT: Provide coaching guidance and advice only. Do not rewrite their plan for them. Help them understand how to create a stronger if-then implementation strategy themselves.`;
         break;
     }
 
@@ -5862,8 +5937,12 @@ window.updateWishProgress = function() {
   const startDate = localStorage.getItem(wishStartKey);
   
   if (!savedManifest || !startDate) {
-    // No saved WISH or no start date - hide progress bar
+    // No saved WISH or no start date - hide progress bar and show timeline input
     progressBar.style.display = "none";
+    const timelineInputGroup = document.querySelector(".wish-timeline-input-group");
+    if (timelineInputGroup) {
+      timelineInputGroup.style.display = "block";
+    }
     return;
   }
   
@@ -5871,8 +5950,12 @@ window.updateWishProgress = function() {
   const hasWishContent = manifestData.wish && manifestData.wish.trim();
   
   if (!hasWishContent) {
-    // No WISH content - hide progress bar
+    // No WISH content - hide progress bar and show timeline input
     progressBar.style.display = "none";
+    const timelineInputGroup = document.querySelector(".wish-timeline-input-group");
+    if (timelineInputGroup) {
+      timelineInputGroup.style.display = "block";
+    }
     return;
   }
   
@@ -5888,6 +5971,12 @@ window.updateWishProgress = function() {
   
   // Show subtle progress bar
   progressBar.style.display = "block";
+  
+  // Hide the timeline input section when progress bar is active
+  const timelineInputGroup = document.querySelector(".wish-timeline-input-group");
+  if (timelineInputGroup) {
+    timelineInputGroup.style.display = "none";
+  }
   
   // Update progress bar with calming colors
   const progressFill = document.getElementById("wishProgressFill");
@@ -5910,16 +5999,14 @@ window.updateWishProgress = function() {
   
   // Only show encouraging message, no countdown pressure
   if (progressMessage) {
-    const remainingDays = totalDays - daysElapsed;
-    
     if (progressPercent <= 25) {
-      progressMessage.textContent = `Taking your first steps (${remainingDays} days remaining) - you've begun something meaningful`;
+      progressMessage.textContent = `Taking your first steps - you've begun something meaningful`;
     } else if (progressPercent <= 50) {
-      progressMessage.textContent = `Building momentum (${remainingDays} days remaining) - your consistency is creating change`;
+      progressMessage.textContent = `Building momentum - your consistency is creating change`;
     } else if (progressPercent <= 75) {
-      progressMessage.textContent = `Making solid progress (${remainingDays} days remaining) - you're developing new patterns`;
+      progressMessage.textContent = `Making solid progress - you're developing new patterns`;
     } else if (progressPercent < 100) {
-      progressMessage.textContent = `Approaching your timeline (${remainingDays} days remaining) - notice how far you've come`;
+      progressMessage.textContent = `Approaching your timeline - notice how far you've come`;
     } else {
       progressMessage.innerHTML = `<strong>Timeline reached - Time for New WISH!</strong> <button onclick="resetWishTimeline()" style="margin-left: 10px; padding: 4px 8px; background: #2A6972; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">Reset Timeline</button>`;
     }
@@ -6064,8 +6151,8 @@ document.head.appendChild(themeStyle);
 
 <body>
 <!-- 🔐 Login Modal -->
-<div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 9999;">
-  <div class="card-block" style="max-width: 400px; width: 90%; background: white; padding: 2em; border-radius: 8px; text-align: center;">
+<div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); overflow-y: auto; padding: 2em 0; box-sizing: border-box; z-index: 9999;">
+  <div class="card-block" style="max-width: 400px; width: 90%; background: white; padding: 2em; border-radius: 8px; text-align: center; margin: 0 auto; min-height: fit-content;">
     <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 175px; margin-bottom: 1em;" />
     <form id="loginForm">
   <input type="email" id="loginEmail" placeholder="Email" required
@@ -6137,8 +6224,8 @@ document.head.appendChild(themeStyle);
 </div>
 
 <!-- ✨ Signup Modal (moved here to be with other modals and before </body>) -->
-<div id="signupModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 9999;">
-  <div class="card-block" style="max-width: 400px; width: 90%; background: white; padding: 2em; border-radius: 8px; text-align: center;">
+<div id="signupModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); overflow-y: auto; padding: 2em 0; box-sizing: border-box; z-index: 9999;">
+  <div class="card-block" style="max-width: 400px; width: 90%; background: white; padding: 2em; border-radius: 8px; text-align: center; margin: 0 auto; min-height: fit-content;">
     <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 175px; margin-bottom: 1em;" />
     <form id="signupForm">
       <input type="text" id="signupUsername" name="username" placeholder="User Name (optional)" 
@@ -6152,6 +6239,23 @@ document.head.appendChild(themeStyle);
         style="width: 90%; padding: 1em 1.2em; margin-bottom: 1em; background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%); border: 2px solid rgba(42,105,114,0.15); border-radius: 10px; backdrop-filter: blur(3px); box-shadow: 0 2px 8px rgba(42,105,114,0.08); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: #0D3F45; font-family: var(--body-font);" />
       <input type="password" id="signupPassword" name="password" placeholder="Password" required
         style="width: 90%; padding: 1em 1.2em; margin-bottom: 1em; background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%); border: 2px solid rgba(42,105,114,0.15); border-radius: 10px; backdrop-filter: blur(3px); box-shadow: 0 2px 8px rgba(42,105,114,0.08); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: #0D3F45; font-family: var(--body-font);" />
+      
+      <!-- Agreement Checkboxes -->
+      <div style="width: 90%; margin: 1em auto; text-align: left;">
+        <label style="display: block; margin-bottom: 0.5em; font-size: 0.9em; color: #2A6972;">
+          <input type="checkbox" id="termsAgreement" name="termsAgreement" checked style="margin-right: 0.5em;">
+          I agree to the <a href="https://pegasusrealm.com/terms-conditions/" target="_blank" style="color: #2A6972; text-decoration: underline;">Terms & Conditions</a>
+        </label>
+        <label style="display: block; margin-bottom: 0.5em; font-size: 0.9em; color: #2A6972;">
+          <input type="checkbox" id="privacyAgreement" name="privacyAgreement" checked style="margin-right: 0.5em;">
+          I agree to the <a href="https://pegasusrealm.com/privacy-policy/" target="_blank" style="color: #2A6972; text-decoration: underline;">Privacy Policy</a>
+        </label>
+        <label style="display: block; margin-bottom: 1em; font-size: 0.9em; color: #2A6972;">
+          <input type="checkbox" id="betaAgreement" name="betaAgreement" checked style="margin-right: 0.5em;">
+          I agree to the <a href="https://pegasusrealm.com/alpha-beta-testers/" target="_blank" style="color: #2A6972; text-decoration: underline;">Beta Testing Agreement</a>
+        </label>
+      </div>
+      
       <div class="g-recaptcha" data-sitekey="6LeCel0rAAAAAJVIplFBKgyy0oO-bYd2wr2_wqxI"
         style="margin: 0 auto 1em auto; width: 90%; display: flex; justify-content: flex-start;"></div>
       <button type="submit" class="btn"
@@ -6207,9 +6311,7 @@ document.head.appendChild(themeStyle);
 Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come back to them anytime.
 </p>
 
-  <div style="display: flex; justify-content: center; margin-bottom: 1em;">
-    <button class="btn" id="aboutInkwellBtn" style="font-size:0.97em; font-weight:500;">What is InkWell?</button>
-  </div>
+
 </header>
 
 <div id="goodbyeModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; z-index: 9999; background: rgba(0,0,0,0.7);">
@@ -6564,17 +6666,16 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   </div>
   
   <!-- Dynamic Progress Bar (shows after saving) -->
-  <div id="wishProgressBar" style="display: none; margin-top: 2em;">
-    <h4 style="text-align: center; color: #2A6972; margin-bottom: 0.5em;">Your Active WISH Progress</h4>
+  <div id="wishProgressBar" style="display: none; margin-top: 1.5em;">
+    <h4 style="text-align: center; color: #2A6972; margin-bottom: 0.8em; font-size: 1em;">Your WISH Growth Journey</h4>
     
-    <div style="position: relative; height: 50px; background: #e0e0e0; border-radius: 25px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); margin: 1em 0;">
-      <div id="wishProgressFill" style="position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #ff6b6b, #ffd93d); transition: width 0.5s ease, background 0.5s ease; border-radius: 25px; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;">
-        <span id="wishProgressEmoji" style="font-size: 1.8em; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.2));">🌱</span>
+    <div style="position: relative; height: 25px; background: #f0f0f0; border-radius: 15px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); margin: 0 auto; width: 75%; max-width: 400px;">
+      <div id="wishProgressFill" style="position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #4a9ead, #7bb8c4); transition: width 0.8s ease, background 0.5s ease; border-radius: 15px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;">
+        <span id="wishProgressEmoji" style="font-size: 1.2em; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.15));">🌱</span>
       </div>
     </div>
     
-    <p id="wishDaysRemaining" style="text-align: center; font-weight: 600; color: #2A6972; font-size: 0.95em;"></p>
-    <p id="wishProgressMessage" style="text-align: center; font-style: italic; color: #666; margin-top: 0.5em;"></p>
+    <p id="wishProgressMessage" style="text-align: center; font-style: italic; color: #666; margin-top: 0.8em; font-size: 0.9em;"></p>
   </div>
 </div>
 
@@ -7184,9 +7285,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 
 
 <script>
-  document.getElementById("aboutInkwellBtn").onclick = function() {
-    document.getElementById("aboutInkwellModal").style.display = "flex";
-  };
+
 
   // Welcome to Beta Modal Functions
   window.showWelcomeBetaModal = function() {
@@ -7425,14 +7524,7 @@ window.forceRefreshCurrentView = function() {
 </script>
 <!-- 🔧 Consolidated about-modal opener + Safari autofill + signup toggle -->
 <script>
-  // About modal opener (use addEventListener to avoid clobbering)
-  const aboutBtn = document.getElementById("aboutInkwellBtn");
-  if (aboutBtn) {
-    aboutBtn.addEventListener("click", () => {
-      const modal = document.getElementById("aboutInkwellModal");
-      if (modal) modal.style.display = "flex";
-    });
-  }
+
 
   // Safari autofill workaround: re-evaluate on focus
   document.querySelectorAll("input").forEach((input) => {

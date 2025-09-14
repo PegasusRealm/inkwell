@@ -242,8 +242,8 @@
         
         .hero-content {
             display: grid;
-            grid-template-columns: 1.2fr 1fr;
-            gap: 4rem;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 2rem;
             align-items: center;
             min-height: 80vh;
             position: relative;
@@ -415,8 +415,8 @@
             position: relative;
             height: 600px;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            align-items: stretch;
+            justify-content: stretch;
             animation: slideInRight 1s ease-out 0.5s both;
         }
         
@@ -433,31 +433,20 @@
         
         .desk-photo-scene {
             position: relative;
-            width: 500px;
-            height: 400px;
-            border-radius: 20px;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px 0 0 0;
             overflow: hidden;
             box-shadow: 0 25px 50px rgba(42, 105, 114, 0.15);
-            animation: sceneFloat 8s ease-in-out infinite;
-        }
-        
-        @keyframes sceneFloat {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-8px) scale(1.02); }
         }
         
         .desk-background {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            object-position: center center;
-            opacity: 0.05;
-            transition: opacity 0.3s ease;
+            object-position: left center;
+            opacity: 1;
             transform: scale(1);
-        }
-        
-        .desk-photo-scene:hover .desk-background {
-            opacity: 0.08;
         }
         
         .logo-overlay {
@@ -1466,24 +1455,13 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: url('hero-journal-desk.png') center/cover;
+            background: url('watercolor-teal-bg.png') center/cover;
             border-radius: 20px;
             overflow: hidden;
             min-height: 400px;
         }
         
-        .hero-visual::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(137, 201, 212, 0.3) 0%, 
-                rgba(42, 105, 114, 0.2) 100%);
-            z-index: 1;
-        }
+
         
         .hero-image {
             width: 100%;
@@ -2721,10 +2699,6 @@
                         <!-- Desk background photo -->
                         <img src="hero-journal-desk.png" alt="Elegant desk workspace" class="desk-background" />
                         
-                        <!-- Subtle floating inspiration -->
-                        <div class="floating-inspiration inspiration-1">💭</div>
-                        <div class="floating-inspiration inspiration-2">✨</div>
-                        <div class="floating-inspiration inspiration-3">🌟</div>
                     </div>
                 </div>
             </div>

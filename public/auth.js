@@ -128,8 +128,15 @@ function initThemeSystem() {
   // Make applyTheme globally available
   window.applyTheme = function(mode) {
     if (mode === 'default') {
-      // Remove any override and let system preference take over
-      document.documentElement.removeAttribute('data-theme');
+      // Use system preference but apply current themes (not old @media ones)
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (prefersDark) {
+        // Apply current complete dark theme
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        // Use default light theme
+        document.documentElement.removeAttribute('data-theme');
+      }
     } else {
       // Apply specific theme
       document.documentElement.setAttribute('data-theme', mode);
@@ -140,7 +147,10 @@ function initThemeSystem() {
   const savedTheme = localStorage.getItem('inkwell-theme-mode') || 'default';
   if (themeSelect) themeSelect.value = savedTheme;
   if (settingsThemeSelect) settingsThemeSelect.value = savedTheme;
+  
+  // Apply theme immediately and also after a small delay to ensure CSS is loaded
   window.applyTheme(savedTheme);
+  setTimeout(() => window.applyTheme(savedTheme), 100);
 
   // Handle theme changes from main selector
   if (themeSelect) {
@@ -181,6 +191,7 @@ function initThemeSystem() {
   systemDarkQuery.addListener(() => {
     const currentTheme = localStorage.getItem('inkwell-theme-mode') || 'default';
     if (currentTheme === 'default') {
+      // Re-apply system default to use current theme logic
       window.applyTheme('default');
     }
   });
@@ -654,8 +665,10 @@ const loginForm = document.getElementById("loginForm");
 const signupForm = document.getElementById("signupForm");
 const toggleSignup = document.getElementById("toggleSignup");
 const backToLogin = document.getElementById("backToLogin");
-const signupAgreement = document.getElementById("signupAgreement");
-const signupSubmit = document.getElementById("signupSubmit");
+const termsAgreement = document.getElementById("termsAgreement");
+const privacyAgreement = document.getElementById("privacyAgreement"); 
+const betaAgreement = document.getElementById("betaAgreement");
+const signupSubmit = document.querySelector('#signupForm button[type="submit"]');
 const forgotPassword = document.getElementById("forgotPassword");
 
 // Toggle modals with delegated event listener
@@ -666,6 +679,17 @@ document.addEventListener("click", (e) => {
     if (loginModal) loginModal.style.display = "none";
     if (signupModal) {
       signupModal.style.display = "flex";
+      // Scroll modal to top to show logo and header
+      setTimeout(() => {
+        const modalContent = signupModal.querySelector('.card-block');
+        if (modalContent) {
+          modalContent.scrollTop = 0;
+        }
+        // Also ensure the modal container itself is scrolled to top
+        signupModal.scrollTop = 0;
+        // And ensure page is scrolled to top in case modal is tall on mobile
+        window.scrollTo(0, 0);
+      }, 50);
       console.log("Signup modal set to flex");
     } else {
       console.warn("signupModal not found");
@@ -676,6 +700,11 @@ document.addEventListener("click", (e) => {
     if (signupModal) signupModal.style.display = "none";
     if (loginModal) {
       loginModal.style.display = "flex";
+      // Scroll login modal to top to show logo and header
+      setTimeout(() => {
+        loginModal.scrollTop = 0;
+        window.scrollTo(0, 0);
+      }, 50);
       console.log("Login modal set to flex");
     } else {
       console.warn("loginModal not found");
@@ -684,12 +713,21 @@ document.addEventListener("click", (e) => {
 
 });
 
-// Agreement logic
-if (signupAgreement && signupSubmit) {
-  signupAgreement.onchange = () => {
-    signupSubmit.disabled = !signupAgreement.checked;
-  };
+// Agreement validation logic - disable submit if any agreement unchecked
+function checkAllAgreements() {
+  if (signupSubmit && termsAgreement && privacyAgreement && betaAgreement) {
+    const allChecked = termsAgreement.checked && privacyAgreement.checked && betaAgreement.checked;
+    signupSubmit.disabled = !allChecked;
+  }
 }
+
+// Wire up agreement checkboxes
+if (termsAgreement) termsAgreement.onchange = checkAllAgreements;
+if (privacyAgreement) privacyAgreement.onchange = checkAllAgreements;
+if (betaAgreement) betaAgreement.onchange = checkAllAgreements;
+
+// Initial check on page load
+checkAllAgreements();
 
 // Helper function to check if running on localhost
 function isLocalhost() {
@@ -777,13 +815,27 @@ async function signIn() {
 async function signUp() {
   setTimeout(async () => {
     try {
-      const email = document.querySelector('#signupModal input[name="email"]')?.value?.trim();
-      const password = document.querySelector('#signupModal input[name="password"]')?.value || "";
+      const email = document.getElementById("signupEmail")?.value?.trim();
+      const password = document.getElementById("signupPassword")?.value || "";
+      const username = document.getElementById("signupUsername")?.value?.trim() || "";
+      const avatar = document.getElementById("signupAvatar")?.value?.trim() || "";
+      
+      // Check agreement checkboxes
+      const termsAgreed = document.getElementById("termsAgreement")?.checked;
+      const privacyAgreed = document.getElementById("privacyAgreement")?.checked;
+      const betaAgreed = document.getElementById("betaAgreement")?.checked;
+      
       console.log("📧 Email:", email);
       console.log("🔒 Password:", password ? "●●●●●" : "(empty)");
 
       if (!email || !password) {
         showToast("Please enter both email and password.", "warning");
+        return;
+      }
+
+      // Validate all agreements are checked
+      if (!termsAgreed || !privacyAgreed || !betaAgreed) {
+        showToast("Please accept all agreements to join the InkWell community. We value your understanding of our terms and commitment to this beta experience.", "warning");
         return;
       }
 
@@ -825,21 +877,21 @@ async function signUp() {
         console.log("🚧 Development Mode: Skipping reCAPTCHA verification for localhost");
       }
 
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
       
-      // Create comprehensive user document with all required fields
-      await setDoc(doc(db, "users", auth.currentUser.uid), {
-        email: auth.currentUser.email,
-        displayName: "", // Will be set later in User Settings
-        signupUsername: "", // Will be set later in User Settings
-        avatar: "", // Will be set later in User Settings
+      // Update Firebase Auth profile
+      await updateProfile(userCred.user, { displayName: username || "" });
+      
+      // Create comprehensive user document matching expected structure
+      await setDoc(doc(db, "users", userCred.user.uid), {
+        email: userCred.user.email,
+        displayName: username || "",
+        signupUsername: username || "",
+        avatar: avatar || "",
         userRole: "journaler",
-        agreementAccepted: false,
-        theme: "default",
-        coachPreference: "none",
-        agreedToTerms: true,
-        agreedToAlpha: true,
-        createdAt: serverTimestamp()
+        agreementAccepted: true,
+        special_code: "", // Manual admin field, starts blank
+        updatedAt: serverTimestamp()
       });
       document.getElementById("loginModal").style.display = "none";
       document.getElementById("signupModal").style.display = "none";
@@ -963,38 +1015,11 @@ document.body.classList.add("fast-login-active");
 })();
 
 
-// Handle signup
+// Wire signup form to the main signUp() function
 if (signupForm) {
   signupForm.onsubmit = async (e) => {
     e.preventDefault();
-    const email = document.getElementById("signupEmail").value.trim();
-    const password = document.getElementById("signupPassword").value;
-    const username = document.getElementById("signupUsername").value.trim();
-    const avatar = document.getElementById("signupAvatar")?.value.trim() || "";
-    const theme = "default";
-    const coach = "none";
-    const agreed = true;
-
-    try {
-      const userCred = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCred.user, { displayName: username || "" });
-
-      await setDoc(doc(db, "users", userCred.user.uid), {
-        displayName: username || "",
-        signupUsername: username || "", // Keep both for compatibility
-        avatar,
-        theme,
-        coachPreference: coach,
-        agreedToTerms: agreed,
-        agreedToAlpha: true,
-        createdAt: serverTimestamp()
-      });
-
-      alert("✅ Account created successfully!");
-      signupModal.style.display = "none";
-    } catch (err) {
-      alert("Signup failed: " + err.message);
-    }
+    await signUp();
   };
 }
 
@@ -2329,6 +2354,11 @@ onAuthStateChanged(auth, async (user) => {
       localStorage.removeItem("userJustLoggedOut");
     } else if (loginModal && !document.body.classList.contains("fast-login-active")) {
       loginModal.style.display = "flex";
+      // Scroll login modal to top to show logo and header
+      setTimeout(() => {
+        loginModal.scrollTop = 0;
+        window.scrollTo(0, 0);
+      }, 50);
     }
 
     if (signupModal) signupModal.style.display = "none";
