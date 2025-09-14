@@ -3,3 +3,25 @@ node_modules/
 firebase-debug.log
 .env
 .vscode/
+echo "# Debug logs
+firebase-debug*.log
+firestore-debug.log
+pglite-debug.log
+
+# Development files
+*.md
+test-*.js
+simple-*.js
+
+# Environment files
+.env
+.env.local
+config.js
+
+# Node modules
+node_modules/
+functions/node_modules/
+
+# Firebase
+.firebase/
+firebase-debug.log" > .gitignore
