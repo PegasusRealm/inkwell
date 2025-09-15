@@ -6151,15 +6151,15 @@ document.head.appendChild(themeStyle);
 
 <body>
 <!-- 🔐 Login Modal -->
-<div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); overflow-y: auto; padding: 2em 0; box-sizing: border-box; z-index: 9999;">
-  <div class="card-block" style="max-width: 400px; width: 90%; background: white; padding: 2em; border-radius: 8px; text-align: center; margin: 0 auto; min-height: fit-content;">
-    <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 175px; margin-bottom: 1em;" />
+<div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; padding: 1em; box-sizing: border-box; z-index: 9999;">
+  <div class="card-block" style="max-width: 400px; width: 100%; background: white; padding: 1.5em; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+    <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 100px; margin-bottom: 0.8em;" />
     <form id="loginForm">
   <input type="email" id="loginEmail" placeholder="Email" required
         style="width: 90%; padding: 1em 1.2em; margin-bottom: 1em; background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%); border: 2px solid rgba(42,105,114,0.15); border-radius: 10px; backdrop-filter: blur(3px); box-shadow: 0 2px 8px rgba(42,105,114,0.08); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: #0D3F45; font-family: var(--body-font);" />
   <input type="password" id="loginPassword" placeholder="Password" required
         style="width: 90%; padding: 1em 1.2em; margin-bottom: 1em; background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%); border: 2px solid rgba(42,105,114,0.15); border-radius: 10px; backdrop-filter: blur(3px); box-shadow: 0 2px 8px rgba(42,105,114,0.08); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: #0D3F45; font-family: var(--body-font);" />
-      <div class="g-recaptcha" data-sitekey="6LeCel0rAAAAAJVIplFBKgyy0oO-bYd2wr2_wqxI"
+      <div class="g-recaptcha" data-sitekey="6LdV2MkrAAAAAIXSZT7NmB5i80vGjhB-tFZWrWYT"
         style="margin: 0 auto 1em auto; width: 90%; display: flex; justify-content: flex-start;"></div>
       <button type="submit" class="btn"
         style="width: 90%; padding: 0.6em; background-color: #2A6972; color: white; border: none; border-radius: 5px;">Log In</button>
@@ -6224,9 +6224,9 @@ document.head.appendChild(themeStyle);
 </div>
 
 <!-- ✨ Signup Modal (moved here to be with other modals and before </body>) -->
-<div id="signupModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); overflow-y: auto; padding: 2em 0; box-sizing: border-box; z-index: 9999;">
-  <div class="card-block" style="max-width: 400px; width: 90%; background: white; padding: 2em; border-radius: 8px; text-align: center; margin: 0 auto; min-height: fit-content;">
-    <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 175px; margin-bottom: 1em;" />
+<div id="signupModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; padding: 1em; box-sizing: border-box; z-index: 9999;">
+  <div class="card-block" style="max-width: 420px; width: 100%; max-height: 90vh; background: white; padding: 1.5em; border-radius: 12px; text-align: center; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+    <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 100px; margin-bottom: 0.8em;" />
     <form id="signupForm">
       <input type="text" id="signupUsername" name="username" placeholder="User Name (optional)" 
         style="width: 90%; padding: 1em 1.2em; margin-bottom: 1em; background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%); border: 2px solid rgba(42,105,114,0.15); border-radius: 10px; backdrop-filter: blur(3px); box-shadow: 0 2px 8px rgba(42,105,114,0.08); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: #0D3F45; font-family: var(--body-font);" />
@@ -6256,7 +6256,7 @@ document.head.appendChild(themeStyle);
         </label>
       </div>
       
-      <div class="g-recaptcha" data-sitekey="6LeCel0rAAAAAJVIplFBKgyy0oO-bYd2wr2_wqxI"
+      <div class="g-recaptcha" data-sitekey="6LdV2MkrAAAAAIXSZT7NmB5i80vGjhB-tFZWrWYT"
         style="margin: 0 auto 1em auto; width: 90%; display: flex; justify-content: flex-start;"></div>
       <button type="submit" class="btn"
         style="width: 90%; padding: 0.6em; background-color: #2A6972; color: white; border: none; border-radius: 5px;">Sign Up</button>
@@ -7235,7 +7235,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     <!-- Sophy Insights Section -->
     <div style="text-align: left; margin-bottom: 1.5em; padding: 1em; background: #f0f8ff; border-radius: 5px; border: 1px solid #d1ecf1;">
       <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
-        📊 Sophy's Weekly Insights
+        📊 Sophy's Insights
       </h3>
       <p style="font-size: 0.85em; color: #555; margin-bottom: 1em; line-height: 1.4;">
         Let Sophy analyze your journal entries and manifesting progress to send you personalized insights about your mood patterns, growth themes, and positive psychology observations.
@@ -7248,6 +7248,29 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         </label>
         <p style="font-size: 0.8em; color: #666; margin-left: 2.2em; margin-bottom: 0;">
           Get a thoughtful review of your week's journaling patterns, mood themes, and growth observations.
+        </p>
+      </div>
+
+      <div style="margin-bottom: 1em;">
+        <label style="display: flex; align-items: center; gap: 0.5em; font-size: 0.9em; color: #333; cursor: pointer; margin-bottom: 0.8em;">
+          <input type="checkbox" id="monthlyInsightsEnabled" style="transform: scale(1.2); margin-right: 0.3em;" checked />
+          <span>📅 <strong>Monthly Insights</strong> - The first of every month</span>
+        </label>
+        <p style="font-size: 0.8em; color: #666; margin-left: 2.2em; margin-bottom: 0;">
+          Get a deeper reflection on your monthly journey, tracking longer-term patterns and meaningful growth trends.
+        </p>
+      </div>
+      
+      <!-- Hidden test buttons for development (only visible in localhost) -->
+      <div id="weeklyInsightsTestSection" style="display: none; margin-top: 1em; padding-top: 1em; border-top: 1px dashed #ccc;">
+        <button id="testWeeklyInsightsBtn" class="btn" style="font-size: 0.8em; background: #ff9800; color: white; padding: 0.4em 0.8em; margin-right: 0.5em;">
+          🧪 Test Weekly Insights
+        </button>
+        <button id="testMonthlyInsightsBtn" class="btn" style="font-size: 0.8em; background: #D49489; color: white; padding: 0.4em 0.8em;">
+          🌺 Test Monthly Insights
+        </button>
+        <p style="font-size: 0.75em; color: #666; margin: 0.5em 0 0 0; font-style: italic;">
+          Development only: Manually trigger insights for testing
         </p>
       </div>
     </div>
@@ -7596,14 +7619,19 @@ window.forceRefreshCurrentView = function() {
             
             // Load insights preferences
             const weeklyCheckbox = document.getElementById("weeklyInsightsEnabled");
+            const monthlyCheckbox = document.getElementById("monthlyInsightsEnabled");
             
             if (userData.insightsPreferences) {
               if (weeklyCheckbox) {
                 weeklyCheckbox.checked = userData.insightsPreferences.weeklyEnabled !== false; // Default to true
               }
+              if (monthlyCheckbox) {
+                monthlyCheckbox.checked = userData.insightsPreferences.monthlyEnabled !== false; // Default to true
+              }
             } else {
               // Default to checked if no preferences exist yet (opt-in by default)
               if (weeklyCheckbox) weeklyCheckbox.checked = true;
+              if (monthlyCheckbox) monthlyCheckbox.checked = true;
             }
           }
         }
@@ -7675,6 +7703,7 @@ function startPractitionerStatusRefresh() {
       
       // Get insights preferences
       const weeklyInsights = document.getElementById("weeklyInsightsEnabled").checked;
+      const monthlyInsights = document.getElementById("monthlyInsightsEnabled").checked;
 
       // Update Firestore user document with merge to handle missing fields
       if (window.db) {
@@ -7686,6 +7715,7 @@ function startPractitionerStatusRefresh() {
           // Insights preferences
           insightsPreferences: {
             weeklyEnabled: weeklyInsights,
+            monthlyEnabled: monthlyInsights,
             updatedAt: window.serverTimestamp()
           },
           // Add updatedAt timestamp to track when profile was last modified
@@ -7842,6 +7872,117 @@ function startPractitionerStatusRefresh() {
     if (e.target === modal) {
       closeUserSettingsModal();
     }    
+  });
+
+  // Weekly Insights Test Function (Development Only)
+  async function testWeeklyInsights() {
+    const testBtn = document.getElementById("testWeeklyInsightsBtn");
+    const originalText = testBtn.textContent;
+    
+    try {
+      testBtn.textContent = "🔄 Testing...";
+      testBtn.disabled = true;
+      
+      const auth = window.auth;
+      if (!auth || !auth.currentUser) {
+        alert("Please log in to test weekly insights.");
+        return;
+      }
+      
+      const idToken = await auth.currentUser.getIdToken();
+      
+      const response = await fetch('/triggerWeeklyInsightsTest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ test: true })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`✅ Weekly insights test completed!\n\nProcessed: ${result.result.processedUsers.length} users\nErrors: ${result.result.errors.length} users\nTotal eligible: ${result.result.totalEligible} users`);
+      } else {
+        alert(`❌ Test failed: ${result.message}`);
+      }
+      
+    } catch (error) {
+      console.error("Weekly insights test error:", error);
+      alert(`❌ Test failed: ${error.message}`);
+    } finally {
+      testBtn.textContent = originalText;
+      testBtn.disabled = false;
+    }
+  }
+  
+  // Monthly Insights Test Function (Development Only)
+  async function testMonthlyInsights() {
+    const testBtn = document.getElementById("testMonthlyInsightsBtn");
+    const originalText = testBtn.textContent;
+    
+    try {
+      testBtn.textContent = "🔄 Testing...";
+      testBtn.disabled = true;
+      
+      const auth = window.auth;
+      if (!auth || !auth.currentUser) {
+        alert("Please log in to test monthly insights.");
+        return;
+      }
+      
+      const idToken = await auth.currentUser.getIdToken();
+      
+      const response = await fetch('/triggerMonthlyInsightsTest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ test: true })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`✅ Monthly insights test completed!\n\nProcessed: ${result.result.processedUsers.length} users\nErrors: ${result.result.errors.length} users\nTotal eligible: ${result.result.totalEligible} users`);
+      } else {
+        alert(`❌ Test failed: ${result.message}`);
+      }
+      
+    } catch (error) {
+      console.error("Monthly insights test error:", error);
+      alert(`❌ Test failed: ${error.message}`);
+    } finally {
+      testBtn.textContent = originalText;
+      testBtn.disabled = false;
+    }
+  }
+  
+  // Show test button only in development (localhost)
+  window.addEventListener('DOMContentLoaded', function() {
+    const isLocalhost = window.location.hostname === 'localhost' || 
+                       window.location.hostname === '127.0.0.1' ||
+                       window.location.hostname.includes('localhost');
+    
+    if (isLocalhost) {
+      const testSection = document.getElementById("weeklyInsightsTestSection");
+      if (testSection) {
+        testSection.style.display = "block";
+        
+        // Add click handlers for test buttons
+        const testWeeklyBtn = document.getElementById("testWeeklyInsightsBtn");
+        if (testWeeklyBtn) {
+          testWeeklyBtn.addEventListener('click', testWeeklyInsights);
+        }
+        
+        const testMonthlyBtn = document.getElementById("testMonthlyInsightsBtn");
+        if (testMonthlyBtn) {
+          testMonthlyBtn.addEventListener('click', testMonthlyInsights);
+        }
+      }
+    }
   });
 </script>
 

@@ -509,6 +509,12 @@ if (!emailRegex.test(email)) {
           email: userCredential.user.email,
           userRole: 'coach',
           agreementAccepted: true,
+          // Default insight preferences for new coaches (opt-in by default)
+          insightsPreferences: {
+            weeklyEnabled: true,
+            monthlyEnabled: true,
+            createdAt: new Date()
+          },
           createdAt: new Date()
         });
       } else {

@@ -324,6 +324,12 @@ async function loadInvitation() {
                     signupUsername: formData.fullName,
                     userRole: 'practitioner_pending',
                     agreementAccepted: true,
+                    // Default insight preferences for new practitioners (opt-in by default)
+                    insightsPreferences: {
+                        weeklyEnabled: true,
+                        monthlyEnabled: true,
+                        createdAt: serverTimestamp()
+                    },
                     createdAt: serverTimestamp()
                 });
                 

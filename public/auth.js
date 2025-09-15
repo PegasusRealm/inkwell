@@ -270,18 +270,43 @@ window.showTab = function(tabId) {
   if (buttons[tabId]) buttons[tabId].classList.add("active");
 };
 
-// Single auth state change listener for status and logo/avatar handling
+// Consolidated auth state change listener - handles all authentication state changes
 onAuthStateChanged(auth, async (user) => {
+  console.log("🔄 Auth state changed:", user ? `User: ${user.email}` : "User logged out");
+  
   const statusDiv = document.getElementById("userStatus");
   const logoHero = document.querySelector('.logo-hero-inner');
   const baseUrl = window.location.origin;
   const inkwellLogoPath = `${baseUrl}/InkWell-Logo.png`;
   const backupLogoPath = `${baseUrl}/LOGO_SQ_Lg_Border_2024.png`;
+  const mainUI = document.getElementById("mainUI");
+  const mainApp = document.getElementById("mainAppContainer");
+  const colorModeToggle = document.getElementById("colorModeToggle");
+  const aboutBtn = document.getElementById("aboutInkwellBtn");
+  const header = document.querySelector("header");
+  const goodbyeModal = document.getElementById("goodbyeModal");
+  const loginModal = document.getElementById("loginModal");
+  const signupModal = document.getElementById("signupModal");
+
+  // Always clear goodbye modal on any state change to prevent ghost state
+  if (goodbyeModal) goodbyeModal.style.display = "none";
 
   // Clear any existing animation interval
   if (logoHero?.dataset.intervalId) {
     clearInterval(Number(logoHero.dataset.intervalId));
     delete logoHero.dataset.intervalId;
+  }
+
+  function toggleMainUI(show) {
+    if (mainApp) mainApp.style.display = show ? "block" : "none";
+    if (mainUI) {
+      mainUI.style.display = show ? "block" : "none";
+      mainUI.style.visibility = show ? "visible" : "hidden";
+      mainUI.style.opacity = show ? "1" : "0";
+    }
+    if (colorModeToggle) colorModeToggle.style.display = show ? "block" : "none";
+    if (aboutBtn) aboutBtn.style.display = show ? "block" : "none";
+    if (header) header.style.display = show ? "block" : "none";
   }
 
   // Reset UI for logged out state
@@ -299,6 +324,30 @@ onAuthStateChanged(auth, async (user) => {
       logoHero.appendChild(defaultLogo);
     }
     
+    // Handle logout state
+    const justLoggedOut = localStorage.getItem("userJustLoggedOut") === "true";
+    if (justLoggedOut && goodbyeModal) {
+      goodbyeModal.style.display = "flex";
+      localStorage.removeItem("userJustLoggedOut");
+    } else if (loginModal && !document.body.classList.contains("fast-login-active")) {
+      loginModal.style.display = "flex";
+      setTimeout(() => {
+        loginModal.scrollTop = 0;
+        window.scrollTo(0, 0);
+      }, 50);
+    }
+
+    if (signupModal) signupModal.style.display = "none";
+    toggleMainUI(false);
+    localStorage.removeItem("userAvatar");
+    
+    // Clear inactivity timers
+    if (typeof clearTimeout !== 'undefined') {
+      if (typeof window.inactivityTimeout !== 'undefined') clearTimeout(window.inactivityTimeout);
+      if (typeof window.warningTimeout !== 'undefined') clearTimeout(window.warningTimeout);
+      if (typeof clearInternalWarning === 'function') clearInternalWarning();
+    }
+    
     console.log("🔐 User not authenticated or anonymous");
     return;
   }
@@ -306,20 +355,56 @@ onAuthStateChanged(auth, async (user) => {
   try {
     // Update global user ID
     currentUserId = user.uid;
-    
-    // Expose globally for index.html
     window.currentUserId = currentUserId;
+
+    // Clear logout state
+    localStorage.removeItem("userJustLoggedOut");
+    document.body.classList.remove("fast-login-active");
+    if (loginModal) loginModal.style.display = "none";
+    if (signupModal) signupModal.style.display = "none";
+
+    // Show UI immediately
+    toggleMainUI(true);
+    window.scrollTo({ top: 0, behavior: "instant" });
+    
+    // Force main UI visibility for new users
+    setTimeout(() => {
+      const main = document.querySelector("main");
+      if (main) main.style.display = "block";
+      const tabButtons = document.getElementById("tabButtons");
+      if (tabButtons) tabButtons.style.display = "flex";
+      const journalTab = document.getElementById("journalTab");
+      if (journalTab) journalTab.style.display = "block";
+    }, 50);
 
     // Fetch user document
     const userDocRef = doc(db, "users", currentUserId);
     const userDoc = await getDoc(userDocRef);
     
-    if (!userDoc.exists) {
+    if (!userDoc.exists()) {
       console.error("User document not found");
       return;
     }
     
     const userData = userDoc.data();
+    
+    // 🔄 MIGRATION: Ensure existing users have default insight preferences
+    if (!userData.insightsPreferences) {
+      console.log("🔄 Migrating user to include default insight preferences");
+      try {
+        await setDoc(userDocRef, {
+          insightsPreferences: {
+            weeklyEnabled: true,
+            monthlyEnabled: true,
+            createdAt: serverTimestamp(),
+            migratedAt: serverTimestamp()
+          }
+        }, { merge: true });
+        console.log("✅ Successfully migrated user with default insight preferences");
+      } catch (error) {
+        console.error("❌ Failed to migrate user insight preferences:", error);
+      }
+    }
     
     // Update user status text
     if (statusDiv) {
@@ -330,90 +415,55 @@ onAuthStateChanged(auth, async (user) => {
           : "Journaling anonymously";
     }
 
-    // Show the main UI
-    const mainUI = document.getElementById("mainUI");
-    if (mainUI) {
-      mainUI.style.visibility = "visible";
-      mainUI.style.opacity = "1";
-      mainUI.style.display = "block";
-    }
-
-    // Hide login modal on successful auth
-    const loginModal = document.getElementById("loginModal");
-    const goodbyeModal = document.getElementById("goodbyeModal");
-    if (loginModal) loginModal.style.display = "none";
-    if (goodbyeModal) goodbyeModal.style.display = "none";
-
-    console.log("✅ User authentication setup complete");
-
-// Handle hero logo/avatar switching - FIXED
+    // Handle hero logo/avatar switching
     if (logoHero) {
-      // Clear existing content
       logoHero.innerHTML = '';
       
-      // Create logo and avatar elements
       const heroLogo = document.createElement('img');
       const heroAvatar = document.createElement('img');
       
-      // Configure logo
-      heroLogo.className = 'logo-img show'; // FIXED: Add show class immediately
+      heroLogo.className = 'logo-img show';
       heroLogo.src = inkwellLogoPath;
       heroLogo.alt = "InkWell Logo";
       heroLogo.style.opacity = "1";
       
-      // Configure avatar
       heroAvatar.className = 'avatar-img';
       heroAvatar.alt = userData?.avatar ? "User Avatar" : "Pegasus Realm Placeholder";
       heroAvatar.style.opacity = "0";
       
-      // Add both images to container
       logoHero.appendChild(heroLogo);
       logoHero.appendChild(heroAvatar);
       
-      // Handle avatar or placeholder
       if (userData?.avatar) {
-        // User has an avatar - try to load it
-        const preloadAvatar = new Promise((resolve, reject) => {
+        const preloadAvatar = new Promise((resolve) => {
           const img = new Image();
           img.onload = () => {
             heroAvatar.src = userData.avatar;
             resolve();
           };
-          img.onerror = (error) => {
-            console.error("Failed to load avatar:", error);
-
-// Use Pegasus Realm logo on error
+          img.onerror = () => {
             heroAvatar.src = backupLogoPath;
-
             resolve();
           };
           img.src = userData.avatar;
         });
         
-        // Set up image switching after avatar is loaded
         preloadAvatar.then(() => {
           const switchImages = () => {
             const isShowingLogo = heroLogo.style.opacity === "1";
             heroLogo.style.opacity = isShowingLogo ? "0" : "1";
             heroAvatar.style.opacity = isShowingLogo ? "1" : "0";
           };
-          
-          // Switch every 30 seconds
           const intervalId = setInterval(switchImages, 30000);
           logoHero.dataset.intervalId = intervalId.toString();
         });
       } else {
-       // No avatar - use Pegasus Realm logo
         heroAvatar.src = backupLogoPath;
-        
-        // Set up alternating display
         const switchImages = () => {
           const isShowingLogo = heroLogo.style.opacity === "1";
           heroLogo.style.opacity = isShowingLogo ? "0" : "1";
           heroAvatar.style.opacity = isShowingLogo ? "1" : "0";
         };
-        
-        // Switch every 30 seconds
         const intervalId = setInterval(switchImages, 30000);
         logoHero.dataset.intervalId = intervalId.toString();
       }
@@ -424,77 +474,83 @@ onAuthStateChanged(auth, async (user) => {
     const localAccepted = localStorage.getItem("alphaAgreementAccepted") === "true";
     
     if (!agreed && !localAccepted) {
-      // Show agreement notice
       const agreementNotice = document.getElementById("embeddedAgreementNotice");
       if (agreementNotice) agreementNotice.style.display = "block";
       
-      // Hide UI elements
       const elementsToHide = [
         document.getElementById("journalTab"),
         document.getElementById("tabButtons"),
-        document.getElementById("loginModal"),
-        document.getElementById("goodbyeModal"),
         document.querySelector("main")
       ];
-      
       elementsToHide.forEach(el => {
         if (el) el.style.display = "none";
       });
     } else {
-      // Hide agreement notice if already accepted
       const agreementNotice = document.getElementById("embeddedAgreementNotice");
       if (agreementNotice) agreementNotice.style.display = "none";
       
-      // Check for coach replies after successful login
-      await checkForCoachReplies();
-      
-      // Load manifest data after successful login
-      if (typeof window.loadManifestData === 'function') {
-        console.log("📋 Loading manifest data after login...");
-        window.loadManifestData();
-        
-        // Also restore WISH timeline selection after manifest loads
-        setTimeout(() => {
-          const currentUser = window.currentUserId;
-          if (currentUser) {
-            const timelineKey = `wishTimeline_${currentUser}`;
-            const savedDays = localStorage.getItem(timelineKey);
-            const timelineSelect = document.getElementById("wishTimelineSelect");
-            
-            if (savedDays && timelineSelect) {
-              console.log(`🎯 Restoring saved timeline: ${savedDays} days`);
-              timelineSelect.value = savedDays;
-              
-              // Update the timeline visualization
-              if (typeof window.updateWishTimeline === 'function') {
-                window.updateWishTimeline();
-              }
-              
-              // Update progress display
-              if (typeof window.updateWishProgress === 'function') {
-                window.updateWishProgress();
-              }
-            } else {
-              console.log("🎯 No saved timeline found, using default");
-              // Still update timeline and progress with default values
-              if (typeof window.updateWishTimeline === 'function') {
-                window.updateWishTimeline();
-              }
-              if (typeof window.updateWishProgress === 'function') {
-                window.updateWishProgress();
-              }
-            }
+      // Run heavy initialization after first paint
+      setTimeout(() => {
+        try {
+          if (typeof window.buildCalendar === 'function') {
+            window.buildCalendar();
+          } else if (typeof buildCalendar === 'function') {
+            buildCalendar();
           }
-        }, 200); // Give time for manifest data to load
-      }
-      
-      // Check if first-time login and show Welcome Beta modal
-      if (typeof window.checkAndShowWelcomeBeta === 'function') {
-        setTimeout(() => {
-          window.checkAndShowWelcomeBeta();
-        }, 1000); // Allow time for UI to fully load
-      }
+          if (typeof checkForCoachReplies === 'function') checkForCoachReplies();
+          if (typeof resetInactivityTimers === 'function') resetInactivityTimers();
+          
+          // Load manifest data
+          if (typeof window.loadManifestData === 'function') {
+            console.log("📋 Loading manifest data after login...");
+            window.loadManifestData();
+            
+            setTimeout(() => {
+              const timelineKey = `wishTimeline_${currentUserId}`;
+              const savedDays = localStorage.getItem(timelineKey);
+              const timelineSelect = document.getElementById("wishTimelineSelect");
+              
+              if (savedDays && timelineSelect) {
+                console.log(`🎯 Restoring saved timeline: ${savedDays} days`);
+                timelineSelect.value = savedDays;
+                
+                if (typeof window.updateWishTimeline === 'function') {
+                  window.updateWishTimeline();
+                }
+                if (typeof window.updateWishProgress === 'function') {
+                  window.updateWishProgress();
+                }
+              }
+            }, 200);
+          }
+          
+          // Check if first-time login and show Welcome Beta modal
+          if (typeof window.checkAndShowWelcomeBeta === 'function') {
+            setTimeout(() => {
+              window.checkAndShowWelcomeBeta();
+            }, 1000);
+          }
+        } catch (initError) {
+          console.error("Error during post-auth initialization:", initError);
+        }
+      }, 150);
     }
+
+    // Start inactivity timers for logged in users
+    if (typeof resetInactivityTimers === 'function') {
+      resetInactivityTimers();
+    }
+
+    // Set up logout button
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.onclick = () => {
+        if (typeof safeLogout === 'function') safeLogout("manual");
+      };
+    }
+
+    console.log("✅ User authentication and UI setup complete");
+
   } catch (error) {
     console.error("Error in auth state change handler:", error);
   }
@@ -738,8 +794,8 @@ function isLocalhost() {
 async function signIn() {
   setTimeout(async () => {
     try {
-      const email = document.querySelector('#loginModal input[name="email"]')?.value?.trim();
-      const password = document.querySelector('#loginModal input[name="password"]')?.value || "";
+      const email = document.getElementById("loginEmail")?.value?.trim();
+      const password = document.getElementById("loginPassword")?.value || "";
       console.log("📧 Email:", email);
       console.log("🔒 Password:", password ? "●●●●●" : "(empty)");
 
@@ -748,47 +804,75 @@ async function signIn() {
         return;
       }
 
-      // Skip reCAPTCHA for localhost development
+      // Check reCAPTCHA v2 for production
+      let recaptchaResponse = null;
       if (!isLocalhost()) {
-        // Get reCAPTCHA response from login form
-        const loginRecaptchaWidget = document.querySelector('#loginModal .g-recaptcha');
-        if (!loginRecaptchaWidget) {
-          showToast("reCAPTCHA widget not found.", "error");
+        console.log("🔍 Checking reCAPTCHA v2 for production environment...");
+        
+        // Check if reCAPTCHA API is loaded
+        if (typeof grecaptcha === 'undefined') {
+          showToast("reCAPTCHA is still loading. Please wait a moment and try again.", "warning");
           return;
         }
 
-        // Get the widget ID by searching through all registered widgets
-        let recaptchaResponse = null;
-        for (let i = 0; i < 10; i++) { // Check up to 10 widgets
-          try {
-            const response = grecaptcha.getResponse(i);
-            if (response) {
-              recaptchaResponse = response;
-              console.log(`✅ Found reCAPTCHA response from widget ${i}:`, response.substring(0, 20) + "...");
-              break;
+        // Get reCAPTCHA response from login form
+        const loginRecaptchaWidget = document.querySelector('#loginModal .g-recaptcha');
+        console.log("🎯 Login reCAPTCHA widget:", loginRecaptchaWidget);
+        
+        if (!loginRecaptchaWidget) {
+          console.error("❌ reCAPTCHA widget not found in login modal");
+          showToast("reCAPTCHA widget not found. Please refresh the page.", "error");
+          return;
+        }
+
+        // Get reCAPTCHA response
+        try {
+          const widgetId = loginRecaptchaWidget.getAttribute('data-widget-id');
+          if (widgetId !== null) {
+            recaptchaResponse = grecaptcha.getResponse(parseInt(widgetId));
+          } else {
+            // Fallback: search through all widgets
+            for (let i = 0; i < 10; i++) {
+              try {
+                const response = grecaptcha.getResponse(i);
+                if (response) {
+                  recaptchaResponse = response;
+                  break;
+                }
+              } catch (e) {
+                // Widget doesn't exist, continue
+              }
             }
-          } catch (e) {
-            // Widget doesn't exist, continue
           }
+        } catch (e) {
+          console.log("reCAPTCHA response check failed:", e.message);
         }
 
         if (!recaptchaResponse) {
-          console.error("❌ No reCAPTCHA response found from any widget");
-          showToast("Please complete the reCAPTCHA verification.", "warning");
+          console.error("❌ No reCAPTCHA response found");
+          showToast("Please complete the reCAPTCHA verification by checking the box.", "warning");
           return;
         }
 
+        console.log("✅ reCAPTCHA v2 response received:", recaptchaResponse.substring(0, 20) + "...");
+
         // Verify reCAPTCHA on server
         console.log("🔐 Sending reCAPTCHA verification request...");
-        const verifyRecaptcha = httpsCallable(functions, 'verifyRecaptcha');
-        await verifyRecaptcha({ token: recaptchaResponse });
+        try {
+          const verifyRecaptcha = httpsCallable(functions, 'verifyRecaptcha');
+          await verifyRecaptcha({ token: recaptchaResponse });
+          console.log("✅ reCAPTCHA v3 verified, proceeding with login...");
+        } catch (error) {
+          console.error("❌ reCAPTCHA verification failed:", error);
+          showToast("reCAPTCHA verification failed. Please try again.", "error");
+          return;
+        }
       } else {
         console.log("🚧 Development Mode: Skipping reCAPTCHA verification for localhost");
       }
 
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       document.getElementById("loginModal").style.display = "none";
-      document.getElementById("userStatus").textContent = `Journaling as: ${userCredential.user.email}`;
       
       // Reset reCAPTCHA after successful login
       if (!isLocalhost()) {
@@ -839,64 +923,116 @@ async function signUp() {
         return;
       }
 
-      // Skip reCAPTCHA for localhost development
+      // Check reCAPTCHA v2 for production  
+      let recaptchaResponse = null;
       if (!isLocalhost()) {
-        // Get reCAPTCHA response from signup form
-        const signupRecaptchaWidget = document.querySelector('#signupModal .g-recaptcha');
-        if (!signupRecaptchaWidget) {
-          showToast("reCAPTCHA widget not found.", "error");
+        console.log("🔍 Checking reCAPTCHA v2 for production environment...");
+        
+        // Check if reCAPTCHA API is loaded
+        if (typeof grecaptcha === 'undefined') {
+          showToast("reCAPTCHA is still loading. Please wait a moment and try again.", "warning");
           return;
         }
 
-        // Get the widget ID by searching through all registered widgets
-        let recaptchaResponse = null;
-        for (let i = 0; i < 10; i++) { // Check up to 10 widgets
-          try {
-            const response = grecaptcha.getResponse(i);
-            if (response) {
-              recaptchaResponse = response;
-              console.log(`✅ Found reCAPTCHA response from widget ${i}:`, response.substring(0, 20) + "...");
-              break;
+        // Get reCAPTCHA response from signup form
+        const signupRecaptchaWidget = document.querySelector('#signupModal .g-recaptcha');
+        console.log("🎯 Signup reCAPTCHA widget:", signupRecaptchaWidget);
+        
+        if (!signupRecaptchaWidget) {
+          console.error("❌ reCAPTCHA widget not found in signup modal");
+          showToast("reCAPTCHA widget not found. Please refresh the page.", "error");
+          return;
+        }
+
+        // Get reCAPTCHA response
+        try {
+          const widgetId = signupRecaptchaWidget.getAttribute('data-widget-id');
+          if (widgetId !== null) {
+            recaptchaResponse = grecaptcha.getResponse(parseInt(widgetId));
+          } else {
+            // Fallback: search through all widgets
+            for (let i = 0; i < 10; i++) {
+              try {
+                const response = grecaptcha.getResponse(i);
+                if (response) {
+                  recaptchaResponse = response;
+                  break;
+                }
+              } catch (e) {
+                // Widget doesn't exist, continue
+              }
             }
-          } catch (e) {
-            // Widget doesn't exist, continue
           }
+        } catch (e) {
+          console.log("reCAPTCHA response check failed:", e.message);
         }
 
         if (!recaptchaResponse) {
-          console.error("❌ No reCAPTCHA response found from any widget");
-          showToast("Please complete the reCAPTCHA verification.", "warning");
+          console.error("❌ No reCAPTCHA response found");
+          showToast("Please complete the reCAPTCHA verification by checking the box.", "warning");
           return;
         }
 
+        console.log("✅ reCAPTCHA v2 response received:", recaptchaResponse.substring(0, 20) + "...");
+
         // Verify reCAPTCHA on server
         console.log("🔐 Sending reCAPTCHA verification request...");
-        const verifyRecaptcha = httpsCallable(functions, 'verifyRecaptcha');
-        await verifyRecaptcha({ token: recaptchaResponse });
+        try {
+          const verifyRecaptcha = httpsCallable(functions, 'verifyRecaptcha');
+          await verifyRecaptcha({ token: recaptchaResponse });
+          console.log("✅ reCAPTCHA v3 verified, proceeding with signup...");
+        } catch (error) {
+          console.error("❌ reCAPTCHA verification failed:", error);
+          showToast("reCAPTCHA verification failed. Please try again.", "error");
+          return;
+        }
       } else {
         console.log("🚧 Development Mode: Skipping reCAPTCHA verification for localhost");
       }
 
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Update Firebase Auth profile
-      await updateProfile(userCred.user, { displayName: username || "" });
-      
-      // Create comprehensive user document matching expected structure
+
+      // Create comprehensive user document FIRST, before updating profile
       await setDoc(doc(db, "users", userCred.user.uid), {
+        userId: userCred.user.uid,
         email: userCred.user.email,
         displayName: username || "",
         signupUsername: username || "",
         avatar: avatar || "",
         userRole: "journaler",
         agreementAccepted: true,
-        special_code: "", // Manual admin field, starts blank
+        special_code: "beta", // Tag all new signups with beta until ended
+        // Default insight preferences for new users (opt-in by default)
+        insightsPreferences: {
+          weeklyEnabled: true,
+          monthlyEnabled: true,
+          createdAt: serverTimestamp()
+        },
+        createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
-      document.getElementById("loginModal").style.display = "none";
-      document.getElementById("signupModal").style.display = "none";
-      document.getElementById("userStatus").textContent = `Journaling as: ${auth.currentUser.email}`;
-      
+
+      // Update Firebase Auth profile AFTER creating user document
+      await updateProfile(userCred.user, { displayName: username || "" });
+
+      // === MailChimp Integration ===
+      // Note: Run MailChimp integration in background, don't block the UI
+      setTimeout(async () => {
+        try {
+          const addToMailchimp = httpsCallable(functions, 'addToMailchimp');
+          await addToMailchimp({ email });
+          console.log('✅ Added to MailChimp successfully');
+        } catch (mailchimpErr) {
+          console.error('MailChimp integration failed:', mailchimpErr);
+          // Optionally show a toast but do not block signup
+          showToast('Signed up, but could not add to newsletter. You can join later.', 'warning');
+        }
+      }, 100);
+
+      // Don't manually hide modals - let the auth state handler do it
+      // This ensures proper timing and UI state management
+      console.log('✅ Signup successful - auth state handler will manage UI');
+
       // Reset reCAPTCHA after successful signup
       if (!isLocalhost()) {
         grecaptcha.reset();
@@ -1007,11 +1143,14 @@ document.body.classList.add("fast-login-active");
   }
 }
 
-// Wire it up
-(function wireFastLoginToForm() {
+// Wire it up with reCAPTCHA-enabled login
+(function wireSecureLoginToForm() {
   const form = document.getElementById("loginForm");
   if (!form) return;
-  form.addEventListener("submit", fastLoginHandler, { passive: false });
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await signIn(); // Use the reCAPTCHA-enabled login function
+  }, { passive: false });
 })();
 
 
@@ -2269,20 +2408,7 @@ function clearInternalWarning() {
   }, true);
 });
 
-// 🔄 Auto-start or clear timers based on login state (logout warning system only)
-onAuthStateChanged(auth, (user) => {
-  // 🧼 Always clear goodbye modal on any state change to prevent ghost state
-  const goodbyeModal = document.getElementById("goodbyeModal");
-  if (goodbyeModal) goodbyeModal.style.display = "none";
-
-  if (user && !user.isAnonymous) {
-    resetInactivityTimers();
-  } else {
-    clearTimeout(inactivityTimeout);
-    clearTimeout(warningTimeout);
-    clearInternalWarning();
-  }
-});
+// Note: Inactivity timer management is now handled in the main auth listener
 
 
 // Safe logout helper
@@ -2304,123 +2430,44 @@ async function safeLogout(reason) {
 
 
 
-onAuthStateChanged(auth, async (user) => {
-  console.log("onAuthStateChanged triggered. User object:", user);
-
-  const mainUI = document.getElementById("mainUI");
-  const mainApp = document.getElementById("mainAppContainer");
-  const userStatus = document.getElementById("userStatus");
-  const colorModeToggle = document.getElementById("colorModeToggle");
-  const aboutBtn = document.getElementById("aboutInkwellBtn");
-  const header = document.querySelector("header");
-  const goodbyeModal = document.getElementById("goodbyeModal");
-  const loginModal = document.getElementById("loginModal");
-  const signupModal = document.getElementById("signupModal");
-
-  function toggleMainUI(show) {
-    if (mainApp) mainApp.style.display = show ? "block" : "none";
-    if (mainUI) mainUI.style.display = show ? "block" : "none";
-    if (colorModeToggle) colorModeToggle.style.display = show ? "block" : "none";
-    if (aboutBtn) aboutBtn.style.display = show ? "block" : "none";
-    if (header) header.style.display = show ? "block" : "none";
-  }
-
-  if (user && !user.isAnonymous) {
-    currentUserId = user.uid;
-    window.currentUserId = currentUserId;
-
-    // Clear logout state
-    localStorage.removeItem("userJustLoggedOut");
-    document.body.classList.remove("fast-login-active");
-    if (goodbyeModal) goodbyeModal.style.display = "none";
-    if (loginModal) loginModal.style.display = "none";
-    if (signupModal) signupModal.style.display = "none";
-
-    // Show UI immediately
-    toggleMainUI(true);
-    window.scrollTo({ top: 0, behavior: "instant" });
-
-    // Run heavy stuff AFTER first paint
-    setTimeout(() => {
-      buildCalendar();
-      resetInactivityTimers();
-    }, 150);
-
-  } else {
-    const justLoggedOut = localStorage.getItem("userJustLoggedOut") === "true";
-
-    if (justLoggedOut && goodbyeModal) {
-      goodbyeModal.style.display = "flex";
-      localStorage.removeItem("userJustLoggedOut");
-    } else if (loginModal && !document.body.classList.contains("fast-login-active")) {
-      loginModal.style.display = "flex";
-      // Scroll login modal to top to show logo and header
-      setTimeout(() => {
-        loginModal.scrollTop = 0;
-        window.scrollTo(0, 0);
-      }, 50);
-    }
-
-    if (signupModal) signupModal.style.display = "none";
-    if (userStatus) userStatus.textContent = "";
-    toggleMainUI(false);
-    localStorage.removeItem("userAvatar");
-    clearTimeout(inactivityTimeout);
-    clearTimeout(warningTimeout);
-    clearInternalWarning();
-  }
-
-  const logoutBtn = document.getElementById("logoutBtn");
-  if (logoutBtn) {
-    logoutBtn.onclick = () => {
-      safeLogout("manual");
-    };
-  }
-
-  // Function to force refresh placeholder styles
-  function refreshPlaceholderStyles() {
-    const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
-    
-    // Get all text inputs and textareas that might have placeholders
-    const inputs = document.querySelectorAll('input[placeholder], textarea[placeholder]');
-    
-    // Specifically target the problematic inputs
-    const promptTopic = document.getElementById('promptTopic');
-    const searchQuery = document.getElementById('searchQuery');
-    
-    inputs.forEach(input => {
-      if (isDarkTheme) {
-        // Remove any conflicting inline styles and force dark theme
+// Global utility functions (moved out of auth listener to avoid duplication)
+function refreshPlaceholderStyles() {
+  const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+  
+  const inputs = document.querySelectorAll('input[placeholder], textarea[placeholder]');
+  const promptTopic = document.getElementById('promptTopic');
+  const searchQuery = document.getElementById('searchQuery');
+  
+  inputs.forEach(input => {
+    if (isDarkTheme) {
+      input.style.removeProperty('color');
+      input.style.removeProperty('background');
+      input.classList.add('force-dark-placeholder');
+      
+      if (input.id === 'promptTopic' || input.id === 'searchQuery') {
+        input.style.setProperty('color', '#89C9D4', 'important');
+        input.style.setProperty('background', 'linear-gradient(135deg, rgba(42, 54, 58, 0.9) 0%, rgba(30, 42, 48, 0.95) 100%)', 'important');
+        input.style.setProperty('border', '2px solid rgba(137, 201, 212, 0.3)', 'important');
+        input.style.setProperty('caret-color', '#89C9D4', 'important');
+      }
+    } else {
+      input.classList.remove('force-dark-placeholder');
+      if (input.id === 'promptTopic' || input.id === 'searchQuery') {
         input.style.removeProperty('color');
         input.style.removeProperty('background');
-        input.classList.add('force-dark-placeholder');
-        
-        // For the specific problematic inputs, force the styling
-        if (input.id === 'promptTopic' || input.id === 'searchQuery') {
-          input.style.setProperty('color', '#89C9D4', 'important');
-          input.style.setProperty('background', 'linear-gradient(135deg, rgba(42, 54, 58, 0.9) 0%, rgba(30, 42, 48, 0.95) 100%)', 'important');
-          input.style.setProperty('border', '2px solid rgba(137, 201, 212, 0.3)', 'important');
-          input.style.setProperty('caret-color', '#89C9D4', 'important');
-        }
-      } else {
-        input.classList.remove('force-dark-placeholder');
-        // Remove forced styling for light theme
-        if (input.id === 'promptTopic' || input.id === 'searchQuery') {
-          input.style.removeProperty('color');
-          input.style.removeProperty('background');
-          input.style.removeProperty('border');
-          input.style.removeProperty('caret-color');
-        }
+        input.style.removeProperty('border');
+        input.style.removeProperty('caret-color');
       }
-    });
-  }
+    }
+  });
+}
 
-  window.showPromptsByDate = showPromptsByDate;
-  window.changeMonth = changeMonth;
-  window.createPastEntryCard = createPastEntryCard;
-  window.refreshPlaceholderStyles = refreshPlaceholderStyles;
-  
-  // Apply placeholder styles on page load
-  setTimeout(refreshPlaceholderStyles, 500);
-});
+// Export global utility functions
+window.showPromptsByDate = showPromptsByDate;
+window.changeMonth = changeMonth;
+window.createPastEntryCard = createPastEntryCard;
+window.refreshPlaceholderStyles = refreshPlaceholderStyles;
+
+// Apply placeholder styles on page load
+setTimeout(refreshPlaceholderStyles, 500);
 });

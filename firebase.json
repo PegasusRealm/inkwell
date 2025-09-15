@@ -14,7 +14,7 @@
     ],
     "rewrites": [
       {
-        "source": "**",
+        "source": "!/migrate-users.html",
         "destination": "/index.html"
       }
     ],

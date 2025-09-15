@@ -1,6 +1,7 @@
 const { defineSecret } = require("firebase-functions/params"); 
 const { getApps } = require("firebase-admin/app");
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
 const sgMail = require("@sendgrid/mail");
 const fetch = require("node-fetch");
@@ -8,6 +9,8 @@ const SENDGRID_API_KEY = defineSecret("SENDGRID_API_KEY");
 const RECAPTCHA_SECRET_KEY = defineSecret("RECAPTCHA_SECRET_KEY");
 const ANTHROPIC_API_KEY = defineSecret("ANTHROPIC_API_KEY");
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
+const MAILCHIMP_API_KEY = defineSecret("MAILCHIMP_API_KEY");
+const MAILCHIMP_LIST_ID = defineSecret("MAILCHIMP_LIST_ID");
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 if (!getApps().length) {
   admin.initializeApp();
@@ -21,8 +24,20 @@ async function createUserProfileIfNotExists(uid, email) {
     await userDocRef.set({
       userId: uid,
       email: email,
+      displayName: email.split('@')[0], // Default to email prefix if no username
+      signupUsername: email.split('@')[0],
+      userRole: "journaler",
+      special_code: "beta", // Tag all new users with beta
       agreementAccepted: false,
-      userRole: "journaler"
+      avatar: "",
+      // Default insight preferences for new users (opt-in by default)
+      insightsPreferences: {
+        weeklyEnabled: true,
+        monthlyEnabled: true,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      },
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
     return { created: true };
   }
@@ -1353,14 +1368,18 @@ exports.createUserProfile = onCall(async (data, context) => {
 });
 
 // Verify reCAPTCHA token (callable)
-exports.verifyRecaptcha = onCall({ secrets: [RECAPTCHA_SECRET_KEY] }, async (data, context) => {
-  const { token } = data;
+exports.verifyRecaptcha = onCall({ secrets: [RECAPTCHA_SECRET_KEY] }, async (request) => {
+  console.log("🔐 verifyRecaptcha called with data:", JSON.stringify(request.data));
+  const { token } = request.data;
   
   if (!token) {
+    console.error("❌ No token provided in request.data:", request.data);
     throw new HttpsError("invalid-argument", "reCAPTCHA token is required.");
   }
 
   try {
+    console.log("🌐 Making request to Google reCAPTCHA API...");
+    
     const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
       method: "POST",
       headers: {
@@ -1369,11 +1388,18 @@ exports.verifyRecaptcha = onCall({ secrets: [RECAPTCHA_SECRET_KEY] }, async (dat
       body: `secret=${RECAPTCHA_SECRET_KEY.value()}&response=${token}`,
     });
 
+    console.log("📡 Got response from Google, status:", response.status);
+    
+    if (!response.ok) {
+      throw new Error(`Google API returned status ${response.status}`);
+    }
+
     const result = await response.json();
+    console.log("🔍 Google reCAPTCHA API response:", result);
     
     if (!result.success) {
-      console.warn("reCAPTCHA verification failed:", result["error-codes"]);
-      throw new HttpsError("permission-denied", "reCAPTCHA verification failed. Please try again.");
+      console.warn("❌ reCAPTCHA verification failed:", result["error-codes"]);
+      throw new HttpsError("permission-denied", `reCAPTCHA verification failed: ${result["error-codes"]?.join(", ") || "Unknown error"}`);
     }
 
     console.log("✅ reCAPTCHA verification successful");
@@ -1381,7 +1407,14 @@ exports.verifyRecaptcha = onCall({ secrets: [RECAPTCHA_SECRET_KEY] }, async (dat
     
   } catch (error) {
     console.error("❌ reCAPTCHA verification error:", error);
-    throw new HttpsError("internal", "reCAPTCHA verification service unavailable. Please try again.");
+    
+    // If it's already an HttpsError, re-throw it
+    if (error.code) {
+      throw error;
+    }
+    
+    // Otherwise wrap it as an internal error
+    throw new HttpsError("internal", `reCAPTCHA verification service error: ${error.message}`);
   }
 });
 
@@ -1884,14 +1917,16 @@ exports.testUserInsights = onCall({
     }
 
     console.log(`[${requestId}] Generating test weekly insights`);
-    const { journalEntries, manifestEntries, stats } = await getUserDataForPeriod(userId, 'weekly');
+    const weeklyData = await collectWeeklyUserData(userId, requestId);
     
-    if (journalEntries.length === 0 && manifestEntries.length === 0) {
+    if (weeklyData.stats.totalEntries === 0) {
       return {
-        status: 'skipped',
+        status: 'skipped', 
         message: 'No journal or manifest entries found for the past 7 days'
       };
     }
+    
+    const { journalEntries, manifestEntries, stats } = weeklyData;
     
     const insights = await generateInsightsWithOpenAI(
       journalEntries, 
@@ -2203,8 +2238,8 @@ async function generateInsightsWithOpenAI(journalEntries, manifestEntries, stats
       }
     : {
         timeframe: 'this past month', 
-        focus: 'deeper trends and monthly growth patterns',
-        approach: 'a thoughtful reflection on your monthly journey'
+        focus: 'deeper trends, evolution over time, and comprehensive growth patterns across the month',
+        approach: 'a comprehensive reflection on your monthly journey with deeper psychological insights'
       };
   
   // Create a comprehensive prompt that analyzes both journal and manifest data separately
@@ -2256,6 +2291,10 @@ ${manifestContent}
 **WARM GREETING** 
 Acknowledge their ${periodSpecific.timeframe} commitment (${stats.daysActive} active days)
 
+**WEEKLY SNAPSHOT** (Brief data summary in supportive tone)
+- ${stats.totalJournalEntries} journal entries with ${stats.totalWords} words written${hasManifests ? `\n- ${stats.totalManifestEntries} WISH manifestations explored` : ''}
+- Present this as celebration of their consistency and engagement
+
 `;
 
   if (hasJournals) {
@@ -2285,8 +2324,10 @@ Connect insights to their journey ahead, focusing on building on existing streng
 - Reference specific content from their entries
 - Celebrate progress while acknowledging struggles with compassion
 - Use their own language and themes when possible
-- 150-200 words total
+- ${period === 'monthly' ? '200-300 words total - deeper reflection with more comprehensive insights' : '150-200 words total'}
 - Focus on what you actually observe, not generic advice
+${period === 'monthly' ? '- For monthly: Look for longer-term patterns, evolution over time, and deeper psychological insights' : ''}
+- DO NOT include any signature or sign-off - the email template handles that
 
 Make them feel truly seen and understood based on their actual content.`;
   try {
@@ -2427,11 +2468,11 @@ async function sendInsightsEmail(userEmail, insights, period, userName) {
         subtitle: 'Your weekly reflection from Sophy'
       }
     : {
-        headerColor: '#5B4E75',
-        gradientStart: '#faf0ff',
-        gradientEnd: '#fff8f0',
-        borderColor: '#5B4E75',
-        icon: '🌟',
+        headerColor: '#D49489',
+        gradientStart: '#fff8f5',
+        gradientEnd: '#fef6f4',
+        borderColor: '#D49489',
+        icon: '�',
         subtitle: 'Your monthly journey insights from Sophy'
       };
   
@@ -2492,3 +2533,916 @@ async function sendInsightsEmail(userEmail, insights, period, userName) {
     throw error;
   }
 }
+
+// Monthly-specific email function with coral theme
+async function sendMonthlyInsightsEmail(userEmail, insights, period, userName) {
+  console.log(`📧 Attempting to send ${period} insights email to ${userEmail}`);
+  
+  // Check if SendGrid API key is available
+  const apiKey = SENDGRID_API_KEY.value();
+  if (!apiKey) {
+    console.error('❌ SendGrid API key is missing');
+    throw new Error('SendGrid API key not configured');
+  }
+  
+  if (!apiKey.startsWith("SG.")) {
+    console.error('❌ SendGrid API key format is invalid');
+    throw new Error('SendGrid API key format invalid');
+  }
+  
+  console.log('✅ SendGrid API key is properly configured');
+  sgMail.setApiKey(apiKey);
+  
+  // Coral theme for monthly insights
+  const theme = {
+    headerColor: '#D49489',
+    gradientStart: '#fff8f5',
+    gradientEnd: '#fef6f4',
+    borderColor: '#D49489',
+    accentColor: '#E6A497',
+    icon: '🌺',
+    subtitle: 'Your monthly journey insights from Sophy'
+  };
+  
+  const subject = `Your Monthly Journey Insights from Sophy ${theme.icon}`;
+  
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>InkWell Monthly Insights</title>
+    </head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #fafafa;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: ${theme.headerColor}; font-size: 1.8em; margin-bottom: 10px; font-weight: 600;">InkWell Monthly Insights</h1>
+        <p style="color: #666; font-size: 0.9em; margin: 0;">${theme.subtitle}</p>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, ${theme.gradientStart} 0%, ${theme.gradientEnd} 100%); padding: 30px; border-radius: 12px; border-left: 4px solid ${theme.borderColor}; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(212, 148, 137, 0.15);">
+        <div style="white-space: pre-line; font-size: 1em; line-height: 1.7; color: #2d2d2d;">${insights}</div>
+      </div>
+      
+      <div style="text-align: center; padding-top: 20px; border-top: 1px solid ${theme.accentColor}; color: #666; font-size: 0.85em;">
+        <p style="margin-bottom: 10px;">This email was sent because you opted in to receive monthly insights in your InkWell settings.</p>
+        <p style="margin: 0;"><a href="https://inkwelljournal.io" style="color: ${theme.headerColor}; text-decoration: none; font-weight: 500;">Visit InkWell</a> • <a href="#" style="color: #666; text-decoration: none;">Manage Preferences</a></p>
+      </div>
+    </body>
+    </html>
+  `;
+  
+  const msg = {
+    to: userEmail,
+    from: {
+      email: 'sophy@inkwelljournal.io',
+      name: 'Sophy from InkWell'
+    },
+    subject: subject,
+    html: htmlContent,
+    text: insights // Plain text fallback
+  };
+  
+  console.log('📨 Sending monthly email with config:', {
+    to: userEmail,
+    from: 'sophy@inkwelljournal.io',
+    subject: subject
+  });
+  
+  try {
+    const result = await sgMail.send(msg);
+    console.log('✅ SendGrid monthly email sent successfully:', result[0].statusCode);
+    return result;
+  } catch (error) {
+    console.error('❌ SendGrid monthly send failed:', error);
+    console.error('❌ SendGrid monthly error details:', error.response?.body || error.message);
+    throw error;
+  }
+}
+
+// Collect user's weekly data from Firestore
+async function collectWeeklyUserData(userId, requestId) {
+  console.log(`[${requestId}] 📊 Collecting weekly data for user: ${userId}`);
+  
+  try {
+    // Calculate date range for the past week (Monday to Sunday)
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+    
+    console.log(`[${requestId}] Date range: ${oneWeekAgo.toISOString()} to ${now.toISOString()}`);
+    
+    // Get user's journal entries from the past week - simplified query first
+    console.log(`[${requestId}] 📊 Querying journal entries for ${userId} since ${oneWeekAgo.toISOString()}`);
+    const journalEntriesRef = admin.firestore().collection('journalEntries');
+    
+    // Try simple query first to test connectivity
+    let journalSnapshot;
+    try {
+      journalSnapshot = await journalEntriesRef
+        .where('userId', '==', userId)
+        .orderBy('createdAt', 'desc')
+        .limit(100)  // Get recent entries and filter by date after
+        .get();
+      
+      console.log(`[${requestId}] 📝 Found ${journalSnapshot.size} total journal entries for user`);
+    } catch (queryError) {
+      console.error(`[${requestId}] ❌ Journal query failed:`, queryError);
+      throw new Error(`Journal query failed: ${queryError.message}`);
+    }
+    
+    
+    // Get user's WISH/manifest entries from the past week - direct document access
+    console.log(`[${requestId}] 📊 Accessing manifest document for ${userId} since ${oneWeekAgo.toISOString()}`);
+    
+    let manifestSnapshot;
+    try {
+      // Manifests are stored as a single document per user, not a collection
+      const manifestDocRef = admin.firestore().collection('manifests').doc(userId);
+      const manifestDoc = await manifestDocRef.get();
+      
+      if (manifestDoc.exists) {
+        // Create a mock snapshot structure for consistency
+        manifestSnapshot = {
+          size: 1,
+          docs: [manifestDoc]
+        };
+        console.log(`[${requestId}] 🎯 Found manifest document for user`);
+      } else {
+        manifestSnapshot = { size: 0, docs: [] };
+        console.log(`[${requestId}] 📝 No manifest document found for user`);
+      }
+    } catch (queryError) {
+      console.error(`[${requestId}] ❌ Manifest query failed:`, queryError);
+      throw new Error(`Manifest query failed: ${queryError.message}`);
+    }
+    
+    // Process journal entries and filter by date range
+    const journalEntries = [];
+    const journalDates = new Set();
+    
+    journalSnapshot.forEach(doc => {
+      try {
+        const entry = doc.data();
+        console.log(`[${requestId}] 📝 Processing journal entry ${doc.id}, createdAt type:`, typeof entry.createdAt, entry.createdAt);
+        
+        // Safely handle createdAt date conversion
+        if (entry.createdAt && typeof entry.createdAt.toDate === 'function') {
+          const entryDate = entry.createdAt.toDate();
+          console.log(`[${requestId}] ✅ Converted date:`, entryDate);
+          
+          // Filter by date range in JavaScript
+          if (entryDate && entryDate >= oneWeekAgo && entryDate <= now) {
+            journalEntries.push({
+              id: doc.id,
+              text: entry.text || '',
+              createdAt: entry.createdAt,
+              contextManifest: entry.contextManifest || ''
+            });
+            
+            // Track unique days for statistics
+            journalDates.add(entryDate.toDateString());
+            console.log(`[${requestId}] ✅ Added journal entry from ${entryDate.toDateString()}`);
+          } else {
+            console.log(`[${requestId}] ⏭️ Journal entry outside date range: ${entryDate}`);
+          }
+        } else {
+          console.log(`[${requestId}] ⚠️ Journal entry has invalid createdAt:`, entry.createdAt);
+        }
+      } catch (error) {
+        console.error(`[${requestId}] ❌ Error processing journal entry ${doc.id}:`, error);
+        // Continue processing other entries
+      }
+    });
+    
+    console.log(`[${requestId}] ✅ Filtered to ${journalEntries.length} journal entries from past week`);
+    
+    // Process WISH/manifest document (single doc per user)
+    const manifestEntries = [];
+    const manifestDates = new Set();
+    
+    manifestSnapshot.docs.forEach(doc => {
+      const manifestData = doc.data();
+      
+      // Check if there's a recent update to the manifest
+      if (manifestData.createdAt || manifestData.updatedAt) {
+        const relevantDate = manifestData.updatedAt || manifestData.createdAt;
+        if (relevantDate && typeof relevantDate.toDate === 'function') {
+          const entryDate = relevantDate.toDate();
+          
+          // Filter by date range in JavaScript
+          if (entryDate && entryDate >= oneWeekAgo && entryDate <= now) {
+            manifestEntries.push({
+              id: doc.id,
+              text: manifestData.text || manifestData.content || '',
+              createdAt: relevantDate,
+              type: 'manifest'
+            });
+            
+            // Track unique days for statistics
+            manifestDates.add(entryDate.toDateString());
+          }
+        }
+      }
+    });
+    
+    console.log(`[${requestId}] ✅ Filtered to ${manifestEntries.length} manifest entries from past week`);
+    
+    // Calculate statistics
+    const allDates = new Set([...journalDates, ...manifestDates]);
+    const stats = {
+      totalJournalEntries: journalEntries.length,
+      totalManifestEntries: manifestEntries.length,
+      totalEntries: journalEntries.length + manifestEntries.length,
+      daysActive: allDates.size,
+      journalDaysActive: journalDates.size,
+      manifestDaysActive: manifestDates.size
+    };
+    
+    console.log(`[${requestId}] ✅ Weekly data collected:`, stats);
+    
+    return {
+      journalEntries,
+      manifestEntries,
+      stats,
+      dateRange: {
+        start: oneWeekAgo,
+        end: now
+      }
+    };
+    
+  } catch (error) {
+    console.error(`[${requestId}] ❌ Error collecting weekly data for user ${userId}:`, error);
+    throw error;
+  }
+}
+
+// Main function to process weekly insights for all eligible users
+async function processWeeklyInsights(requestId) {
+  console.log(`[${requestId}] 🚀 Starting weekly insights processing`);
+  
+  try {
+    // Get all users who have weekly insights enabled
+    const usersRef = admin.firestore().collection('users');
+    const usersSnapshot = await usersRef
+      .where('insightsPreferences.weeklyEnabled', '==', true)
+      .get();
+    
+    console.log(`[${requestId}] Found ${usersSnapshot.size} users with weekly insights enabled`);
+    
+    const processedUsers = [];
+    const errors = [];
+    
+    // Process each user sequentially to avoid overwhelming APIs
+    for (const userDoc of usersSnapshot.docs) {
+      const userId = userDoc.id;
+      const userData = userDoc.data();
+      const userEmail = userData.email;
+      const userName = userData.displayName || userData.signupUsername || 'Friend';
+      
+      try {
+        console.log(`[${requestId}] 📝 Processing weekly insights for ${userId} (${userEmail})`);
+        console.log(`[${requestId}] 👤 User role: ${userData.userRole}`);
+        console.log(`[${requestId}] ⚙️ Weekly enabled: ${userData.insightsPreferences?.weeklyEnabled}`);
+        
+        // Collect user's weekly data
+        console.log(`[${requestId}] 📊 Collecting weekly data for ${userId}...`);
+        const weeklyData = await collectWeeklyUserData(userId, requestId);
+        console.log(`[${requestId}] ✅ Data collection completed for ${userId}:`, weeklyData.stats);
+        
+        // Skip users with no activity this week
+        if (weeklyData.stats.totalEntries === 0) {
+          console.log(`[${requestId}] ⏭️ Skipping ${userId} - no activity this week`);
+          continue;
+        }
+        
+        // Generate insights using OpenAI
+        const insights = await generateInsightsWithOpenAI(
+          weeklyData.journalEntries,
+          weeklyData.manifestEntries,
+          weeklyData.stats,
+          'weekly',
+          userName,
+          requestId
+        );
+        
+        // Send email with insights
+        await sendInsightsEmail(userEmail, insights, 'weekly', userName);
+        
+        processedUsers.push({
+          userId,
+          email: userEmail,
+          stats: weeklyData.stats
+        });
+        
+        console.log(`[${requestId}] ✅ Weekly insights sent successfully to ${userEmail}`);
+        
+        // Add small delay between users to be respectful to APIs
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+      } catch (userError) {
+        console.error(`[${requestId}] ❌ Error processing user ${userId}:`, userError);
+        errors.push({
+          userId,
+          email: userEmail,
+          error: userError.message
+        });
+      }
+    }
+    
+    console.log(`[${requestId}] 🎉 Weekly insights processing completed`);
+    console.log(`[${requestId}] Successfully processed: ${processedUsers.length} users`);
+    console.log(`[${requestId}] Errors: ${errors.length} users`);
+    
+    return {
+      success: true,
+      processedUsers,
+      errors,
+      totalEligible: usersSnapshot.size
+    };
+    
+  } catch (error) {
+    console.error(`[${requestId}] ❌ Fatal error in weekly insights processing:`, error);
+    throw error;
+  }
+}
+
+// Scheduled function to send weekly insights every Monday at 9 AM Hawaii time (UTC-10)
+exports.weeklyInsightsScheduler = onSchedule({
+  schedule: "0 19 * * 1", // Every Monday at 19:00 UTC (9:00 AM Hawaii time UTC-10)
+  timeZone: "Pacific/Honolulu", // Hawaii timezone
+  secrets: [OPENAI_API_KEY, SENDGRID_API_KEY]
+}, async (event) => {
+  const requestId = generateRequestId();
+  console.log(`[${requestId}] 📅 Weekly insights scheduled function triggered`);
+  
+  try {
+    const result = await processWeeklyInsights(requestId);
+    console.log(`[${requestId}] ✅ Scheduled weekly insights completed:`, result);
+    return result;
+  } catch (error) {
+    console.error(`[${requestId}] ❌ Scheduled weekly insights failed:`, error);
+    throw error;
+  }
+});
+
+// GHOST-FREE WEEKLY INSIGHTS - Completely new function to avoid all legacy code
+async function ghostFreeWeeklyInsights(requestId) {
+  console.log(`[${requestId}] 👻 Starting GHOST-FREE weekly insights`);
+  
+  try {
+    // Get users with weekly insights enabled - simple query
+    const usersRef = admin.firestore().collection('users');
+    const usersSnapshot = await usersRef.get();
+    
+    console.log(`[${requestId}] Found ${usersSnapshot.size} total users`);
+    
+    const processedUsers = [];
+    const errors = [];
+    
+    for (const userDoc of usersSnapshot.docs) {
+      const userData = userDoc.data();
+      const userId = userDoc.id;
+      
+      // Check if weekly insights enabled
+      if (!userData.insightsPreferences?.weeklyEnabled) {
+        console.log(`[${requestId}] Skipping ${userId} - weekly insights not enabled`);
+        continue;
+      }
+      
+      try {
+        console.log(`[${requestId}] Processing user ${userId} (${userData.email})`);
+        
+        // Get recent journal entries - ULTRA SIMPLE approach (no orderBy to avoid index issues)
+        const journalRef = admin.firestore().collection('journalEntries');
+        const journalDocs = await journalRef
+          .where('userId', '==', userId)
+          .limit(50) // Get more entries since we can't order, then sort manually
+          .get();
+        
+        console.log(`[${requestId}] Found ${journalDocs.size} journal entries for ${userId}`);
+        
+        // Skip if no activity
+        if (journalDocs.size === 0) {
+          console.log(`[${requestId}] Skipping ${userId} - no journal entries`);
+          continue;
+        }
+        
+        // Get manifest entries too for complete insights - ULTRA SIMPLE approach
+        const manifestRef = admin.firestore().collection('manifests');
+        const manifestDocs = await manifestRef
+          .where('userId', '==', userId)
+          .limit(20) // Get more then sort manually  
+          .get();
+          
+        console.log(`[${requestId}] Found ${manifestDocs.size} manifest entries for ${userId}`);
+        
+        // Prepare data for OpenAI analysis
+        const entryCount = journalDocs.size;
+        const userName = userData.displayName || userData.signupUsername || 'Friend';
+        
+        // Convert Firestore documents to arrays and sort manually by date (most recent first)
+        const journalEntries = journalDocs.docs
+          .map(doc => ({
+            content: doc.data().content,
+            createdAt: doc.data().createdAt?.toDate()
+          }))
+          .filter(entry => entry.createdAt) // Filter out entries without dates
+          .sort((a, b) => b.createdAt - a.createdAt) // Sort by date desc
+          .slice(0, 20); // Take most recent 20
+        
+        const manifestEntries = manifestDocs.docs
+          .map(doc => ({
+            wish: doc.data().wish,
+            gratitude: doc.data().gratitude, 
+            createdAt: doc.data().createdAt?.toDate()
+          }))
+          .filter(entry => entry.createdAt) // Filter out entries without dates
+          .sort((a, b) => b.createdAt - a.createdAt) // Sort by date desc  
+          .slice(0, 10); // Take most recent 10
+        
+        // Calculate stats
+        const stats = {
+          totalJournalEntries: journalEntries.length,
+          totalManifestEntries: manifestEntries.length,
+          totalWords: journalEntries.reduce((sum, entry) => sum + (entry.content?.split(' ').length || 0), 0),
+          daysActive: Math.min(7, journalEntries.length) // Simple approximation for weekly
+        };
+        
+        console.log(`[${requestId}] Generating AI insights for ${userName}...`);
+        
+        // Generate AI insights using actual content analysis
+        const insights = await generateInsightsWithOpenAI(
+          journalEntries, 
+          manifestEntries, 
+          stats, 
+          'weekly', 
+          userName, 
+          requestId
+        );
+
+        // Send email using existing function
+        await sendInsightsEmail(userData.email, insights, 'weekly', userName);
+        
+        processedUsers.push({
+          userId,
+          email: userData.email,
+          stats: {
+            totalJournalEntries: stats.totalJournalEntries,
+            totalManifestEntries: stats.totalManifestEntries,
+            totalWords: stats.totalWords,
+            daysActive: stats.daysActive
+          }
+        });
+        
+        console.log(`[${requestId}] ✅ SUCCESS for ${userId}`);
+        
+      } catch (userError) {
+        console.error(`[${requestId}] ❌ Error for user ${userId}:`, userError);
+        errors.push({
+          userId,
+          email: userData.email,
+          error: userError.message
+        });
+      }
+    }
+    
+    console.log(`[${requestId}] 👻 Ghost-free processing complete`);
+    return {
+      success: true,
+      processedUsers,
+      errors,
+      totalEligible: usersSnapshot.size
+    };
+    
+  } catch (error) {
+    console.error(`[${requestId}] ❌ Ghost-free function failed:`, error);
+    throw error;
+  }
+}
+
+// Manual trigger for testing weekly insights (hidden button in production)
+exports.triggerWeeklyInsightsTest = onRequest({ 
+  secrets: [OPENAI_API_KEY, SENDGRID_API_KEY] 
+}, async (req, res) => {
+  const requestId = generateRequestId();
+  console.log(`[${requestId}] 🧪 Manual weekly insights test triggered`);
+  
+  // Apply CORS
+  if (!setupHardenedCORS(req, res)) {
+    console.warn(`[${requestId}] Rejected request from unauthorized origin: ${req.headers.origin}`);
+    return res.status(403).send('Forbidden');
+  }
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(204).send('');
+  }
+
+  if (req.method !== 'POST') {
+    return sendSecureErrorResponse(res, 405, 'Method not allowed');
+  }
+
+  try {
+    // Verify authentication for test function
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.warn(`[${requestId}] Missing authorization for test trigger`);
+      return sendSecureErrorResponse(res, 401, 'Authentication required');
+    }
+    
+    try {
+      const idToken = authHeader.split('Bearer ')[1];
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      console.log(`[${requestId}] Test triggered by authenticated user: ${decodedToken.uid}`);
+    } catch (authError) {
+      console.error(`[${requestId}] Authentication failed for test:`, authError.message);
+      return sendSecureErrorResponse(res, 401, 'Invalid authentication token');
+    }
+
+    // GHOST-FREE: Run completely new weekly insights logic
+    const result = await ghostFreeWeeklyInsights(requestId);
+    
+    console.log(`[${requestId}] ✅ Manual weekly insights test completed`);
+    res.status(200).json({
+      success: true,
+      message: 'Weekly insights test completed successfully',
+      result
+    });
+    
+  } catch (error) {
+    console.error(`[${requestId}] ❌ Weekly insights test failed:`, error);
+    res.status(500).json({
+      success: false,
+      message: 'Weekly insights test failed',
+      error: error.message
+    });
+  }
+});
+
+// ===== MONTHLY INSIGHTS FUNCTIONS =====
+
+// Monthly Insights Scheduler - First day of every month at 9AM Hawaii time
+exports.monthlyInsightsScheduler = onSchedule({
+  schedule: "0 19 1 * *", // First day of every month at 19:00 UTC (9:00 AM Hawaii time UTC-10)
+  timeZone: "Pacific/Honolulu", // Hawaii timezone
+  secrets: [OPENAI_API_KEY, SENDGRID_API_KEY]
+}, async (event) => {
+  const requestId = generateRequestId();
+  console.log(`[${requestId}] 📅 Monthly insights scheduled function triggered`);
+  
+  try {
+    const result = await ghostFreeMonthlyInsights(requestId);
+    console.log(`[${requestId}] ✅ Scheduled monthly insights completed:`, result);
+    return result;
+  } catch (error) {
+    console.error(`[${requestId}] ❌ Scheduled monthly insights failed:`, error);
+    throw error;
+  }
+});
+
+// GHOST-FREE MONTHLY INSIGHTS - Based on weekly version but for monthly timeframe
+async function ghostFreeMonthlyInsights(requestId) {
+  console.log(`[${requestId}] 👻 Starting GHOST-FREE monthly insights`);
+  
+  try {
+    // Get users with monthly insights enabled - simple query
+    const usersRef = admin.firestore().collection('users');
+    const usersSnapshot = await usersRef.get();
+    
+    console.log(`[${requestId}] Found ${usersSnapshot.size} total users`);
+    
+    const processedUsers = [];
+    const errors = [];
+    
+    for (const userDoc of usersSnapshot.docs) {
+      const userData = userDoc.data();
+      const userId = userDoc.id;
+      
+      // Check if monthly insights enabled
+      if (!userData.insightsPreferences?.monthlyEnabled) {
+        console.log(`[${requestId}] Skipping ${userId} - monthly insights not enabled`);
+        continue;
+      }
+      
+      try {
+        console.log(`[${requestId}] Processing user ${userId} (${userData.email})`);
+        
+        // Get recent journal entries - ULTRA SIMPLE approach (no orderBy to avoid index issues)
+        const journalRef = admin.firestore().collection('journalEntries');
+        const journalDocs = await journalRef
+          .where('userId', '==', userId)
+          .limit(100) // Get more entries for monthly analysis, then sort manually
+          .get();
+        
+        console.log(`[${requestId}] Found ${journalDocs.size} journal entries for ${userId}`);
+        
+        // Skip if no activity
+        if (journalDocs.size === 0) {
+          console.log(`[${requestId}] Skipping ${userId} - no journal entries`);
+          continue;
+        }
+        
+        // Get manifest entries too for complete insights - ULTRA SIMPLE approach
+        const manifestRef = admin.firestore().collection('manifests');
+        const manifestDocs = await manifestRef
+          .where('userId', '==', userId)
+          .limit(50) // Get more then sort manually  
+          .get();
+          
+        console.log(`[${requestId}] Found ${manifestDocs.size} manifest entries for ${userId}`);
+        
+        // Prepare data for OpenAI analysis
+        const entryCount = journalDocs.size;
+        const userName = userData.displayName || userData.signupUsername || 'Friend';
+        
+        // Convert Firestore documents to arrays and sort manually by date (most recent first)
+        // For monthly, we want last 30 days of data
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        const journalEntries = journalDocs.docs
+          .map(doc => ({
+            content: doc.data().text, // Journal content is stored in 'text' field
+            createdAt: doc.data().createdAt?.toDate()
+          }))
+          .filter(entry => {
+            // Filter for last 30 days AND non-empty content  
+            const hasDate = entry.createdAt && entry.createdAt >= thirtyDaysAgo;
+            const hasContent = entry.content && entry.content.trim().length >= 3; // At least 3 characters
+            
+            return hasDate && hasContent;
+          })
+          .sort((a, b) => b.createdAt - a.createdAt) // Sort by date desc
+          .slice(0, 30); // Take most recent 30
+        
+        // Skip if no meaningful content in the last 30 days
+        console.log(`[${requestId}] After filtering: ${journalEntries.length} entries with content for ${userId}`);
+        if (journalEntries.length === 0) {
+          console.log(`[${requestId}] Skipping ${userId} - no journal entries with content in last 30 days`);
+          continue;
+        }
+        
+        const manifestEntries = manifestDocs.docs
+          .map(doc => ({
+            wish: doc.data().wish,
+            gratitude: doc.data().gratitude, 
+            createdAt: doc.data().createdAt?.toDate()
+          }))
+          .filter(entry => entry.createdAt && entry.createdAt >= thirtyDaysAgo) // Filter last 30 days
+          .sort((a, b) => b.createdAt - a.createdAt) // Sort by date desc  
+          .slice(0, 15); // Take most recent 15
+        
+        // Calculate stats for monthly - properly count unique active days
+        const uniqueDays = new Set();
+        journalEntries.forEach(entry => {
+          if (entry.createdAt) {
+            const dateString = entry.createdAt.toDateString();
+            uniqueDays.add(dateString);
+          }
+        });
+        
+        const stats = {
+          totalJournalEntries: journalEntries.length,
+          totalManifestEntries: manifestEntries.length,
+          totalWords: journalEntries.reduce((sum, entry) => sum + (entry.content?.split(' ').length || 0), 0),
+          daysActive: uniqueDays.size // Actual count of unique days with entries
+        };
+        
+        console.log(`[${requestId}] Generating AI insights for ${userName} (MONTHLY)...`);
+        
+        // Generate AI insights using actual content analysis - MONTHLY period
+        const insights = await generateInsightsWithOpenAI(
+          journalEntries, 
+          manifestEntries, 
+          stats, 
+          'monthly', // MONTHLY period instead of weekly
+          userName, 
+          requestId
+        );
+
+        // Send email using monthly email function
+        await sendMonthlyInsightsEmail(userData.email, insights, 'monthly', userName);
+        
+        processedUsers.push({
+          userId,
+          email: userData.email,
+          stats: {
+            totalJournalEntries: stats.totalJournalEntries,
+            totalManifestEntries: stats.totalManifestEntries,
+            totalWords: stats.totalWords,
+            daysActive: stats.daysActive
+          }
+        });
+        
+        console.log(`[${requestId}] ✅ SUCCESS for ${userId} (MONTHLY)`);
+        
+      } catch (userError) {
+        console.error(`[${requestId}] ❌ Error for user ${userId}:`, userError);
+        errors.push({
+          userId,
+          email: userData.email,
+          error: userError.message
+        });
+      }
+    }
+    
+    console.log(`[${requestId}] 👻 Ghost-free monthly processing complete`);
+    return {
+      success: true,
+      processedUsers,
+      errors,
+      totalEligible: usersSnapshot.size
+    };
+    
+  } catch (error) {
+    console.error(`[${requestId}] ❌ Ghost-free monthly function failed:`, error);
+    throw error;
+  }
+}
+
+// Monthly Insights Test Function
+exports.triggerMonthlyInsightsTest = onRequest({ 
+  secrets: [OPENAI_API_KEY, SENDGRID_API_KEY] 
+}, async (req, res) => {
+  const requestId = generateRequestId();
+  console.log(`[${requestId}] 🧪 Manual monthly insights test triggered`);
+  
+  // Apply CORS
+  if (!setupHardenedCORS(req, res)) {
+    return;
+  }
+  
+  // Add test logic here if needed
+  res.json({ success: true, message: 'Test function executed' });
+});
+
+// === MailChimp Integration ===
+exports.addToMailchimp = onCall({ 
+  secrets: [MAILCHIMP_API_KEY, MAILCHIMP_LIST_ID] 
+}, async (request) => {
+  const requestId = generateRequestId();
+  console.log(`[${requestId}] 📧 Adding email to MailChimp`);
+  
+  const { email } = request.data;
+  if (!email) {
+    console.error(`[${requestId}] ❌ Email is required`);
+    throw new HttpsError('invalid-argument', 'Email is required');
+  }
+
+  try {
+    const apiKey = MAILCHIMP_API_KEY.value();
+    const listId = MAILCHIMP_LIST_ID.value();
+    const serverPrefix = apiKey.split('-')[1];
+    
+    const url = `https://${serverPrefix}.api.mailchimp.com/3.0/lists/${listId}/members`;
+    const body = {
+      email_address: email,
+      status: 'subscribed',
+      tags: ['InkWell Web']
+    };
+
+    console.log(`[${requestId}] 🔄 Calling MailChimp API for ${email}`);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `apikey ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error(`[${requestId}] ❌ MailChimp API error:`, error);
+      throw new HttpsError('internal', error.detail || 'MailChimp error');
+    }
+
+    const result = await response.json();
+    console.log(`[${requestId}] ✅ Successfully added ${email} to MailChimp with tag 'InkWell Web'`);
+    
+    return { 
+      success: true,
+      message: 'Email added to MailChimp successfully',
+      email: email,
+      tags: ['InkWell Web']
+    };
+    
+  } catch (error) {
+    console.error(`[${requestId}] ❌ MailChimp integration failed:`, error);
+    throw new HttpsError('internal', `Failed to add email to MailChimp: ${error.message}`);
+  }
+});
+
+// User Data Migration Function - Migrate existing users to new format
+exports.migrateUserData = onCall(async (data, context) => {
+  // Only allow admin users to run this function
+  if (!context.auth) {
+    throw new HttpsError("unauthenticated", "User must be authenticated.");
+  }
+  
+  // Check if user is an admin
+  const uid = context.auth.uid;
+  try {
+    const userDoc = await admin.firestore().collection("users").doc(uid).get();
+    if (!userDoc.exists || userDoc.data().userRole !== "admin") {
+      throw new HttpsError("permission-denied", "Only admin users can run migration.");
+    }
+  } catch (error) {
+    console.error("Error checking admin status:", error);
+    throw new HttpsError("permission-denied", "Unable to verify admin status.");
+  }
+  
+  try {
+    console.log("🔄 Starting user data migration...");
+    
+    const usersRef = admin.firestore().collection("users");
+    const snapshot = await usersRef.get();
+    
+    let migrated = 0;
+    let skipped = 0;
+    let errors = 0;
+    
+    const batch = admin.firestore().batch();
+    
+    for (const doc of snapshot.docs) {
+      try {
+        const userData = doc.data();
+        const userId = doc.id;
+        
+        // Check if user needs migration (missing new fields)
+        const needsMigration = 
+          !userData.userId || 
+          !userData.createdAt || 
+          userData.special_code === undefined ||
+          !userData.insightsPreferences;
+        
+        if (!needsMigration) {
+          skipped++;
+          continue;
+        }
+        
+        console.log(`📝 Migrating user: ${userId} (${userData.email || 'no email'})`);
+        
+        // Prepare updated data while preserving existing values
+        const updatedData = {
+          // Preserve all existing data
+          ...userData,
+          
+          // Add missing standard fields (only if not already present)
+          userId: userData.userId || userId,
+          email: userData.email || "", // Preserve existing email or set empty if missing
+          displayName: userData.displayName || userData.signupUsername || (userData.email ? userData.email.split('@')[0] : ""),
+          signupUsername: userData.signupUsername || userData.displayName || (userData.email ? userData.email.split('@')[0] : ""),
+          userRole: userData.userRole || "journaler", // Preserve existing role
+          avatar: userData.avatar || "",
+          
+          // Set special_code to beta for users who don't have it, preserve existing values
+          special_code: userData.special_code !== undefined ? userData.special_code : "beta",
+          
+          // Add missing timestamps
+          createdAt: userData.createdAt || admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          
+          // Add insights preferences if missing
+          insightsPreferences: userData.insightsPreferences || {
+            weeklyEnabled: true,
+            monthlyEnabled: true,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+          }
+        };
+        
+        batch.update(doc.ref, updatedData);
+        migrated++;
+        
+        // Commit batch every 400 operations (Firestore limit is 500)
+        if (migrated % 400 === 0) {
+          await batch.commit();
+          console.log(`💾 Committed batch of ${migrated} migrations`);
+        }
+        
+      } catch (error) {
+        console.error(`❌ Error migrating user ${doc.id}:`, error);
+        errors++;
+      }
+    }
+    
+    // Commit any remaining operations
+    if (migrated % 400 !== 0) {
+      await batch.commit();
+    }
+    
+    const result = {
+      totalUsers: snapshot.size,
+      migrated: migrated,
+      skipped: skipped,
+      errors: errors,
+      success: true
+    };
+    
+    console.log("✅ Migration completed:", result);
+    return result;
+    
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    throw new HttpsError("internal", "Migration failed: " + error.message);
+  }
+});
