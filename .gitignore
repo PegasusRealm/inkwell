@@ -25,3 +25,6 @@ functions/node_modules/
 # Firebase
 .firebase/
 firebase-debug.log" > .gitignore
+# Debug logs
+firebase-debug*.log
+firestore-debug.log
