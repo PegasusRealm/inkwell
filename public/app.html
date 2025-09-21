@@ -233,6 +233,89 @@
       color: #FDF7F1 !important;
     }
 
+    /* Connectivity Indicator Styles */
+    .connectivity-indicator {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: 500;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+    }
+
+    .connectivity-indicator.online {
+      background: linear-gradient(135deg, rgba(76, 175, 80, 0.9) 0%, rgba(56, 142, 60, 0.9) 100%);
+      color: white;
+      border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .connectivity-indicator.offline {
+      background: linear-gradient(135deg, rgba(255, 152, 0, 0.9) 0%, rgba(239, 108, 0, 0.9) 100%);
+      color: white;
+      border: 1px solid rgba(255, 152, 0, 0.3);
+      animation: pulse 2s infinite;
+    }
+
+    .connectivity-indicator.syncing {
+      background: linear-gradient(135deg, rgba(33, 150, 243, 0.9) 0%, rgba(21, 101, 192, 0.9) 100%);
+      color: white;
+      border: 1px solid rgba(33, 150, 243, 0.3);
+    }
+
+    .connectivity-indicator .sync-icon {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes pulse {
+      0%, 50% { opacity: 1; }
+      25%, 75% { opacity: 0.7; }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .connectivity-indicator:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    }
+
+    /* Hide on mobile to save space */
+    @media (max-width: 768px) {
+      .connectivity-indicator {
+        top: 10px;
+        right: 10px;
+        padding: 6px 10px;
+        font-size: 0.8em;
+      }
+    }
+
+    /* Dark theme adjustments */
+    html[data-theme='dark'] .connectivity-indicator.online {
+      background: linear-gradient(135deg, rgba(76, 175, 80, 0.8) 0%, rgba(56, 142, 60, 0.8) 100%);
+      border: 1px solid rgba(76, 175, 80, 0.4);
+    }
+
+    html[data-theme='dark'] .connectivity-indicator.offline {
+      background: linear-gradient(135deg, rgba(255, 152, 0, 0.8) 0%, rgba(239, 108, 0, 0.8) 100%);
+      border: 1px solid rgba(255, 152, 0, 0.4);
+    }
+
+    html[data-theme='dark'] .connectivity-indicator.syncing {
+      background: linear-gradient(135deg, rgba(33, 150, 243, 0.8) 0%, rgba(21, 101, 192, 0.8) 100%);
+      border: 1px solid rgba(33, 150, 243, 0.4);
+    }
+
     .subtext-muted {
       font-size: 0.85em;
       color: var(--info-muted);
@@ -3409,13 +3492,45 @@ window.onload = function () {
     }
   };
 
-  // Enhanced processing function
+  // Enhanced processing function with offline support
   async function processVoiceWithEmotion(transcript, audioBlob) {
     try {
       const user = auth?.currentUser;
       if (!user) {
         console.warn("User not signed in. Cannot process voice.");
         if (voiceStatus) voiceStatus.textContent = "⚠️ You must be logged in to use voice journaling.";
+        return;
+      }
+
+      // Handle offline mode
+      if (!window.isOnline) {
+        console.log("📵 Processing voice entry offline");
+        
+        // Add raw transcript to journal entry
+        if (journalEntry) {
+          journalEntry.value += (journalEntry.value ? " " : "") + transcript;
+        }
+        
+        if (voiceStatus) {
+          voiceStatus.textContent = "📱 Voice entry saved offline. Analysis will happen when you reconnect.";
+        }
+        
+        // Show onboarding celebration for first voice entry (even offline)
+        if (OnboardingManager) {
+          const progress = OnboardingManager.getProgress();
+          if (!progress.first_voice_entry) {
+            OnboardingManager.showVoiceEntrySuccess();
+          }
+        }
+        
+        // Store offline voice entry with metadata for later processing
+        window.storeOfflineVoiceEntry = {
+          transcript: transcript,
+          audioBlob: audioBlob,
+          timestamp: new Date().toISOString(),
+          needsProcessing: true
+        };
+        
         return;
       }
 
@@ -3467,10 +3582,23 @@ window.onload = function () {
       
     } catch (err) {
       console.error("🛑 Error processing voice with emotion:", err);
-      if (voiceStatus) voiceStatus.textContent = "❌ Failed to process voice input.";
       
-      // Fallback to original cleanVoiceTranscript
-      await fallbackToOriginalProcessing(transcript);
+      // If online but processing failed, still add transcript
+      if (window.isOnline) {
+        if (voiceStatus) voiceStatus.textContent = "⚠️ Voice processing failed, added transcript only.";
+        
+        // Add raw transcript as fallback
+        if (journalEntry) {
+          journalEntry.value += (journalEntry.value ? " " : "") + transcript;
+        }
+      } else {
+        // Offline fallback
+        if (voiceStatus) voiceStatus.textContent = "📱 Voice entry saved offline (processing unavailable).";
+        
+        if (journalEntry) {
+          journalEntry.value += (journalEntry.value ? " " : "") + transcript;
+        }
+      }
     }
   }
 
@@ -6584,6 +6712,13 @@ document.head.appendChild(themeStyle);
 
 
 
+<!-- Connectivity Indicator -->
+<div id="connectivityIndicator" class="connectivity-indicator online" onclick="showConnectivityDetails()" style="display: none;">
+  <span id="connectivityIcon">🟢</span>
+  <span id="connectivityText">Online</span>
+  <span id="offlineCount" style="display: none;"></span>
+</div>
+
 <!-- ✨ Header (Refined Avatar/Logo Container) -->
 <header>
  <div class="logo-hero" style="
@@ -9121,6 +9256,474 @@ function startPractitionerStatusRefresh() {
       }
     }
   });
+
+  // ==============================================
+  // 📱 OFFLINE JOURNALING SYSTEM
+  // ==============================================
+
+  // Offline System Configuration
+  const OFFLINE_STORAGE_KEY = 'inkwell_offline_entries';
+  const SYNC_QUEUE_KEY = 'inkwell_sync_queue';
+  const LAST_SYNC_KEY = 'inkwell_last_sync';
+
+  // Global offline state
+  window.isOnline = navigator.onLine;
+  window.offlineEntries = [];
+  window.syncQueue = [];
+  window.isSyncing = false;
+
+  // Initialize offline system
+  function initializeOfflineSystem() {
+    console.log("🔌 Initializing offline journaling system");
+    
+    // Load offline entries from localStorage
+    loadOfflineEntries();
+    
+    // Update connectivity indicator
+    updateConnectivityIndicator();
+    
+    // Set up connectivity event listeners
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    // Show connectivity indicator after a brief delay
+    setTimeout(() => {
+      document.getElementById('connectivityIndicator').style.display = 'flex';
+    }, 1000);
+    
+    // Auto-sync when online and authenticated
+    if (window.isOnline && window.auth?.currentUser) {
+      syncOfflineEntries();
+    }
+    
+    console.log("✅ Offline system initialized");
+  }
+
+  // Load offline entries from localStorage
+  function loadOfflineEntries() {
+    try {
+      const stored = localStorage.getItem(OFFLINE_STORAGE_KEY);
+      window.offlineEntries = stored ? JSON.parse(stored) : [];
+      
+      const queueStored = localStorage.getItem(SYNC_QUEUE_KEY);
+      window.syncQueue = queueStored ? JSON.parse(queueStored) : [];
+      
+      console.log(`📦 Loaded ${window.offlineEntries.length} offline entries and ${window.syncQueue.length} queued entries`);
+    } catch (error) {
+      console.error("❌ Failed to load offline entries:", error);
+      window.offlineEntries = [];
+      window.syncQueue = [];
+    }
+  }
+
+  // Save offline entries to localStorage
+  function saveOfflineEntries() {
+    try {
+      localStorage.setItem(OFFLINE_STORAGE_KEY, JSON.stringify(window.offlineEntries));
+      localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(window.syncQueue));
+      console.log("💾 Offline entries saved to localStorage");
+    } catch (error) {
+      console.error("❌ Failed to save offline entries:", error);
+    }
+  }
+
+  // Handle going offline
+  function handleOffline() {
+    console.log("📵 Device went offline");
+    window.isOnline = false;
+    updateConnectivityIndicator();
+    showOfflineNotification("You're now offline. Your entries will be saved locally and synced when you reconnect.");
+  }
+
+  // Handle coming back online
+  function handleOnline() {
+    console.log("🌐 Device came back online");
+    window.isOnline = true;
+    updateConnectivityIndicator();
+    
+    // Sync offline entries if authenticated
+    if (window.auth?.currentUser) {
+      setTimeout(() => {
+        syncOfflineEntries();
+      }, 1000); // Brief delay to ensure connection is stable
+    }
+    
+    showOfflineNotification("Back online! Syncing your offline entries...", "success");
+  }
+
+  // Update connectivity indicator UI
+  function updateConnectivityIndicator() {
+    const indicator = document.getElementById('connectivityIndicator');
+    const icon = document.getElementById('connectivityIcon');
+    const text = document.getElementById('connectivityText');
+    const count = document.getElementById('offlineCount');
+    
+    if (!indicator) return;
+    
+    // Clear existing classes
+    indicator.className = 'connectivity-indicator';
+    
+    if (window.isSyncing) {
+      indicator.classList.add('syncing');
+      icon.innerHTML = '<span class="sync-icon">🔄</span>';
+      text.textContent = 'Syncing...';
+      count.style.display = 'none';
+    } else if (window.isOnline) {
+      indicator.classList.add('online');
+      icon.textContent = '🟢';
+      text.textContent = 'Online';
+      count.style.display = 'none';
+    } else {
+      indicator.classList.add('offline');
+      icon.textContent = '🔶';
+      text.textContent = 'Offline';
+      
+      const totalOffline = window.offlineEntries.length + window.syncQueue.length;
+      if (totalOffline > 0) {
+        count.textContent = `(${totalOffline})`;
+        count.style.display = 'inline';
+      } else {
+        count.style.display = 'none';
+      }
+    }
+  }
+
+  // Show offline notification
+  function showOfflineNotification(message, type = 'info') {
+    // Create or update notification element
+    let notification = document.getElementById('offlineNotification');
+    if (!notification) {
+      notification = document.createElement('div');
+      notification.id = 'offlineNotification';
+      notification.style.cssText = `
+        position: fixed;
+        top: 70px;
+        right: 20px;
+        max-width: 300px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        color: white;
+        font-size: 0.9em;
+        z-index: 1001;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        backdrop-filter: blur(8px);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+      `;
+      document.body.appendChild(notification);
+    }
+    
+    // Set background color based on type
+    const backgrounds = {
+      info: 'linear-gradient(135deg, rgba(33, 150, 243, 0.9) 0%, rgba(21, 101, 192, 0.9) 100%)',
+      success: 'linear-gradient(135deg, rgba(76, 175, 80, 0.9) 0%, rgba(56, 142, 60, 0.9) 100%)',
+      warning: 'linear-gradient(135deg, rgba(255, 152, 0, 0.9) 0%, rgba(239, 108, 0, 0.9) 100%)',
+      error: 'linear-gradient(135deg, rgba(244, 67, 54, 0.9) 0%, rgba(211, 47, 47, 0.9) 100%)'
+    };
+    
+    notification.style.background = backgrounds[type] || backgrounds.info;
+    notification.textContent = message;
+    
+    // Show notification
+    setTimeout(() => {
+      notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Hide after delay
+    setTimeout(() => {
+      notification.style.transform = 'translateX(100%)';
+    }, type === 'success' ? 3000 : 5000);
+  }
+
+  // Save entry offline
+  function saveEntryOffline(entryData) {
+    console.log("💾 Saving entry offline:", entryData.title);
+    
+    // Handle voice entries - store transcript for later processing
+    let voiceAnalysis = entryData.voiceAnalysis;
+    if (entryData.isVoiceEntry && window.storeOfflineVoiceEntry) {
+      voiceAnalysis = {
+        transcript: window.storeOfflineVoiceEntry.transcript,
+        recordedAt: window.storeOfflineVoiceEntry.timestamp,
+        needsProcessing: true
+      };
+      // Clear the temporary storage
+      window.storeOfflineVoiceEntry = null;
+    }
+    
+    const offlineEntry = {
+      id: generateOfflineId(),
+      ...entryData,
+      voiceAnalysis: voiceAnalysis,
+      timestamp: new Date().toISOString(),
+      offline: true,
+      needsSync: true
+    };
+    
+    window.offlineEntries.push(offlineEntry);
+    saveOfflineEntries();
+    updateConnectivityIndicator();
+    
+    const entryType = entryData.isVoiceEntry ? "Voice entry" : "Entry";
+    showOfflineNotification(`${entryType} "${entryData.title}" saved offline. Will sync when connected.`, 'info');
+    
+    return offlineEntry;
+  }
+
+  // Generate unique offline ID
+  function generateOfflineId() {
+    return `offline_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  // Sync offline entries to Firebase
+  async function syncOfflineEntries() {
+    if (window.isSyncing || !window.isOnline || !window.auth?.currentUser) {
+      console.log("🔄 Sync skipped - already syncing, offline, or not authenticated");
+      return;
+    }
+    
+    const entriesToSync = [...window.offlineEntries, ...window.syncQueue];
+    if (entriesToSync.length === 0) {
+      console.log("✅ No offline entries to sync");
+      return;
+    }
+    
+    console.log(`🔄 Starting sync of ${entriesToSync.length} offline entries`);
+    window.isSyncing = true;
+    updateConnectivityIndicator();
+    
+    let syncedCount = 0;
+    let errorCount = 0;
+    const syncErrors = [];
+    
+    try {
+      for (const entry of entriesToSync) {
+        try {
+          await syncSingleEntry(entry);
+          syncedCount++;
+          
+          // Remove from offline storage after successful sync
+          window.offlineEntries = window.offlineEntries.filter(e => e.id !== entry.id);
+          window.syncQueue = window.syncQueue.filter(e => e.id !== entry.id);
+          
+        } catch (error) {
+          console.error(`❌ Failed to sync entry ${entry.id}:`, error);
+          errorCount++;
+          syncErrors.push({ entry: entry.id, error: error.message });
+          
+          // Move failed entry to sync queue for retry
+          if (!window.syncQueue.find(e => e.id === entry.id)) {
+            window.syncQueue.push(entry);
+          }
+        }
+      }
+      
+      // Save updated offline storage
+      saveOfflineEntries();
+      
+      // Update last sync timestamp
+      localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
+      
+      console.log(`✅ Sync completed: ${syncedCount} synced, ${errorCount} errors`);
+      
+      if (syncedCount > 0) {
+        showOfflineNotification(`Successfully synced ${syncedCount} entries!`, 'success');
+        
+        // Refresh the journal view to show synced entries
+        if (window.loadJournalEntries) {
+          setTimeout(() => {
+            window.loadJournalEntries();
+          }, 1000);
+        }
+      }
+      
+      if (errorCount > 0) {
+        showOfflineNotification(`${errorCount} entries failed to sync. Will retry later.`, 'warning');
+      }
+      
+    } catch (error) {
+      console.error("❌ Sync process failed:", error);
+      showOfflineNotification("Sync failed. Will retry automatically.", 'error');
+    } finally {
+      window.isSyncing = false;
+      updateConnectivityIndicator();
+    }
+  }
+
+  // Sync a single entry to Firebase
+  async function syncSingleEntry(entry) {
+    console.log(`🔄 Syncing entry: ${entry.title}`);
+    
+    // If this is a voice entry that needs processing, try to process it first
+    if (entry.isVoiceEntry && entry.needsProcessing && entry.voiceAnalysis?.transcript) {
+      console.log("🎤 Processing offline voice entry during sync");
+      
+      try {
+        const user = window.auth?.currentUser;
+        if (user) {
+          const idToken = await user.getIdToken();
+          
+          const endpoint = location.hostname === 'localhost' 
+            ? 'http://localhost:5001/inkwell-alpha/us-central1/processVoiceWithEmotion'
+            : 'https://us-central1-inkwell-alpha.cloudfunctions.net/processVoiceWithEmotion';
+            
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${idToken}`
+            },
+            body: JSON.stringify({
+              transcript: entry.voiceAnalysis.transcript,
+              hasAudio: false // We don't store audio offline
+            })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            
+            // Update entry with processed data
+            if (data.cleanedText) {
+              entry.content = data.cleanedText;
+            }
+            
+            if (data.emotionalInsights) {
+              entry.voiceAnalysis = {
+                ...entry.voiceAnalysis,
+                emotionalInsights: data.emotionalInsights,
+                processedAt: new Date().toISOString()
+              };
+            }
+            
+            entry.needsProcessing = false;
+            console.log("✅ Voice entry processed during sync");
+          }
+        }
+      } catch (error) {
+        console.warn("⚠️ Failed to process voice entry during sync:", error);
+        // Continue with sync even if processing fails
+      }
+    }
+    
+    // Prepare entry data for Firebase (remove offline-specific fields)
+    const firebaseEntry = {
+      ...entry,
+      id: undefined, // Remove offline ID, let Firebase generate new one
+      offline: undefined,
+      needsSync: undefined
+    };
+    
+    // Use existing saveEntry function if available
+    if (window.saveEntry) {
+      return await window.saveEntry(firebaseEntry.title, firebaseEntry.content, firebaseEntry.mood, firebaseEntry.isVoiceEntry, firebaseEntry.voiceAnalysis);
+    } else {
+      // Fallback: direct Firebase save
+      const auth = window.auth;
+      const userId = auth.currentUser.uid;
+      
+      const entryData = {
+        userId: userId,
+        title: firebaseEntry.title,
+        content: firebaseEntry.content,
+        mood: firebaseEntry.mood || 'neutral',
+        timestamp: window.serverTimestamp(),
+        isVoiceEntry: firebaseEntry.isVoiceEntry || false,
+        voiceAnalysis: firebaseEntry.voiceAnalysis || null,
+        needsProcessing: firebaseEntry.needsProcessing || false
+      };
+      
+      const docRef = await window.addDoc(window.collection(window.db, "journalEntries"), entryData);
+      console.log(`✅ Entry synced with ID: ${docRef.id}`);
+      return docRef;
+    }
+  }
+
+  // Show connectivity details modal
+  window.showConnectivityDetails = function() {
+    const totalOffline = window.offlineEntries.length + window.syncQueue.length;
+    const lastSync = localStorage.getItem(LAST_SYNC_KEY);
+    
+    let message = `Connection Status: ${window.isOnline ? 'Online' : 'Offline'}\n\n`;
+    
+    if (totalOffline > 0) {
+      message += `Offline Entries: ${window.offlineEntries.length}\n`;
+      message += `Sync Queue: ${window.syncQueue.length}\n\n`;
+    }
+    
+    if (lastSync) {
+      const lastSyncDate = new Date(lastSync);
+      message += `Last Sync: ${lastSyncDate.toLocaleDateString()} at ${lastSyncDate.toLocaleTimeString()}\n\n`;
+    }
+    
+    if (window.isSyncing) {
+      message += "Currently syncing entries...";
+    } else if (!window.isOnline) {
+      message += "Your entries are being saved offline and will sync when you reconnect.";
+    } else if (totalOffline > 0) {
+      message += "Click to manually sync offline entries.";
+    } else {
+      message += "All entries are synced!";
+    }
+    
+    if (confirm(message + (totalOffline > 0 && window.isOnline ? "\n\nSync now?" : ""))) {
+      if (totalOffline > 0 && window.isOnline && window.auth?.currentUser) {
+        syncOfflineEntries();
+      }
+    }
+  };
+
+  // Modify existing saveEntry function to handle offline mode
+  const originalSaveEntry = window.saveEntry;
+  window.saveEntry = async function(title, content, mood, isVoiceEntry = false, voiceAnalysis = null) {
+    // If offline, save to local storage
+    if (!window.isOnline) {
+      const entryData = {
+        title: title,
+        content: content,
+        mood: mood,
+        isVoiceEntry: isVoiceEntry,
+        voiceAnalysis: voiceAnalysis,
+        needsProcessing: isVoiceEntry && !voiceAnalysis // Voice entries need processing when synced
+      };
+      
+      return saveEntryOffline(entryData);
+    }
+    
+    // If online, use original function
+    try {
+      return await originalSaveEntry(title, content, mood, isVoiceEntry, voiceAnalysis);
+    } catch (error) {
+      // If online save fails, save offline as fallback
+      console.warn("⚠️ Online save failed, saving offline as fallback:", error);
+      
+      const entryData = {
+        title: title,
+        content: content,
+        mood: mood,
+        isVoiceEntry: isVoiceEntry,
+        voiceAnalysis: voiceAnalysis,
+        needsProcessing: isVoiceEntry && !voiceAnalysis
+      };
+      
+      return saveEntryOffline(entryData);
+    }
+  };
+
+  // Initialize offline system when DOM loads
+  document.addEventListener('DOMContentLoaded', initializeOfflineSystem);
+  
+  // Also initialize on auth state change
+  if (window.auth) {
+    window.auth.onAuthStateChanged((user) => {
+      if (user && window.isOnline) {
+        // Auto-sync when user logs in
+        setTimeout(() => {
+          syncOfflineEntries();
+        }, 2000);
+      }
+    });
+  }
+
 </script>
 
 
