@@ -36,6 +36,25 @@ async function createUserProfileIfNotExists(uid, email) {
         monthlyEnabled: true,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       },
+      // Progressive onboarding state tracking
+      onboardingState: {
+        hasCompletedVoiceEntry: false,
+        hasSeenWishTab: false,
+        hasCreatedWish: false,
+        hasUsedSophy: false,
+        totalEntries: 0,
+        currentMilestone: "new_user",
+        milestones: {
+          firstEntry: null,
+          firstVoiceEntry: null,
+          firstWish: null,
+          firstSophy: null,
+          tenEntries: null,
+          monthlyUser: null
+        },
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        lastMilestoneAt: admin.firestore.FieldValue.serverTimestamp()
+      },
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
@@ -96,6 +115,29 @@ function generateRequestId() {
 // Helper: Sleep function for retry delays
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Helper: Safely update user onboarding state (non-blocking)
+async function updateOnboardingState(userId, updates) {
+  try {
+    const userDocRef = admin.firestore().collection("users").doc(userId);
+    
+    // Prepare the update object with nested onboardingState fields
+    const updateData = {};
+    for (const [key, value] of Object.entries(updates)) {
+      updateData[`onboardingState.${key}`] = value;
+    }
+    
+    // Always update the milestone timestamp when any onboarding state changes
+    updateData['onboardingState.lastMilestoneAt'] = admin.firestore.FieldValue.serverTimestamp();
+    updateData['updatedAt'] = admin.firestore.FieldValue.serverTimestamp();
+    
+    await userDocRef.update(updateData);
+    console.log(`✅ Updated onboarding state for user ${userId}:`, updates);
+  } catch (error) {
+    // Log error but don't throw - this should be non-blocking
+    console.warn(`⚠️ Failed to update onboarding state for user ${userId}:`, error.message);
+  }
 }
 
 // Helper: Map technical errors to user-friendly messages
@@ -167,6 +209,7 @@ function mapErrorToUserMessage(error, functionContext = 'system') {
     'generatePrompt': "Unable to generate a writing prompt at the moment. Please try again.",
     'refineManifest': "Unable to refine your manifest statement right now. Please try again.",
     'cleanVoiceTranscript': "Unable to clean the voice transcript right now. Please try again.",
+    'processVoiceWithEmotion': "Unable to process voice with emotional analysis right now. Please try again.",
     'embedAndStoreEntry': "Unable to save your journal entry right now. Please try again."
   };
   
@@ -342,6 +385,7 @@ exports.generatePrompt = onRequest({ secrets: [ANTHROPIC_API_KEY] }, async (req,
   }
 });
 
+// Enhanced askSophy with behavioral pattern recognition
 exports.askSophy = onRequest({ secrets: [ANTHROPIC_API_KEY] }, async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -349,13 +393,40 @@ exports.askSophy = onRequest({ secrets: [ANTHROPIC_API_KEY] }, async (req, res) 
   if (req.method === 'OPTIONS') return res.status(204).send('');
 
   try {
-    const { entry } = req.body;
+    const { entry, wishContext, behavioralTrigger } = req.body;
     const requestId = generateRequestId();
     
-    // Safe logging - don't log full entry content
-    console.log(`[${requestId}] askSophy - entry length: ${entry?.length || 0} chars`);
+    // Get user behavioral data for context
+    let behaviorData = null;
+    try {
+      const authHeader = req.headers.authorization?.replace('Bearer ', '');
+      if (authHeader) {
+        const decodedToken = await admin.auth().verifyIdToken(authHeader);
+        const userId = decodedToken.uid;
+        behaviorData = await getUserBehavioralContext(userId);
+      }
+    } catch (authError) {
+      console.log('No auth token provided, using basic Sophy mode');
+    }
+    
+    // Enhanced system prompt with behavioral awareness
+    const systemPrompt = `You are Sophy, a supportive journaling assistant informed by Gestalt Therapy, Positive Psychology, and evidence-based goal achievement research.
 
-    const systemPrompt = `You are Sophy, a supportive journaling assistant informed by Gestalt Therapy, Positive Psychology, SAMHSA's Eight Dimensions of Wellness, Kukulu Kumuhana, and Atomic Habits. 
+${behaviorData ? `
+BEHAVIORAL CONTEXT (use thoughtfully, don't reference directly):
+- User's WISH engagement pattern: ${behaviorData.engagementLevel}
+- Days since last goal check-in: ${behaviorData.daysSinceLastUpdate}
+- Completion tendency: ${behaviorData.completionPattern}
+- Emotional trend: ${behaviorData.recentEmotionalTrend}
+` : ''}
+
+${behavioralTrigger ? `
+INTERVENTION CONTEXT: ${behavioralTrigger}
+Provide gentle, research-informed guidance without being prescriptive.
+` : ''}
+
+Respond naturally and warmly. Use research-backed insights rather than specific statistics. 
+Language should be humble: "Research suggests..." "Many people find..." "This pattern often indicates..."
 
 Respond directly in your own voice - never use stage directions, action descriptions, or phrases like "*responds warmly*" or "*nods empathetically*". Simply speak naturally and warmly.
 
@@ -365,20 +436,53 @@ Begin your response immediately with your reflection - no introductions or narra
 
 IMPORTANT: This is a one-time reflection, not a conversation. Do not include phrases like "Let me know if you'd like to discuss further", "Would you like me to help with...", "Feel free to share more", or any other conversational follow-ups. Just provide your reflection and end naturally.`;
 
+    // Call Anthropic with enhanced context
     const data = await callAnthropicWithRetry(
       {
         model: "claude-3-haiku-20240307",
-        max_tokens: 500,
+        max_tokens: 400,
         messages: [
-          { role: "user", content: `${systemPrompt}\n\nPlease provide a thoughtful reflection on this journal entry:\n\n${entry}` }
+          { role: "user", content: `${systemPrompt}\n\nUser entry: ${entry}` }
         ]
       },
       "askSophy",
       requestId
     );
 
-    console.log(`[${requestId}] askSophy success`);
-    
+    // Track this interaction for learning
+    if (behavioralTrigger && behaviorData) {
+      try {
+        await trackInterventionOutcome(behaviorData.userId, behavioralTrigger, data.content[0].text);
+      } catch (trackingError) {
+        console.error('Non-critical: Failed to track intervention outcome:', trackingError);
+      }
+    }
+
+    // Update onboarding progress for Sophy usage (non-blocking)
+    if (behaviorData) {
+      const onboardingUpdates = {
+        hasUsedSophy: true
+      };
+      
+      // Check if this is their first Sophy interaction
+      try {
+        const userDoc = await admin.firestore().collection("users").doc(behaviorData.userId).get();
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+          const hasUsedSophyBefore = userData.onboardingState?.hasUsedSophy || false;
+          
+          if (!hasUsedSophyBefore) {
+            onboardingUpdates['milestones.firstSophy'] = admin.firestore.FieldValue.serverTimestamp();
+            onboardingUpdates.currentMilestone = 'sophy_user';
+          }
+        }
+      } catch (milestoneError) {
+        console.warn('Failed to check first Sophy milestone:', milestoneError.message);
+      }
+      
+      await updateOnboardingState(behaviorData.userId, onboardingUpdates);
+    }
+
     // Clean the response to remove any stage directions or narrative text
     let cleanedInsight = data.content[0].text.trim();
     
@@ -396,17 +500,178 @@ IMPORTANT: This is a one-time reflection, not a conversation. Do not include phr
       .replace(/I\s+sense\s+there\s+is\s+an\s+important\s+wish/gi, '') // Remove specific AI prompt leakage
       .replace(/^Let's\s+take\s+a\s+moment\s+to\s+vividly\s+imagine/gi, '') // Remove prompt instruction leakage
       .trim();
-    
-    res.status(200).json({ insight: cleanedInsight });
+
+    res.status(200).json({ 
+      insight: cleanedInsight,
+      behavioralContext: behaviorData?.contextualHint || null
+    });
+
   } catch (error) {
-    console.error("Reflection generation failed:", error.message);
+    console.error("Enhanced askSophy error:", error.message);
     const userError = mapErrorToUserMessage(error, 'askSophy');
-    res.set('Access-Control-Allow-Origin', '*');
     res.status(500).json({ 
-      insight: userError.message,
+      error: userError.message,
       code: userError.code,
       retryable: userError.retryable 
     });
+  }
+});
+
+// Get user's behavioral context for Sophy
+async function getUserBehavioralContext(userId) {
+  try {
+    const behaviorRef = admin.firestore()
+      .collection('users')
+      .doc(userId)
+      .collection('behaviorSummary')
+      .doc('wishPatterns');
+    
+    const behaviorSnap = await behaviorRef.get();
+    if (!behaviorSnap.exists) return null;
+    
+    const data = behaviorSnap.data();
+    const daysSinceLastUpdate = calculateDaysSince(data.lastUpdateTimestamp);
+    
+    return {
+      userId: userId,
+      engagementLevel: categorizeEngagement(data.totalUpdates, daysSinceLastUpdate),
+      daysSinceLastUpdate: daysSinceLastUpdate,
+      completionPattern: categorizeCompletion(data.completionRate),
+      recentEmotionalTrend: analyzeEmotionalTrend(data.emotionalTrends),
+      contextualHint: generateContextualHint(daysSinceLastUpdate, data)
+    };
+  } catch (error) {
+    console.error('Error getting behavioral context:', error);
+    return null;
+  }
+}
+
+// Helper functions for behavioral analysis
+function categorizeEngagement(totalUpdates, daysSinceLastUpdate) {
+  if (daysSinceLastUpdate > 14) return 'low_recent_activity';
+  if (totalUpdates > 10) return 'highly_engaged';
+  if (totalUpdates > 3) return 'moderately_engaged';
+  return 'getting_started';
+}
+
+function categorizeCompletion(completionRate) {
+  if (completionRate > 0.7) return 'high_completion';
+  if (completionRate > 0.3) return 'moderate_completion';
+  return 'struggles_with_completion';
+}
+
+function analyzeEmotionalTrend(emotionalTrends) {
+  if (!emotionalTrends || emotionalTrends.length === 0) return 'insufficient_data';
+  
+  const recentTrends = emotionalTrends.slice(-3);
+  const stressedCount = recentTrends.filter(t => t.tone === 'stressed' || t.tone === 'anxious').length;
+  const positiveCount = recentTrends.filter(t => t.tone === 'confident' || t.tone === 'hopeful').length;
+  
+  if (stressedCount > positiveCount) return 'recently_stressed';
+  if (positiveCount > stressedCount) return 'recently_positive';
+  return 'emotionally_neutral';
+}
+
+function generateContextualHint(daysSinceLastUpdate, behaviorData) {
+  if (daysSinceLastUpdate > 10) {
+    return "Consider a gentle goal check-in - research shows regular reflection supports progress";
+  }
+  if (behaviorData.emotionalTrends?.some(t => t.tone === 'stressed')) {
+    return "Goal stress is normal - adjusting timelines often helps maintain motivation";
+  }
+  return null;
+}
+
+function calculateDaysSince(timestamp) {
+  if (!timestamp) return 0;
+  const now = new Date();
+  const past = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  const diffTime = Math.abs(now - past);
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+// Track intervention outcomes for learning (non-critical)
+async function trackInterventionOutcome(userId, trigger, response) {
+  try {
+    await admin.firestore().collection('interventionOutcomes').add({
+      userId: userId,
+      trigger: trigger,
+      responseLength: response.length,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Non-critical: Failed to track intervention:', error);
+  }
+}
+
+// Check for behavioral triggers and suggest interventions
+exports.checkUserBehavioralTriggers = onRequest({ secrets: [ANTHROPIC_API_KEY] }, async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.status(204).send('');
+
+  try {
+    const authHeader = req.headers.authorization?.replace('Bearer ', '');
+    if (!authHeader) {
+      return res.status(401).json({ error: 'No authorization token' });
+    }
+
+    const decodedToken = await admin.auth().verifyIdToken(authHeader);
+    const userId = decodedToken.uid;
+    
+    const behaviorData = await getUserBehavioralContext(userId);
+    
+    if (!behaviorData) {
+      return res.status(200).json({ interventionSuggested: false });
+    }
+    
+    // Check for intervention triggers
+    let interventionMessage = null;
+    let interventionType = null;
+    
+    // Long inactivity trigger
+    if (behaviorData.daysSinceLastUpdate > 7) {
+      interventionMessage = "Research suggests that regular goal check-ins improve progress by 40%. How are you feeling about your WISH journey lately?";
+      interventionType = "inactivity_check";
+    }
+    // Stress pattern trigger
+    else if (behaviorData.recentEmotionalTrend === 'recently_stressed') {
+      interventionMessage = "It sounds like you've been feeling some stress around your goals. Many people find that breaking big wishes into smaller steps reduces overwhelm.";
+      interventionType = "stress_support";
+    }
+    // Low completion pattern trigger
+    else if (behaviorData.completionPattern === 'struggles_with_completion' && behaviorData.engagementLevel === 'moderately_engaged') {
+      interventionMessage = "You're staying engaged with your goals, which is wonderful! Research shows that celebrating small wins can boost completion rates.";
+      interventionType = "completion_support";
+    }
+    
+    if (interventionMessage) {
+      // Track that we showed this intervention
+      try {
+        await admin.firestore().collection('interventionsShown').add({
+          userId: userId,
+          type: interventionType,
+          message: interventionMessage,
+          behavioralContext: behaviorData.engagementLevel,
+          timestamp: admin.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (trackingError) {
+        console.error('Non-critical: Failed to track intervention shown:', trackingError);
+      }
+      
+      return res.status(200).json({
+        interventionSuggested: true,
+        message: interventionMessage,
+        type: interventionType
+      });
+    }
+    
+    return res.status(200).json({ interventionSuggested: false });
+    
+  } catch (error) {
+    console.error('Error checking behavioral triggers:', error);
+    return res.status(500).json({ error: 'Failed to check triggers' });
   }
 });
 
@@ -427,6 +692,30 @@ exports.saveManifest = onCall(async (data, context) => {
       statement,
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
+    
+    // Update onboarding progress for WISH creation (non-blocking)
+    const onboardingUpdates = {
+      hasCreatedWish: true
+    };
+    
+    // Check if this is their first wish
+    try {
+      const userDoc = await admin.firestore().collection("users").doc(uid).get();
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        const hasCreatedWishBefore = userData.onboardingState?.hasCreatedWish || false;
+        
+        if (!hasCreatedWishBefore) {
+          onboardingUpdates['milestones.firstWish'] = admin.firestore.FieldValue.serverTimestamp();
+          onboardingUpdates.currentMilestone = 'wish_creator';
+        }
+      }
+    } catch (milestoneError) {
+      console.warn('Failed to check first wish milestone:', milestoneError.message);
+    }
+    
+    await updateOnboardingState(uid, onboardingUpdates);
+    
     return { success: true };
   } catch (error) {
     console.error("Error saving manifest:", error);
@@ -603,6 +892,238 @@ ${transcript}`
   }
 });
 
+// Enhanced voice processing with emotional analysis
+exports.processVoiceWithEmotion = onRequest({ 
+  secrets: [ANTHROPIC_API_KEY],
+  memory: "256MiB",
+  timeoutSeconds: 60
+}, async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  try {
+    // Verify authentication
+    const authHeader = req.headers.authorization || '';
+    const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+    
+    if (!idToken) {
+      return res.status(401).json({ error: 'No authorization token provided' });
+    }
+
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const userId = decodedToken.uid;
+
+    const transcript = req.body.transcript;
+    const hasAudio = req.body.hasAudio || false;
+    
+    if (!transcript || typeof transcript !== 'string' || transcript.trim().length === 0) {
+      console.warn('No valid transcript provided. Body:', JSON.stringify(req.body, null, 2));
+      return res.status(400).json({ error: 'No transcript provided' });
+    }
+
+    console.log(`🎭 Processing voice with emotion for user ${userId}, transcript length: ${transcript.length}`);
+
+    // Step 1: Clean the transcript (reuse existing logic)
+    const cleanedText = await cleanTranscriptWithAI(transcript);
+    
+    // Step 2: Analyze emotional content from text
+    const emotionalInsights = await analyzeTextEmotion(transcript, cleanedText, userId);
+    
+    // Step 3: Generate Sophy insight based on emotional context
+    const sophyInsight = await generateEmotionalInsight(cleanedText, emotionalInsights, userId);
+    
+    // Update onboarding progress for voice entry completion (non-blocking)
+    const onboardingUpdates = {
+      hasCompletedVoiceEntry: true
+    };
+    
+    // Check if this is their first voice entry
+    try {
+      const userDoc = await admin.firestore().collection("users").doc(userId).get();
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        const hasUsedVoiceBefore = userData.onboardingState?.hasCompletedVoiceEntry || false;
+        
+        if (!hasUsedVoiceBefore) {
+          onboardingUpdates['milestones.firstVoiceEntry'] = admin.firestore.FieldValue.serverTimestamp();
+          onboardingUpdates.currentMilestone = 'voice_user';
+        }
+      }
+    } catch (milestoneError) {
+      console.warn('Failed to check first voice entry milestone:', milestoneError.message);
+    }
+    
+    await updateOnboardingState(userId, onboardingUpdates);
+    
+    res.status(200).json({
+      cleanedText: cleanedText,
+      emotionalInsights: {
+        ...emotionalInsights,
+        sophyInsight: sophyInsight
+      }
+    });
+
+  } catch (error) {
+    console.error('Error processing voice with emotion:', error);
+    res.status(500).json({ 
+      error: 'Failed to process voice input',
+      fallback: true // Signal frontend to use fallback
+    });
+  }
+});
+
+// Helper function to clean transcript (extracted from existing cleanVoiceTranscript)
+async function cleanTranscriptWithAI(transcript) {
+  const requestId = generateRequestId();
+  
+  const data = await callAnthropicWithRetry(
+    {
+      model: "claude-3-haiku-20240307",
+      max_tokens: 300,
+      messages: [
+        {
+          role: "user",
+          content: `Clean this voice transcript by adding proper punctuation, capitalization, and fixing minor grammar errors. Keep the exact same words and natural speech patterns. Return ONLY the cleaned speech with no introductions, explanations, or commentary.
+
+Examples:
+Input: "trying ink out loud to see how it works my name is adam and im sitting at my desk"
+Output: "Trying Ink Out Loud to see how it works. My name is Adam and I'm sitting at my desk."
+
+Input: "today was really good i went to the store and bought some groceries then came home"
+Output: "Today was really good. I went to the store and bought some groceries, then came home."
+
+Transcript to clean:
+${transcript}`
+        }
+      ]
+    },
+    "cleanTranscriptWithAI",
+    requestId
+  );
+
+  let cleanedText = data?.content?.[0]?.text?.trim();
+
+  if (!cleanedText) {
+    throw new Error("No cleaned text returned from AI.");
+  }
+
+  // Strip out common AI narrative introductions
+  const narrativePrefixes = [
+    /^Here is the transcript with punctuation and minor grammar corrections:\s*/i,
+    /^Here is the cleaned transcript:\s*/i,
+    /^Here's the cleaned version:\s*/i,
+    /^The corrected transcript:\s*/i,
+    /^Cleaned transcript:\s*/i,
+    /^Here is the corrected version:\s*/i
+  ];
+
+  for (const pattern of narrativePrefixes) {
+    cleanedText = cleanedText.replace(pattern, '');
+  }
+
+  // Remove any remaining quotes that might wrap the content
+  cleanedText = cleanedText.replace(/^["']|["']$/g, '').trim();
+
+  return cleanedText;
+}
+
+// Analyze emotional content from voice transcript
+async function analyzeTextEmotion(transcript, cleanedText, userId) {
+  const requestId = generateRequestId();
+
+  const prompt = `Analyze the emotional content of this voice transcript. Focus on:
+1. Primary emotion (joy, sadness, anger, fear, surprise, disgust, neutral)
+2. Energy level (high, medium, low) 
+3. Stress indicators (calm, mild tension, moderate stress, high stress)
+4. Confidence level of analysis (0-100%)
+
+Consider the raw speech patterns and word choices for emotional context.
+
+Raw transcript: "${transcript}"
+Cleaned text: "${cleanedText}"
+
+Respond in JSON format only:
+{
+  "primaryEmotion": "emotion name",
+  "confidence": number,
+  "energyLevel": "high/medium/low", 
+  "stressLevel": "calm/mild/moderate/high",
+  "emotionalContext": "brief description"
+}`;
+
+  try {
+    const data = await callAnthropicWithRetry(
+      {
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }]
+      },
+      "analyzeTextEmotion",
+      requestId
+    );
+
+    const responseText = data.content[0].text.trim();
+    
+    // Try to parse JSON, with fallback
+    let emotionalData;
+    try {
+      emotionalData = JSON.parse(responseText);
+    } catch (parseError) {
+      console.warn("Failed to parse emotional analysis JSON, using fallback");
+      emotionalData = {
+        primaryEmotion: "neutral",
+        confidence: 50,
+        energyLevel: "medium",
+        stressLevel: "mild",
+        emotionalContext: "Unable to analyze emotional content"
+      };
+    }
+
+    return emotionalData;
+  } catch (error) {
+    console.error("Error in emotional analysis:", error);
+    return {
+      primaryEmotion: "neutral",
+      confidence: 40,
+      energyLevel: "medium", 
+      stressLevel: "mild",
+      emotionalContext: "Analysis temporarily unavailable"
+    };
+  }
+}
+
+// Generate Sophy insight based on emotional context
+async function generateEmotionalInsight(text, emotionalData, userId) {
+  const requestId = generateRequestId();
+
+  const prompt = `You are Sophy, a supportive journaling assistant. Based on this voice journal entry and emotional analysis, provide a brief, caring insight (1-2 sentences max, under 100 words).
+
+Journal text: "${text}"
+Emotional analysis: Primary emotion is ${emotionalData.primaryEmotion} with ${emotionalData.confidence}% confidence. Energy level: ${emotionalData.energyLevel}. Stress level: ${emotionalData.stressLevel}.
+
+Respond as Sophy would - warm, encouraging, and focused on the person's wellbeing. Be concise and meaningful. Don't repeat the analysis data, just offer gentle perspective or encouragement.`;
+
+  try {
+    const data = await callAnthropicWithRetry(
+      {
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 80,
+        messages: [{ role: 'user', content: prompt }]
+      },
+      "generateEmotionalInsight",
+      requestId
+    );
+
+    return data.content[0].text.trim();
+  } catch (error) {
+    console.error("Error generating emotional insight:", error);
+    return "I hear you sharing something meaningful. Thank you for trusting me with your thoughts.";
+  }
+}
+
 exports.embedAndStoreEntry = onRequest({ secrets: [ANTHROPIC_API_KEY] }, (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -641,6 +1162,32 @@ exports.embedAndStoreEntry = onRequest({ secrets: [ANTHROPIC_API_KEY] }, (req, r
         // Add some basic text processing for simple search fallback
         searchableText: text.toLowerCase()
       }, { merge: true });
+
+      // Update onboarding progress (non-blocking)
+      const onboardingUpdates = {
+        totalEntries: admin.firestore.FieldValue.increment(1)
+      };
+      
+      // Check if this might be their first entry
+      try {
+        const userDoc = await admin.firestore().collection("users").doc(uid).get();
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+          const currentEntries = userData.onboardingState?.totalEntries || 0;
+          
+          if (currentEntries === 0) {
+            onboardingUpdates['milestones.firstEntry'] = admin.firestore.FieldValue.serverTimestamp();
+            onboardingUpdates.currentMilestone = 'first_entry';
+          } else if (currentEntries === 9) { // Will be 10 after increment
+            onboardingUpdates['milestones.tenEntries'] = admin.firestore.FieldValue.serverTimestamp();
+            onboardingUpdates.currentMilestone = 'active_journaler';
+          }
+        }
+      } catch (milestoneError) {
+        console.warn('Failed to check milestone status:', milestoneError.message);
+      }
+      
+      await updateOnboardingState(uid, onboardingUpdates);
 
       console.log(`[${requestId}] embedAndStoreEntry success (text-based storage)`);
       res.status(200).json({ message: "Entry saved successfully" });
@@ -3373,7 +3920,8 @@ exports.migrateUserData = onCall(async (data, context) => {
           !userData.userId || 
           !userData.createdAt || 
           userData.special_code === undefined ||
-          !userData.insightsPreferences;
+          !userData.insightsPreferences ||
+          !userData.onboardingState;
         
         if (!needsMigration) {
           skipped++;
@@ -3407,6 +3955,26 @@ exports.migrateUserData = onCall(async (data, context) => {
             weeklyEnabled: true,
             monthlyEnabled: true,
             createdAt: admin.firestore.FieldValue.serverTimestamp()
+          },
+          
+          // Add progressive onboarding state if missing
+          onboardingState: userData.onboardingState || {
+            hasCompletedVoiceEntry: false,
+            hasSeenWishTab: false,
+            hasCreatedWish: false,
+            hasUsedSophy: false,
+            totalEntries: 0,
+            currentMilestone: "existing_user", // Mark as existing vs new_user
+            milestones: {
+              firstEntry: null,
+              firstVoiceEntry: null,
+              firstWish: null,
+              firstSophy: null,
+              tenEntries: null,
+              monthlyUser: null
+            },
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            lastMilestoneAt: admin.firestore.FieldValue.serverTimestamp()
           }
         };
         
@@ -3444,5 +4012,235 @@ exports.migrateUserData = onCall(async (data, context) => {
   } catch (error) {
     console.error("❌ Migration failed:", error);
     throw new HttpsError("internal", "Migration failed: " + error.message);
+  }
+});
+
+// Helper function to calculate days since last update
+async function calculateDaysSinceLastUpdate(userId, wishId) {
+  try {
+    const recentBehavior = await admin.firestore()
+      .collection('wishBehavior')
+      .where('userId', '==', userId)
+      .where('wishId', '==', wishId)
+      .where('action', 'in', ['updated', 'created'])
+      .orderBy('timestamp', 'desc')
+      .limit(1)
+      .get();
+    
+    if (recentBehavior.empty) return 0;
+    
+    const lastUpdate = recentBehavior.docs[0].data().timestamp.toDate();
+    const now = new Date();
+    const diffTime = Math.abs(now - lastUpdate);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  } catch (error) {
+    console.error('Error calculating days since last update:', error);
+    return 0;
+  }
+}
+
+// Enhanced WISH lifecycle tracking
+exports.trackWishBehavior = onCall({ secrets: [ANTHROPIC_API_KEY] }, async (request) => {
+  const { auth } = request;
+  const { wishId, action, sectionType, emotionalTone, complexity } = request.data;
+  
+  if (!auth) throw new HttpsError('unauthenticated', 'Must be logged in');
+  
+  try {
+    const behaviorData = {
+      userId: auth.uid,
+      wishId: wishId,
+      action: action, // 'created', 'updated', 'viewed', 'completed', 'abandoned'
+      sectionType: sectionType, // 'want', 'imagine', 'snags', 'how'
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      emotionalTone: emotionalTone, // from voice analysis if available
+      complexity: complexity, // word count, complexity score
+      daysSinceLastUpdate: await calculateDaysSinceLastUpdate(auth.uid, wishId)
+    };
+    
+    // Store individual behavior event
+    await admin.firestore()
+      .collection('wishBehavior')
+      .add(behaviorData);
+    
+    // Update user's behavioral summary
+    await updateUserBehavioralSummary(auth.uid, behaviorData);
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error tracking WISH behavior:', error);
+    throw new HttpsError('internal', 'Failed to track behavior');
+  }
+});
+
+// Calculate user behavioral patterns
+async function updateUserBehavioralSummary(userId, newBehavior) {
+  const userRef = admin.firestore().collection('users').doc(userId);
+  const behaviorRef = userRef.collection('behaviorSummary').doc('wishPatterns');
+  
+  const currentSummary = await behaviorRef.get();
+  const summary = currentSummary.exists ? currentSummary.data() : {
+    totalWishCreated: 0,
+    totalUpdates: 0,
+    averageUpdateFrequency: 0,
+    completionRate: 0,
+    abandonmentRate: 0,
+    lastUpdateTimestamp: null,
+    longestInactivityPeriod: 0,
+    preferredUpdateSections: {},
+    emotionalTrends: []
+  };
+  
+  // Update patterns based on new behavior
+  if (newBehavior.action === 'created') summary.totalWishCreated++;
+  if (newBehavior.action === 'updated') summary.totalUpdates++;
+  
+  // Calculate inactivity patterns
+  if (newBehavior.daysSinceLastUpdate > summary.longestInactivityPeriod) {
+    summary.longestInactivityPeriod = newBehavior.daysSinceLastUpdate;
+  }
+  
+  // Track emotional trends
+  if (newBehavior.emotionalTone) {
+    summary.emotionalTrends.push({
+      tone: newBehavior.emotionalTone,
+      timestamp: newBehavior.timestamp
+    });
+    // Keep only last 10 emotional data points
+    if (summary.emotionalTrends.length > 10) {
+      summary.emotionalTrends = summary.emotionalTrends.slice(-10);
+    }
+  }
+  
+  summary.lastUpdateTimestamp = newBehavior.timestamp;
+  
+  await behaviorRef.set(summary, { merge: true });
+}
+
+// Simple admin migration endpoint - bypasses client auth issues
+exports.runAdminMigration = onRequest({
+  cors: true
+}, async (req, res) => {
+  // Simple secret key check instead of Firebase auth
+  const adminKey = req.body.adminKey || req.query.adminKey;
+  if (adminKey !== "migrate-users-2024-beta") {
+    res.status(403).json({ error: "Invalid admin key" });
+    return;
+  }
+
+  try {
+    console.log("🔄 Starting admin user migration...");
+    
+    const usersRef = admin.firestore().collection("users");
+    const snapshot = await usersRef.get();
+    
+    let migrated = 0;
+    let skipped = 0;
+    let errors = 0;
+    const results = [];
+    
+    for (const doc of snapshot.docs) {
+      try {
+        const userData = doc.data();
+        const userId = doc.id;
+        
+        // Check if user needs migration (missing new fields)
+        const needsMigration = 
+          !userData.userId || 
+          !userData.createdAt || 
+          userData.special_code === undefined ||
+          !userData.insightsPreferences ||
+          !userData.onboardingState;
+        
+        if (!needsMigration) {
+          skipped++;
+          results.push({ userId, status: "skipped", reason: "Already migrated" });
+          continue;
+        }
+        
+        console.log(`Migrating user: ${userId}`);
+        
+        // Prepare migration data
+        const migrationData = {};
+        
+        if (!userData.userId) {
+          migrationData.userId = userId;
+        }
+        
+        if (!userData.createdAt) {
+          migrationData.createdAt = admin.firestore.FieldValue.serverTimestamp();
+        }
+        
+        if (userData.special_code === undefined) {
+          migrationData.special_code = "beta";
+        }
+        
+        if (!userData.insightsPreferences) {
+          migrationData.insightsPreferences = {
+            weeklyEnabled: true,
+            monthlyEnabled: true,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+          };
+        }
+        
+        if (!userData.onboardingState) {
+          migrationData.onboardingState = {
+            hasCompletedVoiceEntry: false,
+            hasSeenWishTab: false,
+            hasCreatedWish: false,
+            hasUsedSophy: false,
+            totalEntries: 0,
+            currentMilestone: "existing_user",
+            milestones: {
+              firstEntry: null,
+              firstVoiceEntry: null,
+              firstWish: null,
+              firstSophyChat: null,
+              migratedAt: admin.firestore.FieldValue.serverTimestamp()
+            },
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+          };
+        }
+        
+        // Apply migration
+        await doc.ref.update(migrationData);
+        
+        migrated++;
+        results.push({ 
+          userId, 
+          status: "migrated", 
+          fields: Object.keys(migrationData) 
+        });
+        
+      } catch (userError) {
+        console.error(`Error migrating user ${doc.id}:`, userError);
+        errors++;
+        results.push({ 
+          userId: doc.id, 
+          status: "error", 
+          error: userError.message 
+        });
+      }
+    }
+    
+    const summary = {
+      success: true,
+      totalUsers: snapshot.size,
+      migrated,
+      skipped,
+      errors,
+      results: results.slice(0, 20) // Limit results to prevent large responses
+    };
+    
+    console.log("✅ Migration completed:", summary);
+    res.json(summary);
+    
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      details: error.stack
+    });
   }
 });

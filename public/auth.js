@@ -51,7 +51,7 @@ import {
 
 // ✅ Unified config block
 const CONFIG = {
-  firebase: {
+  firebase: window.firebaseConfig || {
     apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
     authDomain: "inkwell-alpha.firebaseapp.com",
     projectId: "inkwell-alpha",
@@ -63,6 +63,76 @@ const CONFIG = {
 };
 
 let currentUserId = null; // 🔄 Global holder for logged-in user ID
+
+// Robust Firestore operation wrapper with retry logic
+async function safeFirestoreOperation(operation, retries = 3, delay = 1000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await operation();
+    } catch (error) {
+      console.warn(`🔄 Firestore operation attempt ${i + 1} failed:`, error.message);
+      
+      // Don't retry on permission errors or invalid arguments
+      if (error.code === 'permission-denied' || error.code === 'invalid-argument') {
+        throw error;
+      }
+      
+      // If this was the last attempt, throw the error
+      if (i === retries - 1) {
+        console.error('❌ All Firestore retry attempts failed:', error);
+        throw new Error(`Connection failed after ${retries} attempts. Please check your internet connection and try again.`);
+      }
+      
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
+    }
+  }
+}
+
+// Enhanced Firestore helpers with error handling and fallbacks
+window.safeFirestoreOperation = safeFirestoreOperation;
+
+// Fallback system for unreliable connections
+let firestoreReliabilityScore = 100; // Start optimistic
+const MIN_RELIABILITY_SCORE = 30;
+
+function adjustReliabilityScore(success) {
+  if (success) {
+    firestoreReliabilityScore = Math.min(100, firestoreReliabilityScore + 5);
+  } else {
+    firestoreReliabilityScore = Math.max(0, firestoreReliabilityScore - 15);
+  }
+  
+  if (firestoreReliabilityScore < MIN_RELIABILITY_SCORE) {
+    console.warn(`🔄 Firestore reliability low (${firestoreReliabilityScore}/100) - using local fallbacks`);
+  }
+}
+
+// Smart operation that prefers local storage when Firestore is unreliable
+async function smartFirestoreOperation(operation, localFallback = null) {
+  // If reliability is very low and we have a fallback, use it
+  if (firestoreReliabilityScore < MIN_RELIABILITY_SCORE && localFallback) {
+    console.log('📱 Using local fallback due to poor connection reliability');
+    return localFallback();
+  }
+  
+  try {
+    const result = await safeFirestoreOperation(operation, 2, 500); // Reduced retries
+    adjustReliabilityScore(true);
+    return result;
+  } catch (error) {
+    adjustReliabilityScore(false);
+    
+    if (localFallback) {
+      console.log('📱 Firestore failed, falling back to local storage');
+      return localFallback();
+    }
+    
+    throw error;
+  }
+}
+
+window.smartFirestoreOperation = smartFirestoreOperation;
 
 // Toast notification function
 function showToast(message, type = "info", duration = 4000) {
@@ -200,15 +270,236 @@ function initThemeSystem() {
 // Export initThemeSystem to global scope for index.html
 window.initThemeSystem = initThemeSystem;
 
+// Network status monitoring and connection quality detection
+let isOnline = navigator.onLine;
+let connectionRetries = 0;
+let connectionQuality = 'unknown';
+const MAX_CONNECTION_RETRIES = 3;
+
+// Detect connection quality using app's own resources (avoids CORS)
+async function detectConnectionQuality() {
+  try {
+    const start = Date.now();
+    // Test connectivity using our own app resources to avoid CORS issues
+    const response = await fetch('./config.js?' + Math.random(), { 
+      method: 'HEAD',
+      cache: 'no-cache',
+      signal: AbortSignal.timeout(5000)
+    });
+    const latency = Date.now() - start;
+    
+    if (response.ok) {
+      if (latency < 200) {
+        connectionQuality = 'good';
+      } else if (latency < 1000) {
+        connectionQuality = 'fair';
+      } else {
+        connectionQuality = 'poor';
+      }
+      
+      console.log(`📡 Connection quality: ${connectionQuality} (${latency}ms)`);
+      
+      // For poor connections, we might want to adjust Firestore behavior
+      if (connectionQuality === 'poor' && window.db) {
+        console.log("🐌 Poor connection detected - optimizing for reliability");
+      }
+    }
+  } catch (error) {
+    connectionQuality = 'blocked';
+    console.warn("🚫 Connection test failed - likely blocked by network/ad blocker");
+    
+    // Note: Removed premature connection warning toast - app functions fine with limited connectivity
+  }
+}
+
+// Run connection quality check
+setTimeout(detectConnectionQuality, 1000);
+
+// Monitor network status
+window.addEventListener('online', () => {
+  isOnline = true;
+  connectionRetries = 0;
+  console.log('🌐 Network connection restored');
+  showToast('Connection restored', 'success', 2000);
+});
+
+window.addEventListener('offline', () => {
+  isOnline = false;
+  console.log('📶 Network connection lost');
+  showToast('Connection lost. Some features may not work.', 'warning', 3000);
+});
+
+// Enhanced error handler for Firebase operations
+function handleFirebaseError(error, operation = 'operation') {
+  console.error(`Firebase ${operation} error:`, error);
+  
+  let userMessage = `Something went wrong with ${operation}. `;
+  
+  switch (error.code) {
+    case 'permission-denied':
+      userMessage = 'You don\'t have permission to perform this action.';
+      break;
+    case 'unavailable':
+    case 'deadline-exceeded':
+      userMessage = 'Service temporarily unavailable. Please try again in a moment.';
+      break;
+    case 'failed-precondition':
+      userMessage = 'Please check your internet connection and try again.';
+      break;
+    case 'unauthenticated':
+      userMessage = 'Please sign in and try again.';
+      break;
+    default:
+      if (!isOnline) {
+        userMessage = 'No internet connection. Please check your connection and try again.';
+      } else if (error.message.includes('Failed to fetch') || error.message.includes('ERR_BLOCKED_BY_CLIENT')) {
+        userMessage = 'Connection blocked. Please disable ad blockers or try a different browser.';
+      } else {
+        userMessage += 'Please try again or contact support if this continues.';
+      }
+  }
+  
+  showToast(userMessage, 'error', 5000);
+  return userMessage;
+}
+
+// Error suppression for known connection issues
+const suppressedErrors = new Set();
+const ERROR_SUPPRESSION_TIME = 30000; // 30 seconds
+
+function shouldSuppressError(error) {
+  const errorKey = `${error.code || 'unknown'}-${error.message?.substring(0, 50) || 'no-message'}`;
+  const now = Date.now();
+  
+  // Check if we've seen this error recently
+  if (suppressedErrors.has(errorKey)) {
+    return true;
+  }
+  
+  // Add to suppression list
+  suppressedErrors.add(errorKey);
+  
+  // Remove from suppression list after timeout
+  setTimeout(() => {
+    suppressedErrors.delete(errorKey);
+  }, ERROR_SUPPRESSION_TIME);
+  
+  return false;
+}
+
+// Global error handler with smart suppression
+window.addEventListener('unhandledrejection', (event) => {
+  if (event.reason && event.reason.code) {
+    // Suppress repetitive connection errors
+    if (shouldSuppressError(event.reason)) {
+      event.preventDefault();
+      return;
+    }
+    
+    // Handle specific error types
+    const errorCode = event.reason.code;
+    if (errorCode === 'unavailable' || 
+        errorCode === 'deadline-exceeded' || 
+        event.reason.message?.includes('ERR_BLOCKED_BY_CLIENT') ||
+        event.reason.message?.includes('webchannel_connection')) {
+      
+      console.warn('🌐 Connection issue (suppressing future similar errors for 30s):', errorCode);
+      event.preventDefault();
+      return;
+    }
+    
+    console.error('Unhandled Firebase error:', event.reason);
+    handleFirebaseError(event.reason);
+    event.preventDefault();
+  }
+});
+
+// Console error suppression for known network issues
+const originalConsoleError = console.error;
+console.error = function(...args) {
+  const message = args.join(' ');
+  
+  // Suppress common connection error spam
+  if (message.includes('ERR_BLOCKED_BY_CLIENT') ||
+      message.includes('webchannel_connection') ||
+      message.includes('stream_bridge') ||
+      message.includes('persistent_stream') ||
+      message.includes('Failed to fetch')) {
+    return; // Silently suppress
+  }
+  
+  // Log other errors normally
+  originalConsoleError.apply(console, args);
+};
+
+// Export error handler globally
+window.handleFirebaseError = handleFirebaseError;
+
 document.addEventListener("DOMContentLoaded", () => {
 // Initialize theme system
 initThemeSystem();
 
-// Initialize Firebase
-const app = initializeApp(CONFIG.firebase);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const functions = getFunctions(app);
+// Initialize Firebase with error handling
+let app, auth, db, functions;
+
+try {
+  app = initializeApp(CONFIG.firebase);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  functions = getFunctions(app);
+  
+  // Configure Firestore settings for better reliability and connection handling
+  try {
+    // Force long polling to avoid WebSocket issues
+    if (typeof db._delegate?.settings === 'function') {
+      db._delegate.settings({
+        ignoreUndefinedProperties: true,
+        merge: true,
+        experimentalForceLongPolling: true, // Bypass WebSocket issues
+        useFetchStreams: false // Disable fetch streams that can be blocked
+      });
+    }
+    
+    // Alternative approach for newer Firebase versions
+    if (typeof db.settings === 'function') {
+      db.settings({
+        ignoreUndefinedProperties: true,
+        merge: true
+      });
+    }
+    
+    console.log("🔧 Firestore configured with connection optimizations");
+  } catch (settingsError) {
+    console.warn("⚠️ Could not apply Firestore settings:", settingsError.message);
+  }
+  
+  // Enable offline persistence to reduce connection requirements
+  try {
+    if (typeof enableNetwork !== 'undefined' && typeof disableNetwork !== 'undefined') {
+      // Enable offline support
+      console.log("🔄 Enabling Firestore offline support...");
+      // Note: Persistence should be enabled before any Firestore operations
+    }
+  } catch (persistenceError) {
+    console.warn("⚠️ Offline persistence not available:", persistenceError.message);
+  }
+  
+  console.log("✅ Firebase initialized successfully");
+} catch (error) {
+  console.error("❌ Firebase initialization failed:", error);
+  
+  // Fallback error handling
+  document.addEventListener('DOMContentLoaded', () => {
+    const errorDiv = document.createElement('div');
+    errorDiv.innerHTML = `
+      <div style="position: fixed; top: 20px; left: 20px; right: 20px; z-index: 10000; background: #f8d7da; color: #721c24; padding: 15px; border: 1px solid #f5c6cb; border-radius: 8px;">
+        <strong>Connection Error:</strong> Unable to connect to InkWell services. Please refresh the page or try again later.
+        <button onclick="location.reload()" style="float: right; background: #721c24; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Refresh</button>
+      </div>
+    `;
+    document.body.appendChild(errorDiv);
+  });
+}
 
 // Expose Firebase services globally
 window.app = app;
@@ -524,10 +815,10 @@ onAuthStateChanged(auth, async (user) => {
             }, 200);
           }
           
-          // Check if first-time login and show Welcome Beta modal
-          if (typeof window.checkAndShowWelcomeBeta === 'function') {
+          // Check if user should see What's New notification badge
+          if (typeof window.checkWhatsNewBadge === 'function') {
             setTimeout(() => {
-              window.checkAndShowWelcomeBeta();
+              window.checkWhatsNewBadge();
             }, 1000);
           }
         } catch (initError) {
@@ -669,31 +960,29 @@ function highlightCalendarDatesWithReplies(entries) {
 // Make functions available globally
 window.checkForCoachReplies = checkForCoachReplies;
 
-// Local development setup for emulators
-if (location.hostname === "localhost") {
-  connectAuthEmulator(auth, "http://localhost:9099");
-  connectFirestoreEmulator(db, "localhost", 8080);
-  connectFunctionsEmulator(functions, "localhost", 5001);
-}
-
 // Create test user in local development
+// Local development setup (only if on localhost)
 if (location.hostname === "localhost") {
-  const createTestUser = httpsCallable(functions, "createTestUser");
-  setTimeout(() => {
-    createTestUser()
-      .then(result => {
-        console.log("✅ Test user created or already exists:", result.data);
-      })
-      .catch(err => {
-        console.error("❌ Error creating test user:", err.message);
-      });
-  }, 500);
-}
-
-if (location.hostname === "localhost") {
-  connectAuthEmulator(auth, "http://localhost:9099");
-  connectFirestoreEmulator(db, "localhost", 8080);
-  connectFunctionsEmulator(functions, "localhost", 5001);
+  try {
+    connectAuthEmulator(auth, "http://localhost:9099");
+    connectFirestoreEmulator(db, "localhost", 8080);
+    connectFunctionsEmulator(functions, "localhost", 5001);
+    console.log("🔧 Emulators connected for local development");
+    
+    // Create test user after emulator connection
+    const createTestUser = httpsCallable(functions, "createTestUser");
+    setTimeout(() => {
+      createTestUser()
+        .then(result => {
+          console.log("✅ Test user created or already exists:", result.data);
+        })
+        .catch(err => {
+          console.error("❌ Error creating test user:", err.message);
+        });
+    }, 500);
+  } catch (error) {
+    console.warn("⚠️ Emulator connection failed:", error.message);
+  }
 }
 
 // === PATCH: Add refineManifestStatement button logic to frontend ===

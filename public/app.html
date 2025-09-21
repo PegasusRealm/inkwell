@@ -60,6 +60,9 @@
       --border-light: #E2E8F0;
       --border-medium: #CBD5E0;
       --border-accent: #4A9BA8;
+      
+      /* Information/Helper Backgrounds */
+      --info-bg: #eaf6fb;
     }
 
     html[data-theme='dark'] {
@@ -90,6 +93,9 @@
       --btn-primary-hover: #7BB8C4;
       --btn-secondary: #2D3748;
       --btn-secondary-hover: #4A5568;
+      
+      /* Information/Helper Backgrounds */
+      --info-bg: rgba(42,105,114,0.1);
     }
 
     html[data-theme='light'] {
@@ -3195,6 +3201,13 @@ window.showTab = function(tabId) {
   // If switching to manifest tab, ensure textareas are properly sized
   if (tabId === 'manifestTab') {
     setTimeout(initAutoResizeTextareas, 200);
+    
+    // Show WISH onboarding for first-time visitors
+    setTimeout(() => {
+      if (OnboardingManager && OnboardingManager.shouldShow) {
+        OnboardingManager.showWishTabOnboarding();
+      }
+    }, 500);
   }
 };
 
@@ -3334,110 +3347,200 @@ document.addEventListener("DOMContentLoaded", () => {
 // Coach reply checking moved to auth.js
 
 window.onload = function () {
-  // === InkOutLoud Voice Input Integration ===
+  // === Enhanced InkOutLoud Voice Input Integration with Emotional Analysis ===
   const voiceBtn = document.getElementById("voiceBtn");
   const voiceStatus = document.getElementById("voiceStatus");
   const journalEntry = document.getElementById("journal");
 
+  let mediaRecorder;
+  let audioChunks = [];
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   if (!SpeechRecognition) {
     if (voiceBtn) voiceBtn.disabled = true;
     if (voiceStatus) voiceStatus.textContent = "InkOutLoud requires Chrome or Edge.";
-  } else {
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.lang = "en-US";
+    return;
+  }
 
-    let isListening = false;
-    let stopTimeout = null;
+  const recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = false;
+  recognition.lang = "en-US";
 
-    recognition.onstart = () => {
-      if (voiceStatus) voiceStatus.textContent = "🎤 Listening... Tap again to stop.";
-      if (voiceBtn) voiceBtn.textContent = "🛑 Stop InkOutLoud";
-    };
+  let isListening = false;
+  let stopTimeout = null;
 
-    recognition.onresult = async (event) => {
-      const transcript = event.results[event.results.length - 1][0].transcript;
-      if (voiceStatus) voiceStatus.textContent = "🧠 Cleaning up your voice entry...";
+  recognition.onstart = async () => {
+    if (voiceStatus) voiceStatus.textContent = "🎤 Listening... Tap again to stop.";
+    if (voiceBtn) voiceBtn.textContent = "🛑 Stop InkOutLoud";
+    
+    // Start audio recording for emotional analysis
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
+      
+      mediaRecorder.start();
+      console.log("🎵 Audio recording started for emotional analysis");
+    } catch (err) {
+      console.warn("Audio recording failed, continuing with text-only analysis:", err);
+    }
+  };
 
-      try {
-        const user = auth?.currentUser;
-        if (!user) {
-          console.warn("User not signed in. Cannot clean transcript.");
-          if (voiceStatus) voiceStatus.textContent = "⚠️ You must be logged in to use voice journaling.";
-          return;
-        }
+  recognition.onresult = async (event) => {
+    const transcript = event.results[event.results.length - 1][0].transcript;
+    if (voiceStatus) voiceStatus.textContent = "🧠 Analyzing your voice and cleaning up text...";
 
-        const idToken = await user.getIdToken();
+    // Stop audio recording
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        await processVoiceWithEmotion(transcript, audioBlob);
+      };
+    } else {
+      // Fallback to text-only processing
+      await processVoiceWithEmotion(transcript, null);
+    }
+  };
 
-        // 📝 Call the correct cleanVoiceTranscript endpoint
-        const cleanEndpoint = location.hostname === 'localhost' 
-          ? 'http://localhost:5001/inkwell-alpha/us-central1/cleanVoiceTranscript'
-          : 'https://us-central1-inkwell-alpha.cloudfunctions.net/cleanVoiceTranscript';
-        const response = await fetch(cleanEndpoint, {
-           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${idToken}`
-          },
-          body: JSON.stringify({ 
-            transcript: transcript
-          })
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`HTTP ${response.status}: ${errorText}`);
-        }
-
-        const data = await response.json();
-        if (data.cleanedText) {
-          const journalEntry = document.getElementById("journal");
-          if (journalEntry) {
-            journalEntry.value += (journalEntry.value ? " " : "") + data.cleanedText;
-          }
-          if (voiceStatus) voiceStatus.textContent = "✅ Voice entry added.";
-        } else {
-          throw new Error("No cleaned text received.");
-        }
-      } catch (err) {
-        console.error("🛑 Error cleaning voice transcript:", err);
-        if (voiceStatus) voiceStatus.textContent = "❌ Failed to clean voice input.";
+  // Enhanced processing function
+  async function processVoiceWithEmotion(transcript, audioBlob) {
+    try {
+      const user = auth?.currentUser;
+      if (!user) {
+        console.warn("User not signed in. Cannot process voice.");
+        if (voiceStatus) voiceStatus.textContent = "⚠️ You must be logged in to use voice journaling.";
+        return;
       }
-    };
 
-    recognition.onerror = (event) => {
-      if (voiceStatus) voiceStatus.textContent = "❌ Error: " + event.error;
-    };
+      const idToken = await user.getIdToken();
+      
+      // Send transcript as JSON (we'll handle audio analysis later)
+      const endpoint = location.hostname === 'localhost' 
+        ? 'http://localhost:5001/inkwell-alpha/us-central1/processVoiceWithEmotion'
+        : 'https://us-central1-inkwell-alpha.cloudfunctions.net/processVoiceWithEmotion';
+        
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({
+          transcript: transcript,
+          hasAudio: audioBlob ? true : false
+        })
+      });
 
-    recognition.onend = () => {
-      if (isListening) {
-        recognition.start(); // Auto-restart if session ends prematurely
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
-    };
 
-    if (voiceBtn) {
-      voiceBtn.onclick = () => {
-        if (!isListening) {
-          recognition.start();
-          isListening = true;
-          voiceBtn.textContent = "🛑 Stop InkOutLoud";
+      const data = await response.json();
+      
+      // Add cleaned text to journal
+      if (journalEntry && data.cleanedText) {
+        journalEntry.value += (journalEntry.value ? " " : "") + data.cleanedText;
+      }
+      
+      // Show emotional insights
+      if (data.emotionalInsights) {
+        showEmotionalInsights(data.emotionalInsights);
+      }
+      
+      if (voiceStatus) voiceStatus.textContent = "✅ Voice entry added with emotional analysis.";
+      
+      // Show onboarding celebration for first voice entry
+      if (OnboardingManager) {
+        const progress = OnboardingManager.getProgress();
+        if (!progress.first_voice_entry) {
+          OnboardingManager.showVoiceEntrySuccess();
+        }
+      }
+      
+    } catch (err) {
+      console.error("🛑 Error processing voice with emotion:", err);
+      if (voiceStatus) voiceStatus.textContent = "❌ Failed to process voice input.";
+      
+      // Fallback to original cleanVoiceTranscript
+      await fallbackToOriginalProcessing(transcript);
+    }
+  }
 
-          stopTimeout = setTimeout(() => {
-            recognition.stop();
-            isListening = false;
-            voiceBtn.textContent = "🎙️ InkOutLoud";
-          }, 90000); // 90 seconds
-        } else {
+  // Fallback to your existing cleanVoiceTranscript function
+  async function fallbackToOriginalProcessing(transcript) {
+    try {
+      const user = auth?.currentUser;
+      if (!user) return;
+
+      const idToken = await user.getIdToken();
+      const cleanEndpoint = location.hostname === 'localhost' 
+        ? 'http://localhost:5001/inkwell-alpha/us-central1/cleanVoiceTranscript'
+        : 'https://us-central1-inkwell-alpha.cloudfunctions.net/cleanVoiceTranscript';
+      
+      const response = await fetch(cleanEndpoint, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ transcript: transcript })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+      }
+
+      const data = await response.json();
+      if (data.cleanedText) {
+        const journalEntry = document.getElementById("journal");
+        if (journalEntry) {
+          journalEntry.value += (journalEntry.value ? " " : "") + data.cleanedText;
+        }
+        if (voiceStatus) voiceStatus.textContent = "✅ Voice entry added.";
+      }
+    } catch (err) {
+      console.error("🛑 Fallback processing failed:", err);
+      if (voiceStatus) voiceStatus.textContent = "❌ Voice processing failed.";
+    }
+  }
+
+  recognition.onerror = (event) => {
+    if (voiceStatus) voiceStatus.textContent = "❌ Error: " + event.error;
+  };
+
+  recognition.onend = () => {
+    if (isListening) {
+      recognition.start(); // Auto-restart if session ends prematurely
+    }
+  };
+
+  if (voiceBtn) {
+    voiceBtn.onclick = () => {
+      if (!isListening) {
+        recognition.start();
+        isListening = true;
+        voiceBtn.textContent = "🛑 Stop InkOutLoud";
+
+        stopTimeout = setTimeout(() => {
           recognition.stop();
           isListening = false;
           voiceBtn.textContent = "🎙️ InkOutLoud";
-          if (stopTimeout) clearTimeout(stopTimeout);
-        }
-      };
-    }
+        }, 90000); // 90 seconds
+      } else {
+        recognition.stop();
+        isListening = false;
+        voiceBtn.textContent = "🎙️ InkOutLoud";
+        if (stopTimeout) clearTimeout(stopTimeout);
+      }
+    };
   }
   window.saveJournalEntry = async function () {
     const textarea = document.getElementById("journal");
@@ -3674,7 +3777,7 @@ if (generatedPrompt) {
       if (entryData.coachReview) {
         try {
           console.log("📨 Notifying coach with entryId:", docRef.id);
-          showSpinner("saveStatus", "Notifying practitioner...");
+          showSpinner("saveStatus", "Notifying coach...");
 
           // Start coach notification as non-blocking operation
           const coachNotification = (async () => {
@@ -3874,7 +3977,36 @@ if (generatedPrompt) {
       }
     }
   };
-};
+}
+
+// New function to display emotional insights
+window.showEmotionalInsights = function(insights) {
+  // Create or update emotional insights display
+  let insightsDiv = document.getElementById("emotionalInsights");
+  if (!insightsDiv) {
+    insightsDiv = document.createElement("div");
+    insightsDiv.id = "emotionalInsights";
+    insightsDiv.className = "sophy-info";
+    insightsDiv.style.cssText = "margin-top: 1em; padding: 1em; background: rgba(42,105,114,0.1); border-radius: 8px; border-left: 4px solid #2A6972;";
+    
+    const voiceStatus = document.getElementById("voiceStatus");
+    if (voiceStatus) {
+      voiceStatus.parentNode.insertBefore(insightsDiv, voiceStatus.nextSibling);
+    }
+  }
+  
+  insightsDiv.innerHTML = `
+    <h4 style="margin: 0 0 0.5em 0; color: #2A6972; font-size: 1.1em;">🎭 Voice Emotional Analysis</h4>
+    <div style="display: flex; gap: 1em; margin-bottom: 0.75em; flex-wrap: wrap;">
+      <span style="font-size: 0.9em;"><strong>Tone:</strong> ${insights.primaryEmotion} (${insights.confidence}%)</span>
+      <span style="font-size: 0.9em;"><strong>Energy:</strong> ${insights.energyLevel}</span>
+      <span style="font-size: 0.9em;"><strong>Stress:</strong> ${insights.stressLevel}</span>
+    </div>
+    <div style="font-style: italic; color: #000 !important; font-size: 0.95em; line-height: 1.4; background: rgba(255,255,255,0.95) !important; padding: 0.5em; border-radius: 6px; border-left: none !important;">
+      ${insights.sophyInsight}
+    </div>
+  `;
+}
 
 // Function to replace journal content with Sophy's reflection
 window.replaceJournalWithReflection = function() {
@@ -4411,7 +4543,7 @@ const manifestBadge = isManifest
 
   
 const coachTag = entry.coachReview
-  ? `<p class="shared-with-coach" style="color: var(--brand-secondary); font-style: italic;">🔓 Shared with practitioner</p>`
+  ? `<p class="shared-with-coach" style="color: var(--brand-secondary); font-style: italic;">🔓 Shared with coach</p>`
   : "";
 
 const manifestDateRaw = entry.manifestDate;
@@ -5517,6 +5649,14 @@ async function askSophyAboutEntry() {
         status.style.color = "#2A6D6D";
         window.showToast("🎯 Your WISH vision has been saved!", "success", 4000);
         updateWishProgress();
+
+        // Show onboarding celebration for first WISH creation
+        if (OnboardingManager) {
+          const progress = OnboardingManager.getProgress();
+          if (!progress.first_wish_created) {
+            OnboardingManager.showWishCreationSuccess();
+          }
+        }
 // Set start date for progress tracking (only on first save)
         const wishStartKey = `wishStart_${user.uid}`;
         if (!localStorage.getItem(wishStartKey)) {
@@ -5525,6 +5665,37 @@ async function askSophyAboutEntry() {
 
         updateWishProgress(); // Update progress display
         setTimeout(() => status.innerHTML = "", 5000);
+        
+        // Add behavioral tracking
+        try {
+          const wishData = {
+            want: wishText,
+            imagine: outcomeText,
+            snags: oppositionText,
+            how: planText
+          };
+          
+          // Calculate complexity scores
+          const complexity = {
+            totalWords: Object.values(wishData).join(' ').split(' ').filter(w => w.length > 0).length,
+            snagsComplexity: wishData.snags?.split(' ').filter(w => w.length > 0).length || 0,
+            howSpecificity: wishData.how?.includes('if') && wishData.how?.includes('then') ? 'implementation_intention' : 'general_plan'
+          };
+          
+          // Track the behavior
+          const trackWishBehavior = firebase.functions().httpsCallable('trackWishBehavior');
+          await trackWishBehavior({
+            wishId: user.uid, // Using user ID as wish ID for now
+            action: 'updated',
+            sectionType: 'complete_wish',
+            complexity: complexity,
+            emotionalTone: getLastEmotionalAnalysis() // from voice feature
+          });
+          
+          console.log('✅ WISH behavior tracked');
+        } catch (trackingError) {
+          console.warn('Behavioral tracking failed (non-critical):', trackingError);
+        }
         
         // Reload manifest data to confirm it was saved properly
         setTimeout(() => {
@@ -5790,6 +5961,15 @@ IMPORTANT: Provide coaching guidance and advice only. Do not rewrite their plan 
     }
     
     suggestionBox.textContent = cleanedResponse;
+    
+    // Show onboarding celebration for first Sophy interaction
+    if (OnboardingManager) {
+      const progress = OnboardingManager.getProgress();
+      if (!progress.first_sophy_chat) {
+        OnboardingManager.showSophySuccess();
+      }
+    }
+    
   } catch (err) {
     console.error(`Error refining ${section}:`, err);
     suggestionBox.textContent = "Something went wrong.";
@@ -6145,6 +6325,140 @@ document.head.appendChild(themeStyle);
         };
       }
     });
+
+    // --- BEHAVIORAL PATTERN RECOGNITION FUNCTIONS ---
+
+    // Store the most recent emotional analysis for behavioral tracking
+    let lastEmotionalAnalysis = null;
+
+    // Enhanced showEmotionalInsights to store the analysis
+    const originalShowEmotionalInsights = window.showEmotionalInsights;
+    window.showEmotionalInsights = function(insights) {
+      // Store the emotional analysis for behavioral tracking
+      lastEmotionalAnalysis = {
+        primaryEmotion: insights.primaryEmotion,
+        energyLevel: insights.energyLevel,
+        stressLevel: insights.stressLevel,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Call the original function
+      if (originalShowEmotionalInsights) {
+        originalShowEmotionalInsights(insights);
+      }
+    };
+
+    // Get last emotional analysis for behavioral tracking
+    window.getLastEmotionalAnalysis = function() {
+      return lastEmotionalAnalysis;
+    };
+
+    // Get current WISH ID (using user ID for now)
+    window.getCurrentWishId = function() {
+      const user = auth?.currentUser;
+      return user ? user.uid : 'anonymous';
+    };
+
+    // Check for behavioral triggers on app load
+    window.checkBehavioralTriggers = async function() {
+      try {
+        const user = auth?.currentUser;
+        if (!user) return;
+
+        const idToken = await user.getIdToken();
+        const response = await fetch('/checkUserBehavioralTriggers', {
+          headers: { 'Authorization': `Bearer ${idToken}` }
+        });
+        
+        // Check if response is actually JSON before parsing
+        if (!response.ok) {
+          console.log('Behavioral triggers endpoint not available (expected for static hosting)');
+          return;
+        }
+        
+        const contentType = response.headers.get('content-type');
+        if (!contentType?.includes('application/json')) {
+          console.log('Behavioral triggers endpoint returned non-JSON response');
+          return;
+        }
+        
+        const triggers = await response.json();
+        
+        if (triggers.interventionSuggested) {
+          displayContextualCoaching(triggers.message, triggers.type);
+        }
+      } catch (error) {
+        // Silently handle - this is expected for static hosting without backend
+        console.log('Behavioral triggers not available (static hosting mode)');
+      }
+    };
+
+    // Display contextual coaching
+    window.displayContextualCoaching = function(message, type) {
+      // Add to existing Sophy interface, not intrusive popup
+      let sophyContainer = document.getElementById('sophyInsight');
+      if (!sophyContainer) {
+        sophyContainer = createSophyContainer();
+      }
+      
+      const coachingDiv = document.createElement('div');
+      coachingDiv.className = 'behavioral-coaching';
+      coachingDiv.style.cssText = `
+        background: var(--info-bg, rgba(42,105,114,0.1)); 
+        padding: 1em; 
+        border-radius: 8px; 
+        border-left: 4px solid var(--brand-primary, #2A6972);
+        margin: 1em 0;
+      `;
+      
+      coachingDiv.innerHTML = `
+        <h4 style="color: var(--brand-primary, #2A6972); margin-top: 0;">💡 Gentle Check-in</h4>
+        <p>${message}</p>
+        <button onclick="this.parentElement.style.display='none'" 
+                style="background: none; border: none; color: var(--text-secondary, #666); font-size: 0.9em; cursor: pointer;">
+          Thanks, I'll think about it
+        </button>
+      `;
+      
+      // Insert at the top of the Sophy container
+      sophyContainer.insertBefore(coachingDiv, sophyContainer.firstChild);
+    };
+
+    // Create Sophy container if it doesn't exist
+    function createSophyContainer() {
+      const container = document.createElement('div');
+      container.id = 'sophyInsight';
+      container.className = 'sophy-info';
+      
+      // Find a good place to insert it (after journal or voice status)
+      const journalDiv = document.getElementById('journal');
+      const voiceStatus = document.getElementById('voiceStatus');
+      const insertAfter = voiceStatus || journalDiv;
+      
+      if (insertAfter && insertAfter.parentNode) {
+        insertAfter.parentNode.insertBefore(container, insertAfter.nextSibling);
+      } else {
+        // Fallback: append to body
+        document.body.appendChild(container);
+      }
+      
+      return container;
+    }
+
+    // Enhanced window.onload to include behavioral trigger check
+    const originalOnLoad = window.onload;
+    window.onload = function() {
+      if (originalOnLoad) {
+        originalOnLoad();
+      }
+      
+      // Check for behavioral triggers after auth loads
+      setTimeout(() => {
+        checkBehavioralTriggers();
+        checkWhatsNewBadge(); // Initialize What's New notification badge
+      }, 2000);
+    };
+
   </script>
 </head>
 
@@ -6169,7 +6483,7 @@ document.head.appendChild(themeStyle);
       <a href="#" id="toggleSignup" style="color: #6A1B9A; text-decoration: underline; font-weight: 500;">Sign up</a>
     </div>
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1em;">
-      v2.25.190
+      v2.25.262
     </div>
   </div>
 </div>
@@ -6218,7 +6532,7 @@ document.head.appendChild(themeStyle);
     </form>
     
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1.5em;">
-      v2.25.190
+      v2.25.262
     </div>
   </div>
 </div>
@@ -6336,7 +6650,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     </button>
     
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1.5em;">
-      v2.25.190
+      v2.25.262
     </div>
   </div>
 </div>
@@ -6529,7 +6843,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     
     <div style="display: flex; align-items: flex-start; margin: 0.75em 0;">
       <span style="margin-right: 0.5rem; font-size: 1.1rem;">🤝</span>
-      <span>Share with your practitioner for that "real human insight" no algorithm can touch</span>
+      <span>Share with your coach for that "real human insight" no algorithm can touch</span>
     </div>
   </div>
   
@@ -6584,7 +6898,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     <!-- Coach tag + Save belong to Journal tab -->
     <div class="coach-tag-toggle">
       <input type="checkbox" id="coachReviewCheckbox" />
-      <label for="coachReviewCheckbox">📬 Send this entry to my practitioner</label>
+      <label for="coachReviewCheckbox">📬 Send this entry to my coach</label>
     </div>
 
     <button class="btn" onclick="saveJournalEntry()" style="margin-top:0.5em;">Save Journal Entry</button>
@@ -6745,14 +7059,14 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     <!-- Coach guidance for Manifest tab -->
     
     <div class="instruction-section" style="background: var(--info-bg, #eaf6fb); padding: 1.5em; border-radius: 8px; border-left: 4px solid #2A6972; margin: 1em 0;">
-      <h4 style="margin-top: 0; color: #2A6972; font-size: 1em;">✨ Want to share your WISH with your practitioner?</h4>
+      <h4 style="margin-top: 0; color: #2A6972; font-size: 1em;">✨ Want to share your WISH with your coach?</h4>
       <p style="margin: 0.5em 0; color: #333; line-height: 1.5; font-size: 0.95em;">
-        Your WISH is a personal visioning tool for your private reflection. To share it with your practitioner, 
-        create a <strong>journal entry</strong> about your WISH using the "Journal" tab, then tag it for practitioner review. 
+        Your WISH is a personal visioning tool for your private reflection. To share it with your coach, 
+        create a <strong>journal entry</strong> about your WISH using the "Journal" tab, then tag it for coach review. 
         Your current WISH will automatically be included as context with your entry.
       </p>
       <p style="margin: 0.5em 0 0 0; color: #666; font-size: 0.9em; font-style: italic;">
-        � Consider reflecting: What insights emerged from this WISH? What support do you need from your practitioner?
+        💡 Consider reflecting: What insights emerged from this WISH? What support do you need from your coach?
       </p>
     </div>
 
@@ -6915,7 +7229,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     <div style="background:#fff; color:#2A6972; padding:2em 1.3em 1.5em 1.3em; border-radius:10px; max-width:560px; width:92%; max-height:86vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.13);">
       <h2 style="margin-top:0; text-align:center;">About InkWell</h2>
       <div style="font-size:1em; line-height:1.65; margin-bottom:1.2em;">
-        <strong>InkWell</strong> is part of the Pegasus Realm wellness ecosystem—designed for individuals, coaches, counselors, and mental health practitioners seeking science-backed, intuitive tools for growth.
+        <strong>InkWell</strong> is part of the Pegasus Realm wellness ecosystem—designed for individuals, coaches, counselors, and mental health professionals seeking science-backed, intuitive tools for growth.
         <hr style="margin:1em 0;"/>
         <h3 style="font-size:1.09em;">Why Manifest Statements?</h3>
         At the heart of InkWell is your Manifest Statement: a personal guiding vision. This method draws on <strong>goal-setting theory</strong> and positive psychology, helping you translate intentions into action through evidence-based habit building and self-reflection.<br/>
@@ -6958,19 +7272,19 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     </div>
   </div>
 
-<!-- Welcome to Beta Modal -->
-<div id="welcomeBetaModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(21,54,58,0.86); z-index:10000; align-items:center; justify-content:center;">
+<!-- What's New Modal -->
+<div id="whatsNewModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(21,54,58,0.86); z-index:10000; align-items:center; justify-content:center;">
   <div style="background: var(--bg-card, #fff); color: var(--font-main, #2A6972); padding:2em 1.5em 1.5em 1.5em; border-radius:12px; max-width:700px; width:94%; max-height:90vh; overflow-y:auto; box-shadow:0 12px 40px rgba(0,0,0,0.15); border: 1px solid var(--border, rgba(42,105,114,0.1));">
     
     <div style="text-align: center; margin-bottom: 1.5em;">
       <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 80px; margin-bottom: 0.5em;" />
-      <h2 style="margin: 0; font-size: 1.4em; color: var(--brand-primary, #2A6972);">Welcome to InkWell Beta! 🌟</h2>
+      <h2 style="margin: 0; font-size: 1.4em; color: var(--brand-primary, #2A6972);">Welcome to InkWell! 🌟</h2>
       <p style="margin: 0.5em 0; font-style: italic; color: var(--text-secondary, #666); font-size: 1.1em;">"For the thinkers and the forgetters."</p>
     </div>
     
     <div style="font-size: 0.95em; line-height: 1.6; color: var(--font-main, #333);">
       <p style="margin-bottom: 1.2em;">
-        Life is messy—<strong>InkWell™</strong> holds your ideas, plans, and dreams so you can come back to them anytime. You're now part of our beta community, helping us refine a digital sanctuary designed for reflection and growth.
+        Life is messy—<strong>InkWell™</strong> holds your ideas, plans, and dreams so you can come back to them anytime. A digital sanctuary designed for reflection and growth.
       </p>
       
       <h3 style="color: var(--brand-primary, #2A6972); font-size: 1.1em; margin: 1.3em 0 0.7em 0;">What You Can Do in InkWell:</h3>
@@ -6988,7 +7302,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       <div style="margin-bottom: 1.2em;">
         <h4 style="color: var(--brand-secondary, #4A8B8B); font-size: 1em; margin: 0.8em 0 0.4em 0;">🤖 Meet Sophy - Your AI Wellness Guide</h4>
         <ul style="margin: 0.3em 0 0 1.2em; padding: 0;">
-          <li>Personalized prompts to spark meaningful reflection (25/month on Basic, unlimited on Plus)</li>
+          <li>Personalized prompts to spark meaningful reflection</li>
           <li>AI-powered insights that recognize patterns and growth opportunities</li>
           <li>Weekly email insights analyzing your mood patterns and growth themes</li>
           <li>Evidence-based coaching grounded in positive psychology principles</li>
@@ -6999,8 +7313,8 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       <div style="margin-bottom: 1.2em;">
         <h4 style="color: var(--brand-secondary, #4A8B8B); font-size: 1em; margin: 0.8em 0 0.4em 0;">🤝 Professional Support</h4>
         <ul style="margin: 0.3em 0 0 1.2em; padding: 0;">
-          <li>Connect with practitioners - licensed therapists, counselors, and coaches</li>
-          <li>Secure practitioner portal for professional guidance integration</li>
+          <li>Connect with coaches - licensed therapists, counselors, and coaches</li>
+          <li>Secure coach portal for professional guidance integration</li>
           <li>Coach communication directly within your journaling space</li>
         </ul>
       </div>
@@ -7019,7 +7333,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         <h4 style="color: var(--brand-secondary, #4A8B8B); font-size: 1em; margin: 0.8em 0 0.4em 0;">🔒 Privacy & Security</h4>
         <ul style="margin: 0.3em 0 0 1.2em; padding: 0;">
           <li>Bank-grade encryption - your thoughts remain completely private</li>
-          <li>Flexible data retention (90 days Basic, unlimited Plus)</li>
+          <li>Flexible data retention and privacy controls</li>
           <li>100% privacy protected - we never share your personal information</li>
         </ul>
       </div>
@@ -7027,9 +7341,10 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       <div style="background: var(--info-bg, rgba(42,105,114,0.1)); padding: 1em; border-radius: 8px; margin: 1.2em 0; border-left: 4px solid var(--brand-primary, #2A6972);">
         <h4 style="color: var(--brand-primary, #2A6972); font-size: 1em; margin: 0 0 0.5em 0;">🎯 What's New:</h4>
         <ul style="margin: 0.3em 0 0 1.2em; padding: 0;">
-          <li>New: Weekly insight emails from Sophy (opt-out available in settings)</li>
-          <li><strong>Free during beta</strong> - all features available while we perfect the experience</li>
-          <li>Your feedback shapes the future - help us build something truly transformative</li>
+          <li>Enhanced voice journaling with emotional insights</li>
+          <li>Behavioral pattern recognition for personalized coaching</li>
+          <li>Weekly insight emails from Sophy (opt-out available in settings)</li>
+          <li>Your feedback helps us build something truly transformative</li>
         </ul>
       </div>
       
@@ -7055,7 +7370,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     </div>
     
     <div style="text-align: center; margin-top: 1.5em;">
-      <button class="btn" onclick="closeWelcomeBetaModal()" style="background: var(--brand-primary, #2A6972); color: white; padding: 0.8em 2em; font-size: 1em;">Start My Journey</button>
+      <button class="btn" onclick="closeWhatsNewModal()" style="background: var(--brand-primary, #2A6972); color: white; padding: 0.8em 2em; font-size: 1em;">Get Started</button>
     </div>
   </div>
 </div>
@@ -7161,34 +7476,34 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       </p>
     </div>
     
-<!-- Practitioner Section -->
+<!-- Coach Section -->
 <div style="background: #f0f8ff; border: 1px solid #c5d7f0; border-radius: 8px; padding: 1.5em; margin-bottom: 1.5em; text-align: left;">
   <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em; justify-content: space-between;">
-    🩺 My Practitioner
-    <button onclick="clearPendingPractitionerInvite()" style="background: #f8f9fa; border: 1px solid #ccc; border-radius: 3px; padding: 0.2em 0.5em; font-size: 0.8em; cursor: pointer; color: #666;">🔄 Refresh</button>
+    🔹 My Coach
+    <button onclick="clearPendingCoachInvite()" style="background: #f8f9fa; border: 1px solid #ccc; border-radius: 3px; padding: 0.2em 0.5em; font-size: 0.8em; cursor: pointer; color: #666;">🔄 Refresh</button>
   </h3>
   
   <!-- Current Connection Status -->
-  <div id="practitionerStatus" style="margin-bottom: 1em;">
+  <div id="coachStatus" style="margin-bottom: 1em;">
     <!-- Will be populated by JavaScript -->
   </div>
   
-  <!-- Invite New Practitioner -->
+  <!-- Invite New Coach -->
   <div style="margin-bottom: 1em;">
-    <label for="practitionerEmail" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Practitioner's Email Address:</label>
-    <input type="email" id="practitionerEmail" 
+    <label for="coachEmail" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Coach's Email Address:</label>
+    <input type="email" id="coachEmail" 
            placeholder="doctor@practice.com" 
            style="width: 100%; padding: 0.6em; border: 1px solid #ccc; border-radius: 5px; background-color: white; color: #0D3F45; font-size: 0.9em; box-sizing: border-box;" />
   </div>
   
   <div style="margin-bottom: 1.5em;">
-    <label for="practitionerName" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Practitioner's Name:</label>
-    <input type="text" id="practitionerName" 
+    <label for="coachName" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Coach's Name:</label>
+    <input type="text" id="coachName" 
            placeholder="Dr. Jane Smith" 
            style="width: 100%; padding: 0.6em; border: 1px solid #ccc; border-radius: 5px; background-color: white; color: #0D3F45; font-size: 0.9em; box-sizing: border-box;" />
   </div>
   
-  <button onclick="invitePractitioner()" class="btn" style="width: 100%; margin-bottom: 1em; background: #2A6972; color: white;">
+  <button onclick="inviteCoach()" class="btn" style="width: 100%; margin-bottom: 1em; background: #2A6972; color: white;">
     <span id="inviteButtonText">Send InkWell Invitation</span>
   </button>
   
@@ -7196,11 +7511,11 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   
   <!-- Disconnect Section (initially hidden) -->
   <div id="disconnectSection" style="display: none; border-top: 1px solid #ddd; padding-top: 1em; margin-top: 1em;">
-    <button onclick="disconnectPractitioner()" class="btn" style="width: 100%; background: #dc3545; color: white;">
-      🚫 Disconnect from Practitioner
+    <button onclick="disconnectCoach()" class="btn" style="width: 100%; background: #dc3545; color: white;">
+      🚫 Disconnect from coach
     </button>
     <p style="font-size: 0.8em; color: #666; text-align: center; margin: 0.5em 0 0 0;">
-      This will remove your practitioner connection. They will no longer receive your journal entries.
+      This will remove your coach connection. They will no longer receive your journal entries.
     </p>
   </div>
 </div>
@@ -7228,7 +7543,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       </h3>
       <div style="font-size: 0.85em; color: #666;">
         <span style="font-weight: 500;">Version:</span>
-        <span id="settingsVersion" style="margin-left: 0.5em; font-family: monospace;">v2.25.190</span>
+        <span id="settingsVersion" style="margin-left: 0.5em; font-family: monospace;">v2.25.262</span>
       </div>
     </div>
     
@@ -7281,9 +7596,10 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         🌟 About & Help
       </h3>
       <div style="display: flex; gap: 0.8em; flex-wrap: wrap;">
-        <button onclick="showWelcomeBetaModal(); closeUserSettingsModal();" class="btn" 
-          style="flex: 1; min-width: 140px; padding: 0.5em 0.8em; background: #2A6972; color: white; border: none; border-radius: 5px; font-size: 0.85em; cursor: pointer;">
-          🌟 Welcome Guide
+        <button onclick="showWhatsNewModal(); closeUserSettingsModal();" class="btn" 
+          style="flex: 1; min-width: 140px; padding: 0.5em 0.8em; background: #2A6972; color: white; border: none; border-radius: 5px; font-size: 0.85em; cursor: pointer; position: relative;">
+          � What's New
+          <span id="whatsNewBadge" style="display: none; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; background: var(--brand-primary, #2A6972); border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
         </button>
         <button onclick="document.getElementById('aboutInkwellModal').style.display='flex'; closeUserSettingsModal();" class="btn" 
           style="flex: 1; min-width: 140px; padding: 0.5em 0.8em; background: #4A8B8B; color: white; border: none; border-radius: 5px; font-size: 0.85em; cursor: pointer;">
@@ -7310,33 +7626,52 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 <script>
 
 
-  // Welcome to Beta Modal Functions
-  window.showWelcomeBetaModal = function() {
-    document.getElementById("welcomeBetaModal").style.display = "flex";
+  // What's New Modal Functions
+  window.showWhatsNewModal = function() {
+    document.getElementById("whatsNewModal").style.display = "flex";
+    // Mark as viewed when opened
+    markWhatsNewAsViewed();
+  };
+  
+  window.closeWhatsNewModal = function() {
+    document.getElementById("whatsNewModal").style.display = "none";
   };
 
-  window.closeWelcomeBetaModal = function() {
-    document.getElementById("welcomeBetaModal").style.display = "none";
-    
-    // Mark as seen so it doesn't show on next login
+  // Notification Badge Management
+  window.markWhatsNewAsViewed = function() {
     const userId = window.currentUserId || window.auth?.currentUser?.uid;
     if (userId) {
-      localStorage.setItem(`welcomeBetaSeen_${userId}`, "true");
-      console.log("✅ Welcome Beta modal marked as seen for user");
+      localStorage.setItem(`whatsNewViewed_${userId}`, 'true');
+      hideWhatsNewBadge();
+      console.log("✅ What's New marked as viewed for user");
     }
   };
 
-  // Check if first time login and show welcome modal
-  window.checkAndShowWelcomeBeta = function() {
+  window.showWhatsNewBadge = function() {
+    const badge = document.getElementById("whatsNewBadge");
+    if (badge) {
+      badge.style.display = "block";
+    }
+  };
+
+  window.hideWhatsNewBadge = function() {
+    const badge = document.getElementById("whatsNewBadge");
+    if (badge) {
+      badge.style.display = "none";
+    }
+  };
+
+  // Check if user should see notification badge
+  window.checkWhatsNewBadge = function() {
     const userId = window.currentUserId || window.auth?.currentUser?.uid;
     if (!userId) return;
     
-    const hasSeenWelcome = localStorage.getItem(`welcomeBetaSeen_${userId}`);
-    if (!hasSeenWelcome) {
-      console.log("🌟 First time login detected - showing Welcome Beta modal");
+    const hasViewedWhatsNew = localStorage.getItem(`whatsNewViewed_${userId}`);
+    if (!hasViewedWhatsNew) {
+      console.log("� Showing What's New notification badge for new user");
       setTimeout(() => {
-        window.showWelcomeBetaModal();
-      }, 800); // Small delay to let the UI settle
+        showWhatsNewBadge();
+      }, 2000); // Show badge after 2 seconds to let UI settle
     }
   };
 
@@ -7654,7 +7989,7 @@ window.forceRefreshCurrentView = function() {
       
       // Load practitioner status when settings modal opens
       await loadPractitionerStatus();
-      console.log("Practitioner status loaded");
+      console.log("Coach status loaded");
       
     } catch (error) {
       console.error("Error loading user settings:", error);
@@ -7668,20 +8003,20 @@ window.forceRefreshCurrentView = function() {
 function startPractitionerStatusRefresh() {
   if (!window.auth?.currentUser || !window.db || !window.onSnapshot) return;
   
-  console.log("🔄 Setting up practitioner status auto-refresh");
+  console.log("🔄 Setting up coach status auto-refresh");
   
   // Listen for changes to the approvedPractitioners collection
   const unsubscribe = window.onSnapshot(
     window.collection(window.db, "approvedPractitioners"),
     (snapshot) => {
-      console.log("🔄 Approved practitioners list changed, refreshing status");
+      console.log("🔄 Approved coaches list changed, refreshing status");
       // Small delay to ensure database consistency
       setTimeout(() => {
         loadPractitionerStatus();
       }, 1000);
     },
     (error) => {
-      console.error("Error listening to practitioner changes:", error);
+      console.error("Error listening to coach changes:", error);
     }
   );
   
@@ -8150,7 +8485,35 @@ window.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-// Load practitioner status with approved practitioners list
+// Load approved coaches from Firestore
+async function loadApprovedCoaches() {
+  try {
+    if (!window.db) return [];
+    
+    const approvedCoachesRef = window.collection(window.db, "approvedPractitioners");
+    const snapshot = await window.getDocs(approvedCoachesRef);
+    
+    const coaches = [];
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      coaches.push({
+        id: doc.id,
+        name: data.name,
+        email: data.email,
+        specialties: data.specialties || [],
+        verified: data.verified || false
+      });
+    });
+    
+    console.log("Loaded approved coaches:", coaches);
+    return coaches;
+  } catch (error) {
+    console.error("Error loading approved coaches:", error);
+    return [];
+  }
+}
+
+// Load coach status with approved coaches list
 async function loadPractitionerStatus() {
   try {
     const auth = window.auth;
@@ -8160,17 +8523,17 @@ async function loadPractitionerStatus() {
     if (!userDoc.exists) return;
 
     const userData = userDoc.data();
-    const statusDiv = document.getElementById("practitionerStatus");
+    const statusDiv = document.getElementById("coachStatus");
     const disconnectSection = document.getElementById("disconnectSection");
     
     // Check if dark theme is active
     const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
     
-    // Load approved practitioners for dropdown
-    const approvedPractitioners = await loadApprovedPractitioners();
+    // Load approved coaches for dropdown
+    const approvedCoaches = await loadApprovedCoaches();
     
-    if (userData.connectedPractitioner) {
-      // User has connected practitioner
+    if (userData.connectedCoach) {
+      // User has connected coach
       const connectedBg = isDarkTheme ? 'rgba(42, 105, 114, 0.15)' : '#d4edda';
       const connectedBorder = isDarkTheme ? 'rgba(42, 105, 114, 0.3)' : '#c3e6cb';
       const connectedColor = isDarkTheme ? '#89C9D4' : '#155724';
@@ -8209,7 +8572,7 @@ async function loadPractitionerStatus() {
     } else {
       // No practitioner - show selection options
       let practitionerOptions = '<option value="">Select a practitioner...</option>';
-      approvedPractitioners.forEach(practitioner => {
+      approvedCoaches.forEach(practitioner => {
         practitionerOptions += `<option value="${practitioner.email}" data-name="${practitioner.name}">${practitioner.name}</option>`;
       });
       
@@ -8701,7 +9064,576 @@ setTimeout(() => {
     console.log("20. Button getAttribute('onclick'):", button.getAttribute('onclick'));
   }
 }, 5000);
+
+// ============================================================================
+// PROGRESSIVE ONBOARDING SYSTEM
+// ============================================================================
+
+// Onboarding Overlay Component - Reusable modal for contextual hints
+window.OnboardingOverlay = {
+  create: function(config) {
+    // Remove any existing overlay
+    const existing = document.getElementById('onboardingOverlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'onboardingOverlay';
+    overlay.innerHTML = `
+      <div class="onboarding-backdrop"></div>
+      <div class="onboarding-modal" id="onboardingModal">
+        <div class="onboarding-content">
+          <button class="onboarding-close" onclick="OnboardingOverlay.close()">&times;</button>
+          <div class="onboarding-icon">${config.icon || '💡'}</div>
+          <h3 class="onboarding-title">${config.title}</h3>
+          <div class="onboarding-body">${config.content}</div>
+          <div class="onboarding-actions">
+            ${config.primaryButton ? `<button class="btn onboarding-btn-primary" onclick="${config.primaryAction}">${config.primaryButton}</button>` : ''}
+            <button class="btn onboarding-btn-secondary" onclick="OnboardingOverlay.close()">${config.dismissText || 'Got it!'}</button>
+          </div>
+        </div>
+        ${config.pointer ? `<div class="onboarding-pointer" style="${this.calculatePointerPosition(config.target)}"></div>` : ''}
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    
+    // Position modal near target element if specified
+    if (config.target) {
+      setTimeout(() => this.positionNearTarget(config.target), 50);
+    }
+
+    // Track that user saw this onboarding
+    if (config.id) {
+      OnboardingManager.markShown(config.id);
+    }
+
+    return overlay;
+  },
+
+  close: function() {
+    const overlay = document.getElementById('onboardingOverlay');
+    if (overlay) {
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.remove(), 300);
+    }
+  },
+
+  positionNearTarget: function(targetSelector) {
+    const modal = document.getElementById('onboardingModal');
+    const target = document.querySelector(targetSelector);
+    
+    if (!modal || !target) return;
+
+    const targetRect = target.getBoundingClientRect();
+    const modalRect = modal.getBoundingClientRect();
+    const viewport = { width: window.innerWidth, height: window.innerHeight };
+
+    // Calculate optimal position
+    let top = targetRect.bottom + 20;
+    let left = targetRect.left + (targetRect.width / 2) - (modalRect.width / 2);
+
+    // Adjust if modal would go off screen
+    if (left < 20) left = 20;
+    if (left + modalRect.width > viewport.width - 20) left = viewport.width - modalRect.width - 20;
+    if (top + modalRect.height > viewport.height - 20) top = targetRect.top - modalRect.height - 20;
+
+    modal.style.position = 'fixed';
+    modal.style.top = Math.max(20, top) + 'px';
+    modal.style.left = left + 'px';
+    modal.style.transform = 'none';
+  },
+
+  calculatePointerPosition: function(targetSelector) {
+    // Simple pointer positioning - can be enhanced
+    return 'bottom: -10px; left: 50%; transform: translateX(-50%); border-top: 10px solid var(--bg-card);';
+  }
+};
+
+// Onboarding Toast Component - Success celebration notifications
+window.OnboardingToast = {
+  show: function(config) {
+    // Remove any existing toasts
+    const existing = document.querySelectorAll('.onboarding-toast');
+    existing.forEach(toast => toast.remove());
+
+    const toast = document.createElement('div');
+    toast.className = 'onboarding-toast';
+    toast.innerHTML = `
+      <div class="toast-icon">${config.icon || '🎉'}</div>
+      <div class="toast-content">
+        <div class="toast-title">${config.title}</div>
+        <div class="toast-message">${config.message}</div>
+      </div>
+      <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+    `;
+
+    document.body.appendChild(toast);
+
+    // Animate in
+    setTimeout(() => toast.classList.add('show'), 100);
+
+    // Auto dismiss after duration
+    const duration = config.duration || 4000;
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+
+    // Track milestone completion
+    if (config.milestone) {
+      OnboardingManager.markMilestone(config.milestone);
+    }
+
+    return toast;
+  }
+};
+
+// Onboarding Manager - Central state management
+window.OnboardingManager = {
+  // Check if user should see onboarding
+  shouldShow: function(id) {
+    const shown = JSON.parse(localStorage.getItem('onboarding_shown') || '{}');
+    const user = window.auth?.currentUser?.uid || 'guest';
+    return !shown[user]?.[id];
+  },
+
+  // Mark onboarding as shown
+  markShown: function(id) {
+    const shown = JSON.parse(localStorage.getItem('onboarding_shown') || '{}');
+    const user = window.auth?.currentUser?.uid || 'guest';
+    if (!shown[user]) shown[user] = {};
+    shown[user][id] = Date.now();
+    localStorage.setItem('onboarding_shown', JSON.stringify(shown));
+  },
+
+  // Mark milestone completion
+  markMilestone: function(milestone) {
+    const milestones = JSON.parse(localStorage.getItem('onboarding_milestones') || '{}');
+    const user = window.auth?.currentUser?.uid || 'guest';
+    if (!milestones[user]) milestones[user] = {};
+    milestones[user][milestone] = Date.now();
+    localStorage.setItem('onboarding_milestones', JSON.stringify(milestones));
+    
+    console.log(`🎯 Milestone completed: ${milestone}`);
+  },
+
+  // Get user's progress
+  getProgress: function() {
+    const user = window.auth?.currentUser?.uid || 'guest';
+    const milestones = JSON.parse(localStorage.getItem('onboarding_milestones') || '{}');
+    return milestones[user] || {};
+  },
+
+  // Reset progress (for testing)
+  reset: function() {
+    localStorage.removeItem('onboarding_shown');
+    localStorage.removeItem('onboarding_milestones');
+    console.log('🔄 Onboarding progress reset');
+  },
+
+  // Test all onboarding components (for development)
+  testAll: function() {
+    console.log('🧪 Testing all onboarding components...');
+    
+    // Test toast
+    OnboardingToast.show({
+      icon: '🧪',
+      title: 'Test Toast',
+      message: 'This is a test of the onboarding toast system.',
+      duration: 3000
+    });
+    
+    // Test overlay after toast
+    setTimeout(() => {
+      OnboardingOverlay.create({
+        icon: '🔬',
+        title: 'Test Overlay',
+        content: '<p>This is a test of the onboarding overlay system.</p><p>It should be positioned and styled correctly.</p>',
+        primaryButton: 'Test Primary Action',
+        primaryAction: 'OnboardingManager.handleTestPrimaryAction()',
+        dismissText: 'Close Test'
+      });
+    }, 1000);
+  },
+
+  // Handle test primary action
+  handleTestPrimaryAction: function() {
+    console.log('🎯 Primary action clicked!');
+    OnboardingOverlay.close();
+  },
+
+  // Handle WISH start action
+  startWishAction: function() {
+    OnboardingOverlay.close();
+    // Focus on the first WISH input with a slight delay
+    setTimeout(() => {
+      const wishInput = document.getElementById('wishInput');
+      if (wishInput) {
+        wishInput.focus();
+        wishInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 300);
+  },
+
+  // Show WISH tab onboarding
+  showWishTabOnboarding: function() {
+    if (!this.shouldShow('wish_tab_intro')) return;
+
+    OnboardingOverlay.create({
+      id: 'wish_tab_intro',
+      target: '.wish-section',
+      icon: '🎯',
+      title: 'Welcome to the WISH Framework!',
+      content: `
+        <p>The WISH framework helps you turn hopeful thinking into actionable plans:</p>
+        <ul style="text-align: left; margin: 1em 0;">
+          <li><strong>Want:</strong> Your specific, meaningful goal</li>
+          <li><strong>Imagine:</strong> Visualize your successful outcome</li>
+          <li><strong>Snags:</strong> Identify potential obstacles</li>
+          <li><strong>How:</strong> Create your if-then action plan</li>
+        </ul>
+        <p>Work through each section, then use Sophy to refine your thoughts!</p>
+      `,
+      primaryButton: 'Start My WISH',
+      primaryAction: 'OnboardingManager.startWishAction()',
+      pointer: true
+    });
+  },
+
+  // Show first voice entry celebration
+  showVoiceEntrySuccess: function() {
+    OnboardingToast.show({
+      milestone: 'first_voice_entry',
+      icon: '🎤',
+      title: 'Voice Entry Complete!',
+      message: 'Great job! Your voice has been analyzed for emotional insights.',
+      duration: 5000
+    });
+  },
+
+  // Show first WISH creation success
+  showWishCreationSuccess: function() {
+    OnboardingToast.show({
+      milestone: 'first_wish_created',
+      icon: '🌟',
+      title: 'WISH Created!',
+      message: 'Excellent! You\'ve created your first WISH framework. Check your timeline!',
+      duration: 6000
+    });
+  },
+
+  // Show Sophy interaction success
+  showSophySuccess: function() {
+    OnboardingToast.show({
+      milestone: 'first_sophy_chat',
+      icon: '💬',
+      title: 'Sophy Helped!',
+      message: 'Nice work using Sophy to refine your thoughts. Keep exploring!',
+      duration: 4500
+    });
+  }
+};
+
+// Smart Placeholders System
+window.SmartPlaceholders = {
+  examples: {
+    wishInput: [
+      "Run a 5K race within 3 months to improve my fitness and confidence",
+      "Complete my online course certification by the end of this quarter",
+      "Have a difficult conversation with my manager about work-life balance",
+      "Establish a daily meditation practice for better stress management",
+      "Organize my home office space for better productivity"
+    ],
+    outcomeInput: [
+      "I feel strong and accomplished crossing the finish line, with improved energy for daily activities",
+      "I feel proud and confident with new skills that advance my career opportunities",
+      "I feel relieved and respected, with clearer boundaries and better work relationships",
+      "I feel calm and centered, handling stress better with improved focus throughout my day",
+      "I feel organized and productive, easily finding what I need in my clean, inspiring workspace"
+    ],
+    oppositionInput: [
+      "My perfectionist tendencies make me avoid starting when I can't do everything perfectly",
+      "I tend to procrastinate when tasks feel overwhelming or unclear",
+      "My inner critic tells me I'm not good enough or qualified for this goal",
+      "I get distracted by urgent tasks and lose focus on my long-term priorities",
+      "I struggle with consistency when my initial motivation starts to fade"
+    ],
+    planInput: [
+      "If I feel like skipping my training run, then I will put on my running shoes and commit to just 10 minutes outside",
+      "If I get overwhelmed by the course material, then I will break it into 15-minute study sessions with specific topics",
+      "If I start to chicken out before the meeting, then I will write down my key points and remind myself why this matters",
+      "If I miss my morning meditation, then I will do 3 deep breaths before each meal as my backup practice",
+      "If I feel overwhelmed by the mess, then I will set a timer for 15 minutes and focus on just one small area"
+    ]
+  },
+
+  init: function() {
+    // Set up smart placeholders for WISH inputs
+    Object.keys(this.examples).forEach(inputId => {
+      const input = document.getElementById(inputId);
+      if (input) {
+        this.setupSmartPlaceholder(input, inputId);
+      }
+    });
+  },
+
+  setupSmartPlaceholder: function(input, inputId) {
+    const examples = this.examples[inputId];
+    let currentExample = 0;
+    
+    // Set initial placeholder
+    input.placeholder = examples[0];
+    
+    // Rotate examples on focus when empty
+    input.addEventListener('focus', () => {
+      if (!input.value.trim()) {
+        currentExample = (currentExample + 1) % examples.length;
+        input.placeholder = examples[currentExample];
+      }
+    });
+
+    // Clear rotation when user starts typing
+    input.addEventListener('input', () => {
+      if (input.value.trim()) {
+        input.placeholder = '';
+      }
+    });
+
+    // Restore examples when cleared
+    input.addEventListener('blur', () => {
+      if (!input.value.trim()) {
+        input.placeholder = examples[currentExample];
+      }
+    });
+  }
+};
+
+// Initialize onboarding when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  // Wait for auth state to be ready
+  setTimeout(() => {
+    SmartPlaceholders.init();
+    console.log('✨ Progressive Onboarding System initialized');
+  }, 1000);
+});
+
 </script>
+
+<!-- Onboarding System CSS -->
+<style>
+/* Onboarding Overlay Styles */
+#onboardingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.onboarding-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.onboarding-modal {
+  position: relative;
+  background: var(--bg-card);
+  border-radius: 16px;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-light);
+  animation: slideUp 0.3s ease forwards;
+  transform: translateY(20px);
+}
+
+.onboarding-content {
+  padding: 2rem;
+  text-align: center;
+  position: relative;
+}
+
+.onboarding-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--font-muted);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.onboarding-close:hover {
+  background: var(--bg-muted);
+  color: var(--font-main);
+}
+
+.onboarding-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.onboarding-title {
+  color: var(--font-main);
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.onboarding-body {
+  color: var(--font-secondary);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.onboarding-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.onboarding-btn-primary {
+  background: var(--brand-primary) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.onboarding-btn-secondary {
+  background: var(--bg-muted) !important;
+  color: var(--font-main) !important;
+  border: 1px solid var(--border-medium) !important;
+}
+
+.onboarding-pointer {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+}
+
+/* Toast Styles */
+.onboarding-toast {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  max-width: 400px;
+  z-index: 9999;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.onboarding-toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toast-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.toast-content {
+  flex: 1;
+}
+
+.toast-title {
+  font-weight: 600;
+  color: var(--font-main);
+  margin-bottom: 0.25rem;
+}
+
+.toast-message {
+  font-size: 0.9rem;
+  color: var(--font-secondary);
+  line-height: 1.4;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--font-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.toast-close:hover {
+  background: var(--bg-muted);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Dark theme support */
+html[data-theme='dark'] .onboarding-modal {
+  background: rgba(26, 32, 44, 0.95);
+  border-color: var(--border-medium);
+}
+
+html[data-theme='dark'] .onboarding-toast {
+  background: rgba(26, 32, 44, 0.95);
+  border-color: var(--border-medium);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .onboarding-modal {
+    margin: 1rem;
+    width: calc(100% - 2rem);
+  }
+  
+  .onboarding-content {
+    padding: 1.5rem;
+  }
+  
+  .onboarding-toast {
+    right: 1rem;
+    left: 1rem;
+    max-width: none;
+  }
+}
+</style>
 
 </body>
 </html>

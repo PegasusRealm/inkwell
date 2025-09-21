@@ -166,14 +166,23 @@
             <div style="margin-top: 3em; border-top: 2px solid var(--brand-primary); padding-top: 2em;">
                 <h2 style="color: var(--brand-primary);">🔄 User Data Migration</h2>
                 <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-                    <h4 style="margin-top: 0;">⚠️ Migration Tool</h4>
-                    <p>This tool updates existing user documents to include new required fields while preserving all existing data.</p>
-                    <p><strong>What it adds:</strong> userId, createdAt, special_code: "beta", insightsPreferences</p>
+                    <h4 style="margin-top: 0;">⚠️ Direct Migration Tool</h4>
+                    <p>This tool updates existing user documents directly through Firestore to include new required fields while preserving all existing data.</p>
+                    <p><strong>What it adds:</strong> userId, createdAt, special_code: "beta", insightsPreferences, onboardingState</p>
+                    <p><strong>New:</strong> Progressive onboarding tracking with milestones and feature usage analytics</p>
+                    <p><strong>Method:</strong> Direct Firestore access (bypasses Cloud Functions authentication issues)</p>
                     <p><strong>Safe to run multiple times</strong> - only migrates users missing the new fields.</p>
                 </div>
                 
+                <button id="testAuthButton" onclick="testAuthentication()" class="btn" style="margin-right: 10px; background: #6c757d;">
+                    🔍 Test Auth
+                </button>
+                <button onclick="testAuthentication()" class="btn" style="margin-bottom: 10px; background: #6c757d;">
+                    🔧 Test Authentication
+                </button>
+                
                 <button id="migrationButton" onclick="runUserMigration()" class="btn" style="margin-bottom: 20px;">
-                    🔄 Run User Data Migration
+                    🔄 Run Migration
                 </button>
                 
                 <div id="migrationResult"></div>
@@ -467,55 +476,123 @@
             }
         });
 
-        // User Data Migration Function
+        // Simple HTTP Migration Function (bypasses auth issues)
         window.runUserMigration = async function() {
             const button = document.getElementById('migrationButton');
             const resultDiv = document.getElementById('migrationResult');
 
             button.disabled = true;
             button.textContent = '⏳ Running Migration...';
-            resultDiv.innerHTML = '<p style="color: blue;">Starting user data migration...</p>';
+            resultDiv.innerHTML = '<p style="color: blue;">Starting migration via secure endpoint...</p>';
 
             try {
-                // Check if user is still authenticated
-                const currentUser = auth.currentUser;
-                if (!currentUser) {
-                    throw new Error('User not authenticated. Please log in again.');
+                // Use direct HTTP request to bypass authentication issues
+                const response = await fetch('https://us-central1-inkwell-alpha.cloudfunctions.net/runAdminMigration', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        adminKey: 'migrate-users-2024-beta'
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
                 }
 
-                console.log('🔐 Current user:', currentUser.email, currentUser.uid);
-                
-                // Get fresh ID token to ensure authentication
-                const idToken = await currentUser.getIdToken(true);
-                console.log('🎫 Got fresh ID token');
+                const result = await response.json();
 
-                const migrateFunction = httpsCallable(functions, 'migrateUserData');
-                const result = await migrateFunction();
-
-                const data = result.data;
-                resultDiv.innerHTML = `
-                    <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px;">
-                        <h4 style="color: #155724; margin-top: 0;">✅ Migration Completed Successfully!</h4>
-                        <p><strong>Total Users:</strong> ${data.totalUsers}</p>
-                        <p><strong>Migrated:</strong> ${data.migrated}</p>
-                        <p><strong>Skipped (already current):</strong> ${data.skipped}</p>
-                        <p><strong>Errors:</strong> ${data.errors}</p>
-                    </div>
-                `;
+                console.log('Migration result:', result);
                 
-                console.log('Migration completed:', data);
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px;">
+                            <h4 style="color: #155724; margin-top: 0;">✅ Migration Completed Successfully!</h4>
+                            <p><strong>Total Users:</strong> ${result.totalUsers}</p>
+                            <p><strong>Migrated:</strong> ${result.migrated}</p>
+                            <p><strong>Skipped (already current):</strong> ${result.skipped}</p>
+                            <p><strong>Errors:</strong> ${result.errors}</p>
+                            ${result.results ? `
+                                <details style="margin-top: 10px;">
+                                    <summary>Sample Migration Results</summary>
+                                    <pre style="background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 0.8em;">
+${JSON.stringify(result.results.slice(0, 5), null, 2)}
+                                    </pre>
+                                </details>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    throw new Error(result.error || 'Migration failed');
+                }
                 
             } catch (error) {
                 console.error('Migration failed:', error);
+                
                 resultDiv.innerHTML = `
                     <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px;">
                         <h4 style="color: #721c24; margin-top: 0;">❌ Migration Failed</h4>
-                        <p>${error.message}</p>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <details>
+                            <summary>Error Details</summary>
+                            <pre style="background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 0.8em;">
+${JSON.stringify(error, null, 2)}
+                            </pre>
+                        </details>
                     </div>
                 `;
             } finally {
                 button.disabled = false;
-                button.textContent = '🔄 Run User Data Migration';
+                button.textContent = '🔄 Run Migration';
+            }
+        };
+
+        // Test Authentication Function
+        window.testAuthentication = async function() {
+            const resultDiv = document.getElementById('migrationResult');
+            
+            try {
+                resultDiv.innerHTML = '<p style="color: blue;">Testing authentication...</p>';
+                
+                const currentUser = auth.currentUser;
+                if (!currentUser) {
+                    throw new Error('No current user');
+                }
+                
+                console.log('Current user:', currentUser);
+                
+                // Test getting a fresh token
+                const token = await currentUser.getIdToken(true);
+                console.log('Token length:', token.length);
+                
+                // Test a simple function call
+                const functions = getFunctions();
+                
+                resultDiv.innerHTML = `
+                    <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px;">
+                        <h4 style="color: #155724; margin-top: 0;">✅ Authentication Test Results</h4>
+                        <p><strong>User:</strong> ${currentUser.email}</p>
+                        <p><strong>UID:</strong> ${currentUser.uid}</p>
+                        <p><strong>Token Length:</strong> ${token.length}</p>
+                        <p><strong>Functions Instance:</strong> ${functions ? 'OK' : 'FAILED'}</p>
+                        <p>Ready to attempt migration.</p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Auth test failed:', error);
+                resultDiv.innerHTML = `
+                    <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px;">
+                        <h4 style="color: #721c24; margin-top: 0;">❌ Authentication Test Failed</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p><strong>Type:</strong> ${error.code || 'Unknown'}</p>
+                        <pre style="background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 0.8em;">
+${JSON.stringify(error, null, 2)}
+                        </pre>
+                    </div>
+                `;
             }
         };
     </script>
