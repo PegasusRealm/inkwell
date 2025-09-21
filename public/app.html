@@ -7590,6 +7590,63 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       </div>
     </div>
 
+    <!-- Data Export Section -->
+    <div style="text-align: left; margin-bottom: 1.5em; padding: 1em; background: #f0f8ff; border-radius: 5px; border: 1px solid #d0e8f2;">
+      <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
+        💾 Data Export
+      </h3>
+      <p style="font-size: 0.85em; color: #555; margin-bottom: 1em; line-height: 1.4;">
+        Download all your InkWell data. Choose the format that works best for you.
+      </p>
+      
+      <!-- Export Format Selection -->
+      <div style="margin-bottom: 1em;">
+        <label style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Export Format:</label>
+        <select id="exportFormat" style="width: 100%; padding: 0.6em; border: 1px solid #ccc; border-radius: 5px; background-color: white; color: #0D3F45; font-size: 0.9em; box-sizing: border-box;">
+          <option value="readable">📖 Readable Report (PDF-style HTML)</option>
+          <option value="spreadsheet">📊 Spreadsheet (CSV files in ZIP)</option>
+          <option value="json">🔧 Technical Data (JSON)</option>
+        </select>
+      </div>
+      
+      <button onclick="exportUserData()" id="exportDataBtn" class="btn" 
+        style="width: 100%; padding: 0.7em 0.8em; background: #2A6972; color: white; border: none; border-radius: 5px; font-size: 0.9em; cursor: pointer; font-weight: 500;">
+        📄 Download My Data
+      </button>
+      
+      <div id="exportStatus" style="margin-top: 0.8em; text-align: center; font-size: 0.8em;"></div>
+      
+      <!-- Format Descriptions -->
+      <div style="margin-top: 1em; font-size: 0.8em; color: #666; line-height: 1.3;">
+        <div id="formatDescription">
+          <strong>📖 Readable Report:</strong> Beautiful, printable HTML document with all your data formatted like a book. Perfect for reading, printing, or sharing.
+        </div>
+      </div>
+    </div>
+
+    <!-- Account Deletion Section -->
+    <div style="text-align: left; margin-bottom: 1.5em; padding: 1em; background: #fff5f5; border-radius: 5px; border: 2px solid #ffcdd2;">
+      <h3 style="color: #d32f2f; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
+        ⚠️ Danger Zone
+      </h3>
+      <p style="font-size: 0.85em; color: #555; margin-bottom: 1em; line-height: 1.4;">
+        <strong>Warning:</strong> Account deletion is permanent and cannot be undone. All your journal entries, WISH manifests, progress data, and settings will be permanently removed.
+      </p>
+      
+      <button onclick="showDeleteAccountModal()" id="deleteAccountBtn" class="btn" 
+        style="width: 100%; padding: 0.7em 0.8em; background: #d32f2f; color: white; border: none; border-radius: 5px; font-size: 0.9em; cursor: pointer; font-weight: 500;">
+        🗑️ Delete My Account
+      </button>
+      
+      <p style="font-size: 0.8em; color: #666; margin-top: 0.8em; text-align: center; line-height: 1.3;">
+        This action will:<br>
+        • Delete all journal entries and manifests<br>
+        • Remove all personal data from our servers<br>
+        • Cancel any coach connections<br>
+        • Send you a confirmation email
+      </p>
+    </div>
+
     <!-- About & Help Section -->
     <div style="text-align: left; margin-bottom: 1.5em; padding: 1em; background: #fff9f0; border-radius: 5px; border: 1px solid #f0e6d2;">
       <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
@@ -7619,6 +7676,73 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   Cancel
 </button>
     </div>
+  </div>
+</div>
+
+<!-- Delete Account Confirmation Modal -->
+<div id="deleteAccountModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 10000;">
+  <div class="card-block" style="max-width: 500px; width: 90%; background: white; padding: 2em; border-radius: 12px; text-align: center; border: 3px solid #d32f2f;">
+    <div style="font-size: 4em; margin-bottom: 0.5em;">⚠️</div>
+    
+    <h2 style="margin-top: 0; margin-bottom: 1em; color: #d32f2f; font-size: 1.4em;">
+      Delete Account Permanently
+    </h2>
+    
+    <div style="text-align: left; background: #fff5f5; padding: 1.5em; border-radius: 8px; margin-bottom: 1.5em; border: 1px solid #ffcdd2;">
+      <h3 style="color: #d32f2f; margin-top: 0; margin-bottom: 1em; font-size: 1.1em;">
+        This action will permanently delete:
+      </h3>
+      <ul style="margin: 0; padding-left: 1.5em; color: #555; line-height: 1.6;">
+        <li>All your journal entries and reflections</li>
+        <li>All WISH manifests and progress tracking</li>
+        <li>Your profile, settings, and preferences</li>
+        <li>All behavioral analytics and insights</li>
+        <li>Any coach connections and shared data</li>
+      </ul>
+      <div style="margin-top: 1em; padding: 1em; background: #ffebee; border-left: 4px solid #d32f2f; color: #c62828; font-weight: 500;">
+        ⚠️ This cannot be undone. Your data will be gone forever.
+      </div>
+    </div>
+    
+    <div style="text-align: left; margin-bottom: 1.5em;">
+      <label for="deleteConfirmationText" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">
+        Type "DELETE MY ACCOUNT" to confirm:
+      </label>
+      <input type="text" id="deleteConfirmationText" placeholder="Type exactly: DELETE MY ACCOUNT" 
+        style="width: 100%; padding: 0.8em; border: 2px solid #d32f2f; border-radius: 8px; background-color: white; color: #333; font-size: 0.9em; box-sizing: border-box; font-family: monospace;" />
+      <div id="deleteConfirmationError" style="color: #d32f2f; font-size: 0.8em; margin-top: 0.5em; display: none;">
+        Please type exactly "DELETE MY ACCOUNT" to proceed.
+      </div>
+    </div>
+    
+    <div style="text-align: left; margin-bottom: 2em;">
+      <label for="deletePasswordConfirm" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">
+        Enter your current password:
+      </label>
+      <input type="password" id="deletePasswordConfirm" placeholder="Your current password" 
+        style="width: 100%; padding: 0.8em; border: 2px solid #d32f2f; border-radius: 8px; background-color: white; color: #333; font-size: 0.9em; box-sizing: border-box;" />
+      <div id="deletePasswordError" style="color: #d32f2f; font-size: 0.8em; margin-top: 0.5em; display: none;">
+        Password is required for account deletion.
+      </div>
+    </div>
+    
+    <div id="deleteAccountStatus" style="margin-bottom: 1em; text-align: center; font-size: 0.9em;"></div>
+    
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 0.8em; justify-content: center;">
+      <button class="btn" onclick="closeDeleteAccountModal()" 
+        style="flex: 1; padding: 0.8em; background-color: #6c757d; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">
+        Cancel
+      </button>
+      <button class="btn" onclick="confirmAccountDeletion()" id="confirmDeleteBtn"
+        style="flex: 1; padding: 0.8em; background-color: #d32f2f; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">
+        🗑️ Delete Account
+      </button>
+    </div>
+    
+    <p style="font-size: 0.8em; color: #666; margin-top: 1em; line-height: 1.4;">
+      After deletion, you'll receive a confirmation email and be logged out immediately.
+    </p>
   </div>
 </div>
 
@@ -7869,6 +7993,549 @@ window.forceRefreshCurrentView = function() {
     }
   }
 };
+
+// =================================================================
+// DATA EXPORT FUNCTIONALITY
+// =================================================================
+
+// Format description updater
+document.addEventListener('DOMContentLoaded', function() {
+  const formatSelect = document.getElementById('exportFormat');
+  const descriptionDiv = document.getElementById('formatDescription');
+  
+  if (formatSelect && descriptionDiv) {
+    formatSelect.addEventListener('change', function() {
+      const descriptions = {
+        readable: '<strong>📖 Readable Report:</strong> Beautiful, printable HTML document with all your data formatted like a book. Perfect for reading, printing, or sharing.',
+        spreadsheet: '<strong>📊 Spreadsheet:</strong> CSV files for journal entries and manifests in a ZIP archive. Perfect for Excel, Google Sheets, or data analysis.',
+        json: '<strong>🔧 Technical Data:</strong> Raw JSON format with all metadata. Perfect for developers, backup purposes, or importing into other apps.'
+      };
+      descriptionDiv.innerHTML = descriptions[this.value] || descriptions.readable;
+    });
+  }
+});
+
+// Main data export function
+window.exportUserData = async function() {
+  const exportBtn = document.getElementById('exportDataBtn');
+  const statusDiv = document.getElementById('exportStatus');
+  const formatSelect = document.getElementById('exportFormat');
+  const selectedFormat = formatSelect ? formatSelect.value : 'json';
+  
+  if (!window.auth?.currentUser) {
+    statusDiv.innerHTML = '<span style="color: #dc3545;">❌ Please log in to export data</span>';
+    return;
+  }
+
+  try {
+    // Update UI to show loading state
+    exportBtn.disabled = true;
+    exportBtn.innerHTML = '⏳ Preparing Export...';
+    statusDiv.innerHTML = '<span style="color: #6c757d;">📊 Gathering your data...</span>';
+
+    const exportData = await collectAllUserData();
+    
+    // Update status based on format
+    const formatNames = {
+      readable: 'readable report',
+      spreadsheet: 'spreadsheet files',
+      json: 'JSON file'
+    };
+    statusDiv.innerHTML = `<span style="color: #6c757d;">💾 Creating ${formatNames[selectedFormat]}...</span>`;
+    
+    // Create and download based on selected format
+    switch (selectedFormat) {
+      case 'readable':
+        downloadReadableReport(exportData);
+        break;
+      case 'spreadsheet':
+        downloadSpreadsheetZip(exportData);
+        break;
+      case 'json':
+      default:
+        downloadDataAsJSON(exportData);
+        break;
+    }
+    
+    // Success feedback
+    exportBtn.innerHTML = '✅ Export Complete!';
+    statusDiv.innerHTML = '<span style="color: #28a745;">📄 Your data has been downloaded successfully!</span>';
+    
+    // Reset button after delay
+    setTimeout(() => {
+      exportBtn.disabled = false;
+      exportBtn.innerHTML = '📄 Download My Data';
+      statusDiv.innerHTML = '';
+    }, 3000);
+    
+  } catch (error) {
+    console.error('❌ Export failed:', error);
+    exportBtn.disabled = false;
+    exportBtn.innerHTML = '📄 Download My Data';
+    statusDiv.innerHTML = '<span style="color: #dc3545;">❌ Export failed. Please try again.</span>';
+    
+    setTimeout(() => {
+      statusDiv.innerHTML = '';
+    }, 5000);
+  }
+};
+
+// Collect all user data from Firestore
+async function collectAllUserData() {
+  const user = window.auth.currentUser;
+  const userId = user.uid;
+  const exportTimestamp = new Date().toISOString();
+  
+  console.log('📊 Starting data collection for user:', userId);
+  
+  const exportData = {
+    exportInfo: {
+      userId: userId,
+      userEmail: user.email,
+      exportTimestamp: exportTimestamp,
+      exportDate: formatReadableDate(new Date()),
+      appVersion: "v2.25.262",
+      dataFormat: "InkWell Export v1.0"
+    },
+    journalEntries: [],
+    wishManifests: [],
+    behavioralAnalytics: {},
+    userProfile: {},
+    statistics: {}
+  };
+
+  try {
+    // 1. Collect Journal Entries
+    console.log('📝 Collecting journal entries...');
+    const entriesRef = collection(window.db, 'entries');
+    const entriesQuery = query(
+      entriesRef, 
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const entriesSnapshot = await getDocs(entriesQuery);
+    exportData.journalEntries = entriesSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        text: data.text || '',
+        createdAt: data.createdAt?.toDate()?.toISOString() || null,
+        createdDate: data.createdAt ? formatReadableDate(data.createdAt.toDate()) : 'Unknown',
+        emotionalAnalysis: data.emotionalAnalysis || null,
+        voiceTranscription: data.voiceTranscription || null,
+        linkedManifestId: data.manifestId || null,
+        coachReplies: data.coachReplies || [],
+        tags: data.tags || [],
+        mood: data.mood || null,
+        lastModified: data.updatedAt?.toDate()?.toISOString() || data.createdAt?.toDate()?.toISOString()
+      };
+    });
+
+    // 2. Collect WISH Manifests
+    console.log('🎯 Collecting WISH manifests...');
+    const manifestsRef = collection(window.db, 'manifests');
+    const manifestsQuery = query(
+      manifestsRef,
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const manifestsSnapshot = await getDocs(manifestsQuery);
+    exportData.wishManifests = manifestsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        title: data.title || '',
+        want: data.want || '',
+        intention: data.intention || '',
+        struggle: data.struggle || '',
+        hope: data.hope || '',
+        createdAt: data.createdAt?.toDate()?.toISOString() || null,
+        createdDate: data.createdAt ? formatReadableDate(data.createdAt.toDate()) : 'Unknown',
+        status: data.status || 'active',
+        progress: data.progress || 0,
+        linkedEntryIds: data.linkedEntryIds || [],
+        lastModified: data.updatedAt?.toDate()?.toISOString() || data.createdAt?.toDate()?.toISOString()
+      };
+    });
+
+    // 3. Collect User Profile Data
+    console.log('👤 Collecting user profile...');
+    const userDocRef = doc(window.db, 'users', userId);
+    const userDoc = await getDoc(userDocRef);
+    
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      exportData.userProfile = {
+        displayName: userData.displayName || '',
+        email: user.email,
+        avatar: userData.avatar || '',
+        joinDate: userData.createdAt?.toDate()?.toISOString() || null,
+        joinedDate: userData.createdAt ? formatReadableDate(userData.createdAt.toDate()) : 'Unknown',
+        insightsPreferences: userData.insightsPreferences || {},
+        onboardingState: userData.onboardingState || {},
+        themePreference: localStorage.getItem('inkwell-theme-mode') || 'default',
+        lastActiveDate: formatReadableDate(new Date())
+      };
+    }
+
+    // 4. Collect Behavioral Analytics (from localStorage and any stored analytics)
+    console.log('📈 Collecting behavioral analytics...');
+    exportData.behavioralAnalytics = {
+      onboardingProgress: JSON.parse(localStorage.getItem('onboardingProgress') || '{}'),
+      onboardingMilestones: JSON.parse(localStorage.getItem('onboarding_milestones') || '{}'),
+      appUsageStats: {
+        totalLogins: localStorage.getItem('inkwell_login_count') || '0',
+        lastLoginDate: localStorage.getItem('inkwell_last_login') || null,
+        featureUsage: {
+          voiceRecording: localStorage.getItem('inkwell_voice_used') === 'true',
+          wishFramework: localStorage.getItem('inkwell_wish_used') === 'true',
+          sophyReflection: localStorage.getItem('inkwell_sophy_used') === 'true'
+        }
+      }
+    };
+
+    // 5. Calculate Statistics
+    console.log('📊 Calculating statistics...');
+    exportData.statistics = {
+      totalJournalEntries: exportData.journalEntries.length,
+      totalWishManifests: exportData.wishManifests.length,
+      firstEntryDate: exportData.journalEntries.length > 0 ? 
+        exportData.journalEntries[exportData.journalEntries.length - 1].createdDate : null,
+      mostRecentEntryDate: exportData.journalEntries.length > 0 ? 
+        exportData.journalEntries[0].createdDate : null,
+      entriesWithEmotionalAnalysis: exportData.journalEntries.filter(e => e.emotionalAnalysis).length,
+      entriesWithVoiceTranscription: exportData.journalEntries.filter(e => e.voiceTranscription).length,
+      activeManifests: exportData.wishManifests.filter(m => m.status === 'active').length,
+      completedManifests: exportData.wishManifests.filter(m => m.status === 'completed').length,
+      averageEntryLength: exportData.journalEntries.length > 0 ?
+        Math.round(exportData.journalEntries.reduce((sum, e) => sum + (e.text?.length || 0), 0) / exportData.journalEntries.length) : 0
+    };
+
+    console.log('✅ Data collection complete:', {
+      entries: exportData.journalEntries.length,
+      manifests: exportData.wishManifests.length,
+      totalSize: JSON.stringify(exportData).length
+    });
+
+    return exportData;
+    
+  } catch (error) {
+    console.error('❌ Error collecting user data:', error);
+    throw new Error(`Data collection failed: ${error.message}`);
+  }
+}
+
+// Download readable HTML report
+function downloadReadableReport(data) {
+  try {
+    const htmlContent = generateReadableHTML(data);
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    
+    const now = new Date();
+    const timestamp = now.toISOString().slice(0, 10);
+    const filename = `InkWell_Report_${timestamp}.html`;
+    
+    triggerDownload(blob, filename);
+    console.log('✅ Readable report download triggered:', filename);
+    
+  } catch (error) {
+    console.error('❌ Error creating readable report:', error);
+    throw new Error(`Report creation failed: ${error.message}`);
+  }
+}
+
+// Download spreadsheet ZIP with CSV files
+function downloadSpreadsheetZip(data) {
+  try {
+    // Create CSV content for journal entries
+    const journalCSV = generateJournalCSV(data.journalEntries);
+    const manifestCSV = generateManifestCSV(data.wishManifests);
+    const summaryCSV = generateSummaryCSV(data);
+    
+    // Create a simple ZIP-like structure (for demo - in real app you'd use JSZip library)
+    const zipContent = createSimpleArchive({
+      'journal_entries.csv': journalCSV,
+      'wish_manifests.csv': manifestCSV,
+      'summary.csv': summaryCSV,
+      'README.txt': generateReadmeText(data)
+    });
+    
+    const blob = new Blob([zipContent], { type: 'application/octet-stream' });
+    
+    const now = new Date();
+    const timestamp = now.toISOString().slice(0, 10);
+    const filename = `InkWell_Spreadsheets_${timestamp}.txt`; // Note: Would be .zip with proper library
+    
+    triggerDownload(blob, filename);
+    console.log('✅ Spreadsheet archive download triggered:', filename);
+    
+  } catch (error) {
+    console.error('❌ Error creating spreadsheet archive:', error);
+    throw new Error(`Spreadsheet creation failed: ${error.message}`);
+  }
+}
+
+// Download data as JSON file
+function downloadDataAsJSON(data) {
+  try {
+    const jsonString = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    
+    const now = new Date();
+    const timestamp = now.toISOString().slice(0, 10);
+    const filename = `InkWell_Export_${timestamp}.json`;
+    
+    triggerDownload(blob, filename);
+    console.log('✅ JSON download triggered:', filename);
+    
+  } catch (error) {
+    console.error('❌ Error creating JSON file:', error);
+    throw new Error(`File creation failed: ${error.message}`);
+  }
+}
+
+// Generate readable HTML report
+function generateReadableHTML(data) {
+  const { exportInfo, journalEntries, wishManifests, userProfile, statistics } = data;
+  
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>InkWell Data Report - ${userProfile.displayName || 'User'}</title>
+    <style>
+        body { font-family: Georgia, serif; max-width: 800px; margin: 0 auto; padding: 2em; line-height: 1.6; color: #333; }
+        h1, h2, h3 { color: #2A6972; border-bottom: 2px solid #2A6972; padding-bottom: 0.5em; }
+        .header { text-align: center; margin-bottom: 3em; }
+        .section { margin-bottom: 3em; page-break-inside: avoid; }
+        .entry { background: #f9f9f9; padding: 1.5em; margin: 1em 0; border-left: 4px solid #2A6972; border-radius: 5px; }
+        .entry-date { font-weight: bold; color: #2A6972; margin-bottom: 0.5em; }
+        .entry-text { margin-bottom: 1em; }
+        .manifest { background: #f0f8ff; padding: 1.5em; margin: 1em 0; border-radius: 5px; border: 1px solid #d0e8f2; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1em; }
+        .stat-box { background: #f5f5f5; padding: 1em; border-radius: 5px; text-align: center; }
+        .stat-number { font-size: 2em; font-weight: bold; color: #2A6972; }
+        .emotional-analysis { background: #fff9f0; padding: 1em; border-radius: 5px; margin-top: 0.5em; font-style: italic; }
+        @media print { body { font-size: 12px; } .section { page-break-after: auto; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📖 InkWell Personal Data Report</h1>
+        <p><strong>${userProfile.displayName || 'User Report'}</strong><br>
+        Generated: ${exportInfo.exportDate}<br>
+        Total Entries: ${statistics.totalJournalEntries} | Active Goals: ${statistics.activeManifests}</p>
+    </div>
+
+    <div class="section">
+        <h2>📊 Your Journey at a Glance</h2>
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">${statistics.totalJournalEntries}</div>
+                <div>Journal Entries</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">${statistics.totalWishManifests}</div>
+                <div>Life Goals</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">${statistics.entriesWithEmotionalAnalysis}</div>
+                <div>With Emotional Insights</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">${Math.round(statistics.averageEntryLength / 10) / 10}k</div>
+                <div>Avg. Words per Entry</div>
+            </div>
+        </div>
+        ${statistics.firstEntryDate ? `<p><strong>Journey Started:</strong> ${statistics.firstEntryDate}</p>` : ''}
+    </div>
+
+    ${wishManifests.length > 0 ? `
+    <div class="section">
+        <h2>🎯 Your Life Goals & Aspirations</h2>
+        ${wishManifests.map(manifest => `
+            <div class="manifest">
+                <h3>${manifest.title || 'Untitled Goal'}</h3>
+                <p><strong>Created:</strong> ${manifest.createdDate}</p>
+                <div><strong>What I Want:</strong> ${manifest.want || 'Not specified'}</div>
+                <div><strong>My Intention:</strong> ${manifest.intention || 'Not specified'}</div>
+                <div><strong>Current Struggle:</strong> ${manifest.struggle || 'Not specified'}</div>
+                <div><strong>My Hope:</strong> ${manifest.hope || 'Not specified'}</div>
+                ${manifest.progress > 0 ? `<p><strong>Progress:</strong> ${manifest.progress}%</p>` : ''}
+            </div>
+        `).join('')}
+    </div>
+    ` : ''}
+
+    ${journalEntries.length > 0 ? `
+    <div class="section">
+        <h2>📝 Your Journal Entries</h2>
+        ${journalEntries.slice(0, 50).map(entry => `
+            <div class="entry">
+                <div class="entry-date">${entry.createdDate}</div>
+                <div class="entry-text">${entry.text || 'No content'}</div>
+                ${entry.emotionalAnalysis ? `
+                    <div class="emotional-analysis">
+                        <strong>Emotional Insights:</strong> ${JSON.stringify(entry.emotionalAnalysis, null, 2)}
+                    </div>
+                ` : ''}
+            </div>
+        `).join('')}
+        ${journalEntries.length > 50 ? `<p><em>Showing first 50 entries. Full data available in technical export.</em></p>` : ''}
+    </div>
+    ` : ''}
+
+    <div class="section">
+        <h2>ℹ️ Export Information</h2>
+        <p><strong>User ID:</strong> ${exportInfo.userId}<br>
+        <strong>Export Date:</strong> ${exportInfo.exportDate}<br>
+        <strong>App Version:</strong> ${exportInfo.appVersion}<br>
+        <strong>Data Format:</strong> ${exportInfo.dataFormat}</p>
+        <p><em>This report was generated from your InkWell account. For technical data access, use the JSON export option.</em></p>
+    </div>
+</body>
+</html>`;
+}
+
+// Generate CSV content for journal entries  
+function generateJournalCSV(entries) {
+  const headers = ['Date', 'Entry Text', 'Word Count', 'Has Emotional Analysis', 'Has Voice Recording', 'Linked Goal ID'];
+  const csvRows = [headers.join(',')];
+  
+  entries.forEach(entry => {
+    const row = [
+      `"${entry.createdDate || 'Unknown'}"`,
+      `"${(entry.text || '').replace(/"/g, '""')}"`, // Escape quotes for CSV
+      entry.text ? entry.text.split(' ').length : 0,
+      entry.emotionalAnalysis ? 'Yes' : 'No',
+      entry.voiceTranscription ? 'Yes' : 'No',
+      `"${entry.linkedManifestId || 'None'}"`
+    ];
+    csvRows.push(row.join(','));
+  });
+  
+  return csvRows.join('\n');
+}
+
+// Generate CSV for WISH manifests
+function generateManifestCSV(manifests) {
+  const headers = ['Title', 'Created Date', 'Status', 'Progress %', 'What I Want', 'My Intention', 'Current Struggle', 'My Hope'];
+  const csvRows = [headers.join(',')];
+  
+  manifests.forEach(manifest => {
+    const row = [
+      `"${manifest.title || 'Untitled'}"`,
+      `"${manifest.createdDate || 'Unknown'}"`,
+      `"${manifest.status || 'active'}"`,
+      manifest.progress || 0,
+      `"${(manifest.want || '').replace(/"/g, '""')}"`,
+      `"${(manifest.intention || '').replace(/"/g, '""')}"`,
+      `"${(manifest.struggle || '').replace(/"/g, '""')}"`,
+      `"${(manifest.hope || '').replace(/"/g, '""')}"`
+    ];
+    csvRows.push(row.join(','));
+  });
+  
+  return csvRows.join('\n');
+}
+
+// Generate summary CSV
+function generateSummaryCSV(data) {
+  const { statistics, userProfile, exportInfo } = data;
+  const summaryData = [
+    ['Metric', 'Value'],
+    ['User Email', userProfile.email || 'Unknown'],
+    ['Export Date', exportInfo.exportDate],
+    ['Total Journal Entries', statistics.totalJournalEntries],
+    ['Total Life Goals', statistics.totalWishManifests],
+    ['Active Goals', statistics.activeManifests],
+    ['Completed Goals', statistics.completedManifests],
+    ['Entries with Emotional Analysis', statistics.entriesWithEmotionalAnalysis],
+    ['Entries with Voice Recording', statistics.entriesWithVoiceTranscription],
+    ['Average Entry Length (characters)', statistics.averageEntryLength],
+    ['First Entry Date', statistics.firstEntryDate || 'N/A'],
+    ['Most Recent Entry Date', statistics.mostRecentEntryDate || 'N/A']
+  ];
+  
+  return summaryData.map(row => `"${row[0]}","${row[1]}"`).join('\n');
+}
+
+// Generate README text for archive
+function generateReadmeText(data) {
+  return `InkWell Data Export - ${data.exportInfo.exportDate}
+=========================================
+
+This archive contains your personal InkWell data in spreadsheet format:
+
+📄 FILES INCLUDED:
+- journal_entries.csv: All your journal entries with dates and metadata
+- wish_manifests.csv: Your life goals and aspirations (WISH framework)
+- summary.csv: Statistics and overview of your InkWell journey
+- README.txt: This file
+
+📊 HOW TO USE:
+1. Open CSV files in Excel, Google Sheets, or any spreadsheet program
+2. Each file contains headers explaining the data columns
+3. Use filters and sorting to analyze your journaling patterns
+4. Create charts to visualize your growth over time
+
+📈 YOUR STATS:
+- Total Journal Entries: ${data.statistics.totalJournalEntries}
+- Total Life Goals: ${data.statistics.totalWishManifests}
+- Journey Duration: ${data.statistics.firstEntryDate ? `${data.statistics.firstEntryDate} to ${data.statistics.mostRecentEntryDate}` : 'Not available'}
+
+🔐 PRIVACY:
+This export contains only your personal data. Keep it secure and only share with trusted parties.
+
+Generated by InkWell ${data.exportInfo.appVersion} on ${data.exportInfo.exportDate}
+Visit: https://inkwelljournal.io
+`;
+}
+
+// Create simple archive format (in real app, use JSZip library)
+function createSimpleArchive(files) {
+  let archive = `InkWell Data Archive - Generated ${new Date().toISOString()}\n`;
+  archive += `====================================================\n\n`;
+  
+  Object.entries(files).forEach(([filename, content]) => {
+    archive += `\n--- FILE: ${filename} ---\n`;
+    archive += content;
+    archive += `\n--- END OF ${filename} ---\n\n`;
+  });
+  
+  archive += `\nNOTE: This is a simple text archive. For proper CSV files, consider using the JSON export and converting with a tool, or we can implement JSZip library for real ZIP files.\n`;
+  
+  return archive;
+}
+
+// Common download trigger function
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+// Helper function for readable date formatting
+function formatReadableDate(date) {
+  if (!date || !(date instanceof Date)) return 'Unknown';
+  
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZoneName: 'short'
+  });
+}
 
 </script>
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
@@ -8201,11 +8868,146 @@ function startPractitionerStatusRefresh() {
     }
   }
 
+  // Account Deletion Functions
+  window.showDeleteAccountModal = function() {
+    closeUserSettingsModal();
+    document.getElementById("deleteAccountModal").style.display = "flex";
+    // Clear any previous input
+    document.getElementById("deleteConfirmationText").value = "";
+    document.getElementById("deletePasswordConfirm").value = "";
+    document.getElementById("deleteConfirmationError").style.display = "none";
+    document.getElementById("deletePasswordError").style.display = "none";
+    document.getElementById("deleteAccountStatus").innerHTML = "";
+  };
+
+  window.closeDeleteAccountModal = function() {
+    document.getElementById("deleteAccountModal").style.display = "none";
+    // Clear sensitive data
+    document.getElementById("deleteConfirmationText").value = "";
+    document.getElementById("deletePasswordConfirm").value = "";
+  };
+
+  window.confirmAccountDeletion = async function() {
+    try {
+      const auth = window.auth;
+      if (!auth || !auth.currentUser) {
+        alert("Please log in to delete your account.");
+        return;
+      }
+
+      const confirmationText = document.getElementById("deleteConfirmationText").value.trim();
+      const password = document.getElementById("deletePasswordConfirm").value.trim();
+      const statusDiv = document.getElementById("deleteAccountStatus");
+      const deleteBtn = document.getElementById("confirmDeleteBtn");
+      
+      // Clear previous error messages
+      document.getElementById("deleteConfirmationError").style.display = "none";
+      document.getElementById("deletePasswordError").style.display = "none";
+      statusDiv.innerHTML = "";
+
+      // Validate confirmation text
+      if (confirmationText !== "DELETE MY ACCOUNT") {
+        document.getElementById("deleteConfirmationError").style.display = "block";
+        document.getElementById("deleteConfirmationText").focus();
+        return;
+      }
+
+      // Validate password
+      if (!password) {
+        document.getElementById("deletePasswordError").style.display = "block";
+        document.getElementById("deletePasswordConfirm").focus();
+        return;
+      }
+
+      // Show processing state
+      const originalText = deleteBtn.textContent;
+      deleteBtn.textContent = "🔄 Deleting...";
+      deleteBtn.disabled = true;
+      statusDiv.innerHTML = '<div style="color: #f57c00;">⏳ Processing account deletion...</div>';
+
+      console.log("🗑️ Starting account deletion process for user:", auth.currentUser.uid);
+
+      // Step 1: Re-authenticate user with current password
+      statusDiv.innerHTML = '<div style="color: #f57c00;">🔐 Verifying password...</div>';
+      const credential = window.EmailAuthProvider.credential(auth.currentUser.email, password);
+      await window.reauthenticateWithCredential(auth.currentUser, credential);
+      console.log("✅ User re-authenticated successfully");
+
+      // Step 2: Call backend cleanup function
+      statusDiv.innerHTML = '<div style="color: #f57c00;">🧹 Cleaning up your data...</div>';
+      const idToken = await auth.currentUser.getIdToken();
+      
+      const cleanupResponse = await fetch('/deleteUserData', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ 
+          userId: auth.currentUser.uid,
+          userEmail: auth.currentUser.email 
+        })
+      });
+
+      if (!cleanupResponse.ok) {
+        const errorText = await cleanupResponse.text();
+        throw new Error(`Data cleanup failed: ${errorText}`);
+      }
+
+      const cleanupResult = await cleanupResponse.json();
+      console.log("✅ Backend data cleanup completed:", cleanupResult);
+
+      // Step 3: Delete Firebase Auth account
+      statusDiv.innerHTML = '<div style="color: #f57c00;">🔥 Removing account access...</div>';
+      await window.deleteUser(auth.currentUser);
+      console.log("✅ Firebase Auth account deleted");
+
+      // Step 4: Show success and redirect
+      statusDiv.innerHTML = '<div style="color: #4CAF50;">✅ Account deleted successfully! Redirecting...</div>';
+      
+      // Clear local data
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Redirect to index page after short delay
+      setTimeout(() => {
+        window.location.href = '/index.html';
+      }, 3000);
+
+    } catch (error) {
+      console.error("Account deletion error:", error);
+      
+      const deleteBtn = document.getElementById("confirmDeleteBtn");
+      const statusDiv = document.getElementById("deleteAccountStatus");
+      
+      deleteBtn.textContent = "🗑️ Delete Account";
+      deleteBtn.disabled = false;
+
+      // Provide user-friendly error messages
+      if (error.code === 'auth/wrong-password') {
+        document.getElementById("deletePasswordError").textContent = "Current password is incorrect.";
+        document.getElementById("deletePasswordError").style.display = "block";
+        statusDiv.innerHTML = '<div style="color: #d32f2f;">❌ Password verification failed</div>';
+      } else if (error.code === 'auth/requires-recent-login') {
+        statusDiv.innerHTML = '<div style="color: #d32f2f;">❌ For security, please log out and log back in before deleting your account</div>';
+      } else if (error.message && error.message.includes('Data cleanup failed')) {
+        statusDiv.innerHTML = '<div style="color: #d32f2f;">❌ Failed to clean up data. Please contact support.</div>';
+      } else {
+        statusDiv.innerHTML = '<div style="color: #d32f2f;">❌ Account deletion failed: ' + (error.message || "Unknown error") + '</div>';
+      }
+    }
+  };
+
  // Close modal when clicking outside
   document.addEventListener("click", function(e) {
     const modal = document.getElementById("userSettingsModal");
     if (e.target === modal) {
       closeUserSettingsModal();
+    }
+    
+    const deleteModal = document.getElementById("deleteAccountModal");
+    if (e.target === deleteModal) {
+      closeDeleteAccountModal();
     }    
   });
 

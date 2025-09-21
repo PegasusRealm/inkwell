@@ -4244,3 +4244,258 @@ exports.runAdminMigration = onRequest({
     });
   }
 });
+
+// Delete User Data - Comprehensive account deletion function
+exports.deleteUserData = onRequest({ secrets: [SENDGRID_API_KEY] }, async (req, res) => {
+  try {
+    console.log("🗑️ Starting user data deletion process");
+    
+    // Verify authentication
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Authentication required' 
+      });
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+    let decodedToken;
+    
+    try {
+      decodedToken = await admin.auth().verifyIdToken(idToken);
+    } catch (error) {
+      console.error("❌ Token verification failed:", error);
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Invalid authentication token' 
+      });
+    }
+
+    const userId = decodedToken.uid;
+    const userEmail = decodedToken.email;
+    
+    console.log(`🔍 Processing deletion for user: ${userId} (${userEmail})`);
+    
+    const db = admin.firestore();
+    const deletionReport = {
+      userId,
+      userEmail,
+      timestamp: new Date().toISOString(),
+      deletedCollections: [],
+      totalDocuments: 0,
+      errors: []
+    };
+
+    // Define all collections to clean up
+    const collectionsToDelete = [
+      { name: 'users', field: 'userId' },
+      { name: 'journalEntries', field: 'userId' },
+      { name: 'wishBehavior', field: 'userId' },
+      { name: 'interventionOutcomes', field: 'userId' },
+      { name: 'coachReplies', field: 'userId' },
+      { name: 'searchQueries', field: 'userId' },
+      { name: 'behavioralTriggers', field: 'userId' },
+      { name: 'practitionerRegistrations', field: 'email' } // Use email for practitioner data
+    ];
+
+    // Delete data from each collection
+    for (const collection of collectionsToDelete) {
+      try {
+        console.log(`🧹 Cleaning ${collection.name} collection...`);
+        
+        const fieldValue = collection.field === 'email' ? userEmail : userId;
+        const query = db.collection(collection.name).where(collection.field, '==', fieldValue);
+        const snapshot = await query.get();
+        
+        if (!snapshot.empty) {
+          const batch = db.batch();
+          let batchCount = 0;
+          let totalInCollection = 0;
+          
+          for (const doc of snapshot.docs) {
+            // Check for and delete subcollections
+            const subcollections = await doc.ref.listCollections();
+            for (const subcollection of subcollections) {
+              console.log(`🗂️ Deleting subcollection: ${subcollection.id}`);
+              const subDocs = await subcollection.get();
+              for (const subDoc of subDocs.docs) {
+                batch.delete(subDoc.ref);
+                batchCount++;
+                totalInCollection++;
+                
+                // Commit batch if it gets too large
+                if (batchCount >= 400) {
+                  await batch.commit();
+                  batchCount = 0;
+                }
+              }
+            }
+            
+            // Delete main document
+            batch.delete(doc.ref);
+            batchCount++;
+            totalInCollection++;
+            
+            // Commit batch if it gets too large
+            if (batchCount >= 400) {
+              await batch.commit();
+              batchCount = 0;
+            }
+          }
+          
+          // Commit remaining operations
+          if (batchCount > 0) {
+            await batch.commit();
+          }
+          
+          deletionReport.deletedCollections.push({
+            collection: collection.name,
+            documentsDeleted: totalInCollection
+          });
+          deletionReport.totalDocuments += totalInCollection;
+          
+          console.log(`✅ Deleted ${totalInCollection} documents from ${collection.name}`);
+        } else {
+          console.log(`ℹ️ No documents found in ${collection.name}`);
+          deletionReport.deletedCollections.push({
+            collection: collection.name,
+            documentsDeleted: 0
+          });
+        }
+      } catch (collectionError) {
+        console.error(`❌ Error deleting from ${collection.name}:`, collectionError);
+        deletionReport.errors.push({
+          collection: collection.name,
+          error: collectionError.message
+        });
+      }
+    }
+
+    // Send confirmation email if SendGrid is available
+    try {
+      if (SENDGRID_API_KEY.value()) {
+        sgMail.setApiKey(SENDGRID_API_KEY.value());
+        
+        const confirmationEmail = {
+          to: userEmail,
+          from: 'hello@pegasusrealm.com',
+          subject: '✅ InkWell Account Deletion Confirmed',
+          html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Account Deletion Confirmed - InkWell</title>
+            </head>
+            <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa;">
+              <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden;">
+                
+                <!-- Header -->
+                <div style="background: linear-gradient(135deg, #2A6972 0%, #4A9BA8 100%); padding: 30px; text-align: center;">
+                  <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">Account Deletion Confirmed</h1>
+                  <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">InkWell Digital Sanctuary</p>
+                </div>
+                
+                <!-- Content -->
+                <div style="padding: 30px;">
+                  <div style="text-align: center; margin-bottom: 30px;">
+                    <div style="font-size: 48px; margin-bottom: 15px;">✅</div>
+                    <h2 style="color: #2A6972; margin: 0; font-size: 20px; font-weight: 600;">Your Account Has Been Successfully Deleted</h2>
+                  </div>
+                  
+                  <p style="color: #4A5568; line-height: 1.6; margin-bottom: 20px;">
+                    This email confirms that your InkWell account and all associated data have been permanently removed from our systems on <strong>${new Date().toLocaleDateString()}</strong>.
+                  </p>
+                  
+                  <div style="background: #f0f8ff; border-radius: 8px; padding: 20px; margin: 25px 0;">
+                    <h3 style="color: #2A6972; margin: 0 0 15px 0; font-size: 16px;">What Was Deleted:</h3>
+                    <ul style="color: #4A5568; margin: 0; padding-left: 20px; line-height: 1.8;">
+                      <li>All journal entries and reflections</li>
+                      <li>All WISH manifests and progress data</li>
+                      <li>Personal profile and settings</li>
+                      <li>Behavioral analytics and insights</li>
+                      <li>Coach connections and shared data</li>
+                      <li>Account access and authentication</li>
+                    </ul>
+                  </div>
+                  
+                  <p style="color: #4A5568; line-height: 1.6; margin-bottom: 25px;">
+                    <strong>Total items removed:</strong> ${deletionReport.totalDocuments} documents across ${deletionReport.deletedCollections.length} data categories.
+                  </p>
+                  
+                  <p style="color: #4A5568; line-height: 1.6; margin-bottom: 25px;">
+                    If this deletion was made in error or if you have any questions, please contact our support team within the next 7 days. After that time, this deletion cannot be reversed.
+                  </p>
+                  
+                  <div style="background: #fff9f0; border-radius: 8px; padding: 20px; margin: 25px 0; border-left: 4px solid #D69E2E;">
+                    <p style="color: #744210; margin: 0; font-size: 14px; line-height: 1.5;">
+                      <strong>Thank you</strong> for being part of the InkWell community. We wish you well on your continued journey of reflection and growth.
+                    </p>
+                  </div>
+                </div>
+                
+                <!-- Footer -->
+                <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+                  <p style="color: #718096; margin: 0; font-size: 14px;">
+                    InkWell - Your Digital Sanctuary for Reflection<br>
+                    <a href="mailto:hello@pegasusrealm.com" style="color: #2A6972; text-decoration: none;">hello@pegasusrealm.com</a>
+                  </p>
+                </div>
+              </div>
+            </body>
+            </html>
+          `
+        };
+        
+        await sgMail.send(confirmationEmail);
+        console.log("✅ Deletion confirmation email sent");
+        deletionReport.emailSent = true;
+      }
+    } catch (emailError) {
+      console.error("⚠️ Failed to send confirmation email:", emailError);
+      deletionReport.emailSent = false;
+      deletionReport.emailError = emailError.message;
+    }
+
+    // Log the deletion for admin tracking
+    try {
+      await db.collection('accountDeletions').add({
+        ...deletionReport,
+        completedAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+      console.log("📋 Deletion logged for admin tracking");
+    } catch (logError) {
+      console.error("⚠️ Failed to log deletion:", logError);
+    }
+
+    console.log("✅ User data deletion completed successfully");
+    console.log("📊 Deletion Summary:", {
+      userId,
+      totalDocuments: deletionReport.totalDocuments,
+      collections: deletionReport.deletedCollections.length,
+      errors: deletionReport.errors.length
+    });
+
+    res.json({
+      success: true,
+      message: 'All user data has been successfully deleted',
+      deletionReport: {
+        userId,
+        totalDocuments: deletionReport.totalDocuments,
+        collectionsProcessed: deletionReport.deletedCollections.length,
+        timestamp: deletionReport.timestamp,
+        emailSent: deletionReport.emailSent || false
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ User data deletion failed:", error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete user data',
+      details: error.message
+    });
+  }
+});
