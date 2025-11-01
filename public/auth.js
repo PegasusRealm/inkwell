@@ -794,24 +794,31 @@ onAuthStateChanged(auth, async (user) => {
           // Load manifest data
           if (typeof window.loadManifestData === 'function') {
             console.log("📋 Loading manifest data after login...");
-            window.loadManifestData();
+            const manifestLoaded = window.loadManifestData();
             
+            // Always restore timeline settings regardless of manifest data
+            const timelineKey = `wishTimeline_${currentUserId}`;
+            const savedDays = localStorage.getItem(timelineKey);
+            const timelineSelect = document.getElementById("wishTimelineSelect");
+            
+            if (savedDays && timelineSelect) {
+              console.log(`🎯 Restoring saved timeline: ${savedDays} days`);
+              timelineSelect.value = savedDays;
+            }
+            
+            // Update timeline and progress with proper timing
             setTimeout(() => {
-              const timelineKey = `wishTimeline_${currentUserId}`;
-              const savedDays = localStorage.getItem(timelineKey);
-              const timelineSelect = document.getElementById("wishTimelineSelect");
+              if (typeof window.updateWishTimeline === 'function') {
+                window.updateWishTimeline();
+              }
               
-              if (savedDays && timelineSelect) {
-                console.log(`🎯 Restoring saved timeline: ${savedDays} days`);
-                timelineSelect.value = savedDays;
-                
-                if (typeof window.updateWishTimeline === 'function') {
-                  window.updateWishTimeline();
-                }
+              // Ensure progress bar is properly updated after manifest load
+              setTimeout(() => {
                 if (typeof window.updateWishProgress === 'function') {
+                  console.log("🔄 Updating progress bar after login...");
                   window.updateWishProgress();
                 }
-              }
+              }, 100);
             }, 200);
           }
           

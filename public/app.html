@@ -3203,10 +3203,13 @@ setTimeout(() => {
   if (typeof window.updateWishTimeline === "function") {
     window.updateWishTimeline();
   }
+  
+  // Always check progress bar state when opening manifest tab
   if (typeof window.updateWishProgress === "function") {
+    console.log("🔄 Checking progress bar state on manifest tab open...");
     window.updateWishProgress();
   }
-}, 100);
+}, 150);
   }
 
   // When opening Past Entries (calendarTab), reset panels and build calendar
@@ -4195,11 +4198,18 @@ window.loadManifestData = function() {
       
       console.log("✅ Loaded saved manifest data from localStorage for user:", currentUserId);
       
-      // Ensure start date is set if manifest data exists
+      // Ensure start date is set if manifest data exists with meaningful content
       const wishStartKey = `wishStart_${currentUserId}`;
-      if (!localStorage.getItem(wishStartKey) && (manifestData.wish || manifestData.outcome || manifestData.opposition || manifestData.plan)) {
+      const hasContent = (manifestData.wish && manifestData.wish.trim()) ||
+                        (manifestData.outcome && manifestData.outcome.trim()) ||
+                        (manifestData.opposition && manifestData.opposition.trim()) ||
+                        (manifestData.plan && manifestData.plan.trim()) ||
+                        (manifestData.statement && manifestData.statement.trim()); // Legacy field
+                        
+      if (!localStorage.getItem(wishStartKey) && hasContent) {
+        // Only set start date if there's actually meaningful content
         localStorage.setItem(wishStartKey, new Date().toISOString());
-        console.log("🎯 Set timeline start date for localStorage manifest data");
+        console.log("🎯 Set timeline start date for existing manifest data with content");
       }
       
       // Show a subtle indicator that data was loaded
@@ -4214,6 +4224,15 @@ window.loadManifestData = function() {
           manifestSaveStatus.style.fontStyle = "";
         }, 3000);
       }
+      
+      // Update progress bar after loading manifest data
+      setTimeout(() => {
+        if (typeof window.updateWishProgress === 'function') {
+          console.log("🔄 Updating progress after manifest data load...");
+          window.updateWishProgress();
+        }
+      }, 100);
+      
       return true; // Indicate that data was loaded from localStorage
     } else {
       console.log("ℹ️ No manifest data in localStorage for user:", currentUserId);
@@ -5772,11 +5791,17 @@ async function askSophyAboutEntry() {
         localStorage.setItem(`manifest_${user.uid}`, JSON.stringify(localStorageData));
         console.log("✅ Manifest also saved to localStorage for user:", user.uid);
 
+        // Set start date for progress tracking (must happen before updateWishProgress)
+        const wishStartKey = `wishStart_${user.uid}`;
+        if (!localStorage.getItem(wishStartKey)) {
+          localStorage.setItem(wishStartKey, new Date().toISOString());
+          console.log("🎯 Set initial timeline start date for new WISH");
+        }
+
         // Show success message
         status.innerHTML = "✅ Vision saved. You're building something meaningful.";
         status.style.color = "#2A6D6D";
         window.showToast("🎯 Your WISH vision has been saved!", "success", 4000);
-        updateWishProgress();
 
         // Show onboarding celebration for first WISH creation
         if (OnboardingManager) {
@@ -5785,13 +5810,14 @@ async function askSophyAboutEntry() {
             OnboardingManager.showWishCreationSuccess();
           }
         }
-// Set start date for progress tracking (only on first save)
-        const wishStartKey = `wishStart_${user.uid}`;
-        if (!localStorage.getItem(wishStartKey)) {
-          localStorage.setItem(wishStartKey, new Date().toISOString());
-        }
 
-        updateWishProgress(); // Update progress display
+        // Update progress display after all data is saved
+        setTimeout(() => {
+          if (typeof window.updateWishProgress === 'function') {
+            console.log("🔄 Updating progress after manifest save...");
+            window.updateWishProgress();
+          }
+        }, 100);
         setTimeout(() => status.innerHTML = "", 5000);
         
         // Add behavioral tracking
@@ -6233,20 +6259,34 @@ window.updateWishTimeline = function() {
 // --- NEW: Progress Calculation & Animation ---
 window.updateWishProgress = function() {
   const progressBar = document.getElementById("wishProgressBar");
+  const staticTimeline = document.getElementById("staticTimeline");
   
-  if (!progressBar) return;
+  if (!progressBar) {
+    console.warn("⚠️ Progress bar element not found");
+    return;
+  }
   
   const currentUserId = window.currentUserId || window.auth?.currentUser?.uid;
-  if (!currentUserId) return;
+  if (!currentUserId) {
+    console.warn("⚠️ No user ID available for progress tracking");
+    return;
+  }
+  
+  console.log("🎯 Checking progress conditions for user:", currentUserId);
   
   // Check if user has saved WISH data AND has a start date (only starts after Save My WISH)
   const savedManifest = localStorage.getItem(`manifest_${currentUserId}`);
   const wishStartKey = `wishStart_${currentUserId}`;
   const startDate = localStorage.getItem(wishStartKey);
   
+  console.log("📋 Manifest data exists:", !!savedManifest);
+  console.log("📅 Start date exists:", !!startDate);
+  
   if (!savedManifest || !startDate) {
     // No saved WISH or no start date - hide progress bar and show timeline input
+    console.log("❌ No manifest data or start date - showing static timeline");
     progressBar.style.display = "none";
+    if (staticTimeline) staticTimeline.style.display = "block";
     const timelineInputGroup = document.querySelector(".wish-timeline-input-group");
     if (timelineInputGroup) {
       timelineInputGroup.style.display = "block";
@@ -6254,12 +6294,30 @@ window.updateWishProgress = function() {
     return;
   }
   
-  const manifestData = JSON.parse(savedManifest);
-  const hasWishContent = manifestData.wish && manifestData.wish.trim();
+  let manifestData;
+  try {
+    manifestData = JSON.parse(savedManifest);
+  } catch (error) {
+    console.error("❌ Error parsing manifest data:", error);
+    progressBar.style.display = "none";
+    if (staticTimeline) staticTimeline.style.display = "block";
+    return;
+  }
+  
+  // Check if there's any meaningful content in WISH sections
+  const hasWishContent = (manifestData.wish && manifestData.wish.trim()) ||
+                        (manifestData.outcome && manifestData.outcome.trim()) ||
+                        (manifestData.opposition && manifestData.opposition.trim()) ||
+                        (manifestData.plan && manifestData.plan.trim()) ||
+                        (manifestData.statement && manifestData.statement.trim()); // Legacy field
+  
+  console.log("📝 Has WISH content:", hasWishContent);
   
   if (!hasWishContent) {
-    // No WISH content - hide progress bar and show timeline input
+    // No meaningful WISH content - hide progress bar and show timeline input
+    console.log("❌ No WISH content found - showing static timeline");
     progressBar.style.display = "none";
+    if (staticTimeline) staticTimeline.style.display = "block";
     const timelineInputGroup = document.querySelector(".wish-timeline-input-group");
     if (timelineInputGroup) {
       timelineInputGroup.style.display = "block";
@@ -6277,8 +6335,12 @@ window.updateWishProgress = function() {
   
   const progressPercent = Math.min((daysElapsed / totalDays) * 100, 100);
   
-  // Show subtle progress bar
+  console.log(`🎯 Progress calculation: ${daysElapsed}/${totalDays} days (${progressPercent.toFixed(1)}%)`);
+  
+  // Show progress bar and hide static timeline
+  console.log("✅ Showing progress bar");
   progressBar.style.display = "block";
+  if (staticTimeline) staticTimeline.style.display = "none";
   
   // Hide the timeline input section when progress bar is active
   const timelineInputGroup = document.querySelector(".wish-timeline-input-group");
