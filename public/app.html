@@ -1694,6 +1694,26 @@
         padding: 1em !important;
         margin: 1em 0 !important;
       }
+      
+      /* Mobile-friendly WISH action buttons */
+      .wish-section + div .btn {
+        min-width: 120px !important;
+        padding: 0.75em 1em !important;
+        font-size: 0.9em !important;
+        margin: 0.5em 0.25em !important;
+      }
+      
+      /* Ensure gray button styling is clear on mobile */
+      .btn.btn-gray {
+        background-color: #6c757d !important;
+        border-color: #6c757d !important;
+        color: white !important;
+      }
+      
+      .btn.btn-gray:hover {
+        background-color: #5a6268 !important;
+        border-color: #545b62 !important;
+      }
     }
     
     /* ✨ WORKFLOW VISUAL SEPARATORS & SECTIONS */
@@ -7558,9 +7578,15 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 
     <div class="workflow-divider"></div>
 
-    <button class="btn" onclick="saveManifest()" style="margin-top:0.5em;">Save My WISH</button>
-    <button class="btn btn-gray" onclick="clearManifestData()" style="margin-top:0.5em;margin-left:1em;">Time for New WISH</button>
-    <span id="manifestSaveStatus" style="margin-left:10px;font-style:italic;"></span>
+    <!-- Centered WISH Action Buttons -->
+    <div style="text-align: center; margin: 2em 0;">
+      <button class="btn" onclick="saveManifest()" style="margin: 0.5em;">Save My WISH</button>
+      <button class="btn btn-gray" onclick="clearManifestData()" style="margin: 0.5em;">Time for New WISH</button>
+    </div>
+    
+    <div style="text-align: center;">
+      <span id="manifestSaveStatus" style="font-style:italic; color: #2A6972;"></span>
+    </div>
   </div>
 </div>
 
