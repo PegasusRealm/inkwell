@@ -1632,17 +1632,68 @@
     
     /* ✨ AUTO-RESIZING TEXTAREAS */
     
-    /* Make manifest textareas auto-resize */
+    /* Make manifest textareas auto-resize with mobile-friendly sizing */
     #manifestInput,
     #wishInput,
     #outcomeInput,
     #oppositionInput,
     #planInput {
-      min-height: 133px !important;
+      min-height: 200px !important;
       height: auto !important;
       resize: vertical !important;
-      overflow-y: hidden !important;
+      overflow-y: auto !important;
       transition: height 0.2s ease !important;
+      line-height: 1.6 !important;
+      font-size: 16px !important;
+    }
+    
+    /* Mobile-specific sizing for better readability */
+    @media (max-width: 768px) {
+      #wishInput,
+      #outcomeInput,
+      #oppositionInput,
+      #planInput {
+        min-height: 60vh !important; /* About full screen height */
+        max-height: 80vh !important;
+        font-size: 16px !important;
+        line-height: 1.7 !important;
+        padding: 1.5em !important;
+        margin-bottom: 2em !important;
+      }
+      
+      /* Better spacing for WISH sections on mobile */
+      .wish-section {
+        margin-bottom: 3em !important;
+        padding: 1em !important;
+      }
+      
+      /* Mobile-friendly workflow dividers */
+      .workflow-divider {
+        margin: 2em 0 !important;
+        height: 2px !important;
+        background: linear-gradient(90deg, transparent, rgba(42,105,114,0.3), transparent) !important;
+      }
+      
+      /* Larger headings for better mobile UX */
+      .wish-section .journal-heading {
+        font-size: 1.8em !important;
+        margin-bottom: 1em !important;
+      }
+      
+      /* Mobile-friendly Sophy buttons and responses */
+      .wish-section .btn-sophy {
+        width: 100% !important;
+        padding: 1em !important;
+        font-size: 1em !important;
+        margin: 1em 0 !important;
+      }
+      
+      .wish-section .sophy-info {
+        font-size: 0.95em !important;
+        line-height: 1.6 !important;
+        padding: 1em !important;
+        margin: 1em 0 !important;
+      }
     }
     
     /* ✨ WORKFLOW VISUAL SEPARATORS & SECTIONS */
