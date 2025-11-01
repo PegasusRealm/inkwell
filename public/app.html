@@ -1175,25 +1175,42 @@
     /* Mobile-specific calendar optimizations */
     @media (max-width: 768px) {
       #calendarContainer {
-        padding: 0;
-        margin: 1em -8px; /* Negative margin to use full width */
-        width: calc(100% + 16px); /* Extend beyond container */
-        overflow-x: visible;
+        padding: 0 !important;
+        margin: 1em -8px !important; /* Negative margin to use full width */
+        width: calc(100% + 16px) !important; /* Extend beyond container */
+        overflow-x: visible !important;
       }
       
       #calendarContainer table {
-        width: 100%;
-        min-width: 100%;
-        font-size: 14px;
-        table-layout: fixed;
+        width: calc(100% + 16px) !important;
+        min-width: calc(100% + 16px) !important;
+        font-size: 16px !important;
+        table-layout: fixed !important;
+        margin: 1em -8px 0 -8px !important;
       }
       
-      /* Mobile-friendly calendar cells - wider and more spacious */
+      /* FORCE mobile calendar styling - override JavaScript inline styles */
+      #calendarContainer td[style], 
+      #calendarContainer th[style] {
+        padding: 14px 6px !important;
+        text-align: center !important;
+        width: 14.28% !important; /* 100% / 7 days = equal width */
+        min-width: 52px !important;
+        height: 52px !important;
+        box-sizing: border-box !important;
+        border: 1px solid rgba(42,105,114,0.15) !important;
+        vertical-align: middle !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        font-size: 16px !important;
+      }
+      
+      /* Also target without [style] attribute */
       #calendarContainer td, 
       #calendarContainer th {
         padding: 14px 6px !important;
         text-align: center !important;
-        width: 14.28% !important; /* 100% / 7 days = equal width */
+        width: 14.28% !important;
         min-width: 52px !important;
         height: 52px !important;
         box-sizing: border-box !important;

@@ -1642,6 +1642,43 @@ if (sophyBtn) {
 window.displayedMonth = new Date().getMonth();
 window.displayedYear = new Date().getFullYear();
 
+// Force mobile calendar styling after DOM creation
+function forceMobileCalendarStyling() {
+  if (window.innerWidth <= 768) {
+    const container = document.getElementById("calendarContainer");
+    if (container) {
+      // Force container styling
+      container.style.cssText += `
+        padding: 0 !important;
+        margin: 1em -8px !important;
+        width: calc(100% + 16px) !important;
+        overflow-x: visible !important;
+      `;
+      
+      // Force table styling
+      const table = container.querySelector('table');
+      if (table) {
+        table.style.cssText += `
+          width: calc(100% + 16px) !important;
+          font-size: 16px !important;
+          margin: 1em -8px 0 -8px !important;
+        `;
+      }
+      
+      // Force all cells to mobile sizing
+      container.querySelectorAll('td, th').forEach(cell => {
+        cell.style.cssText += `
+          padding: 14px 6px !important;
+          font-size: 16px !important;
+          min-width: 52px !important;
+          height: 52px !important;
+          width: 14.28% !important;
+        `;
+      });
+    }
+  }
+}
+
 // Calendar build function
 async function buildCalendar() {
   const container = document.getElementById("calendarContainer");
@@ -1795,9 +1832,23 @@ containerWrapper.style.cssText = `
 containerWrapper.appendChild(calendarTable);
 container.appendChild(containerWrapper);
 
+// Force mobile styling after calendar is built
+forceMobileCalendarStyling();
 
 }
 window.buildCalendar = buildCalendar;
+
+// Add resize listener to rebuild calendar for responsive behavior
+let resizeTimeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    // Rebuild calendar after resize to ensure proper mobile/desktop styling
+    if (typeof window.buildCalendar === 'function') {
+      window.buildCalendar();
+    }
+  }, 250);
+});
 
 async function showPromptsByDate(year, month, day) {
   console.log("🔥 Full entry card rendering is ACTIVE");
