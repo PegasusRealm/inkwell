@@ -1158,8 +1158,12 @@
       font-size: 14px;
     }
     
-    /* Mobile entry button optimization */
+    /* Mobile-only elements */
     @media (max-width: 768px) {
+      .mobile-only {
+        display: flex !important;
+      }
+      
       .entry-btn {
         padding: 12px 20px !important;
         font-size: 16px !important;
@@ -1169,6 +1173,35 @@
         margin: 4px !important;
         touch-action: manipulation !important;
         white-space: nowrap !important;
+      }
+    }
+    
+    /* Desktop-only elements */
+    @media (min-width: 769px) {
+      .mobile-only {
+        display: none !important;
+      }
+      
+      .desktop-tabs {
+        display: flex !important;
+      }
+      
+      .tab-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(42,105,114,0.3);
+      }
+      
+      .tab-button.active {
+        background: var(--brand-primary) !important;
+        color: white !important;
+        border-color: var(--brand-primary) !important;
+      }
+    }
+    
+    /* Mobile-only: hide desktop tabs */
+    @media (max-width: 768px) {
+      .desktop-tabs {
+        display: none !important;
       }
     }
 
@@ -4023,8 +4056,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   setTimeout(() => {
     showTab('journalTab');
-    // Initialize swipe navigation
-    if (window.SwipeNavigation) {
+    // Initialize swipe navigation - mobile only
+    if (window.SwipeNavigation && window.innerWidth <= 768) {
       window.SwipeNavigation.init();
     }
   }, 20);
@@ -7515,13 +7548,13 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       contain: layout !important;
     }
   </style>
-  <!-- Swipe Navigation Indicators -->
-  <div class="tab-indicators" style="
+  <!-- Swipe Navigation Indicators - Mobile Only -->
+  <div class="tab-indicators mobile-only" style="
     position: fixed;
     top: 20px;
     right: 20px;
     z-index: 1000;
-    display: flex;
+    display: none; /* Hidden by default */
     gap: 8px;
     background: rgba(42, 105, 114, 0.8);
     padding: 8px 12px;
@@ -7553,6 +7586,53 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       transition: all 0.3s ease;
       cursor: pointer;
     " onclick="showTab('calendarTab')"></div>
+  </div>
+
+  <!-- Desktop Tab Navigation (Hidden on Mobile) -->
+  <div class="desktop-tabs" style="
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2em;
+    gap: 0.5em;
+  ">
+    <button id="journalTabButton" class="tab-button active" onclick="showTab('journalTab')" style="
+      background: var(--brand-primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 120px;
+    ">📝 Journal</button>
+    
+    <button id="manifestTabButton" class="tab-button" onclick="showTab('manifestTab')" style="
+      background: rgba(42,105,114,0.1);
+      color: var(--brand-primary);
+      border: 1px solid var(--brand-primary);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 120px;
+    ">✨ Manifest</button>
+    
+    <button id="calendarTabButton" class="tab-button" onclick="showTab('calendarTab')" style="
+      background: rgba(42,105,114,0.1);
+      color: var(--brand-primary);
+      border: 1px solid var(--brand-primary);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 120px;
+    ">📅 Past Entries</button>
   </div>
 
   <!-- Tab Content Container -->
