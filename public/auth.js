@@ -1687,16 +1687,24 @@ calendarTable.style.width = "100%";
 calendarTable.style.maxWidth = "100%";
 calendarTable.style.textAlign = "center";
 calendarTable.style.borderCollapse = "collapse";
-calendarTable.style.margin = "1em auto 0 auto";
+calendarTable.style.margin = window.innerWidth <= 768 ? "1em -8px 0 -8px" : "1em auto 0 auto";
 calendarTable.style.tableLayout = "fixed";
 calendarTable.style.boxSizing = "border-box";
+// Mobile optimization: wider table on small screens
+if (window.innerWidth <= 768) {
+  calendarTable.style.width = "calc(100% + 16px)";
+  calendarTable.style.fontSize = "16px";
+}
 
   const headerRow = document.createElement("tr");
   const days = CONFIG.calendar.DAYS_OF_WEEK; // ✅ clean and safe
   days.forEach(day => {
     const th = document.createElement("th");
     th.textContent = day;
-    th.style.padding = "0.5em";
+    // Mobile-optimized padding and sizing
+    th.style.padding = window.innerWidth <= 768 ? "14px 6px" : "0.5em";
+    th.style.fontSize = window.innerWidth <= 768 ? "16px" : "inherit";
+    th.style.minWidth = window.innerWidth <= 768 ? "52px" : "auto";
     headerRow.appendChild(th);
   });
   calendarTable.appendChild(headerRow);
@@ -1717,7 +1725,11 @@ calendarTable.style.boxSizing = "border-box";
     const td = document.createElement("td");
     td.textContent = day;
     td.style.cursor = "pointer";
-    td.style.padding = "0.5em";
+    // Mobile-optimized calendar cells
+    td.style.padding = window.innerWidth <= 768 ? "14px 6px" : "0.5em";
+    td.style.fontSize = window.innerWidth <= 768 ? "16px" : "inherit";
+    td.style.minWidth = window.innerWidth <= 768 ? "52px" : "auto";
+    td.style.height = window.innerWidth <= 768 ? "52px" : "auto";
     td.style.border = "1px solid #ccc";
 
     const key = `${window.displayedYear}-${String(window.displayedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -2280,14 +2292,17 @@ editBtn.style.cssText = `
   background-color: #2A6972;
   color: white;
   border: 1px solid #2A6972;
-  padding: 4px 8px;
-  font-size: 0.75em;
-  border-radius: 4px;
+  padding: 12px 20px;
+  font-size: 16px;
+  min-width: 120px;
+  border-radius: 8px;
   cursor: pointer;
-  margin-right: 0.5em;
+  margin: 4px;
   display: inline-flex;
   align-items: center;
   gap: 0.3em;
+  font-weight: 500;
+  touch-action: manipulation;
 `;
 editBtn.onmouseover = () => editBtn.style.backgroundColor = "#1e5157";
 editBtn.onmouseout = () => editBtn.style.backgroundColor = "#2A6972";
@@ -2352,14 +2367,17 @@ deleteBtn.style.cssText = `
   background-color: #6b7280;
   color: white;
   border: 1px solid #6b7280;
-  padding: 4px 8px;
-  font-size: 0.75em;
-  border-radius: 4px;
+  padding: 12px 20px;
+  font-size: 16px;
+  min-width: 120px;
+  border-radius: 8px;
   cursor: pointer;
-  margin-right: 0.5em;
+  margin: 4px;
   display: inline-flex;
   align-items: center;
   gap: 0.3em;
+  font-weight: 500;
+  touch-action: manipulation;
 `;
 deleteBtn.onmouseover = () => deleteBtn.style.backgroundColor = "#4b5563";
 deleteBtn.onmouseout = () => deleteBtn.style.backgroundColor = "#6b7280";
