@@ -1158,12 +1158,26 @@
       font-size: 14px;
     }
     
+    /* Mobile entry button optimization */
+    @media (max-width: 768px) {
+      .entry-btn {
+        padding: 12px 20px !important;
+        font-size: 16px !important;
+        min-width: 120px !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+        margin: 4px !important;
+        touch-action: manipulation !important;
+        white-space: nowrap !important;
+      }
+    }
+
     /* Mobile-specific calendar optimizations */
     @media (max-width: 768px) {
       #calendarContainer {
         padding: 0;
-        margin: 1em 0;
-        width: 100%;
+        margin: 1em -8px; /* Negative margin to use full width */
+        width: calc(100% + 16px); /* Extend beyond container */
         overflow-x: visible;
       }
       
@@ -1177,16 +1191,17 @@
       /* Mobile-friendly calendar cells - wider and more spacious */
       #calendarContainer td, 
       #calendarContainer th {
-        padding: 12px 4px !important;
+        padding: 14px 6px !important;
         text-align: center !important;
         width: 14.28% !important; /* 100% / 7 days = equal width */
-        min-width: 45px !important;
-        height: 45px !important;
+        min-width: 52px !important;
+        height: 52px !important;
         box-sizing: border-box !important;
         border: 1px solid rgba(42,105,114,0.15) !important;
         vertical-align: middle !important;
         white-space: nowrap !important;
         overflow: hidden !important;
+        font-size: 16px !important;
       }
       
       /* Header styling */
@@ -5446,8 +5461,8 @@ if (entry.newCoachReply) {
       ${coachRepliesHtml}
       <div class="entry-images">${images}</div>
       ${tags}
-     <button class="entry-btn" onclick="editEntry('${doc.id}', \`${entry.text?.replace(/`/g, '\\`') || ''}\`)" style="background-color: #2A6972; color: white; border: 1px solid #2A6972; padding: 6px 12px; font-size: 0.8em;">✏️ Edit</button>
-<button class="entry-btn" onclick="deleteEntry('${doc.id}')" style="background-color: #6b7280; color: white; border: 1px solid #6b7280; padding: 6px 12px; font-size: 0.8em;">🗑️ Delete</button>
+     <button class="entry-btn" onclick="editEntry('${doc.id}', \`${entry.text?.replace(/`/g, '\\`') || ''}\`)" style="background-color: #2A6972; color: white; border: 1px solid #2A6972; padding: 12px 20px; font-size: 16px; min-width: 120px; border-radius: 8px; font-weight: 500; margin: 4px; touch-action: manipulation;">✏️ Edit</button>
+<button class="entry-btn" onclick="deleteEntry('${doc.id}')" style="background-color: #6b7280; color: white; border: 1px solid #6b7280; padding: 12px 20px; font-size: 16px; min-width: 120px; border-radius: 8px; font-weight: 500; margin: 4px; touch-action: manipulation;">🗑️ Delete</button>
 ${entry.manifestData ? `<button class="entry-btn" onclick="showManifestData('${doc.id}')" style="background-color: var(--accent); color: var(--btn-font); border: 1px solid var(--border);">Show Manifest</button>` : ""}
 ${entry.reflectionUsed ? `<button class="entry-btn" onclick="showReflectionData('${doc.id}')" style="background-color: #7BB8C4; color: var(--btn-font); border: 1px solid var(--border);">Show Reflection</button>` : ""}
     </div>

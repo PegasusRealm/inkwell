@@ -58,7 +58,7 @@ const CONFIG = {
     storageBucket: "inkwell-alpha.appspot.com"
   },
   calendar: {
-    DAYS_OF_WEEK: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    DAYS_OF_WEEK: ["S", "M", "T", "W", "T", "F", "S"]
   }
 };
 
