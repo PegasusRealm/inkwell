@@ -290,7 +290,7 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.25);
     }
 
-    /* Mobile optimizations for neurodivergent-friendly UI */
+      /* Mobile optimizations for neurodivergent-friendly UI */
     @media (max-width: 768px) {
       /* Connectivity indicator */
       .connectivity-indicator {
@@ -303,14 +303,26 @@
       /* Mobile-specific improvements */
       body {
         font-size: 16px; /* Prevent zoom on iOS */
+        overflow-x: hidden;
+      }
+      
+      /* Full width mobile containers */
+      #mainAppContainer {
+        width: 100% !important;
+        padding: 0.25em !important;
+        margin: 0 !important;
+      }
+      
+      .modern-tab-container {
+        margin: 0.25em !important;
+        padding: 0.75em !important;
+        border-radius: 8px !important;
       }
       
       /* Tab content padding */
       .modern-tab-content {
-        padding: 1em !important;
-      }
-      
-      /* Better button sizing */
+        padding: 0.75em !important;
+      }      /* Better button sizing */
       .btn, button {
         min-height: 44px; /* Apple's recommended touch target */
         font-size: 0.9em;
@@ -353,13 +365,17 @@
         transform: scale(1.1);
       }
       
-      /* Add bottom padding to prevent content hiding behind bottom nav */
+      /* Add minimal bottom padding for bottom nav */
       body {
-        padding-bottom: 80px;
+        padding-bottom: 70px;
+        margin: 0;
+        width: 100%;
       }
       
       .modern-tab-container {
-        margin-bottom: 80px;
+        margin: 0.5em auto;
+        max-width: 100%;
+        padding: 1em;
       }
     }
 
@@ -6938,12 +6954,10 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   <!-- ✨ Main UI Container) -->
     <main id="mainAppContainer" style="
   display: none;
-  width: 75%;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 2em;
-  padding-right: 2em;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.5em;
   box-sizing: border-box;
 ">
 <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 1em;">
@@ -6957,9 +6971,9 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 <div class="modern-tab-container" style="
   background: linear-gradient(135deg, #f8fafb 0%, #e9ecef 100%);
   border-radius: 16px;
-  padding: 1.5em;
-  margin: 2em auto;
-  max-width: 1200px;
+  padding: 1em;
+  margin: 0.5em;
+  max-width: 100%;
   box-shadow: 0 8px 32px rgba(0,0,0,0.08);
   border: 1px solid rgba(255,255,255,0.2);
 ">
@@ -7001,13 +7015,15 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   </style>
   <!-- Fixed Bottom Navigation Bar -->
   <nav class="bottom-nav" style="
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 9999 !important;
     background: rgba(42, 105, 114, 0.95);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid rgba(255,255,255,0.2);
     padding: 0.5em 0;
     padding-bottom: max(0.5em, env(safe-area-inset-bottom));
