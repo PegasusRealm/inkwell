@@ -331,6 +331,36 @@
       .card-block, .instruction-section {
         box-shadow: var(--shadow-sm);
       }
+      
+      /* Bottom navigation styling */
+      .bottom-nav-btn {
+        transition: all 0.2s ease !important;
+      }
+      
+      .bottom-nav-btn:hover {
+        color: rgba(255,255,255,0.9) !important;
+        background: rgba(255,255,255,0.1) !important;
+        border-radius: 8px !important;
+      }
+      
+      .bottom-nav-btn.active {
+        color: #ffffff !important;
+        background: rgba(255,255,255,0.15) !important;
+        border-radius: 8px !important;
+      }
+      
+      .bottom-nav-btn.active span:first-child {
+        transform: scale(1.1);
+      }
+      
+      /* Add bottom padding to prevent content hiding behind bottom nav */
+      body {
+        padding-bottom: 80px;
+      }
+      
+      .modern-tab-container {
+        margin-bottom: 80px;
+      }
     }
 
     /* Dark theme adjustments */
@@ -6969,93 +6999,99 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       contain: layout !important;
     }
   </style>
-  <!-- Modern Tab Navigation -->
-  <nav class="tab-nav" style="
+  <!-- Fixed Bottom Navigation Bar -->
+  <nav class="bottom-nav" style="
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(42, 105, 114, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255,255,255,0.2);
+    padding: 0.5em 0;
+    padding-bottom: max(0.5em, env(safe-area-inset-bottom));
     display: flex;
-    gap: 0.25em;
-    margin-bottom: 1.5em;
-    background: rgba(255,255,255,0.7);
-    padding: 0.5em;
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.3);
-    justify-content: center;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
   ">
     <button 
-      class="modern-tab-btn" 
+      class="bottom-nav-btn" 
       id="journalTabButton" 
       onclick="showTab('journalTab')"
       data-tab="journal"
       style="
         flex: 1;
-        min-width: 100px;
-        max-width: 140px;
-        padding: 0.6em 0.5em;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.5em 0.25em;
         border: none;
-        border-radius: 8px;
-        background: rgba(255,255,255,0.8);
-        color: #2A6972;
+        background: transparent;
+        color: rgba(255,255,255,0.7);
         font-weight: 500;
-        font-size: 0.85em;
+        font-size: 0.75em;
         cursor: pointer;
         transition: all 0.3s ease;
-        border: 1px solid rgba(42,105,114,0.2);
-        white-space: nowrap;
+        min-height: 44px;
+        text-align: center;
       "
     >
-      ✍️ Journal
+      <span style="font-size: 1.5em; margin-bottom: 0.25em;">✍️</span>
+      <span>Journal</span>
     </button>
     
     <button 
-      class="modern-tab-btn" 
+      class="bottom-nav-btn" 
       id="manifestTabButton" 
       onclick="showTab('manifestTab')"
       data-tab="manifest"
       style="
         flex: 1;
-        min-width: 100px;
-        max-width: 140px;
-        padding: 0.6em 0.5em;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.5em 0.25em;
         border: none;
-        border-radius: 8px;
-        background: rgba(255,255,255,0.8);
-        color: #2A6972;
+        background: transparent;
+        color: rgba(255,255,255,0.7);
         font-weight: 500;
-        font-size: 0.85em;
+        font-size: 0.75em;
         cursor: pointer;
         transition: all 0.3s ease;
-        border: 1px solid rgba(42,105,114,0.2);
-        white-space: nowrap;
+        min-height: 44px;
+        text-align: center;
       "
     >
-      🎯 Manifest
+      <span style="font-size: 1.5em; margin-bottom: 0.25em;">🎯</span>
+      <span>Manifest</span>
     </button>
     
     <button 
-      class="modern-tab-btn" 
+      class="bottom-nav-btn" 
       id="calendarTabButton" 
       onclick="showTab('calendarTab')"
       data-tab="calendar"
       style="
         flex: 1;
-        min-width: 100px;
-        max-width: 140px;
-        padding: 0.6em 0.5em;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.5em 0.25em;
         border: none;
-        border-radius: 8px;
-        background: rgba(255,255,255,0.8);
-        color: #2A6972;
+        background: transparent;
+        color: rgba(255,255,255,0.7);
         font-weight: 500;
-        font-size: 0.85em;
+        font-size: 0.75em;
         cursor: pointer;
         transition: all 0.3s ease;
-        border: 1px solid rgba(42,105,114,0.2);
-        white-space: nowrap;
+        min-height: 44px;
+        text-align: center;
       "
     >
-      📚 Past
+      <span style="font-size: 1.5em; margin-bottom: 0.25em;">📚</span>
+      <span>Past</span>
     </button>
   </nav>
 
@@ -7510,6 +7546,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 <!-- Mobile-Optimized Feedback Block -->
 <div style="
   margin-top: 1.5em;
+  margin-bottom: 2em;
   padding: 1em;
   text-align: center;
   border-top: 1px solid rgba(42,105,114,0.2);
