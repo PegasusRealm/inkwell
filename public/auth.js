@@ -1668,13 +1668,17 @@ function forceMobileCalendarStyling() {
       // Force all cells to mobile sizing
       container.querySelectorAll('td, th').forEach(cell => {
         cell.style.cssText += `
-          padding: 18px 8px !important;
+          padding: 0 !important;
           font-size: 16px !important;
           min-width: 60px !important;
           height: 60px !important;
+          max-height: 60px !important;
           width: 14.28% !important;
-          line-height: 1.2 !important;
-          overflow: visible !important;
+          line-height: 60px !important;
+          overflow: hidden !important;
+          display: table-cell !important;
+          vertical-align: middle !important;
+          text-align: center !important;
         `;
       });
     }
@@ -1741,10 +1745,19 @@ if (window.innerWidth <= 768) {
     const th = document.createElement("th");
     th.textContent = day;
     // Mobile-optimized padding and sizing
-    th.style.padding = window.innerWidth <= 768 ? "18px 8px" : "0.5em";
-    th.style.fontSize = window.innerWidth <= 768 ? "16px" : "inherit";
-    th.style.minWidth = window.innerWidth <= 768 ? "60px" : "auto";
-    th.style.height = window.innerWidth <= 768 ? "60px" : "auto";
+    if (window.innerWidth <= 768) {
+      th.style.padding = "0";
+      th.style.fontSize = "16px";
+      th.style.minWidth = "60px";
+      th.style.height = "60px";
+      th.style.maxHeight = "60px";
+      th.style.lineHeight = "60px";
+      th.style.textAlign = "center";
+      th.style.verticalAlign = "middle";
+      th.style.overflow = "hidden";
+    } else {
+      th.style.padding = "0.5em";
+    }
     headerRow.appendChild(th);
   });
   calendarTable.appendChild(headerRow);
@@ -1766,12 +1779,19 @@ if (window.innerWidth <= 768) {
     td.textContent = day;
     td.style.cursor = "pointer";
     // Mobile-optimized calendar cells
-    td.style.padding = window.innerWidth <= 768 ? "18px 8px" : "0.5em";
-    td.style.fontSize = window.innerWidth <= 768 ? "16px" : "inherit";
-    td.style.minWidth = window.innerWidth <= 768 ? "60px" : "auto";
-    td.style.height = window.innerWidth <= 768 ? "60px" : "auto";
-    td.style.lineHeight = window.innerWidth <= 768 ? "1.2" : "inherit";
-    td.style.overflow = window.innerWidth <= 768 ? "visible" : "auto";
+    if (window.innerWidth <= 768) {
+      td.style.padding = "0";
+      td.style.fontSize = "16px";
+      td.style.minWidth = "60px";
+      td.style.height = "60px";
+      td.style.maxHeight = "60px";
+      td.style.lineHeight = "60px";
+      td.style.textAlign = "center";
+      td.style.verticalAlign = "middle";
+      td.style.overflow = "hidden";
+    } else {
+      td.style.padding = "0.5em";
+    }
     td.style.border = "1px solid #ccc";
 
     const key = `${window.displayedYear}-${String(window.displayedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;

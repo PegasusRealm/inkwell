@@ -1192,35 +1192,39 @@
       /* FORCE mobile calendar styling - override JavaScript inline styles */
       #calendarContainer td[style], 
       #calendarContainer th[style] {
-        padding: 18px 8px !important;
+        padding: 0 !important;
         text-align: center !important;
         width: 14.28% !important; /* 100% / 7 days = equal width */
         min-width: 60px !important;
         height: 60px !important;
+        max-height: 60px !important;
         box-sizing: border-box !important;
         border: 1px solid rgba(42,105,114,0.15) !important;
         vertical-align: middle !important;
         white-space: nowrap !important;
-        overflow: visible !important;
+        overflow: hidden !important;
         font-size: 16px !important;
-        line-height: 1.2 !important;
+        line-height: 60px !important; /* Match height for perfect centering */
+        display: table-cell !important;
       }
       
       /* Also target without [style] attribute */
       #calendarContainer td, 
       #calendarContainer th {
-        padding: 18px 8px !important;
+        padding: 0 !important;
         text-align: center !important;
         width: 14.28% !important;
         min-width: 60px !important;
         height: 60px !important;
+        max-height: 60px !important;
         box-sizing: border-box !important;
         border: 1px solid rgba(42,105,114,0.15) !important;
         vertical-align: middle !important;
         white-space: nowrap !important;
-        overflow: visible !important;
+        overflow: hidden !important;
         font-size: 16px !important;
-        line-height: 1.2 !important;
+        line-height: 60px !important; /* Match height for perfect centering */
+        display: table-cell !important;
       }
       
       /* Header styling */
