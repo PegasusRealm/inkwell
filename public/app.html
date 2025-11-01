@@ -1196,6 +1196,20 @@
         color: white !important;
         border-color: var(--brand-primary) !important;
       }
+      
+      /* Ensure footer and feedback sections are visible on desktop */
+      footer {
+        display: block !important;
+      }
+      
+      .feedback-section {
+        display: block !important;
+      }
+      
+      /* Help sections should be visible on both mobile and desktop */
+      .help-section {
+        display: block !important;
+      }
     }
     
     /* Mobile-only: hide desktop tabs and elements */
@@ -1204,17 +1218,15 @@
         display: none !important;
       }
       
-      /* Hide desktop-only help sections on mobile */
-      .help-section {
-        display: none !important;
-      }
+      /* Keep help sections visible on mobile - they are collapsible and work on both platforms */
+      /* .help-section - removed hide rule, should be visible on both mobile and desktop */
       
-      /* Hide footer on mobile */
+      /* Hide footer on mobile only */
       footer {
         display: none !important;
       }
       
-      /* Hide feedback section on mobile */
+      /* Hide feedback section on mobile only */
       .feedback-section {
         display: none !important;
       }
