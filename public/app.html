@@ -1141,16 +1141,115 @@
       color: var(--font-main);
     }
 
+    /* Mobile-optimized calendar container */
     #calendarContainer {
-  width: calc(100% - 1em);
-  max-width: 100%;
-  margin: 1em auto;
-  box-sizing: border-box;
-}
+      width: 100%;
+      max-width: 100%;
+      margin: 1em auto;
+      box-sizing: border-box;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
     
     #calendarContainer table {
       width: 100%;
       max-width: none;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    /* Mobile-specific calendar optimizations */
+    @media (max-width: 768px) {
+      #calendarContainer {
+        padding: 0.5em;
+        margin: 0.5em 0;
+      }
+      
+      #calendarContainer table {
+        min-width: 100%;
+        font-size: 12px;
+      }
+      
+      /* Mobile-friendly calendar cells */
+      #calendarContainer td, 
+      #calendarContainer th {
+        padding: 8px 4px !important;
+        text-align: center !important;
+        min-width: 40px !important;
+        height: 40px !important;
+        box-sizing: border-box !important;
+        border: 1px solid rgba(42,105,114,0.1) !important;
+        vertical-align: middle !important;
+      }
+      
+      /* Header styling */
+      #calendarContainer th {
+        background: rgba(42,105,114,0.1) !important;
+        font-weight: 600 !important;
+        color: #2A6972 !important;
+        font-size: 11px !important;
+      }
+      
+      /* Date cells */
+      #calendarContainer td {
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        position: relative !important;
+      }
+      
+      /* Hover/touch feedback */
+      #calendarContainer td:hover {
+        background: rgba(42,105,114,0.1) !important;
+      }
+      
+      /* Entry date highlighting */
+      #calendarContainer td.has-entry {
+        background: rgba(42,105,114,0.2) !important;
+        font-weight: bold !important;
+        color: #2A6972 !important;
+        position: relative !important;
+      }
+      
+      /* Entry indicator dot */
+      #calendarContainer td.has-entry::after {
+        content: '•';
+        position: absolute;
+        bottom: 2px;
+        right: 4px;
+        color: #2A6972;
+        font-size: 14px;
+        line-height: 1;
+      }
+      
+      /* Current date highlighting */
+      #calendarContainer td.current-date {
+        border: 2px solid #2A6972 !important;
+        background: rgba(42,105,114,0.05) !important;
+      }
+      
+      /* Selected date */
+      #calendarContainer td.selected {
+        background: #2A6972 !important;
+        color: white !important;
+      }
+      
+      /* Different month dates (grayed out) */
+      #calendarContainer td.other-month {
+        color: #ccc !important;
+        background: #f9f9f9 !important;
+      }
+      
+      /* Calendar navigation buttons */
+      #calendarControls {
+        margin: 1em 0 !important;
+        text-align: center !important;
+      }
+      
+      #calendarControls .btn {
+        margin: 0 0.5em !important;
+        padding: 0.75em 1em !important;
+        font-size: 0.9em !important;
+      }
     }
     
     /* DEBUG: Force tab buttons container to full width */
@@ -3260,6 +3359,11 @@ window.showTab = function(tabId) {
   if (window.SwipeNavigation) {
     window.SwipeNavigation.setCurrentTab(tabId);
   }
+  
+  // Enhance calendar when Past Entries tab is shown
+  if (tabId === 'calendarTab' && window.CalendarEnhancement) {
+    window.CalendarEnhancement.enhanceCalendar();
+  }
 
   // When opening Manifest, load saved manifest into all textareas
   if (tabId === "manifestTab") {
@@ -3479,6 +3583,114 @@ window.toggleHelp = function(helpId) {
     } else {
       helpContent.style.display = 'none';
       helpIcon.style.transform = 'rotate(0deg)';
+    }
+  }
+};
+
+// Mobile calendar enhancement for entry date highlighting
+window.CalendarEnhancement = {
+  
+  // Enhance calendar after it's built by existing buildCalendar function
+  enhanceCalendar() {
+    setTimeout(() => {
+      this.addMobileFriendlyFeatures();
+      this.highlightEntryDates();
+    }, 100);
+  },
+  
+  // Add mobile-friendly features to existing calendar
+  addMobileFriendlyFeatures() {
+    const calendarTable = document.querySelector('#calendarContainer table');
+    if (!calendarTable) return;
+    
+    // Add mobile-friendly classes and attributes
+    const cells = calendarTable.querySelectorAll('td');
+    cells.forEach(cell => {
+      if (cell.textContent.trim() && !isNaN(cell.textContent.trim())) {
+        // Add touch-friendly attributes
+        cell.style.cursor = 'pointer';
+        cell.style.userSelect = 'none';
+        cell.setAttribute('data-date', cell.textContent.trim());
+        
+        // Add click handler for mobile
+        cell.addEventListener('click', (e) => {
+          this.handleDateClick(e.target);
+        });
+      }
+    });
+  },
+  
+  // Highlight dates that have journal entries
+  highlightEntryDates() {
+    if (!window.globalEntries || !Array.isArray(window.globalEntries)) {
+      console.log('📅 No entries data available for calendar highlighting');
+      return;
+    }
+    
+    const calendarTable = document.querySelector('#calendarContainer table');
+    if (!calendarTable) return;
+    
+    // Get current month/year from calendar (you may need to adjust this based on your calendar implementation)
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+    
+    // Create set of dates that have entries
+    const entryDates = new Set();
+    window.globalEntries.forEach(entry => {
+      if (entry.date) {
+        const entryDate = new Date(entry.date);
+        if (entryDate.getMonth() === currentMonth && entryDate.getFullYear() === currentYear) {
+          entryDates.add(entryDate.getDate());
+        }
+      }
+    });
+    
+    // Highlight calendar cells with entries
+    const cells = calendarTable.querySelectorAll('td');
+    cells.forEach(cell => {
+      const dateText = cell.textContent.trim();
+      if (dateText && !isNaN(dateText)) {
+        const date = parseInt(dateText);
+        
+        // Remove existing classes
+        cell.classList.remove('has-entry', 'current-date');
+        
+        // Add entry highlighting
+        if (entryDates.has(date)) {
+          cell.classList.add('has-entry');
+          cell.setAttribute('title', 'You have journal entries on this date');
+        }
+        
+        // Highlight current date
+        if (date === currentDate.getDate() && 
+            currentMonth === currentDate.getMonth() && 
+            currentYear === currentDate.getFullYear()) {
+          cell.classList.add('current-date');
+        }
+      }
+    });
+    
+    console.log(`📅 Highlighted ${entryDates.size} dates with entries in calendar`);
+  },
+  
+  // Handle date clicks for mobile
+  handleDateClick(cell) {
+    // Remove previous selection
+    document.querySelectorAll('#calendarContainer td.selected').forEach(el => {
+      el.classList.remove('selected');
+    });
+    
+    // Add selection to clicked date
+    cell.classList.add('selected');
+    
+    // Trigger existing date selection logic if it exists
+    const date = cell.textContent.trim();
+    if (date && !isNaN(date)) {
+      console.log(`📅 Selected date: ${date}`);
+      
+      // You can add logic here to load entries for the selected date
+      // This would integrate with your existing entry loading system
     }
   }
 };
@@ -7595,29 +7807,51 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   <div class="tab-inner">
 <h2 class="journal-heading" style="text-align:center;margin-bottom:2rem;color:var(--font-main);">Your Past Entries</h2>
 
-    <div class="instruction-section" style="background: var(--info-bg, #eaf6fb); padding: 1.5em; border-radius: 8px; border-left: 4px solid #2A6972; margin: 1em 0;">
-      <h4 style="margin-top: 0; color: #2A6972; font-size: 1.1em;">🪄 Your journaling history awaits</h4>
+    <!-- Collapsible Help Section -->
+    <div class="help-section" style="margin: 1em 0;">
+      <button onclick="toggleHelp('pastEntriesHelp')" 
+              style="
+                width: 100%;
+                background: rgba(42,105,114,0.1);
+                border: 1px solid rgba(42,105,114,0.3);
+                border-radius: 8px;
+                padding: 0.75em;
+                color: #2A6972;
+                font-weight: 500;
+                font-size: 0.9em;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                transition: all 0.2s ease;
+              ">
+        <span>📖 Browse Your History</span>
+        <span id="pastEntriesHelpIcon" style="transform: rotate(0deg); transition: transform 0.2s;">▼</span>
+      </button>
       
-      <div style="color: #333; line-height: 1.5; font-size: 0.95em;">
-        <div style="display: flex; align-items: flex-start; margin: 0.75em 0;">
-          <span style="margin-right: 0.5rem; font-size: 1.1rem;">📅</span>
-          <span>Browse your entries by date using the calendar below</span>
+      <div id="pastEntriesHelp" style="
+        display: none;
+        background: var(--info-bg, #eaf6fb);
+        padding: 1em;
+        border-radius: 0 0 8px 8px;
+        border: 1px solid rgba(42,105,114,0.2);
+        border-top: none;
+        font-size: 0.85em;
+        line-height: 1.4;
+      ">
+        <div style="display: flex; align-items: center; margin: 0.5em 0;">
+          <span style="margin-right: 0.5em;">📅</span>
+          <span>Browse entries by date with calendar</span>
         </div>
-        
-        <div style="display: flex; align-items: flex-start; margin: 0.75em 0;">
-          <span style="margin-right: 0.5rem; font-size: 1.1rem;">🔍</span>
-          <span>Use Smart Search to find entries by keywords, themes, or feelings</span>
+        <div style="display: flex; align-items: center; margin: 0.5em 0;">
+          <span style="margin-right: 0.5em;">🔍</span>
+          <span>Search by keywords and themes</span>
         </div>
-        
-        <div style="display: flex; align-items: flex-start; margin: 0.75em 0;">
-          <span style="margin-right: 0.5rem; font-size: 1.1rem;">✨</span>
-          <span>Revisit your growth journey and see how far you've come</span>
+        <div style="display: flex; align-items: center; margin: 0.5em 0;">
+          <span style="margin-right: 0.5em;">✨</span>
+          <span>Track your growth journey</span>
         </div>
       </div>
-      
-      <p style="margin: 1em 0 0 0; color: #666; font-size: 0.9em; font-style: italic; text-align: center;">
-        📖 Every entry is a chapter in your story.
-      </p>
     </div>
 
     <div class="workflow-divider"></div>
