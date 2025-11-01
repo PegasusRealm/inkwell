@@ -344,38 +344,51 @@
         box-shadow: var(--shadow-sm);
       }
       
-      /* Bottom navigation styling */
-      .bottom-nav-btn {
-        transition: all 0.2s ease !important;
+      /* Tab indicators styling */
+      .tab-dot.active {
+        background: rgba(255,255,255,1) !important;
+        transform: scale(1.3);
       }
       
-      .bottom-nav-btn:hover {
-        color: rgba(255,255,255,0.9) !important;
-        background: rgba(255,255,255,0.1) !important;
-        border-radius: 8px !important;
-      }
-      
-      .bottom-nav-btn.active {
-        color: #ffffff !important;
-        background: rgba(255,255,255,0.15) !important;
-        border-radius: 8px !important;
-      }
-      
-      .bottom-nav-btn.active span:first-child {
+      .tab-dot:hover {
+        background: rgba(255,255,255,0.8) !important;
         transform: scale(1.1);
       }
       
-      /* Add minimal bottom padding for bottom nav */
+      /* Clean mobile layout without bottom nav */
       body {
-        padding-bottom: 70px;
+        padding-bottom: 0;
         margin: 0;
         width: 100%;
+        touch-action: pan-y; /* Allow vertical scrolling but enable horizontal gestures */
       }
       
       .modern-tab-container {
         margin: 0.5em auto;
         max-width: 100%;
         padding: 1em;
+        touch-action: pan-y; /* Enable swipe gestures on tab container */
+      }
+      
+      /* Smooth transitions for tab switching */
+      .modern-tab-content {
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+      
+      /* Swipe feedback animation */
+      .swipe-feedback {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(42, 105, 114, 0.9);
+        color: white;
+        padding: 1em 2em;
+        border-radius: 20px;
+        z-index: 10000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
       }
     }
 
@@ -3168,9 +3181,14 @@ window.showTab = function(tabId) {
     if (el) el.style.display = (id === tabId ? "block" : "none");
   });
 
-  // Update active button styling
+  // Update active button styling (for any remaining buttons)
   Object.values(buttons).forEach(btn => btn && btn.classList.remove("active"));
   if (buttons[tabId]) buttons[tabId].classList.add("active");
+  
+  // Update swipe navigation indicators
+  if (window.SwipeNavigation) {
+    window.SwipeNavigation.setCurrentTab(tabId);
+  }
 
   // When opening Manifest, load saved manifest into all textareas
   if (tabId === "manifestTab") {
@@ -3394,6 +3412,130 @@ window.toggleHelp = function(helpId) {
   }
 };
 
+// Swipe navigation system
+window.SwipeNavigation = {
+  tabs: ['journalTab', 'manifestTab', 'calendarTab'],
+  currentIndex: 0,
+  
+  init() {
+    // Set initial active tab
+    this.updateIndicators();
+    
+    // Add touch event listeners
+    const container = document.querySelector('.modern-tab-container');
+    if (container) {
+      let startX = 0;
+      let startY = 0;
+      let isDragging = false;
+      
+      container.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        isDragging = true;
+      }, { passive: true });
+      
+      container.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        const diffX = Math.abs(startX - currentX);
+        const diffY = Math.abs(startY - currentY);
+        
+        // If horizontal swipe is more significant than vertical, prevent default
+        if (diffX > diffY && diffX > 10) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+      
+      container.addEventListener('touchend', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        const endX = e.changedTouches[0].clientX;
+        const diffX = startX - endX;
+        const threshold = 50; // Minimum swipe distance
+        
+        if (Math.abs(diffX) > threshold) {
+          if (diffX > 0) {
+            // Swiped left - next tab
+            this.nextTab();
+          } else {
+            // Swiped right - previous tab
+            this.prevTab();
+          }
+        }
+      }, { passive: true });
+    }
+  },
+  
+  nextTab() {
+    this.currentIndex = (this.currentIndex + 1) % this.tabs.length;
+    this.switchToTab();
+  },
+  
+  prevTab() {
+    this.currentIndex = (this.currentIndex - 1 + this.tabs.length) % this.tabs.length;
+    this.switchToTab();
+  },
+  
+  switchToTab() {
+    const tabId = this.tabs[this.currentIndex];
+    showTab(tabId);
+    this.updateIndicators();
+    this.showSwipeFeedback();
+  },
+  
+  showSwipeFeedback() {
+    // Create temporary feedback element
+    const feedback = document.createElement('div');
+    feedback.className = 'swipe-feedback';
+    
+    const tabNames = {
+      'journalTab': '✍️ Journal',
+      'manifestTab': '🎯 Manifest', 
+      'calendarTab': '📚 Past Entries'
+    };
+    
+    feedback.textContent = tabNames[this.tabs[this.currentIndex]] || 'Tab';
+    document.body.appendChild(feedback);
+    
+    // Show with animation
+    setTimeout(() => {
+      feedback.style.opacity = '1';
+    }, 10);
+    
+    // Hide and remove
+    setTimeout(() => {
+      feedback.style.opacity = '0';
+      setTimeout(() => {
+        if (feedback.parentNode) {
+          feedback.parentNode.removeChild(feedback);
+        }
+      }, 300);
+    }, 800);
+  },
+  
+  setCurrentTab(tabId) {
+    const index = this.tabs.indexOf(tabId);
+    if (index !== -1) {
+      this.currentIndex = index;
+      this.updateIndicators();
+    }
+  },
+  
+  updateIndicators() {
+    const dots = document.querySelectorAll('.tab-dot');
+    dots.forEach((dot, index) => {
+      if (index === this.currentIndex) {
+        dot.classList.add('active');
+      } else {
+        dot.classList.remove('active');
+      }
+    });
+  }
+};
+
 
 // Handle embedded agreement button logic
 window.acceptEmbeddedAgreement = async function () {
@@ -3525,7 +3667,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Authentication now handled by auth.js - currentUserId is available as window.currentUserId
 
-  setTimeout(() => showTab('journalTab'), 20);
+  setTimeout(() => {
+    showTab('journalTab');
+    // Initialize swipe navigation
+    if (window.SwipeNavigation) {
+      window.SwipeNavigation.init();
+    }
+  }, 20);
 
 // Coach reply checking moved to auth.js
 
@@ -7013,103 +7161,45 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       contain: layout !important;
     }
   </style>
-  <!-- Fixed Bottom Navigation Bar -->
-  <nav class="bottom-nav" style="
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    z-index: 9999 !important;
-    background: rgba(42, 105, 114, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(255,255,255,0.2);
-    padding: 0.5em 0;
-    padding-bottom: max(0.5em, env(safe-area-inset-bottom));
+  <!-- Swipe Navigation Indicators -->
+  <div class="tab-indicators" style="
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
     display: flex;
-    justify-content: space-around;
-    align-items: center;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+    gap: 8px;
+    background: rgba(42, 105, 114, 0.8);
+    padding: 8px 12px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   ">
-    <button 
-      class="bottom-nav-btn" 
-      id="journalTabButton" 
-      onclick="showTab('journalTab')"
-      data-tab="journal"
-      style="
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 0.5em 0.25em;
-        border: none;
-        background: transparent;
-        color: rgba(255,255,255,0.7);
-        font-weight: 500;
-        font-size: 0.75em;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        min-height: 44px;
-        text-align: center;
-      "
-    >
-      <span style="font-size: 1.5em; margin-bottom: 0.25em;">✍️</span>
-      <span>Journal</span>
-    </button>
-    
-    <button 
-      class="bottom-nav-btn" 
-      id="manifestTabButton" 
-      onclick="showTab('manifestTab')"
-      data-tab="manifest"
-      style="
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 0.5em 0.25em;
-        border: none;
-        background: transparent;
-        color: rgba(255,255,255,0.7);
-        font-weight: 500;
-        font-size: 0.75em;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        min-height: 44px;
-        text-align: center;
-      "
-    >
-      <span style="font-size: 1.5em; margin-bottom: 0.25em;">🎯</span>
-      <span>Manifest</span>
-    </button>
-    
-    <button 
-      class="bottom-nav-btn" 
-      id="calendarTabButton" 
-      onclick="showTab('calendarTab')"
-      data-tab="calendar"
-      style="
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 0.5em 0.25em;
-        border: none;
-        background: transparent;
-        color: rgba(255,255,255,0.7);
-        font-weight: 500;
-        font-size: 0.75em;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        min-height: 44px;
-        text-align: center;
-      "
-    >
-      <span style="font-size: 1.5em; margin-bottom: 0.25em;">📚</span>
-      <span>Past</span>
-    </button>
-  </nav>
+    <div class="tab-dot" data-tab="journalTab" style="
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    " onclick="showTab('journalTab')"></div>
+    <div class="tab-dot" data-tab="manifestTab" style="
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    " onclick="showTab('manifestTab')"></div>
+    <div class="tab-dot" data-tab="calendarTab" style="
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    " onclick="showTab('calendarTab')"></div>
+  </div>
 
   <!-- Tab Content Container -->
   <div class="tab-content-wrapper" style="
