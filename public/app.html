@@ -1198,9 +1198,24 @@
       }
     }
     
-    /* Mobile-only: hide desktop tabs */
+    /* Mobile-only: hide desktop tabs and elements */
     @media (max-width: 768px) {
       .desktop-tabs {
+        display: none !important;
+      }
+      
+      /* Hide desktop-only help sections on mobile */
+      .help-section {
+        display: none !important;
+      }
+      
+      /* Hide footer on mobile */
+      footer {
+        display: none !important;
+      }
+      
+      /* Hide feedback section on mobile */
+      .feedback-section {
         display: none !important;
       }
     }
@@ -8112,7 +8127,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   </main>
 
 <!-- Mobile-Optimized Feedback Block -->
-<div style="
+<div class="feedback-section" style="
   margin-top: 1.5em;
   margin-bottom: 2em;
   padding: 1em;
