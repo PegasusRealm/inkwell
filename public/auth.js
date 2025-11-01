@@ -1668,11 +1668,13 @@ function forceMobileCalendarStyling() {
       // Force all cells to mobile sizing
       container.querySelectorAll('td, th').forEach(cell => {
         cell.style.cssText += `
-          padding: 14px 6px !important;
+          padding: 18px 8px !important;
           font-size: 16px !important;
-          min-width: 52px !important;
-          height: 52px !important;
+          min-width: 60px !important;
+          height: 60px !important;
           width: 14.28% !important;
+          line-height: 1.2 !important;
+          overflow: visible !important;
         `;
       });
     }
@@ -1739,9 +1741,10 @@ if (window.innerWidth <= 768) {
     const th = document.createElement("th");
     th.textContent = day;
     // Mobile-optimized padding and sizing
-    th.style.padding = window.innerWidth <= 768 ? "14px 6px" : "0.5em";
+    th.style.padding = window.innerWidth <= 768 ? "18px 8px" : "0.5em";
     th.style.fontSize = window.innerWidth <= 768 ? "16px" : "inherit";
-    th.style.minWidth = window.innerWidth <= 768 ? "52px" : "auto";
+    th.style.minWidth = window.innerWidth <= 768 ? "60px" : "auto";
+    th.style.height = window.innerWidth <= 768 ? "60px" : "auto";
     headerRow.appendChild(th);
   });
   calendarTable.appendChild(headerRow);
@@ -1763,10 +1766,12 @@ if (window.innerWidth <= 768) {
     td.textContent = day;
     td.style.cursor = "pointer";
     // Mobile-optimized calendar cells
-    td.style.padding = window.innerWidth <= 768 ? "14px 6px" : "0.5em";
+    td.style.padding = window.innerWidth <= 768 ? "18px 8px" : "0.5em";
     td.style.fontSize = window.innerWidth <= 768 ? "16px" : "inherit";
-    td.style.minWidth = window.innerWidth <= 768 ? "52px" : "auto";
-    td.style.height = window.innerWidth <= 768 ? "52px" : "auto";
+    td.style.minWidth = window.innerWidth <= 768 ? "60px" : "auto";
+    td.style.height = window.innerWidth <= 768 ? "60px" : "auto";
+    td.style.lineHeight = window.innerWidth <= 768 ? "1.2" : "inherit";
+    td.style.overflow = window.innerWidth <= 768 ? "visible" : "auto";
     td.style.border = "1px solid #ccc";
 
     const key = `${window.displayedYear}-${String(window.displayedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
