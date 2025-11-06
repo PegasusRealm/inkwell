@@ -56,6 +56,19 @@
       --btn-secondary: #E2E8F0;
       --btn-secondary-hover: #CBD5E0;
       
+      /* Special Button Colors */
+      --accent-sophy: #D49489;
+      --accent-sophy-light: #E6A497;
+      --accent-sophy-hover: #C2867D;
+      --btn-danger: #dc3545;
+      --btn-danger-hover: #c82333;
+      --btn-warning: #ff9800;
+      --btn-warning-hover: #e68900;
+      --btn-success: #28a745;
+      --btn-success-hover: #218838;
+      --btn-info: #17a2b8;
+      --btn-info-hover: #138496;
+      
       /* Borders */
       --border-light: #E2E8F0;
       --border-medium: #CBD5E0;
@@ -93,6 +106,19 @@
       --btn-primary-hover: #7BB8C4;
       --btn-secondary: #2D3748;
       --btn-secondary-hover: #4A5568;
+      
+      /* Special Button Colors - Dark Theme */
+      --accent-sophy: #E6A497;
+      --accent-sophy-light: #F0B5A7;
+      --accent-sophy-hover: #D49489;
+      --btn-danger: #e74c3c;
+      --btn-danger-hover: #c0392b;
+      --btn-warning: #ffa726;
+      --btn-warning-hover: #ff9800;
+      --btn-success: #2ecc71;
+      --btn-success-hover: #27ae60;
+      --btn-info: #3498db;
+      --btn-info-hover: #2980b9;
       
       /* Information/Helper Backgrounds */
       --info-bg: rgba(42,105,114,0.1);
@@ -525,9 +551,9 @@
 
     /* Modern Button Styling */
     .btn {
-      background: var(--brand-primary);
-      color: white;
-      border: none;
+      background: var(--brand-primary) !important;
+      color: white !important;
+      border: none !important;
       border-radius: 12px;
       padding: 0.875rem 1.5rem;
       font-size: 0.875rem;
@@ -547,7 +573,7 @@
     }
 
     .btn:hover {
-      background: var(--brand-secondary);
+      background: var(--brand-secondary) !important;
       transform: translateY(-1px);
       box-shadow: var(--shadow-md);
     }
@@ -558,7 +584,7 @@
     }
 
     .btn:disabled {
-      background: var(--font-muted);
+      background: var(--font-muted) !important;
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
@@ -566,18 +592,164 @@
 
     /* Secondary button style for less important actions */
     .btn-gray, .btn-secondary {
-      background: var(--btn-secondary);
-      color: var(--font-main);
-      border: 2px solid var(--border-light);
+      background: var(--btn-secondary) !important;
+      color: var(--font-main) !important;
+      border: none !important;
+      border-radius: 12px;
+      padding: 0.875rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      font-family: var(--body-font);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: var(--shadow-sm);
+      text-decoration: none;
+      letter-spacing: 0.01em;
     }
 
     .btn-gray:hover, .btn-secondary:hover {
-      background: var(--btn-secondary-hover);
-      border-color: var(--border-medium);
+      background: var(--btn-secondary-hover) !important;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+      opacity: 0.9;
     }
 
     .btn-gray:active, .btn-gray:focus, .btn-secondary:active, .btn-secondary:focus {
-      outline: 2px solid var(--brand-primary);
+      transform: translateY(0);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Danger button style for destructive actions */
+    .btn-danger {
+      background: var(--btn-danger) !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 12px;
+      padding: 0.875rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      font-family: var(--body-font);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: var(--shadow-sm);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+    }
+
+    .btn-danger:hover {
+      background: var(--btn-danger-hover) !important;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+      opacity: 0.9;
+    }
+
+    .btn-danger:active {
+      transform: translateY(0);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Warning button style for important actions */
+    .btn-warning {
+      background: var(--btn-warning) !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 12px;
+      padding: 0.875rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      font-family: var(--body-font);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: var(--shadow-sm);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+    }
+
+    .btn-warning:hover {
+      background: var(--btn-warning-hover) !important;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-warning:active {
+      transform: translateY(0);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Success button style */
+    .btn-success {
+      background: var(--btn-success) !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 12px;
+      padding: 0.875rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      font-family: var(--body-font);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: var(--shadow-sm);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+    }
+
+    .btn-success:hover {
+      background: var(--btn-success-hover) !important;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-success:active {
+      transform: translateY(0);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Info button style */
+    .btn-info {
+      background: var(--btn-info) !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 12px;
+      padding: 0.875rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      font-family: var(--body-font);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: var(--shadow-sm);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+    }
+
+    .btn-info:hover {
+      background: var(--btn-info-hover) !important;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-info:active {
+      transform: translateY(0);
+      box-shadow: var(--shadow-sm);
     }
 
     /* Tab active and inactive styles: shades of primary brand color */
@@ -606,7 +778,7 @@
 
     /* Sophy-themed button: accent color with modern styling */
     .btn-sophy {
-      background: linear-gradient(135deg, #D49489 0%, #E6A497 100%);
+      background: linear-gradient(135deg, var(--accent-sophy) 0%, var(--accent-sophy-light) 100%);
       color: white;
       border: none;
       border-radius: 12px;
@@ -622,7 +794,7 @@
 
     .btn-sophy:hover,
     .btn-sophy:focus {
-      background: linear-gradient(135deg, #C2867D 0%, #D49489 100%);
+      background: linear-gradient(135deg, var(--accent-sophy-hover) 0%, var(--accent-sophy) 100%);
       transform: translateY(-1px);
       box-shadow: var(--shadow-md);
     }
@@ -706,6 +878,135 @@
       margin-bottom: 0.5rem;
       color: var(--font-secondary);
       font-size: 0.875rem;
+    }
+
+    /* SMS Notifications Section Styles */
+    .sms-section {
+      background: #f0fff4;
+      border: 1px solid #c6f6d5;
+      border-radius: 8px;
+      padding: 1.5em;
+      margin-bottom: 1.5em;
+      text-align: left;
+    }
+
+    html[data-theme='dark'] .sms-section {
+      background: rgba(76, 175, 80, 0.05);
+      border-color: rgba(76, 175, 80, 0.2);
+    }
+
+    .sms-section h3 {
+      color: var(--brand-primary);
+      margin-top: 0;
+      margin-bottom: 1em;
+      font-size: 1.1em;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+
+    .sms-input-group {
+      margin-bottom: 1em;
+    }
+
+    .sms-input-group label {
+      display: block;
+      margin-bottom: 0.5em;
+      font-weight: 500;
+      color: var(--font-secondary);
+      font-size: 0.9em;
+    }
+
+    .sms-input-group input[type="tel"] {
+      width: 100%;
+      padding: 0.6em;
+      border: 1px solid var(--border-light);
+      border-radius: 5px;
+      background-color: var(--bg-card);
+      color: var(--font-main);
+      font-size: 0.9em;
+      box-sizing: border-box;
+    }
+
+    .sms-help-text {
+      font-size: 0.8em;
+      color: var(--font-muted);
+      margin: 0.5em 0 0 0;
+    }
+
+    .sms-error {
+      color: #d32f2f;
+      font-size: 0.85em;
+      margin: 0.5em 0 0 0;
+      display: none;
+    }
+
+    .sms-preferences-box {
+      margin-bottom: 1em;
+      padding: 1em;
+      background: rgba(42, 105, 114, 0.05);
+      border-radius: 5px;
+    }
+
+    html[data-theme='dark'] .sms-preferences-box {
+      background: rgba(74, 155, 168, 0.1);
+    }
+
+    .sms-opt-in-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      font-size: 0.9em;
+      color: var(--font-main);
+      cursor: pointer;
+      margin-bottom: 0.8em;
+    }
+
+    .sms-opt-in-label input[type="checkbox"] {
+      transform: scale(1.2);
+      margin-right: 0.3em;
+      cursor: pointer;
+    }
+
+    .sms-preferences-info {
+      font-size: 0.8em;
+      color: var(--font-muted);
+      margin: 0 0 1em 0;
+      line-height: 1.3;
+    }
+
+    .sms-preference-list {
+      margin-left: 1.5em;
+    }
+
+    .sms-preference-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      font-size: 0.85em;
+      color: var(--font-secondary);
+      cursor: pointer;
+      margin-bottom: 0.5em;
+    }
+
+    .sms-preference-item input[type="checkbox"] {
+      cursor: pointer;
+    }
+
+    .sms-test-button {
+      width: 100%;
+      margin-top: 0.5em;
+      background: var(--btn-success);
+    }
+
+    .sms-test-button:hover {
+      background: var(--btn-success-hover);
+    }
+
+    .sms-status {
+      margin-top: 0.5em;
+      text-align: center;
+      font-size: 0.85em;
     }
 
     /* WISH Timeline Components - Theme Compatible */
@@ -881,6 +1182,18 @@
   background: rgba(0, 0, 0, 0.4);
   z-index: -1;
 }
+
+    /* Settings Modal Centering */
+    #userSettingsModal {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #userSettingsModal.hidden {
+      display: none !important;
+    }
+
     html[data-theme='dark'] #embeddedAgreementNotice,
     html[data-theme='dark'] #loginModal,
     html[data-theme='dark'] #signupModal,
@@ -1184,6 +1497,12 @@
       
       .desktop-tabs {
         display: flex !important;
+      }
+      
+      .tab-button {
+        background: rgba(42,105,114,0.1) !important;
+        color: var(--brand-primary) !important;
+        border: 1px solid var(--brand-primary) !important;
       }
       
       .tab-button:hover {
@@ -1540,12 +1859,12 @@
     }
     
     .btn-sophy {
-      background: linear-gradient(135deg, #d97d7b 0%, #c46562 100%) !important;
+      background: linear-gradient(135deg, var(--accent-sophy) 0%, var(--accent-sophy-hover) 100%) !important;
       box-shadow: 0 3px 12px rgba(217,125,123,0.3) !important;
     }
     
     .btn-sophy:hover {
-      background: linear-gradient(135deg, #c46562 0%, #d97d7b 100%) !important;
+      background: linear-gradient(135deg, var(--accent-sophy-hover) 0%, var(--accent-sophy) 100%) !important;
       box-shadow: 0 6px 20px rgba(217,125,123,0.4) !important;
     }
     
@@ -1679,26 +1998,6 @@
       box-shadow: 0 4px 16px rgba(79,179,217,0.3), 0 0 0 3px rgba(79,179,217,0.1) !important;
     }
     
-    html[data-theme='dark'] .btn {
-      background: linear-gradient(135deg, #4fb3d9 0%, #2A6972 100%) !important;
-      box-shadow: 0 3px 12px rgba(79,179,217,0.4) !important;
-    }
-    
-    html[data-theme='dark'] .btn:hover {
-      background: linear-gradient(135deg, #2A6972 0%, #4fb3d9 100%) !important;
-      box-shadow: 0 6px 20px rgba(79,179,217,0.5) !important;
-    }
-    
-    html[data-theme='dark'] .btn-sophy {
-      background: linear-gradient(135deg, #e394a1 0%, #d97d7b 100%) !important;
-      box-shadow: 0 3px 12px rgba(227,148,161,0.4) !important;
-    }
-    
-    html[data-theme='dark'] .btn-sophy:hover {
-      background: linear-gradient(135deg, #d97d7b 0%, #e394a1 100%) !important;
-      box-shadow: 0 6px 20px rgba(227,148,161,0.5) !important;
-    }
-    
     html[data-theme='dark'] .journal-heading,
     html[data-theme='dark'] .manifest-heading,
     html[data-theme='dark'] h2,
@@ -1797,11 +2096,39 @@
       text-shadow: 0 0 10px rgba(137, 201, 212, 0.3) !important;
     }
     
-    /* Fix button text colors */
-    html[data-theme='dark'] .btn,
-    html[data-theme='dark'] .btn-sophy,
-    html[data-theme='dark'] .btn-gray {
+    /* Fix button text colors and styles */
+    html[data-theme='dark'] .btn {
+      background: var(--brand-primary) !important;
+      box-shadow: var(--shadow-md) !important;
       color: white !important;
+    }
+    
+    html[data-theme='dark'] .btn:hover {
+      background: var(--brand-secondary) !important;
+      box-shadow: var(--shadow-lg) !important;
+    }
+    
+    html[data-theme='dark'] .btn-gray {
+      background: var(--btn-secondary) !important;
+      color: var(--font-main) !important;
+      border: none !important;
+      box-shadow: var(--shadow-sm) !important;
+    }
+    
+    html[data-theme='dark'] .btn-gray:hover {
+      background: var(--btn-secondary-hover) !important;
+      box-shadow: var(--shadow-md) !important;
+    }
+    
+    html[data-theme='dark'] .btn-sophy {
+      background: linear-gradient(135deg, var(--accent-sophy-light) 0%, var(--accent-sophy) 100%) !important;
+      box-shadow: 0 3px 12px rgba(227,148,161,0.4) !important;
+      color: white !important;
+    }
+    
+    html[data-theme='dark'] .btn-sophy:hover {
+      background: linear-gradient(135deg, var(--accent-sophy) 0%, var(--accent-sophy-light) 100%) !important;
+      box-shadow: 0 6px 20px rgba(227,148,161,0.5) !important;
     }
     
     /* Fix checkbox and form element text */
@@ -2141,20 +2468,28 @@ html[data-theme='dark'] .entry-card[style] .fixed-dark-date {
   margin-bottom: 2em;
   padding: 1.5em;
   border-radius: 14px;
-  border: 1px solid #ddd;
-  background: linear-gradient(180deg, #ffffff 0%, #f2f2f2 100%) !important;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-light);
+  border-left: 4px solid var(--brand-secondary);
+  background: var(--bg-card) !important;
+  color: var(--font-main);
+  box-shadow: var(--shadow-md);
   transition: box-shadow 0.3s ease, transform 0.2s ease;
 }
 
 .entry-card.journal-entry:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-lg);
   transform: translateY(-1px);
+}
+
+/* Style for entries with new coach replies */
+.entry-card.journal-entry[style*="border-left: 5px solid"] {
+  border-left: 5px solid var(--accent, #d49489);
+  box-shadow: 0 0 10px rgba(212, 148, 137, 0.3), var(--shadow-md);
 }
 
 /* Add divider lines between sections */
 .entry-card.journal-entry > * + * {
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-light);
   padding-top: 0.75em;
   margin-top: 0.75em;
 }
@@ -2208,20 +2543,24 @@ html[data-theme='dark'] .entry-btn:hover {
   transform: translateY(-1px) !important;
 }
 
-/* Enhanced Past Entries Tab Background for Dark Mode */
+/* Enhanced Past Entries Tab Background for Dark Mode - DISABLED to match other tabs */
+/*
 html[data-theme='dark'] #calendarTab.modern-tab-content {
   background: linear-gradient(135deg, rgba(42, 105, 114, 0.08) 0%, rgba(30, 80, 85, 0.12) 100%) !important;
   border: 1px solid rgba(137, 201, 212, 0.15) !important;
   border-radius: 16px !important;
   backdrop-filter: blur(8px) !important;
 }
+*/
 
-/* Enhanced styling for the Past Entries container */
+/* Enhanced styling for the Past Entries container - DISABLED to match other tabs */
+/*
 html[data-theme='dark'] #calendarTab .tab-inner {
   background: transparent !important;
   border-radius: 12px !important;
   padding: 1.5em !important;
 }
+*/
 
 /* Enhanced Calendar Container for Dark Mode */
 html[data-theme='dark'] #calendarContainer {
@@ -3289,6 +3628,178 @@ html[data-theme='dark'] .ai-input:focus {
 #approvedPractitionerSelect option:hover {
   background-color: #f0f8ff;
 }
+
+/* Info Modal Styles */
+.info-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.75);
+  z-index: 9999;
+}
+
+.info-modal-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.info-modal-content {
+  background: #fff;
+  color: #2A6972;
+  padding: 2em 1.5em 1.5em 1.5em;
+  border-radius: 10px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.info-modal-content h2 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.info-modal-content h3 {
+  font-size: 1.15em;
+  margin-top: 1.2em;
+}
+
+.info-modal-content h4 {
+  font-size: 1.05em;
+  margin-top: 1.2em;
+  color: #2A6972;
+}
+
+.info-modal-content p {
+  margin: 0.5em 0;
+  line-height: 1.65;
+}
+
+.info-modal-content ul {
+  margin: 0.5em 0 1em 1.5em;
+  font-size: 0.97em;
+}
+
+.info-modal-subtitle {
+  text-align: center;
+  font-size: 1em;
+  color: #2A6972;
+  margin-bottom: 1.5em;
+}
+
+.info-modal-highlight-box {
+  background: rgba(42,105,114,0.08);
+  padding: 1em;
+  border-radius: 8px;
+  margin: 1em 0;
+}
+
+.info-modal-highlight-box h4 {
+  font-size: 1em;
+  margin-top: 0;
+  color: #2A6972;
+}
+
+.info-modal-highlight-box p {
+  margin: 0.5em 0;
+  font-size: 0.95em;
+}
+
+.info-modal-divider {
+  margin: 1.5em 0;
+  border: none;
+  border-top: 1px solid rgba(42,105,114,0.2);
+}
+
+.info-modal-footer {
+  text-align: center;
+  font-size: 1.05em;
+  color: #2A6972;
+  font-style: italic;
+  margin: 1em 0 0.5em 0;
+}
+
+/* Dark Theme for Info Modals */
+html[data-theme='dark'] .info-modal-overlay {
+  background: rgba(0,0,0,0.85);
+}
+
+html[data-theme='dark'] .info-modal-content {
+  background: rgba(21, 54, 58, 0.95) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(42,105,114,0.3) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+html[data-theme='dark'] .info-modal-content h2 {
+  color: #7BB8C4 !important;
+}
+
+html[data-theme='dark'] .info-modal-content h3 {
+  color: #89C9D4 !important;
+}
+
+html[data-theme='dark'] .info-modal-content h4 {
+  color: #89C9D4 !important;
+}
+
+html[data-theme='dark'] .info-modal-content p,
+html[data-theme='dark'] .info-modal-content div {
+  color: rgba(137, 201, 212, 0.9) !important;
+}
+
+html[data-theme='dark'] .info-modal-content strong {
+  color: #7BB8C4 !important;
+}
+
+html[data-theme='dark'] .info-modal-content em {
+  color: rgba(137, 201, 212, 0.7) !important;
+}
+
+html[data-theme='dark'] .info-modal-content ul,
+html[data-theme='dark'] .info-modal-content li {
+  color: rgba(137, 201, 212, 0.9) !important;
+}
+
+html[data-theme='dark'] .info-modal-subtitle {
+  color: rgba(137, 201, 212, 0.9) !important;
+}
+
+html[data-theme='dark'] .info-modal-highlight-box {
+  background: rgba(42,105,114,0.15) !important;
+}
+
+html[data-theme='dark'] .info-modal-divider {
+  border-color: rgba(137, 201, 212, 0.3) !important;
+}
+
+html[data-theme='dark'] .info-modal-footer {
+  color: rgba(137, 201, 212, 0.9) !important;
+}
+
+html[data-theme='dark'] .info-modal-content .btn {
+  background: linear-gradient(135deg, rgba(42, 105, 114, 0.8) 0%, rgba(30, 80, 85, 0.9) 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(137, 201, 212, 0.4) !important;
+  box-shadow: 0 2px 8px rgba(137, 201, 212, 0.2) !important;
+}
+
+html[data-theme='dark'] .info-modal-content .btn:hover {
+  background: linear-gradient(135deg, rgba(42, 105, 114, 0.9) 0%, rgba(30, 80, 85, 1) 100%) !important;
+  box-shadow: 0 0 12px rgba(137, 201, 212, 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
 </style>
 
 
@@ -3297,7 +3808,34 @@ html[data-theme='dark'] .ai-input:focus {
     // Firebase initialization moved to auth.js
     // Functions will be available via window.functions from auth.js
 
-    // 🔐 SECURITY: Helper function for authenticated AI endpoint calls
+    // � Phone number validation (E.164 format)
+    function validatePhoneNumber(phone) {
+      if (!phone || phone.trim() === '') {
+        return { valid: true, formatted: null }; // Empty is valid (optional field)
+      }
+      
+      // Remove all non-digit characters except +
+      let cleaned = phone.replace(/[^\d+]/g, '');
+      
+      // E.164 format: +[country code][number] (max 15 digits total)
+      // Must start with + and have 10-15 digits
+      const e164Regex = /^\+\d{10,15}$/;
+      
+      if (!e164Regex.test(cleaned)) {
+        return { 
+          valid: false, 
+          formatted: null,
+          error: 'Phone number must be in format +1234567890 (include country code with +)'
+        };
+      }
+      
+      return { valid: true, formatted: cleaned };
+    }
+    
+    // Make validation function globally available
+    window.validatePhoneNumber = validatePhoneNumber;
+
+    // �🔐 SECURITY: Helper function for authenticated AI endpoint calls
     async function secureAIFetch(endpoint, payload) {
       // Ensure user is authenticated
       if (!auth.currentUser) {
@@ -3482,8 +4020,8 @@ window.showTab = function(tabId) {
     if (el) el.style.display = (id === tabId ? "block" : "none");
   });
 
-  // Update active button styling (for any remaining buttons)
-  Object.values(buttons).forEach(btn => btn && btn.classList.remove("active"));
+  // Update active button styling - remove active from ALL tab buttons first
+  document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove("active"));
   if (buttons[tabId]) buttons[tabId].classList.add("active");
   
   // Update swipe navigation indicators
@@ -3524,16 +4062,27 @@ if (outcomeInput) outcomeInput.value = data.outcome || "";
 if (oppositionInput) oppositionInput.value = data.opposition || "";
 if (planInput) planInput.value = data.plan || "";
 
-// Restore days selector from localStorage
+// Restore timeline selector from Firestore (with localStorage fallback)
 const wishTimelineSelect = document.getElementById("wishTimelineSelect");
 if (wishTimelineSelect) {
-  const savedDays = localStorage.getItem(`wishTimeline_${currentUserId}`);
-  if (savedDays) {
-    wishTimelineSelect.value = savedDays;
-    // Update the visualization to match
-    if (typeof window.updateWishTimeline === "function") {
-      setTimeout(() => window.updateWishTimeline(), 50);
-    }
+  // First try to get from Firestore data
+  let timelineDays = data.timelineDays;
+  
+  // Fallback to localStorage if Firestore doesn't have it yet
+  if (!timelineDays) {
+    const savedDays = localStorage.getItem(`wishTimeline_${currentUserId}`);
+    timelineDays = savedDays ? parseInt(savedDays) : 90;
+  }
+  
+  // Set the select value
+  wishTimelineSelect.value = timelineDays;
+  
+  // Also save to localStorage for consistency
+  localStorage.setItem(`wishTimeline_${currentUserId}`, timelineDays.toString());
+  
+  // Update the visualization to match
+  if (typeof window.updateWishTimeline === "function") {
+    setTimeout(() => window.updateWishTimeline(), 50);
   }
 }
             
@@ -3697,24 +4246,6 @@ window.showTab = function(tabId) {
         OnboardingManager.showWishTabOnboarding();
       }
     }, 500);
-  }
-};
-
-// Mobile-friendly help toggle function
-window.toggleHelp = function(helpId) {
-  const helpContent = document.getElementById(helpId);
-  const helpIcon = document.getElementById(helpId + 'Icon');
-  
-  if (helpContent && helpIcon) {
-    const isHidden = helpContent.style.display === 'none' || helpContent.style.display === '';
-    
-    if (isHidden) {
-      helpContent.style.display = 'block';
-      helpIcon.style.transform = 'rotate(180deg)';
-    } else {
-      helpContent.style.display = 'none';
-      helpIcon.style.transform = 'rotate(0deg)';
-    }
   }
 };
 
@@ -4947,6 +5478,23 @@ if (planSuggestion) planSuggestion.textContent = "";
     progressBar.style.display = "none";
   }
 
+  // Show the timeline container so user can select days for new WISH
+  const staticTimeline = document.getElementById("staticTimeline");
+  if (staticTimeline) {
+    staticTimeline.style.display = "block";
+  }
+  
+  // Show timeline input group
+  const timelineInputGroup = document.querySelector(".wish-timeline-input-group");
+  if (timelineInputGroup) {
+    timelineInputGroup.style.display = "block";
+  }
+  
+  // Update the timeline visualization to ensure it's rendered
+  if (typeof window.updateWishTimeline === "function") {
+    setTimeout(() => window.updateWishTimeline(), 100);
+  }
+
   // Show confirmation
   const manifestSaveStatus = document.getElementById("manifestSaveStatus");
   if (manifestSaveStatus) {
@@ -5325,237 +5873,25 @@ if (planSuggestion) planSuggestion.textContent = "";
       
       for (const doc of snapshot.docs) {
         const entry = doc.data();
+        entry.id = doc.id; // Ensure entry has its ID
+        entry.createdAt = entry.createdAt?.toDate(); // Convert timestamp to date
         
         console.log("📄 PROCESSING ENTRY:", doc.id);
         console.log("Entry in Past Entries render:", entry);
         console.log("Entry ID:", doc.id, "newCoachReply:", entry.newCoachReply);
-        console.log("🔍 DROPDOWN DATA CHECK:");
-        console.log("  - manifestData:", entry.manifestData);
-        console.log("  - contextManifest:", entry.contextManifest);
-        console.log("  - promptUsed:", entry.promptUsed);
-        console.log("  - reflectionUsed:", entry.reflectionUsed);
-
-  if (!entry.createdAt?.toDate) {
-    console.warn("Skipping entry with missing or invalid createdAt:", entry);
-    continue;
-  }
-
-const date = entry.createdAt.toDate().toLocaleString();
-const isManifest = entry.tags?.includes("manifest");
-const manifestBadge = isManifest
-  ? `<p class="entry-reflection" style="color: var(--brand-primary) !important; font-style: italic; display: block; margin: 0.5em 0;">✨ Reflecting on Manifest: "${entry.contextManifest || ''}"</p>`
-  : "";
-
-
-  
-const coachTag = entry.coachReview
-  ? `<p class="shared-with-coach" style="color: var(--brand-secondary); font-style: italic;">🔓 Shared with coach</p>`
-  : "";
-
-const manifestDateRaw = entry.manifestDate;
-const manifestDate = manifestDateRaw
-  ? new Date(manifestDateRaw).toLocaleDateString()
-  : null;
-
-const tagLine = manifestDate
-  ? `Tags: ${entry.tags.join(", ")}, manifestDate: ${manifestDate}`
-  : `Tags: ${entry.tags.join(", ")}`;
-
-const tags = `<p class="entry-tags" style="color: var(--brand-primary); font-style: italic;">${tagLine}</p>`;
-
-const text = entry.text
-  ? `<p class="entry-text" style="color: #222222 !important; font-size: 1em; line-height: 1.6;">${entry.text}</p>`
-  : "";
-
-// Add dropdown toggles for manifest, prompt, and reflection data
-let manifestToggleHtml = "";
-if (entry.manifestData || entry.contextManifest) {
-  console.log("✅ MANIFEST DROPDOWN: Will be generated for entry", doc.id);
-  const manifestText = entry.manifestData ? 
-    `Want: ${entry.manifestData.wish || 'Not specified'}<br/>
-     Imagine: ${entry.manifestData.outcome || 'Not specified'}<br/>
-     Snags: ${entry.manifestData.opposition || 'Not specified'}<br/>
-     How: ${entry.manifestData.plan || 'Not specified'}` : 
-    entry.contextManifest;
-  
-  manifestToggleHtml = `
-    <button onclick="toggleManifest('${doc.id}')" style="background: transparent; color: var(--brand-primary); border: none; cursor: pointer; font-size: 0.85em; margin-bottom: 0.25em;">📜 Show Manifest</button>
-    <div id="manifest-${doc.id}" style="display: none; font-size: 0.9em; color: #555; font-style: italic; margin-bottom: 0.5em; background: #f8f9fa; padding: 0.75em; border-radius: 5px; border-left: 4px solid var(--brand-primary); border: 1px solid #e9ecef;">
-      <strong>Manifest Data:</strong><br/>${manifestText}
-    </div>
-  `;
-} else {
-  console.log("❌ NO MANIFEST DROPDOWN: No manifestData or contextManifest for entry", doc.id);
-}
-
-let promptToggleHtml = "";
-if (entry.promptUsed) {
-  console.log("✅ PROMPT DROPDOWN: Will be generated for entry", doc.id);
-  promptToggleHtml = `
-    <button onclick="togglePrompt('${doc.id}')" style="background: transparent; color: var(--brand-primary); border: none; cursor: pointer; font-size: 0.85em; margin-bottom: 0.25em;">📝 Show Prompt</button>
-    <div id="prompt-${doc.id}" style="display: none; font-size: 0.9em; color: #555; font-style: italic; margin-bottom: 0.5em; background: #f8f9fa; padding: 0.75em; border-radius: 5px; border-left: 4px solid var(--brand-primary); border: 1px solid #e9ecef;">
-      <strong>Prompt Used:</strong><br/>${entry.promptUsed}
-    </div>
-  `;
-} else {
-  console.log("❌ NO PROMPT DROPDOWN: No promptUsed for entry", doc.id);
-}
-
-let reflectionToggleHtml = "";
-if (entry.reflectionUsed) {
-  console.log("✅ REFLECTION DROPDOWN: Will be generated for entry", doc.id);
-  reflectionToggleHtml = `
-    <button onclick="toggleReflection('${doc.id}')" style="background: transparent; color: var(--brand-primary); border: none; cursor: pointer; font-size: 0.85em; margin-bottom: 0.25em;">💭 Show Reflection</button>
-    <div id="reflection-${doc.id}" style="display: none; font-size: 0.9em; color: #555; font-style: italic; margin-bottom: 0.5em; background: #f8f9fa; padding: 0.75em; border-radius: 5px; border-left: 4px solid var(--brand-primary); border: 1px solid #e9ecef;">
-      <strong>Sophy's Reflection:</strong><br/>${entry.reflectionUsed}
-    </div>
-  `;
-} else {
-  console.log("❌ NO REFLECTION DROPDOWN: No reflectionUsed for entry", doc.id);
-}
-
- const images = (entry.attachments || []).map(file => {
-  const url = file.url;
-  const ext = url?.split('.').pop().toLowerCase();
-  return ["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(ext)
-    ? `<img src="${url}" alt="Attached image" style="max-width: 100px; margin-right: 0.5em;">`
-    : `<a href="${url}" target="_blank">${file.name || url}</a>`;
-}).join("");
-
-// Check for coach replies
-let coachRepliesHtml = "";
-console.log("Checking coach replies for entry:", doc.id, "newCoachReply flag:", entry.newCoachReply);
-if (entry.newCoachReply) {
-  hasNewCoachReplies = true;
-  console.log("Entry has newCoachReply=true, loading replies...");
-  try {
-    // Load coach replies for this entry
-    const repliesRef = collection(db, "journalEntries", doc.id, "coachReplies");
-    const repliesSnapshot = await getDocs(repliesRef);
-    
-    console.log("Coach replies snapshot size:", repliesSnapshot.size);
-    
-    if (!repliesSnapshot.empty) {
-      const replies = [];
-      repliesSnapshot.forEach(replyDoc => {
-        const replyData = replyDoc.data();
-        console.log("Found coach reply:", replyData);
-        const replyDate = replyData.timestamp?.toDate?.()?.toLocaleString() || "Recent";
-        replies.push({
-          text: replyData.replyText,
-          date: replyDate
-        });
-      });
-      
-      if (replies.length > 0) {
-        coachRepliesHtml = `
-          <div style="background: linear-gradient(135deg, #ffe8e8 0%, #ffd4d4 100%); border-left: 4px solid #ff6b6b; padding: 1em; margin: 1em 0; border-radius: 8px; position: relative;">
-            <div style="position: absolute; top: 8px; right: 8px;">
-              <span style="background: #ff6b6b; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75em; font-weight: bold;">NEW</span>
-            </div>
-            <h4 style="margin: 0 0 0.5em 0; color: #d63384; font-size: 0.9em; font-weight: 600;">💬 New Coach Reply${replies.length > 1 ? 'ies' : ''}</h4>
-            ${replies.map(reply => `
-              <div style="background: white; padding: 0.75em; margin: 0.5em 0; border-radius: 6px; border: 1px solid #ffb3ba;">
-                <p style="margin: 0 0 0.5em 0; color: #333; line-height: 1.5;">${reply.text}</p>
-                <p style="margin: 0; font-size: 0.8em; color: #666; font-style: italic;">${reply.date}</p>
-              </div>
-            `).join('')}
-            <button onclick="handleMarkAsRead('${doc.id}')" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 0.8em; margin-top: 0.5em; cursor: pointer;">
-  ✓ Mark as Read
-</button>
-          </div>
-        `;
-      }
-    }
-  } catch (error) {
-    console.error("Error loading coach replies for entry:", doc.id, error);
-  }
-} else {
-  // Show read coach replies with different styling
-  try {
-    const repliesRef = collection(db, "journalEntries", doc.id, "coachReplies");
-    const repliesSnapshot = await getDocs(repliesRef);
-    
-    if (!repliesSnapshot.empty) {
-      const replies = [];
-      repliesSnapshot.forEach(replyDoc => {
-        const replyData = replyDoc.data();
-        const replyDate = replyData.timestamp?.toDate?.()?.toLocaleString() || "Recent";
-        replies.push({
-          text: replyData.replyText,
-          date: replyDate
-        });
-      });
-      
-      if (replies.length > 0) {
-        coachRepliesHtml = `
-          <div style="background: linear-gradient(135deg, #e8f5e8 0%, #d4edd4 100%); border-left: 4px solid #2A6972; padding: 1em; margin: 1em 0; border-radius: 8px;">
-            <h4 style="margin: 0 0 0.5em 0; color: #2A6972; font-size: 0.9em; font-weight: 600;">💬 Coach Reply${replies.length > 1 ? 'ies' : ''}</h4>
-            ${replies.map(reply => `
-              <div style="background: white; padding: 0.75em; margin: 0.5em 0; border-radius: 6px; border: 1px solid #c8e6c9;">
-                <p style="margin: 0 0 0.5em 0; color: #333; line-height: 1.5;">${reply.text}</p>
-                <p style="margin: 0; font-size: 0.8em; color: #666; font-style: italic;">${reply.date}</p>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
-    }
-  } catch (error) {
-    console.error("Error loading coach replies for entry:", doc.id, error);
-  }
-}
-
-  // Check if dark theme is enabled
-  const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
-  
-  // Define background and text colors based on theme
-  const backgroundColors = isDarkTheme ? 
-    (entry.newCoachReply ? 
-      'linear-gradient(135deg, rgba(42, 105, 114, 0.25) 0%, rgba(30, 80, 85, 0.35) 100%)' :
-      'linear-gradient(135deg, rgba(42, 105, 114, 0.15) 0%, rgba(30, 80, 85, 0.20) 100%)'
-    ) : 
-    (entry.newCoachReply ? 
-      'linear-gradient(180deg, #fff3cd 0%, #ffeaa7 100%)' :
-      'linear-gradient(180deg, #ffffff 0%, #f2f2f2 100%)'
-    );
-  
-  const textColor = isDarkTheme ? '#89C9D4' : '#222';
-  const borderStyle = isDarkTheme ?
-    (entry.newCoachReply ?
-      'border: 1px solid rgba(137, 201, 212, 0.4); box-shadow: 0 0 25px rgba(137, 201, 212, 0.25), 0 6px 20px rgba(0, 0, 0, 0.3);' :
-      'border: 1px solid rgba(137, 201, 212, 0.25); box-shadow: 0 0 20px rgba(137, 201, 212, 0.15), 0 4px 16px rgba(0, 0, 0, 0.25);'
-    ) :
-    (entry.newCoachReply ? 
-      'border-left: 5px solid var(--accent, #d49489); box-shadow: 0 0 10px rgba(212, 148, 137, 0.3);' :
-      'border-left: 4px solid var(--brand-secondary, #7BB8C4);'
-    );
-
-  const entryHtml = `
-  <div class="entry-card journal-entry" style="background: ${backgroundColors}; color: ${textColor}; ${borderStyle}">
-<span class="entry-date fixed-dark-date">${date}</span>
-    ${entry.newCoachReply ? '<div style="position: absolute; top: 10px; right: 10px; background: var(--accent, #d49489); color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75em; font-weight: bold;">NEW REPLY</div>' : ''}
-      ${manifestBadge}
-      ${coachTag}
-      ${manifestToggleHtml}
-      ${promptToggleHtml}
-      ${reflectionToggleHtml}
-      ${text}
-      ${coachRepliesHtml}
-      <div class="entry-images">${images}</div>
-      ${tags}
-     <button class="entry-btn" onclick="editEntry('${doc.id}', \`${entry.text?.replace(/`/g, '\\`') || ''}\`)" style="background-color: #2A6972; color: white; border: 1px solid #2A6972; padding: 12px 20px; font-size: 16px; min-width: 120px; border-radius: 8px; font-weight: 500; margin: 4px; touch-action: manipulation;">✏️ Edit</button>
-<button class="entry-btn" onclick="deleteEntry('${doc.id}')" style="background-color: #6b7280; color: white; border: 1px solid #6b7280; padding: 12px 20px; font-size: 16px; min-width: 120px; border-radius: 8px; font-weight: 500; margin: 4px; touch-action: manipulation;">🗑️ Delete</button>
-${entry.manifestData ? `<button class="entry-btn" onclick="showManifestData('${doc.id}')" style="background-color: var(--accent); color: var(--btn-font); border: 1px solid var(--border);">Show Manifest</button>` : ""}
-${entry.reflectionUsed ? `<button class="entry-btn" onclick="showReflectionData('${doc.id}')" style="background-color: #7BB8C4; color: var(--btn-font); border: 1px solid var(--border);">Show Reflection</button>` : ""}
-    </div>
-  `;
-  
-  console.log("🎨 ENTRY HTML for", doc.id, "newCoachReply:", entry.newCoachReply);
-  console.log("Generated HTML includes NEW REPLY badge:", entryHtml.includes('NEW REPLY'));
-  
-  entriesHtml.push(entryHtml);
-} // ✅ closes for-loop
+        
+        if (entry.newCoachReply) {
+          hasNewCoachReplies = true;
+        }
+        
+        // Use the consolidated createPastEntryCard function from auth.js
+        if (window.createPastEntryCard) {
+          const card = window.createPastEntryCard(entry);
+          entriesHtml.push(card);
+        } else {
+          console.error("createPastEntryCard function not available");
+        }
+      } // ✅ closes for-loop
 
 // Show toast notification if there are new coach replies
 if (hasNewCoachReplies) {
@@ -5586,17 +5922,12 @@ container.style.cssText = `
   max-width: 100%;
   overflow-x: hidden;
 `;
-  container.innerHTML = entriesHtml.join("");
+  
+  // Append all entry cards to the container
+  entriesHtml.forEach(card => container.appendChild(card));
   
   pastEntriesContainer.innerHTML = "";
   pastEntriesContainer.appendChild(container);
-  
-  // Force refresh theme styling for entries after they're added to DOM
-  setTimeout(() => {
-    if (typeof window.refreshPastEntriesTheme === 'function') {
-      window.refreshPastEntriesTheme();
-    }
-  }, 50);
 }
 } 
 
@@ -5805,7 +6136,7 @@ container.style.cssText = `
     const clickedButton = event.target;
     if (clickedButton) {
       clickedButton.innerHTML = "✅ Read";
-      clickedButton.style.background = "#6c757d";
+      clickedButton.className = "btn-gray";
       clickedButton.style.cursor = "default";
       clickedButton.disabled = true;
       clickedButton.onclick = null;
@@ -6426,6 +6757,10 @@ async function askSophyAboutEntry() {
       window.showSpinner("manifestSaveStatus", "Saving vision...");
 
       try {
+        // Get the timeline selection (default to 90 if not set)
+        const wishTimelineSelect = document.getElementById("wishTimelineSelect");
+        const timelineDays = wishTimelineSelect ? parseInt(wishTimelineSelect.value) : 90;
+        
         // Always use user's UID as doc ID for manifests, now saving all sections
         const manifestData = {
           statement: manifestText, // Keep original for backward compatibility
@@ -6433,6 +6768,7 @@ async function askSophyAboutEntry() {
           outcome: outcomeText,
           opposition: oppositionText,
           plan: planText,
+          timelineDays: timelineDays, // NEW: Save timeline selection to Firestore
           timestamp: serverTimestamp(),
           userId: user.uid
         };
@@ -6890,12 +7226,27 @@ window.updateWishTimeline = function() {
     timelineLabels.appendChild(label);
   }
   
-  // Save timeline selection to localStorage
+  // Save timeline selection to localStorage AND Firestore
   if (window.currentUserId || window.auth?.currentUser?.uid) {
     const userId = window.currentUserId || window.auth?.currentUser?.uid;
     const key = `wishTimeline_${userId}`;
     localStorage.setItem(key, days.toString());
-    console.log(`💾 Timeline saved: ${days} days for user ${userId}`);
+    console.log(`💾 Timeline saved to localStorage: ${days} days for user ${userId}`);
+    
+    // Also save to Firestore for cross-device persistence
+    try {
+      const manifestRef = doc(db, "manifests", userId);
+      // Use updateDoc to only update the timelineDays field without overwriting other data
+      updateDoc(manifestRef, {
+        timelineDays: days
+      }).then(() => {
+        console.log(`☁️ Timeline saved to Firestore: ${days} days`);
+      }).catch((error) => {
+        console.warn(`⚠️ Could not save timeline to Firestore:`, error);
+      });
+    } catch (error) {
+      console.warn(`⚠️ Firestore update failed:`, error);
+    }
     
     // If user has manifest data but no start date, set it now
     const savedManifest = localStorage.getItem(`manifest_${userId}`);
@@ -7037,7 +7388,7 @@ window.updateWishProgress = function() {
     } else if (progressPercent < 100) {
       progressMessage.textContent = `Approaching your timeline - notice how far you've come`;
     } else {
-      progressMessage.innerHTML = `<strong>Timeline reached - Time for New WISH!</strong> <button onclick="resetWishTimeline()" style="margin-left: 10px; padding: 4px 8px; background: #2A6972; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">Reset Timeline</button>`;
+      progressMessage.innerHTML = `<strong>Timeline reached - Time for New WISH!</strong> <button onclick="resetWishTimeline()" class="btn" style="margin-left: 10px; padding: 4px 8px; font-size: 0.9em;">Reset Timeline</button>`;
     }
   }
 };
@@ -7338,25 +7689,28 @@ document.head.appendChild(themeStyle);
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div id="deleteConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 9999;">
-  <div class="card-block" style="max-width: 400px; width: 90%; background: var(--bg-card); padding: 2em; border-radius: 8px; text-align: center;">
-    <h2 style="color: #d9534f; margin-bottom: 1em;">Delete Entry</h2>
-    <p style="margin-bottom: 1.5em; color: var(--font-main);">Are you sure you want to delete this entry? This action cannot be undone.</p>
-    <input type="hidden" id="deleteEntryId">
-    <div style="display: flex; justify-content: center; gap: 1em;">
-      <button onclick="closeDeleteModal()" class="btn" style="background-color: var(--bg-muted); color: var(--font-main);">Cancel</button>
-      <button onclick="confirmDelete()" class="btn" style="background-color: #d9534f;">Delete</button>
+<div id="deleteConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto;">
+  <div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 20px;">
+    <div class="card-block" style="max-width: 400px; width: 90%; background: var(--bg-card); padding: 2em; border-radius: 8px; text-align: center; max-height: 90vh; overflow-y: auto;">
+      <h2 style="color: #d9534f; margin-bottom: 1em;">Delete Entry</h2>
+      <p style="margin-bottom: 1.5em; color: var(--font-main);">Are you sure you want to delete this entry? This action cannot be undone.</p>
+      <input type="hidden" id="deleteEntryId">
+      <div style="display: flex; justify-content: center; gap: 1em;">
+        <button onclick="closeDeleteModal()" class="btn-gray">Cancel</button>
+        <button onclick="confirmDelete()" class="btn-danger">Delete</button>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- Edit Entry Modal -->
-<div id="editEntryModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 9999;">
-  <div class="card-block" style="max-width: 500px; width: 90%; background: white; padding: 2em; border-radius: 8px; text-align: center;">
-    <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 100px; margin-bottom: 1.5em;" />
+<div id="editEntryModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto;">
+  <div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 20px;">
+    <div class="card-block" style="max-width: 500px; width: 90%; background: white; padding: 2em; border-radius: 8px; text-align: center; max-height: 90vh; overflow-y: auto;">
+      <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 100px; margin-bottom: 1.5em;" />
     
-    <h2 style="margin-top: 0; margin-bottom: 1.5em; color: #2A6972; font-size: 1.3em;">
-      ✏️ Edit Entry
+      <h2 style="margin-top: 0; margin-bottom: 1.5em; color: #2A6972; font-size: 1.3em;">
+        ✏️ Edit Entry
     </h2>
     
     <form id="editEntryForm">
@@ -7383,6 +7737,7 @@ document.head.appendChild(themeStyle);
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1.5em;">
       v2.25.262
     </div>
+    </div>
   </div>
 </div>
 
@@ -7403,9 +7758,25 @@ document.head.appendChild(themeStyle);
       <input type="password" id="signupPassword" name="password" placeholder="Password" required
         style="width: 90%; padding: 1em 1.2em; margin-bottom: 1em; background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%); border: 2px solid rgba(42,105,114,0.15); border-radius: 10px; backdrop-filter: blur(3px); box-shadow: 0 2px 8px rgba(42,105,114,0.08); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: #0D3F45; font-family: var(--body-font);" />
       
+      <!-- Phone Number Field -->
+      <input type="tel" id="signupPhone" name="phone" placeholder="Phone Number (optional) - e.g., +1234567890" 
+        style="width: 90%; padding: 1em 1.2em; margin-bottom: 0.5em; background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%); border: 2px solid rgba(42,105,114,0.15); border-radius: 10px; backdrop-filter: blur(3px); box-shadow: 0 2px 8px rgba(42,105,114,0.08); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: #0D3F45; font-family: var(--body-font);" />
+      <p style="font-size: 0.8em; color: #666; margin: 0 0 1em 0; padding: 0 1em; text-align: left;">
+        📱 Format: +1 (555) 123-4567 or +15551234567. Include country code with +.
+      </p>
+      <div id="phoneValidationError" style="color: #d32f2f; font-size: 0.85em; margin: -0.5em 0 1em 1em; text-align: left; display: none;"></div>
+      
       <!-- Agreement Checkboxes -->
       <div style="width: 90%; margin: 1em auto; text-align: left;">
         <label style="display: block; margin-bottom: 0.5em; font-size: 0.9em; color: #2A6972;">
+          <input type="checkbox" id="smsOptIn" name="smsOptIn" checked style="margin-right: 0.5em;">
+          📱 I agree to receive SMS notifications from InkWell (you can opt-out anytime)
+        </label>
+        <p style="font-size: 0.75em; color: #666; margin: 0.3em 0 0 1.8em; line-height: 1.3;">
+          Receive WISH reminders, journal prompts, and coach replies via text message. Standard messaging rates may apply. You can manage preferences in Settings.
+        </p>
+        
+        <label style="display: block; margin: 1em 0 0.5em 0; font-size: 0.9em; color: #2A6972;">
           <input type="checkbox" id="termsAgreement" name="termsAgreement" checked style="margin-right: 0.5em;">
           I agree to the <a href="https://pegasusrealm.com/terms-conditions/" target="_blank" style="color: #2A6972; text-decoration: underline;">Terms & Conditions</a>
         </label>
@@ -7666,7 +8037,6 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   <div class="tab-content-wrapper" style="
     background: rgba(255,255,255,0.95);
     border-radius: 12px;
-    min-height: 500px;
     border: 1px solid rgba(255,255,255,0.5);
     backdrop-filter: blur(5px);
   ">
@@ -7674,58 +8044,14 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 <!-- Journal Tab Content -->
 <div id="journalTab" class="modern-tab-content" style="display: block; padding: 1em;">
 <div class="tab-inner" style="width: 100%; box-sizing: border-box; padding: 0 0.5em;">
-     <h2 class="journal-heading" style="text-align:center;margin-bottom:2rem;color:var(--font-main);">Your Journal</h2>
+<h2 class="journal-heading" 
+    onclick="document.getElementById('journalInfoModal').style.display='flex'" 
+    style="text-align:center;margin-bottom:2rem;color:var(--font-main);cursor:pointer;transition:color 0.2s ease;" 
+    onmouseover="this.style.color='#4A9BA8'" 
+    onmouseout="this.style.color='var(--font-main)'">
+  Your Journal
+</h2>
 
-<!-- Collapsible Help Section -->
-<div class="help-section" style="margin: 1em 0;">
-  <button onclick="toggleHelp('journalHelp')" 
-          style="
-            width: 100%;
-            background: rgba(42,105,114,0.1);
-            border: 1px solid rgba(42,105,114,0.3);
-            border-radius: 8px;
-            padding: 0.75em;
-            color: #2A6972;
-            font-weight: 500;
-            font-size: 0.9em;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: all 0.2s ease;
-          ">
-    <span>💡 Quick Tips</span>
-    <span id="journalHelpIcon" style="transform: rotate(0deg); transition: transform 0.2s;">▼</span>
-  </button>
-  
-  <div id="journalHelp" style="
-    display: none;
-    background: var(--info-bg, #eaf6fb);
-    padding: 1em;
-    border-radius: 0 0 8px 8px;
-    border: 1px solid rgba(42,105,114,0.2);
-    border-top: none;
-    font-size: 0.85em;
-    line-height: 1.4;
-  ">
-    <div style="display: flex; align-items: center; margin: 0.5em 0;">
-      <span style="margin-right: 0.5em;">💭</span>
-      <span>Write thoughts, dreams, ideas</span>
-    </div>
-    <div style="display: flex; align-items: center; margin: 0.5em 0;">
-      <span style="margin-right: 0.5em;">✍️</span>
-      <span>Get prompts from Sophy</span>
-    </div>
-    <div style="display: flex; align-items: center; margin: 0.5em 0;">
-      <span style="margin-right: 0.5em;">�</span>
-      <span>Use voice with InkOutLoud</span>
-    </div>
-    <div style="display: flex; align-items: center; margin: 0.5em 0;">
-      <span style="margin-right: 0.5em;">🎨</span>
-      <span>Add files and images</span>
-    </div>
-  </div>
-</div>
 
     <p class="subtext-muted" style="margin-top: 1em;">If you want a topic or some inspiration, <strong>Sophy</strong> can suggest ideas — you can even give her a topic to focus on.</p>
 
@@ -7783,62 +8109,15 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 
 <!-- Manifest Tab Content -->
 <div id="manifestTab" class="modern-tab-content" style="display:none; padding: 1em;">
-  <div class="tab-inner">
-<h2 class="manifest-heading" style="text-align:center;margin-bottom:2rem;color:var(--font-main);">Your WISH</h2>
+  <div class="tab-inner" style="width: 100%; box-sizing: border-box; padding: 0 0.5em;">
+<h2 class="manifest-heading" 
+    onclick="document.getElementById('wishInfoModal').style.display='flex'" 
+    style="text-align:center;margin-bottom:2rem;color:var(--font-main);cursor:pointer;transition:color 0.2s ease;" 
+    onmouseover="this.style.color='#4A9BA8'" 
+    onmouseout="this.style.color='var(--font-main)'">
+  Your WISH
+</h2>
 
-<!-- Collapsible Help Section -->
-<div class="help-section" style="margin: 1em 0;">
-  <button onclick="toggleHelp('manifestHelp')" 
-          style="
-            width: 100%;
-            background: rgba(42,105,114,0.1);
-            border: 1px solid rgba(42,105,114,0.3);
-            border-radius: 8px;
-            padding: 0.75em;
-            color: #2A6972;
-            font-weight: 500;
-            font-size: 0.9em;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: all 0.2s ease;
-          ">
-    <span>🎯 WISH Method Guide</span>
-    <span id="manifestHelpIcon" style="transform: rotate(0deg); transition: transform 0.2s;">▼</span>
-  </button>
-  
-  <div id="manifestHelp" style="
-    display: none;
-    background: var(--info-bg, #eaf6fb);
-    padding: 1em;
-    border-radius: 0 0 8px 8px;
-    border: 1px solid rgba(42,105,114,0.2);
-    border-top: none;
-    font-size: 0.85em;
-    line-height: 1.4;
-  ">
-    <div style="display: flex; align-items: center; margin: 0.5em 0;">
-      <span style="margin-right: 0.5em;">🎯</span>
-      <span>Dream big, plan real</span>
-    </div>
-    <div style="display: flex; align-items: center; margin: 0.5em 0;">
-      <span style="margin-right: 0.5em;">🧠</span>
-      <span>Identify mental barriers</span>
-    </div>
-    <div style="display: flex; align-items: center; margin: 0.5em 0;">
-      <span style="margin-right: 0.5em;">⚡</span>
-      <span>Create action scripts</span>
-    </div>
-    <p style="margin: 0.5em 0 0 0; color: #2A6972; font-size: 0.9em; font-weight: 500;">
-      4 steps → game plan → achieve your WISH!
-    </p>
-  </div>
-</div>
-
-   <!-- Timeline Section with Dynamic Progress - THEME COMPATIBLE VERSION -->
-<div class="wish-timeline-container">
-  <h4 class="wish-timeline-title">🎯 Timeline for Your WISH</h4>
   
   <div class="wish-timeline-input-group">
     <label for="wishTimelineSelect" class="wish-timeline-label">How many days to achieve this WISH?</label>
@@ -7981,58 +8260,9 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 </div>
 
 <!-- Past Entries Tab Content -->
-<div id="calendarTab" class="modern-tab-content" style="display:none; padding: 2em; box-sizing: border-box; max-width: 100%; overflow-x: hidden;">
-  <div class="tab-inner">
-<h2 class="journal-heading" style="text-align:center;margin-bottom:2rem;color:var(--font-main);">Your Past Entries</h2>
-
-    <!-- Collapsible Help Section -->
-    <div class="help-section" style="margin: 1em 0;">
-      <button onclick="toggleHelp('pastEntriesHelp')" 
-              style="
-                width: 100%;
-                background: rgba(42,105,114,0.1);
-                border: 1px solid rgba(42,105,114,0.3);
-                border-radius: 8px;
-                padding: 0.75em;
-                color: #2A6972;
-                font-weight: 500;
-                font-size: 0.9em;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                transition: all 0.2s ease;
-              ">
-        <span>📖 Browse Your History</span>
-        <span id="pastEntriesHelpIcon" style="transform: rotate(0deg); transition: transform 0.2s;">▼</span>
-      </button>
-      
-      <div id="pastEntriesHelp" style="
-        display: none;
-        background: var(--info-bg, #eaf6fb);
-        padding: 1em;
-        border-radius: 0 0 8px 8px;
-        border: 1px solid rgba(42,105,114,0.2);
-        border-top: none;
-        font-size: 0.85em;
-        line-height: 1.4;
-      ">
-        <div style="display: flex; align-items: center; margin: 0.5em 0;">
-          <span style="margin-right: 0.5em;">📅</span>
-          <span>Browse entries by date with calendar</span>
-        </div>
-        <div style="display: flex; align-items: center; margin: 0.5em 0;">
-          <span style="margin-right: 0.5em;">🔍</span>
-          <span>Search by keywords and themes</span>
-        </div>
-        <div style="display: flex; align-items: center; margin: 0.5em 0;">
-          <span style="margin-right: 0.5em;">✨</span>
-          <span>Track your growth journey</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="workflow-divider"></div>
+<div id="calendarTab" class="modern-tab-content" style="display:none; padding: 1em;">
+  <div class="tab-inner" style="width: 100%; box-sizing: border-box; padding: 0 0.5em;">
+    <h2 class="journal-heading" onclick="document.getElementById('pastEntriesInfoModal').style.display='flex'" style="text-align:center;margin-bottom:2rem;color:var(--font-main);cursor:pointer;transition:color 0.3s ease;" onmouseover="this.style.color='#4A9BA8'" onmouseout="this.style.color='var(--font-main)'">Your Past Entries</h2>
 
     <div id="calendarControls" style="text-align: center; margin-bottom: 1em;">
       <button class="btn" onclick="changeMonth(-1)">← Previous</button>
@@ -8042,7 +8272,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     
     <div class="workflow-divider"></div>
 
-<!-- Smart Search Bar UI -->
+    <!-- Smart Search Bar UI -->
     <div style="margin-top: 2em; width: calc(100% - 2em); margin-left: auto; margin-right: auto;">
       <h3 class="section-header" style="text-align:center;margin-bottom:1.5rem;color:var(--font-main);">Smart Search Your Journal</h3>
       <div style="display: flex; flex-direction: column; gap: 1em; width: 100%;">
@@ -8055,61 +8285,100 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         />
         <button class="btn" id="searchBtn" onclick="runSmartSearch()" disabled style="width: 100%;">Search</button>
       </div>
-  <div id="searchResults" style="margin-top: 1em; width: 100%;"></div>
-  <div id="emptyPastEntriesMessage" style="display:none;"></div>
-  <div id="calendarEntries" style="display:none;"></div>
+      <div id="searchResults" style="margin-top: 1em; width: 100%;"></div>
+      <div id="emptyPastEntriesMessage" style="display:none;"></div>
+      <div id="calendarEntries" style="display:none;"></div>
     </div>
 
-    <div id="pastEntries" style="margin-top: 1em;"></div>    
+    <div id="pastEntries" style="margin-top: 1em;"></div>
   </div>
 </div>
 
-  </div> <!-- Close tab-content-wrapper -->
+</div> <!-- Close tab-content-wrapper -->
 </div> <!-- Close modern-tab-container -->
 
+
+
 <!-- Footer Start -->
-  <footer style="margin-top: 2em; padding: 1em; font-size: 0.75em; text-align: center;">
+  <footer style="
+    margin-top: 2em; 
+    padding: 2em 1em; 
+    background: linear-gradient(135deg, rgba(42, 105, 114, 0.05) 0%, rgba(42, 105, 114, 0.02) 100%);
+    border-top: 1px solid rgba(42, 105, 114, 0.1);
+    text-align: center;
+  ">
     <!-- Copyright -->
-    <div style="margin-bottom: 1em; color: #666;">
-      © 2025 Pegasus Realm LLC
+    <div style="margin-bottom: 1em; color: var(--font-secondary); font-weight: 500;">
+      © 2025 Pegasus Realm LLC.
     </div>
     
-    <!-- Mobile-optimized links -->
+    <!-- Description Text -->
+    <div style="
+      max-width: 600px;
+      margin: 0 auto 1.5em auto;
+      padding: 0 1em;
+      color: var(--font-secondary);
+      font-size: 0.9em;
+      line-height: 1.6;
+    ">
+      InkWell is your trusted journaling companion, designed with evidence-based psychology principles to foster well-being, focus, and productivity.
+      <br><br>
+      Especially mindful of neurodivergent needs, with a focus on UI efficiency and clarity.
+    </div>
+    
+    <!-- Links - Responsive -->
     <div style="
       display: flex;
-      flex-direction: column;
-      gap: 0.5em;
-      margin-bottom: 1em;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5em 1.5em;
+      margin-bottom: 1.5em;
       font-size: 0.9em;
     ">
       <a href="https://www.inkwelljournal.io/privacy-policy/" target="_blank" 
-         style="color: #2A6972; text-decoration: none; padding: 0.25em;">Privacy</a>
+         style="color: #2A6972; text-decoration: none; padding: 0.25em; transition: color 0.2s ease;"
+         onmouseover="this.style.color='#4A9BA8'" 
+         onmouseout="this.style.color='#2A6972'">Privacy Policy</a>
+      <span style="color: #ccc;">|</span>
       <a href="https://www.inkwelljournal.io/terms-conditions/" target="_blank" 
-         style="color: #2A6972; text-decoration: none; padding: 0.25em;">Terms</a>
+         style="color: #2A6972; text-decoration: none; padding: 0.25em; transition: color 0.2s ease;"
+         onmouseover="this.style.color='#4A9BA8'" 
+         onmouseout="this.style.color='#2A6972'">Terms and Conditions</a>
+      <span style="color: #ccc;">|</span>
       <a href="https://www.inkwelljournal.io/alpha-beta-testers/" target="_blank" 
-         style="color: #2A6972; text-decoration: none; padding: 0.25em;">Beta Program</a>
+         style="color: #2A6972; text-decoration: none; padding: 0.25em; transition: color 0.2s ease;"
+         onmouseover="this.style.color='#4A9BA8'" 
+         onmouseout="this.style.color='#2A6972'">Alpha/Beta Tester Agreement</a>
     </div>
     
-    <!-- Social Links - Mobile Stacked -->
+    <!-- Social Links - Desktop: Side by Side, Mobile: Stacked -->
     <div style="
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       gap: 2em;
       margin-bottom: 1em;
     ">
       <!-- Pegasus Realm -->
-      <div style="display: flex; flex-direction: column; align-items: center;">
-        <img src="/PR Logo WHITE.svg" alt="Pegasus Realm" width="32" height="32" style="margin-bottom: 0.25em;"/>
-        <div style="display: flex; gap: 8px;">
-          <a href="https://www.instagram.com/pegasus.realm/" target="_blank" aria-label="PR Instagram">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="color: #2A6972;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5em;">
+        <img src="/PR Logo WHITE.svg" alt="Pegasus Realm" width="40" height="40" style="opacity: 0.8;"/>
+        <div style="font-size: 0.8em; color: var(--font-muted); margin-bottom: 0.25em;">Pegasus Realm</div>
+        <div style="display: flex; gap: 12px;">
+          <a href="https://www.instagram.com/pegasus.realm/" target="_blank" aria-label="Pegasus Realm Instagram"
+             style="transition: transform 0.2s ease;"
+             onmouseover="this.style.transform='scale(1.2)'" 
+             onmouseout="this.style.transform='scale(1)'">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" style="color: #2A6972;">
               <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/>
               <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
               <circle cx="17" cy="7" r="1.5" fill="currentColor"/>
             </svg>
           </a>
-          <a href="https://www.linkedin.com/company/pegasus-realm" target="_blank" aria-label="PR LinkedIn">
-            <svg width="16" height="16" fill="#2A6972" viewBox="0 0 24 24">
+          <a href="https://www.linkedin.com/company/pegasus-realm" target="_blank" aria-label="Pegasus Realm LinkedIn"
+             style="transition: transform 0.2s ease;"
+             onmouseover="this.style.transform='scale(1.2)'" 
+             onmouseout="this.style.transform='scale(1)'">
+            <svg width="20" height="20" fill="#2A6972" viewBox="0 0 24 24">
               <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
             </svg>
           </a>
@@ -8117,18 +8386,25 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       </div>
       
       <!-- Adam Grimm -->
-      <div style="display: flex; flex-direction: column; align-items: center;">
-        <img src="/AG Silhouette.svg" alt="Adam Grimm" width="32" height="32" style="margin-bottom: 0.25em;"/>
-        <div style="display: flex; gap: 8px;">
-          <a href="https://www.instagram.com/gestaltinsight/" target="_blank" aria-label="Adam Instagram">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="color: #2A6972;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5em;">
+        <img src="/AG Silhouette.svg" alt="Adam Grimm" width="40" height="40" style="opacity: 0.8;"/>
+        <div style="font-size: 0.8em; color: var(--font-muted); margin-bottom: 0.25em;">Adam Grimm</div>
+        <div style="display: flex; gap: 12px;">
+          <a href="https://www.instagram.com/gestaltinsight/" target="_blank" aria-label="Adam Grimm Instagram"
+             style="transition: transform 0.2s ease;"
+             onmouseover="this.style.transform='scale(1.2)'" 
+             onmouseout="this.style.transform='scale(1)'">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" style="color: #2A6972;">
               <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/>
               <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
               <circle cx="17" cy="7" r="1.5" fill="currentColor"/>
             </svg>
           </a>
-          <a href="https://www.linkedin.com/in/adamgrimm808/" target="_blank" aria-label="Adam LinkedIn">
-            <svg width="16" height="16" fill="#2A6972" viewBox="0 0 24 24">
+          <a href="https://www.linkedin.com/in/adamgrimm808/" target="_blank" aria-label="Adam Grimm LinkedIn"
+             style="transition: transform 0.2s ease;"
+             onmouseover="this.style.transform='scale(1.2)'" 
+             onmouseout="this.style.transform='scale(1)'">
+            <svg width="20" height="20" fill="#2A6972" viewBox="0 0 24 24">
               <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
             </svg>
           </a>
@@ -8168,9 +8444,10 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 </div>
 <!-- End mainUI -->
 
-  <div id="aboutInkwellModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(21,54,58,0.86); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:#fff; color:#2A6972; padding:2em 1.3em 1.5em 1.3em; border-radius:10px; max-width:560px; width:92%; max-height:86vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.13);">
-      <h2 style="margin-top:0; text-align:center;">About InkWell</h2>
+  <div id="aboutInkwellModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(21,54,58,0.86); z-index:9999; overflow-y:auto;">
+    <div style="display:flex; align-items:center; justify-content:center; min-height:100%; padding:20px;">
+      <div style="background:#fff; color:#2A6972; padding:2em 1.3em 1.5em 1.3em; border-radius:10px; max-width:560px; width:92%; max-height:90vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.13);">
+        <h2 style="margin-top:0; text-align:center;">About InkWell</h2>
       <div style="font-size:1em; line-height:1.65; margin-bottom:1.2em;">
         <strong>InkWell</strong> is part of the Pegasus Realm wellness ecosystem—designed for individuals, coaches, counselors, and mental health professionals seeking science-backed, intuitive tools for growth.
         <hr style="margin:1em 0;"/>
@@ -8212,12 +8489,265 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         </div>
       </div>
       <button class="btn" onclick="document.getElementById('aboutInkwellModal').style.display='none'">Close</button>
+      </div>
     </div>
   </div>
 
+<!-- Journal Info Modal -->
+<div id="journalInfoModal" class="info-modal-overlay">
+  <div class="info-modal-wrapper">
+    <div class="info-modal-content">
+      <h2>📝 Welcome to Your Journal</h2>
+      <p class="info-modal-subtitle">
+        <em>Your personal sanctuary for thoughts, dreams, and self-discovery.</em>
+      </p>
+    
+      <h3>What Makes InkWell Journaling Different?</h3>
+      
+      <h4>🎙️ InkOutLoud: Your Voice, Captured</h4>
+      <p>
+        Speak your thoughts naturally with our voice journaling feature. InkOutLoud records up to 90 seconds at a time—just press the button again to keep going. Your voice is analyzed for emotional patterns, helping you understand not just <em>what</em> you're saying, but <em>how</em> you're feeling as you say it.
+      </p>
+      
+      <h4>✨ Sophy: Your AI Journaling Companion</h4>
+      <p>
+        Sophy isn't just another chatbot. She's built on leading psychology frameworks:
+      </p>
+      <ul>
+        <li><strong>Gestalt Therapy</strong> for holistic self-awareness</li>
+        <li><strong>Positive Psychology</strong> for strength-based growth</li>
+        <li><strong>Cognitive Behavioral Therapy (CBT)</strong> to gently identify unhelpful thought patterns</li>
+      </ul>
+      
+      <p>Sophy can help you in two powerful ways:</p>
+      
+      <div class="info-modal-highlight-box">
+        <h4>💭 "Ask Sophy for a Prompt"</h4>
+        <p>
+          Stuck on what to write about? Sophy generates personalized prompts to spark reflection. Want something specific? Type a topic like "feeling overwhelmed at work" or "my relationships," and she'll tailor a prompt just for you.
+        </p>
+      </div>
+      
+      <div class="info-modal-highlight-box">
+        <h4>🧠 "Ask Sophy for Reflection"</h4>
+        <p>
+          After writing your entry, Sophy reads between the lines. She offers well-thought and supportive suggestions to help you reflect on your thoughts and patterns to promote positive growth while journaling. You can save Sophy's reflections with your journal or use them to update your entry to challenge yourself into better thought patterns.
+        </p>
+      </div>
+      
+      <h4>📎 Rich Multimedia Journaling</h4>
+      <p>
+        Attach photos, PDFs, or any files that enrich your story. A meaningful photo from your day, a screenshot of an inspiring quote, or a document you want to remember—it all lives here with your words.
+      </p>
+      
+      <h4>📬 Connect With Your Coach (Optional)</h4>
+      <p>
+        If you're working with a practitioner, you can choose to share specific entries with them. Just check the box, and they'll receive your reflections for discussion in your sessions.
+      </p>
+      
+      <hr class="info-modal-divider"/>
+      
+      <p class="info-modal-footer">
+        <strong>Your journal. Your pace. Your growth.</strong>
+      </p>
+    
+      <button class="btn" onclick="document.getElementById('journalInfoModal').style.display='none'">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- WISH Info Modal -->
+<div id="wishInfoModal" class="info-modal-overlay">
+  <div class="info-modal-wrapper">
+    <div class="info-modal-content">
+      <h2>🎯 Welcome to Your WISH</h2>
+      <p class="info-modal-subtitle">
+        <em>Your science-backed roadmap to meaningful achievement.</em>
+      </p>
+    
+      <h3>What is the WISH Method?</h3>
+      <p>
+        WISH is adapted from groundbreaking research by psychologists <strong>Gabriele Oettingen</strong> (NYU) and <strong>Peter Gollwitzer</strong>—the science behind Mental Contrasting with Implementation Intentions (MCII). This evidence-based framework has been proven <strong>more effective than SMART goals</strong> at helping people achieve what truly matters to them.
+      </p>
+      <p>
+        Unlike traditional goal-setting that focuses only on the positive, WISH helps you dream realistically, anticipate obstacles, and create actionable "if-then" plans.
+      </p>
+      
+      <hr class="info-modal-divider"/>
+      
+      <h3>The Four Steps of WISH</h3>
+      
+      <div class="info-modal-highlight-box">
+        <h4>🎯 Want</h4>
+        <p>
+          Define a deeply meaningful, specific, and attainable goal. What do you genuinely want to accomplish? Sophy helps you clarify if this is both challenging and realistic.
+        </p>
+      </div>
+      
+      <div class="info-modal-highlight-box">
+        <h4>✨ Imagine</h4>
+        <p>
+          Vividly visualize your best possible outcome. What does success look and feel like? How will your life be better? Sophy guides you to make this vision concrete and motivating.
+        </p>
+      </div>
+      
+      <div class="info-modal-highlight-box">
+        <h4>🧠 Snags</h4>
+        <p>
+          Identify the internal and external obstacles that could derail you. What habits, thoughts, or beliefs might get in your way? Sophy helps you recognize patterns that often go unnoticed.
+        </p>
+      </div>
+      
+      <div class="info-modal-highlight-box">
+        <h4>⚡ How</h4>
+        <p>
+          Create specific "if-then" action scripts: "If [obstacle] happens, then I will [specific action]." These implementation intentions transform vague hopes into concrete plans. Sophy provides feedback to strengthen your strategies.
+        </p>
+      </div>
+      
+      <hr class="info-modal-divider"/>
+      
+      <h3>Your Personal WISH Coach: Sophy</h3>
+      <p>
+        At each step, Sophy offers <strong>directed, research-informed feedback</strong> tailored to that specific stage of the WISH framework. She's not just giving generic advice—she's trained to help you properly use the method according to the science.
+      </p>
+      
+      <h3>🎯 Timeline Tracker</h3>
+      <p>
+        Set your desired timeline (30, 60, or 90 days) and watch your progress unfold. The gentle tracker isn't a pressure tool—it's a visual companion reminding you of your commitment and showing how far you've come.
+      </p>
+      
+      <h3>Why WISH Works</h3>
+      <p>
+        <strong>Mental Contrasting</strong> (imagining success + obstacles) primes your brain to recognize opportunities and take action. <strong>Implementation Intentions</strong> (if-then plans) automate your response to challenges. Together, they create sustainable behavior change rooted in decades of psychological research.
+      </p>
+      
+      <hr class="info-modal-divider"/>
+      
+      <p class="info-modal-footer">
+        <strong>Your vision. Your timeline. Your WISH.</strong>
+      </p>
+    
+      <button class="btn" onclick="document.getElementById('wishInfoModal').style.display='none'">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Past Entries Info Modal -->
+<div id="pastEntriesInfoModal" class="info-modal-overlay">
+  <div class="info-modal-wrapper">
+    <div class="info-modal-content">
+      <h2>📖 Welcome to Your Past Entries</h2>
+      <p class="info-modal-subtitle">
+        <em>Your complete journal history at your fingertips.</em>
+      </p>
+    
+      <h3>🔍 Smart Search Your Journal</h3>
+      <p>
+        InkWell's <strong>Smart Search</strong> uses AI to understand what you're really looking for—not just matching keywords, but grasping the meaning behind your question.
+      </p>
+      
+      <div class="info-modal-highlight-box">
+        <h4>How it works:</h4>
+        <ul>
+          <li>Type natural language queries like "when I felt anxious" or "times I succeeded"</li>
+          <li>Powered by semantic search technology that understands context</li>
+          <li>Finds relevant entries even if they don't contain your exact words</li>
+        </ul>
+      </div>
+      
+      <p><strong>Example searches:</strong></p>
+      <ul>
+        <li>"moments of growth"</li>
+        <li>"burnout last month"</li>
+        <li>"when I felt proud"</li>
+        <li>"relationship struggles"</li>
+      </ul>
+      
+      <hr class="info-modal-divider"/>
+      
+      <h3>📅 Visual Calendar Navigation</h3>
+      <p>
+        Browse your entries by date with an interactive calendar view. Days with entries are highlighted, making it easy to:
+      </p>
+      <ul>
+        <li>See your journaling patterns at a glance</li>
+        <li>Jump to specific dates quickly</li>
+        <li>Track your consistency over time</li>
+      </ul>
+      <p>
+        <strong>New coach replies</strong> are marked with special indicators—you'll never miss feedback from your practitioner.
+      </p>
+      
+      <hr class="info-modal-divider"/>
+      
+      <h3>📝 Full Entry Management</h3>
+      <p>Each past entry shows everything you saved:</p>
+      
+      <div class="info-modal-highlight-box">
+        <h4>✏️ Edit Your Entries</h4>
+        <p>
+          Made a typo? Want to add more context? Click Edit to refine any entry.
+        </p>
+      </div>
+      
+      <div class="info-modal-highlight-box">
+        <h4>🗑️ Delete Entries</h4>
+        <p>
+          Complete control over your journal history. Delete entries whenever you choose.
+        </p>
+      </div>
+      
+      <div class="info-modal-highlight-box">
+        <h4>📎 View Attachments</h4>
+        <p>
+          See all photos, PDFs, and files you attached to each entry. Your memories preserved together.
+        </p>
+      </div>
+      
+      <div class="info-modal-highlight-box">
+        <h4>🎯 Linked WISH Data</h4>
+        <p>
+          Entries connected to your WISH goals show the relevant manifests, helping you track progress toward your vision.
+        </p>
+      </div>
+      
+      <div class="info-modal-highlight-box">
+        <h4>💬 Coach Replies</h4>
+        <p>
+          If you work with a practitioner, their responses appear directly on your entries. New replies are highlighted so you can see fresh feedback at a glance.
+        </p>
+      </div>
+      
+      <hr class="info-modal-divider"/>
+      
+      <h3>Why Past Entries Matter</h3>
+      <p>
+        Your journal isn't just a collection of words—it's a record of your growth journey. By revisiting past entries, you can:
+      </p>
+      <ul>
+        <li>Recognize patterns in your thoughts and behaviors</li>
+        <li>Celebrate how far you've come</li>
+        <li>Gain perspective on recurring challenges</li>
+        <li>Track progress toward your WISH goals</li>
+        <li>Learn from your coach's insights over time</li>
+      </ul>
+      
+      <hr class="info-modal-divider"/>
+      
+      <p class="info-modal-footer">
+        <strong>Your history. Your growth. Your story.</strong>
+      </p>
+    
+      <button class="btn" onclick="document.getElementById('pastEntriesInfoModal').style.display='none'">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- What's New Modal -->
-<div id="whatsNewModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(21,54,58,0.86); z-index:10000; align-items:center; justify-content:center;">
-  <div style="background: var(--bg-card, #fff); color: var(--font-main, #2A6972); padding:2em 1.5em 1.5em 1.5em; border-radius:12px; max-width:700px; width:94%; max-height:90vh; overflow-y:auto; box-shadow:0 12px 40px rgba(0,0,0,0.15); border: 1px solid var(--border, rgba(42,105,114,0.1));">
+<div id="whatsNewModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(21,54,58,0.86); z-index:10000; overflow-y:auto;">
+  <div style="display:flex; align-items:center; justify-content:center; min-height:100%; padding:20px;">
+    <div style="background: var(--bg-card, #fff); color: var(--font-main, #2A6972); padding:2em 1.5em 1.5em 1.5em; border-radius:12px; max-width:700px; width:94%; max-height:90vh; overflow-y:auto; box-shadow:0 12px 40px rgba(0,0,0,0.15); border: 1px solid var(--border, rgba(42,105,114,0.1));">
     
     <div style="text-align: center; margin-bottom: 1.5em;">
       <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 80px; margin-bottom: 0.5em;" />
@@ -8247,6 +8777,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         <ul style="margin: 0.3em 0 0 1.2em; padding: 0;">
           <li>Personalized prompts to spark meaningful reflection</li>
           <li>AI-powered insights that recognize patterns and growth opportunities</li>
+          <li>SMS notifications - stay connected with text messages including WISH milestones, gratitude prompts, and coach replies</li>
           <li>Weekly email insights analyzing your mood patterns and growth themes</li>
           <li>Evidence-based coaching grounded in positive psychology principles</li>
           <li>24/7 availability - Sophy never sleeps, so your growth never has to pause</li>
@@ -8284,6 +8815,8 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       <div style="background: var(--info-bg, rgba(42,105,114,0.1)); padding: 1em; border-radius: 8px; margin: 1.2em 0; border-left: 4px solid var(--brand-primary, #2A6972);">
         <h4 style="color: var(--brand-primary, #2A6972); font-size: 1em; margin: 0 0 0.5em 0;">🎯 What's New:</h4>
         <ul style="margin: 0.3em 0 0 1.2em; padding: 0;">
+          <li><strong>📱 SMS Notifications</strong> - Stay connected with personalized text messages from Sophy including WISH milestones, daily gratitude prompts, coach replies, and weekly insights</li>
+          <li><strong>🙏 Gratitude via SMS</strong> - Reply to Sophy's gratitude prompts and build your personal gratitude collection right from your phone</li>
           <li>Enhanced voice journaling with emotional insights</li>
           <li>Behavioral pattern recognition for personalized coaching</li>
           <li>Weekly insight emails from Sophy (opt-out available in settings)</li>
@@ -8313,14 +8846,16 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     </div>
     
     <div style="text-align: center; margin-top: 1.5em;">
-      <button class="btn" onclick="closeWhatsNewModal()" style="background: var(--brand-primary, #2A6972); color: white; padding: 0.8em 2em; font-size: 1em;">Get Started</button>
+      <button class="btn" onclick="closeWhatsNewModal()" style="padding: 0.8em 2em; font-size: 1em;">Get Started</button>
+    </div>
     </div>
   </div>
 </div>
 
 <!-- Manifest Data Modal -->
-<div id="manifestDataModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 9999;">
-  <div style="background: var(--bg-card); color: var(--font-main); padding: 2em; border-radius: 10px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+<div id="manifestDataModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto;">
+  <div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 20px;">
+    <div style="background: var(--bg-card); color: var(--font-main); padding: 2em; border-radius: 10px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
     <h2 style="margin-top: 0; text-align: center; color: var(--brand-primary);">🌟 Manifest Data</h2>
     
     <div id="manifestDataContent" style="line-height: 1.6;">
@@ -8330,13 +8865,15 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     <div style="text-align: center; margin-top: 2em;">
       <button class="btn" onclick="closeManifestModal()" style="background-color: var(--btn-bg); color: var(--btn-font);">Close</button>
     </div>
+    </div>
   </div>
 </div>
 
 <!-- Reflection Data Modal -->
-<div id="reflectionDataModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 9999;">
-  <div style="background: var(--bg-card); color: var(--font-main); padding: 2em; border-radius: 10px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
-    <h2 style="margin-top: 0; text-align: center; color: #7BB8C4;">💭 Sophy's Reflection</h2>
+<div id="reflectionDataModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto;">
+  <div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 20px;">
+    <div style="background: var(--bg-card); color: var(--font-main); padding: 2em; border-radius: 10px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+      <h2 style="margin-top: 0; text-align: center; color: #7BB8C4;">💭 Sophy's Reflection</h2>
     
     <div id="reflectionDataContent" style="line-height: 1.6;">
       <!-- Content will be populated by JavaScript -->
@@ -8345,15 +8882,16 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     <div style="text-align: center; margin-top: 2em;">
       <button class="btn" onclick="closeReflectionModal()" style="background-color: var(--btn-bg); color: var(--btn-font);">Close</button>
     </div>
+    </div>
   </div>
 </div>
 
 
 
 <!-- User Settings Modal -->
-<div id="userSettingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 9999;">
-  <div class="card-block" style="max-width: 450px; width: 90%; background: white; padding: 2em; border-radius: 8px; text-align: center; max-height: 85vh; overflow-y: auto;">
-    <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 120px; margin-bottom: 1.5em;" />
+<div id="userSettingsModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto;">
+  <div class="card-block" style="max-width: 450px; width: 90%; background: white; padding: 2em; border-radius: 8px; text-align: center; max-height: 90vh; overflow-y: auto; margin: auto;">
+      <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 120px; margin-bottom: 1.5em;" />
     
     <h2 style="margin-top: 0; margin-bottom: 1.5em; color: #2A6972; font-size: 1.3em;">
       ⚙️ Settings
@@ -8386,6 +8924,60 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       </div>
     </div>
     
+    <!-- SMS Notifications Section -->
+    <div class="sms-section">
+      <h3>
+        📱 SMS Notifications
+      </h3>
+      
+      <div class="sms-input-group">
+        <label for="settingsPhone">Phone Number:</label>
+        <input type="tel" id="settingsPhone" placeholder="+1 (555) 123-4567" />
+        <p class="sms-help-text">
+          Format: +15551234567 (include country code with +)
+        </p>
+        <div id="settingsPhoneError" class="sms-error"></div>
+      </div>
+      
+      <div class="sms-preferences-box">
+        <label class="sms-opt-in-label">
+          <input type="checkbox" id="smsOptInSettings" checked />
+          <span><strong>Enable SMS Notifications</strong></span>
+        </label>
+        <p class="sms-preferences-info">
+          Receive InkWell notifications via text message. You can unsubscribe anytime by unchecking this box or texting STOP.
+        </p>
+        
+        <div id="smsPreferences" class="sms-preference-list">
+          <label class="sms-preference-item">
+            <input type="checkbox" id="smsWishMilestones" checked />
+            <span>🌱 WISH milestone reminders</span>
+          </label>
+          <label class="sms-preference-item">
+            <input type="checkbox" id="smsDailyPrompts" />
+            <span>✍️ Daily journal prompts</span>
+          </label>
+          <label class="sms-preference-item">
+            <input type="checkbox" id="smsGratitudePrompts" checked />
+            <span>🙏 Daily gratitude from Sophy</span>
+          </label>
+          <label class="sms-preference-item">
+            <input type="checkbox" id="smsCoachReplies" checked />
+            <span>💬 Coach replies</span>
+          </label>
+          <label class="sms-preference-item">
+            <input type="checkbox" id="smsWeeklyInsights" />
+            <span>📊 Weekly insights</span>
+          </label>
+        </div>
+      </div>
+      
+      <button onclick="testSMS()" class="btn sms-test-button">
+        📲 Send Test SMS
+      </button>
+      <div id="testSMSStatus" class="sms-status"></div>
+    </div>
+    
     <!-- Password Section -->
     <div style="background: #fff9f0; border: 1px solid #f0d5a8; border-radius: 8px; padding: 1.5em; margin-bottom: 1.5em; text-align: left;">
       <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
@@ -8410,7 +9002,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
           style="width: 100%; padding: 1em 1.2em; background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%); border: 2px solid rgba(42,105,114,0.15); border-radius: 10px; backdrop-filter: blur(3px); box-shadow: 0 2px 8px rgba(42,105,114,0.08); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: #0D3F45; font-family: var(--body-font); font-size: 0.9em; box-sizing: border-box;" />
       </div>
       
-      <button onclick="changePassword()" class="btn" style="width: 100%; background: #2A6972; color: white; margin-bottom: 0.5em;">
+      <button onclick="changePassword()" class="btn" style="width: 100%; margin-bottom: 0.5em;">
         🔑 Change Password
       </button>
       
@@ -8423,7 +9015,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 <div style="background: #f0f8ff; border: 1px solid #c5d7f0; border-radius: 8px; padding: 1.5em; margin-bottom: 1.5em; text-align: left;">
   <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em; justify-content: space-between;">
     🔹 My Coach
-    <button onclick="clearPendingCoachInvite()" style="background: #f8f9fa; border: 1px solid #ccc; border-radius: 3px; padding: 0.2em 0.5em; font-size: 0.8em; cursor: pointer; color: #666;">🔄 Refresh</button>
+    <button onclick="clearPendingCoachInvite()" class="btn-gray" style="padding: 0.2em 0.5em; font-size: 0.8em;">🔄 Refresh</button>
   </h3>
   
   <!-- Current Connection Status -->
@@ -8446,7 +9038,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
            style="width: 100%; padding: 0.6em; border: 1px solid #ccc; border-radius: 5px; background-color: white; color: #0D3F45; font-size: 0.9em; box-sizing: border-box;" />
   </div>
   
-  <button onclick="inviteCoach()" class="btn" style="width: 100%; margin-bottom: 1em; background: #2A6972; color: white;">
+  <button onclick="inviteCoach()" class="btn" style="width: 100%; margin-bottom: 1em;">
     <span id="inviteButtonText">Send InkWell Invitation</span>
   </button>
   
@@ -8454,7 +9046,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   
   <!-- Disconnect Section (initially hidden) -->
   <div id="disconnectSection" style="display: none; border-top: 1px solid #ddd; padding-top: 1em; margin-top: 1em;">
-    <button onclick="disconnectCoach()" class="btn" style="width: 100%; background: #dc3545; color: white;">
+    <button onclick="disconnectCoach()" class="btn-danger" style="width: 100%;">
       🚫 Disconnect from coach
     </button>
     <p style="font-size: 0.8em; color: #666; text-align: center; margin: 0.5em 0 0 0;">
@@ -8521,10 +9113,10 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       
       <!-- Hidden test buttons for development (only visible in localhost) -->
       <div id="weeklyInsightsTestSection" style="display: none; margin-top: 1em; padding-top: 1em; border-top: 1px dashed #ccc;">
-        <button id="testWeeklyInsightsBtn" class="btn" style="font-size: 0.8em; background: #ff9800; color: white; padding: 0.4em 0.8em; margin-right: 0.5em;">
+        <button id="testWeeklyInsightsBtn" class="btn-warning" style="font-size: 0.8em; padding: 0.4em 0.8em; margin-right: 0.5em;">
           🧪 Test Weekly Insights
         </button>
-        <button id="testMonthlyInsightsBtn" class="btn" style="font-size: 0.8em; background: #D49489; color: white; padding: 0.4em 0.8em;">
+        <button id="testMonthlyInsightsBtn" class="btn-sophy" style="font-size: 0.8em; padding: 0.4em 0.8em;">
           🌺 Test Monthly Insights
         </button>
         <p style="font-size: 0.75em; color: #666; margin: 0.5em 0 0 0; font-style: italic;">
@@ -8619,13 +9211,15 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   Cancel
 </button>
     </div>
+    </div>
   </div>
 </div>
 
 <!-- Delete Account Confirmation Modal -->
-<div id="deleteAccountModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 10000;">
-  <div class="card-block" style="max-width: 500px; width: 90%; background: white; padding: 2em; border-radius: 12px; text-align: center; border: 3px solid #d32f2f;">
-    <div style="font-size: 4em; margin-bottom: 0.5em;">⚠️</div>
+<div id="deleteAccountModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 10000; overflow-y: auto;">
+  <div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 20px;">
+    <div class="card-block" style="max-width: 500px; width: 90%; background: white; padding: 2em; border-radius: 12px; text-align: center; border: 3px solid #d32f2f; max-height: 90vh; overflow-y: auto;">
+      <div style="font-size: 4em; margin-bottom: 0.5em;">⚠️</div>
     
     <h2 style="margin-top: 0; margin-bottom: 1em; color: #d32f2f; font-size: 1.4em;">
       Delete Account Permanently
@@ -8686,6 +9280,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     <p style="font-size: 0.8em; color: #666; margin-top: 1em; line-height: 1.4;">
       After deletion, you'll receive a confirmation email and be logged out immediately.
     </p>
+    </div>
   </div>
 </div>
 
@@ -9522,7 +10117,7 @@ function formatReadableDate(date) {
     if (modal) {
       // Load current user data
       loadCurrentUserSettings();
-      modal.style.display = "flex";
+      modal.classList.remove("hidden");
     }
   }
 
@@ -9530,9 +10125,61 @@ function formatReadableDate(date) {
   function closeUserSettingsModal() {
     const modal = document.getElementById("userSettingsModal");
     if (modal) {
-      modal.style.display = "none";
+      modal.classList.add("hidden");
     }
   }
+
+  // Test SMS function
+  async function testSMS() {
+    const statusDiv = document.getElementById("testSMSStatus");
+    const phone = document.getElementById("settingsPhone").value.trim();
+    
+    if (!phone) {
+      if (statusDiv) {
+        statusDiv.innerHTML = "⚠️ Please enter a phone number first";
+        statusDiv.style.color = "#d32f2f";
+      }
+      return;
+    }
+    
+    // Validate phone
+    const phoneValidation = window.validatePhoneNumber(phone);
+    if (!phoneValidation.valid) {
+      if (statusDiv) {
+        statusDiv.innerHTML = "⚠️ " + phoneValidation.error;
+        statusDiv.style.color = "#d32f2f";
+      }
+      return;
+    }
+    
+    try {
+      if (statusDiv) {
+        statusDiv.innerHTML = "📤 Sending test SMS...";
+        statusDiv.style.color = "#666";
+      }
+      
+      const sendTestSMS = window.functions ? window.httpsCallable(window.functions, 'sendTestSMS') : firebase.functions().httpsCallable('sendTestSMS');
+      
+      await sendTestSMS({ phoneNumber: phoneValidation.formatted });
+      
+      if (statusDiv) {
+        statusDiv.innerHTML = "✅ Test SMS sent successfully! Check your phone.";
+        statusDiv.style.color = "#38a169";
+        setTimeout(() => {
+          statusDiv.innerHTML = "";
+        }, 5000);
+      }
+    } catch (error) {
+      console.error("Test SMS error:", error);
+      if (statusDiv) {
+        statusDiv.innerHTML = "❌ Failed to send: " + (error.message || "Unknown error");
+        statusDiv.style.color = "#d32f2f";
+      }
+    }
+  }
+  
+  // Make testSMS globally available
+  window.testSMS = testSMS;
 
 // Load current user settings into the modal
   async function loadCurrentUserSettings() {
@@ -9554,12 +10201,44 @@ function formatReadableDate(date) {
             // Populate form fields with fallbacks for missing data
             const usernameField = document.getElementById("settingsUserName");
             const avatarField = document.getElementById("settingsAvatar");
+            const phoneField = document.getElementById("settingsPhone");
+            const smsOptInField = document.getElementById("smsOptInSettings");
             
             if (usernameField) {
               usernameField.value = userData.signupUsername || userData.displayName || "";
             }
             if (avatarField) {
               avatarField.value = userData.avatar || "";
+            }
+            
+            // Load phone number and SMS preferences
+            if (phoneField) {
+              phoneField.value = userData.phoneNumber || "";
+            }
+            if (smsOptInField) {
+              smsOptInField.checked = userData.smsOptIn || false;
+            }
+            
+            // Load SMS preferences
+            const smsWishMilestonesField = document.getElementById("smsWishMilestones");
+            const smsDailyPromptsField = document.getElementById("smsDailyPrompts");
+            const smsGratitudePromptsField = document.getElementById("smsGratitudePrompts");
+            const smsCoachRepliesField = document.getElementById("smsCoachReplies");
+            const smsWeeklyInsightsField = document.getElementById("smsWeeklyInsights");
+            
+            if (userData.smsPreferences) {
+              if (smsWishMilestonesField) smsWishMilestonesField.checked = userData.smsPreferences.wishMilestones !== false;
+              if (smsDailyPromptsField) smsDailyPromptsField.checked = userData.smsPreferences.dailyPrompts || false;
+              if (smsGratitudePromptsField) smsGratitudePromptsField.checked = userData.smsPreferences.gratitudePrompts !== false;
+              if (smsCoachRepliesField) smsCoachRepliesField.checked = userData.smsPreferences.coachReplies !== false;
+              if (smsWeeklyInsightsField) smsWeeklyInsightsField.checked = userData.smsPreferences.weeklyInsights || false;
+            } else {
+              // Default preferences
+              if (smsWishMilestonesField) smsWishMilestonesField.checked = true;
+              if (smsDailyPromptsField) smsDailyPromptsField.checked = false;
+              if (smsGratitudePromptsField) smsGratitudePromptsField.checked = true;
+              if (smsCoachRepliesField) smsCoachRepliesField.checked = true;
+              if (smsWeeklyInsightsField) smsWeeklyInsightsField.checked = false;
             }
             
             // Load insights preferences
@@ -9646,26 +10325,75 @@ function startPractitionerStatusRefresh() {
       const avatar = document.getElementById("settingsAvatar").value.trim();
       const theme = document.getElementById("settingsThemeSelect").value;
       
+      // Get phone number and SMS preferences
+      const phone = document.getElementById("settingsPhone").value.trim();
+      const smsOptIn = document.getElementById("smsOptInSettings").checked;
+      const smsWishMilestones = document.getElementById("smsWishMilestones").checked;
+      const smsDailyPrompts = document.getElementById("smsDailyPrompts").checked;
+      const smsCoachReplies = document.getElementById("smsCoachReplies").checked;
+      const smsWeeklyInsights = document.getElementById("smsWeeklyInsights").checked;
+      
+      // Validate phone number if provided
+      if (phone) {
+        const phoneValidation = window.validatePhoneNumber(phone);
+        if (!phoneValidation.valid) {
+          const errorDiv = document.getElementById("settingsPhoneError");
+          if (errorDiv) {
+            errorDiv.textContent = phoneValidation.error;
+            errorDiv.style.display = "block";
+          }
+          alert(phoneValidation.error);
+          return;
+        }
+        // Hide error if validation passes
+        const errorDiv = document.getElementById("settingsPhoneError");
+        if (errorDiv) {
+          errorDiv.style.display = "none";
+        }
+      }
+      
       // Get insights preferences
       const weeklyInsights = document.getElementById("weeklyInsightsEnabled").checked;
       const monthlyInsights = document.getElementById("monthlyInsightsEnabled").checked;
 
+      // Prepare update data
+      const updateData = {
+        signupUsername: username,
+        displayName: username,
+        avatar: avatar,
+        // Insights preferences
+        insightsPreferences: {
+          weeklyEnabled: weeklyInsights,
+          monthlyEnabled: monthlyInsights,
+          updatedAt: window.serverTimestamp()
+        },
+        // Add updatedAt timestamp to track when profile was last modified
+        updatedAt: window.serverTimestamp()
+      };
+      
+      // Add phone data if provided
+      if (phone) {
+        const phoneValidation = window.validatePhoneNumber(phone);
+        updateData.phoneNumber = phoneValidation.formatted;
+        updateData.smsOptIn = smsOptIn;
+        updateData.smsPreferences = {
+          wishMilestones: smsWishMilestones,
+          dailyPrompts: smsDailyPrompts,
+          gratitudePrompts: document.getElementById('smsGratitudePrompts')?.checked || false,
+          coachReplies: smsCoachReplies,
+          weeklyInsights: smsWeeklyInsights
+        };
+      } else {
+        // If phone is removed, clear it from Firestore
+        updateData.phoneNumber = null;
+        updateData.smsOptIn = false;
+        updateData.smsPreferences = null;
+      }
+
       // Update Firestore user document with merge to handle missing fields
       if (window.db) {
         // Use setDoc with merge to ensure fields are created if they don't exist
-        await window.setDoc(window.doc(window.db, "users", auth.currentUser.uid), {
-          signupUsername: username,
-          displayName: username,
-          avatar: avatar,
-          // Insights preferences
-          insightsPreferences: {
-            weeklyEnabled: weeklyInsights,
-            monthlyEnabled: monthlyInsights,
-            updatedAt: window.serverTimestamp()
-          },
-          // Add updatedAt timestamp to track when profile was last modified
-          updatedAt: window.serverTimestamp()
-        }, { merge: true }); // This ensures existing fields are preserved
+        await window.setDoc(window.doc(window.db, "users", auth.currentUser.uid), updateData, { merge: true }); // This ensures existing fields are preserved
 
         // Update Firebase Auth profile
         await window.updateProfile(auth.currentUser, { 
@@ -9702,13 +10430,14 @@ function startPractitionerStatusRefresh() {
       const saveButton = document.querySelector('button[onclick="saveUserSettings()"]');
       if (saveButton) {
         const originalText = saveButton.innerHTML;
+        const originalClass = saveButton.className;
         saveButton.innerHTML = "✅ Saved";
-        saveButton.style.backgroundColor = "#4CAF50";
+        saveButton.className = "btn-success";
         
         // Reset button after 2 seconds
         setTimeout(() => {
           saveButton.innerHTML = originalText;
-          saveButton.style.backgroundColor = "var(--brand-primary)";
+          saveButton.className = originalClass;
         }, 2000);
       }
 
@@ -10535,7 +11264,7 @@ function startPractitionerStatusRefresh() {
 </script>
 
 
-<script defer type="module" src="./auth.js"></script>
+<script defer type="module" src="./auth.js?v=1.8"></script>
 
 
 <script>
@@ -10810,7 +11539,7 @@ async function loadPractitionerStatus() {
        style="width: 100%; padding: 0.6em; border: 1px solid ${selectBorder}; border-radius: 5px; background-color: ${selectBg}; color: ${selectColor}; font-size: 0.9em; box-sizing: border-box;">
   ${practitionerOptions}
 </select>
-       <button id="connectToPractitionerBtn" class="btn" onclick="window.connectToApprovedPractitioner()" style="width: 100%; margin-top: 0.5em; background: #17a2b8; color: white; transition: all 0.3s ease;">
+       <button id="connectToPractitionerBtn" class="btn-info" onclick="window.connectToApprovedPractitioner()" style="width: 100%; margin-top: 0.5em; transition: all 0.3s ease;">
   Connect to Selected Practitioner
 </button>
         </div>
@@ -10920,15 +11649,17 @@ const connectButton = document.getElementById('connectToPractitionerBtn');
     // Show error feedback on button
     if (connectButton) {
       const originalText = connectButton.innerHTML;
-      const originalColor = connectButton.style.backgroundColor;
+      const originalClass = connectButton.className;
       
       connectButton.innerHTML = "❌ Please select a practitioner";
-      connectButton.style.backgroundColor = "#dc3545";
+      connectButton.className = "btn-danger";
+      connectButton.style.width = "100%";
+      connectButton.style.marginTop = "0.5em";
       connectButton.disabled = true;
       
       setTimeout(() => {
         connectButton.innerHTML = originalText;
-        connectButton.style.backgroundColor = originalColor;
+        connectButton.className = originalClass;
         connectButton.disabled = false;
       }, 3000);
     }
@@ -10940,7 +11671,9 @@ const connectButton = document.getElementById('connectToPractitionerBtn');
     if (!auth?.currentUser) {
       if (connectButton) {
         connectButton.innerHTML = "❌ Please log in first";
-        connectButton.style.backgroundColor = "#dc3545";
+        connectButton.className = "btn-danger";
+        connectButton.style.width = "100%";
+        connectButton.style.marginTop = "0.5em";
       }
       return;
     }
@@ -10948,7 +11681,9 @@ const connectButton = document.getElementById('connectToPractitionerBtn');
     // Show loading state
     if (connectButton) {
       connectButton.innerHTML = "🔄 Connecting...";
-      connectButton.style.backgroundColor = "#6c757d";
+      connectButton.className = "btn-gray";
+      connectButton.style.width = "100%";
+      connectButton.style.marginTop = "0.5em";
       connectButton.disabled = true;
     }
     
@@ -10965,7 +11700,9 @@ const connectButton = document.getElementById('connectToPractitionerBtn');
   // Show success state with animation
     if (connectButton) {
       connectButton.innerHTML = `✅ Connected to ${selectedName}!`;
-      connectButton.style.backgroundColor = "#28a745";
+      connectButton.className = "btn-success";
+      connectButton.style.width = "100%";
+      connectButton.style.marginTop = "0.5em";
       connectButton.style.transform = "scale(1.05)";
       connectButton.style.transition = "all 0.3s ease";
       
@@ -11008,12 +11745,17 @@ async function clearPendingPractitionerInvite() {
     
     // Show error state
     if (connectButton) {
+      const originalText = "Connect to Selected Practitioner";
       connectButton.innerHTML = "❌ Connection failed - try again";
-      connectButton.style.backgroundColor = "#dc3545";
+      connectButton.className = "btn-danger";
+      connectButton.style.width = "100%";
+      connectButton.style.marginTop = "0.5em";
       
       setTimeout(() => {
-        connectButton.innerHTML = "Connect to Selected Practitioner";
-        connectButton.style.backgroundColor = "#17a2b8";
+        connectButton.innerHTML = originalText;
+        connectButton.className = "btn-info";
+        connectButton.style.width = "100%";
+        connectButton.style.marginTop = "0.5em";
         connectButton.disabled = false;
       }, 3000);
     }
@@ -11310,8 +12052,9 @@ window.OnboardingOverlay = {
 
     document.body.appendChild(overlay);
     
-    // Position modal near target element if specified
-    if (config.target) {
+    // Only position modal near target element if NOT in a scrolling context
+    // For complex modals with lists, keep centered instead
+    if (config.target && !config.keepCentered) {
       setTimeout(() => this.positionNearTarget(config.target), 50);
     }
 
@@ -11495,6 +12238,7 @@ window.OnboardingManager = {
     OnboardingOverlay.create({
       id: 'wish_tab_intro',
       target: '.wish-section',
+      keepCentered: true,
       icon: '🎯',
       title: 'Welcome to the WISH Framework!',
       content: `
@@ -11509,7 +12253,7 @@ window.OnboardingManager = {
       `,
       primaryButton: 'Start My WISH',
       primaryAction: 'OnboardingManager.startWishAction()',
-      pointer: true
+      pointer: false
     });
   },
 
@@ -11665,10 +12409,13 @@ document.addEventListener('DOMContentLoaded', function() {
   border-radius: 16px;
   max-width: 480px;
   width: 90%;
+  max-height: 85vh;
   box-shadow: var(--shadow-xl);
   border: 1px solid var(--border-light);
   animation: slideUp 0.3s ease forwards;
   transform: translateY(20px);
+  overflow-y: auto;
+  z-index: 10001;
 }
 
 .onboarding-content {

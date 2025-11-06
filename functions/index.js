@@ -11,6 +11,9 @@ const ANTHROPIC_API_KEY = defineSecret("ANTHROPIC_API_KEY");
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 const MAILCHIMP_API_KEY = defineSecret("MAILCHIMP_API_KEY");
 const MAILCHIMP_LIST_ID = defineSecret("MAILCHIMP_LIST_ID");
+const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
+const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
+const TWILIO_PHONE_NUMBER = defineSecret("TWILIO_PHONE_NUMBER");
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 if (!getApps().length) {
   admin.initializeApp();
@@ -410,7 +413,7 @@ exports.askSophy = onRequest({ secrets: [ANTHROPIC_API_KEY] }, async (req, res) 
     }
     
     // Enhanced system prompt with behavioral awareness
-    const systemPrompt = `You are Sophy, a supportive journaling assistant informed by Gestalt Therapy, Positive Psychology, and evidence-based goal achievement research.
+    const systemPrompt = `You are Sophy, a supportive journaling assistant informed by Gestalt Therapy, Positive Psychology, Cognitive Behavioral Therapy (CBT), and evidence-based goal achievement research.
 
 ${behaviorData ? `
 BEHAVIORAL CONTEXT (use thoughtfully, don't reference directly):
@@ -425,8 +428,33 @@ INTERVENTION CONTEXT: ${behavioralTrigger}
 Provide gentle, research-informed guidance without being prescriptive.
 ` : ''}
 
+COGNITIVE PATTERNS TO GENTLY NOTICE:
+When you notice potential cognitive distortions in the user's writing, offer gentle observations and alternative perspectives. Common patterns from CBT include:
+
+- All-or-Nothing Thinking: Seeing things in absolute terms (always/never, perfect/failure). Gently suggest: "I notice some strong words here. What might be true in the middle ground?"
+
+- Overgeneralization: One event becomes a pattern (one setback means everything will fail). Gently suggest: "This feels like a big conclusion from one moment. What other experiences might tell a different story?"
+
+- Mental Filter: Focusing only on negatives while ignoring positives. Gently suggest: "I hear the difficult parts. What else was happening that day that you might be overlooking?"
+
+- Discounting Positives: Dismissing good things as luck or "not counting." Gently suggest: "You mention this positive thing but then dismiss it. What if it actually does count?"
+
+- Jumping to Conclusions: Mind reading (assuming others think negatively) or fortune telling (predicting bad outcomes). Gently suggest: "I notice you're making a prediction about how this will go. What other outcomes are possible?"
+
+- Magnification/Minimization: Blowing negatives out of proportion or shrinking positives. Gently suggest: "This feels very big right now. How might it look a week from now?"
+
+- Emotional Reasoning: "I feel it, so it must be true." Gently suggest: "Your feelings are real and valid. And sometimes feelings can be stronger than the facts. What do you actually know to be true?"
+
+- Should Statements: Harsh rules for yourself or others ("I should," "they must"). Gently suggest: "That 'should' sounds heavy. What would happen if you replaced it with 'I'd like to' or 'it would be nice if'?"
+
+- Labeling: Defining yourself or others by one trait or mistake. Gently suggest: "You're using a big label here. What's a more complete picture of the situation?"
+
+- Personalization: Taking responsibility for things outside your control. Gently suggest: "I hear you taking all the blame. What factors were actually outside your influence?"
+
+IMPORTANT: Be subtle and warm. Don't lecture or list fallacies. Weave one gentle observation naturally into your reflection if you notice a pattern. Use everyday language, not clinical terms. Always validate their feelings first before offering a different perspective.
+
 Respond naturally and warmly. Use research-backed insights rather than specific statistics. 
-Language should be humble: "Research suggests..." "Many people find..." "This pattern often indicates..."
+Language should be humble: "Research suggests..." "Many people find..." "This pattern often indicates..." "Sometimes when we're struggling, our mind..."
 
 Respond directly in your own voice - never use stage directions, action descriptions, or phrases like "*responds warmly*" or "*nods empathetically*". Simply speak naturally and warmly.
 
@@ -3568,7 +3596,8 @@ async function ghostFreeWeeklyInsights(requestId) {
 }
 
 // Manual trigger for testing weekly insights (hidden button in production)
-exports.triggerWeeklyInsightsTest = onRequest({ 
+// COMMENTED OUT TO SAVE CPU QUOTA
+/* exports.triggerWeeklyInsightsTest = onRequest({ 
   secrets: [OPENAI_API_KEY, SENDGRID_API_KEY] 
 }, async (req, res) => {
   const requestId = generateRequestId();
@@ -3624,6 +3653,7 @@ exports.triggerWeeklyInsightsTest = onRequest({
     });
   }
 });
+*/
 
 // ===== MONTHLY INSIGHTS FUNCTIONS =====
 
@@ -3807,7 +3837,8 @@ async function ghostFreeMonthlyInsights(requestId) {
 }
 
 // Monthly Insights Test Function
-exports.triggerMonthlyInsightsTest = onRequest({ 
+// COMMENTED OUT TO SAVE CPU QUOTA
+/* exports.triggerMonthlyInsightsTest = onRequest({ 
   secrets: [OPENAI_API_KEY, SENDGRID_API_KEY] 
 }, async (req, res) => {
   const requestId = generateRequestId();
@@ -3821,6 +3852,7 @@ exports.triggerMonthlyInsightsTest = onRequest({
   // Add test logic here if needed
   res.json({ success: true, message: 'Test function executed' });
 });
+*/
 
 // === MailChimp Integration ===
 exports.addToMailchimp = onCall({ 
@@ -3880,7 +3912,8 @@ exports.addToMailchimp = onCall({
 });
 
 // User Data Migration Function - Migrate existing users to new format
-exports.migrateUserData = onCall(async (data, context) => {
+// COMMENTED OUT TO SAVE CPU QUOTA  
+/* exports.migrateUserData = onCall(async (data, context) => {
   // Only allow admin users to run this function
   if (!context.auth) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");
@@ -4014,6 +4047,7 @@ exports.migrateUserData = onCall(async (data, context) => {
     throw new HttpsError("internal", "Migration failed: " + error.message);
   }
 });
+*/
 
 // Helper function to calculate days since last update
 async function calculateDaysSinceLastUpdate(userId, wishId) {
@@ -4118,7 +4152,8 @@ async function updateUserBehavioralSummary(userId, newBehavior) {
 }
 
 // Simple admin migration endpoint - bypasses client auth issues
-exports.runAdminMigration = onRequest({
+// COMMENTED OUT TO SAVE CPU QUOTA
+/* exports.runAdminMigration = onRequest({
   cors: true
 }, async (req, res) => {
   // Simple secret key check instead of Firebase auth
@@ -4244,6 +4279,7 @@ exports.runAdminMigration = onRequest({
     });
   }
 });
+*/
 
 // Delete User Data - Comprehensive account deletion function
 exports.deleteUserData = onRequest({ secrets: [SENDGRID_API_KEY] }, async (req, res) => {
@@ -4499,3 +4535,239 @@ exports.deleteUserData = onRequest({ secrets: [SENDGRID_API_KEY] }, async (req, 
     });
   }
 });
+
+// =============================================================================
+// TWILIO SMS FUNCTIONS
+// =============================================================================
+
+/**
+ * Send test SMS to verify phone number
+ */
+exports.sendTestSMS = onCall(
+  { secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER] },
+  async (request) => {
+    // Verify user is authenticated
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'User must be logged in to send SMS');
+    }
+
+    const { phoneNumber } = request.data;
+
+    if (!phoneNumber) {
+      throw new HttpsError('invalid-argument', 'Phone number is required');
+    }
+
+    try {
+      // Initialize Twilio client
+      const twilio = require('twilio');
+      const client = twilio(
+        TWILIO_ACCOUNT_SID.value(),
+        TWILIO_AUTH_TOKEN.value()
+      );
+
+      // Send test message
+      const message = await client.messages.create({
+        body: '🌱 Hello from InkWell! This is a test message to confirm your phone number is working. Reply STOP to unsubscribe.',
+        from: TWILIO_PHONE_NUMBER.value(),
+        to: phoneNumber
+      });
+
+      console.log('✅ Test SMS sent:', message.sid);
+
+      return {
+        success: true,
+        messageSid: message.sid,
+        status: message.status
+      };
+    } catch (error) {
+      console.error('❌ Failed to send test SMS:', error);
+      throw new HttpsError('internal', `Failed to send SMS: ${error.message}`);
+    }
+  }
+);
+
+/**
+ * Send WISH milestone reminder SMS
+ */
+exports.sendWishMilestone = onCall(
+  { secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER] },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'User must be logged in');
+    }
+
+    const { phoneNumber, milestone, daysElapsed, totalDays } = request.data;
+
+    if (!phoneNumber || !milestone) {
+      throw new HttpsError('invalid-argument', 'Phone number and milestone are required');
+    }
+
+    try {
+      const twilio = require('twilio');
+      const client = twilio(
+        TWILIO_ACCOUNT_SID.value(),
+        TWILIO_AUTH_TOKEN.value()
+      );
+
+      let messageText = '';
+      if (milestone === 'quarter') {
+        messageText = `🌱 InkWell: You're 25% through your WISH journey! (${daysElapsed}/${totalDays} days). Keep growing!`;
+      } else if (milestone === 'half') {
+        messageText = `🍀 InkWell: Halfway there! You've completed ${daysElapsed} of ${totalDays} days. Your WISH is blooming!`;
+      } else if (milestone === 'three-quarters') {
+        messageText = `🌿 InkWell: 75% complete! Only ${totalDays - daysElapsed} days left on your WISH journey. You're amazing!`;
+      } else if (milestone === 'complete') {
+        messageText = `🌳 InkWell: Congratulations! You've completed your ${totalDays}-day WISH journey! Time to reflect and set a new WISH.`;
+      } else {
+        messageText = `🌱 InkWell: WISH milestone reached! Keep up the great work on your journey.`;
+      }
+
+      const message = await client.messages.create({
+        body: messageText,
+        from: TWILIO_PHONE_NUMBER.value(),
+        to: phoneNumber
+      });
+
+      console.log('✅ WISH milestone SMS sent:', message.sid);
+
+      return {
+        success: true,
+        messageSid: message.sid
+      };
+    } catch (error) {
+      console.error('❌ Failed to send WISH milestone SMS:', error);
+      throw new HttpsError('internal', `Failed to send SMS: ${error.message}`);
+    }
+  }
+);
+
+/**
+ * Send daily journal prompt SMS
+ */
+exports.sendDailyPrompt = onCall(
+  { secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER] },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'User must be logged in');
+    }
+
+    const { phoneNumber, prompt } = request.data;
+
+    if (!phoneNumber) {
+      throw new HttpsError('invalid-argument', 'Phone number is required');
+    }
+
+    try {
+      const twilio = require('twilio');
+      const client = twilio(
+        TWILIO_ACCOUNT_SID.value(),
+        TWILIO_AUTH_TOKEN.value()
+      );
+
+      const messageText = prompt || '✍️ InkWell: Time to reflect. What went well today? What are you grateful for?';
+
+      const message = await client.messages.create({
+        body: messageText,
+        from: TWILIO_PHONE_NUMBER.value(),
+        to: phoneNumber
+      });
+
+      console.log('✅ Daily prompt SMS sent:', message.sid);
+
+      return {
+        success: true,
+        messageSid: message.sid
+      };
+    } catch (error) {
+      console.error('❌ Failed to send daily prompt SMS:', error);
+      throw new HttpsError('internal', `Failed to send SMS: ${error.message}`);
+    }
+  }
+);
+
+/**
+ * Send coach reply notification SMS
+ */
+exports.sendCoachReplyNotification = onCall(
+  { secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER] },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'User must be logged in');
+    }
+
+    const { phoneNumber, coachName } = request.data;
+
+    if (!phoneNumber) {
+      throw new HttpsError('invalid-argument', 'Phone number is required');
+    }
+
+    try {
+      const twilio = require('twilio');
+      const client = twilio(
+        TWILIO_ACCOUNT_SID.value(),
+        TWILIO_AUTH_TOKEN.value()
+      );
+
+      const messageText = `💬 InkWell: ${coachName || 'Your coach'} replied to your journal entry! Log in to read their message.`;
+
+      const message = await client.messages.create({
+        body: messageText,
+        from: TWILIO_PHONE_NUMBER.value(),
+        to: phoneNumber
+      });
+
+      console.log('✅ Coach reply notification SMS sent:', message.sid);
+
+      return {
+        success: true,
+        messageSid: message.sid
+      };
+    } catch (error) {
+      console.error('❌ Failed to send coach reply notification SMS:', error);
+      throw new HttpsError('internal', `Failed to send SMS: ${error.message}`);
+    }
+  }
+);
+
+/**
+ * Send generic SMS notification
+ */
+exports.sendSMS = onCall(
+  { secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER] },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'User must be logged in');
+    }
+
+    const { phoneNumber, message } = request.data;
+
+    if (!phoneNumber || !message) {
+      throw new HttpsError('invalid-argument', 'Phone number and message are required');
+    }
+
+    try {
+      const twilio = require('twilio');
+      const client = twilio(
+        TWILIO_ACCOUNT_SID.value(),
+        TWILIO_AUTH_TOKEN.value()
+      );
+
+      const smsMessage = await client.messages.create({
+        body: message,
+        from: TWILIO_PHONE_NUMBER.value(),
+        to: phoneNumber
+      });
+
+      console.log('✅ SMS sent:', smsMessage.sid);
+
+      return {
+        success: true,
+        messageSid: smsMessage.sid,
+        status: smsMessage.status
+      };
+    } catch (error) {
+      console.error('❌ Failed to send SMS:', error);
+      throw new HttpsError('internal', `Failed to send SMS: ${error.message}`);
+    }
+  }
+);

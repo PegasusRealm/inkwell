@@ -545,21 +545,7 @@ window.getDownloadURL = getDownloadURL;
 // Export utility functions
 window.showToast = showToast;
 
-// Define global showTab function
-window.showTab = function(tabId) {
-  const tabs = ["journalTab", "manifestTab", "calendarTab"];
-  const buttons = {
-    journalTab: document.getElementById("journalTabButton"),
-    manifestTab: document.getElementById("manifestTabButton"),
-    calendarTab: document.getElementById("calendarTabButton")
-  };
-  tabs.forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = (id === tabId ? "block" : "none");
-  });
-  Object.values(buttons).forEach(btn => btn && btn.classList.remove("active"));
-  if (buttons[tabId]) buttons[tabId].classList.add("active");
-};
+// Note: showTab function is defined in app.html for full tab functionality
 
 // Consolidated auth state change listener - handles all authentication state changes
 onAuthStateChanged(auth, async (user) => {
@@ -1199,6 +1185,8 @@ async function signUp() {
       const password = document.getElementById("signupPassword")?.value || "";
       const username = document.getElementById("signupUsername")?.value?.trim() || "";
       const avatar = document.getElementById("signupAvatar")?.value?.trim() || "";
+      const phone = document.getElementById("signupPhone")?.value?.trim() || "";
+      const smsOptIn = document.getElementById("smsOptIn")?.checked || false;
       
       // Check agreement checkboxes
       const termsAgreed = document.getElementById("termsAgreement")?.checked;
@@ -1207,10 +1195,31 @@ async function signUp() {
       
       console.log("📧 Email:", email);
       console.log("🔒 Password:", password ? "●●●●●" : "(empty)");
+      console.log("📱 Phone:", phone || "(not provided)");
+      console.log("📲 SMS Opt-in:", smsOptIn);
 
       if (!email || !password) {
         showToast("Please enter both email and password.", "warning");
         return;
+      }
+      
+      // Validate phone number if provided
+      if (phone && window.validatePhoneNumber) {
+        const phoneValidation = window.validatePhoneNumber(phone);
+        if (!phoneValidation.valid) {
+          const errorDiv = document.getElementById("phoneValidationError");
+          if (errorDiv) {
+            errorDiv.textContent = phoneValidation.error;
+            errorDiv.style.display = "block";
+          }
+          showToast(phoneValidation.error, "warning");
+          return;
+        }
+        // Hide error if validation passes
+        const errorDiv = document.getElementById("phoneValidationError");
+        if (errorDiv) {
+          errorDiv.style.display = "none";
+        }
       }
 
       // Validate all agreements are checked
@@ -1288,6 +1297,22 @@ async function signUp() {
 
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
 
+      // Prepare phone data
+      let phoneData = {};
+      if (phone) {
+        const phoneValidation = window.validatePhoneNumber(phone);
+        phoneData = {
+          phoneNumber: phoneValidation.formatted,
+          smsOptIn: smsOptIn,
+          smsPreferences: {
+            wishMilestones: true,
+            dailyPrompts: false,
+            coachReplies: true,
+            weeklyInsights: false
+          }
+        };
+      }
+
       // Create comprehensive user document FIRST, before updating profile
       await setDoc(doc(db, "users", userCred.user.uid), {
         userId: userCred.user.uid,
@@ -1295,6 +1320,7 @@ async function signUp() {
         displayName: username || "",
         signupUsername: username || "",
         avatar: avatar || "",
+        ...phoneData, // Spread phone data if it exists
         userRole: "journaler",
         agreementAccepted: true,
         special_code: "beta", // Tag all new signups with beta until ended
@@ -1952,25 +1978,19 @@ container.style.cssText = `
 
 function createPastEntryCard(entry) {
   const card = document.createElement("div");
-  card.className = "past-entry-block";
-  // Set the data-entry-id attribute for the delete function
+  card.className = "entry-card journal-entry past-entry-block";
   card.setAttribute('data-entry-id', entry.id);
   
-  // Check if dark theme is active
-  const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
-  
+  // Use CSS classes and variables for theme-aware styling
   card.style.cssText = `
-    background: ${isDarkTheme ? 'linear-gradient(135deg, rgba(42, 105, 114, 0.15) 0%, rgba(30, 80, 85, 0.20) 100%)' : '#fff'};
-    color: ${isDarkTheme ? '#2A6972' : '#000'};
-    border-left: 4px solid var(--brand-secondary);
     padding: 1em;
     margin-bottom: 1.5em;
     border-radius: 6px;
-    box-shadow: ${isDarkTheme ? '0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(137, 201, 212, 0.1)' : '0 1px 4px rgba(0,0,0,0.1)'};
-    backdrop-filter: blur(10px);
+    position: relative;
   `;
 
   const dateHeader = document.createElement("div");
+  dateHeader.className = "entry-date fixed-dark-date";
   dateHeader.textContent = entry.createdAt?.toLocaleDateString(undefined, {
     weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
   }) || "(Unknown Date)";
@@ -1985,6 +2005,7 @@ function createPastEntryCard(entry) {
  if (entry.contextManifest || entry.manifestData) {
   const manifestToggle = document.createElement("button");
   manifestToggle.textContent = "📜 Show Manifest";
+  manifestToggle.className = "toggle-button";
   manifestToggle.style.cssText = `
     background: transparent;
     color: var(--brand-primary);
@@ -2002,19 +2023,19 @@ function createPastEntryCard(entry) {
     entry.contextManifest;
 
   const manifestContent = document.createElement("div");
+  manifestContent.className = "toggle-content";
   manifestContent.innerHTML = `<strong>Manifest Data:</strong><br/>${manifestText}`;
-  const isDarkThemeForManifest = document.documentElement.getAttribute('data-theme') === 'dark';
   manifestContent.style.cssText = `
     display: none;
     font-size: 0.9em;
-    color: ${isDarkThemeForManifest ? 'rgba(137, 201, 212, 0.9)' : '#555'};
+    color: var(--font-secondary);
     font-style: italic;
     margin-bottom: 0.5em;
-    background: ${isDarkThemeForManifest ? 'rgba(42, 105, 114, 0.1)' : '#f8f9fa'};
+    background: var(--bg-muted);
     padding: 0.75em;
     border-radius: 5px;
     border-left: 4px solid var(--brand-primary);
-    border: 1px solid ${isDarkThemeForManifest ? 'rgba(137, 201, 212, 0.2)' : '#e9ecef'};
+    border: 1px solid var(--border-light);
   `;
 
   manifestToggle.onclick = () => {
@@ -2030,6 +2051,7 @@ function createPastEntryCard(entry) {
 if (entry.promptUsed) {
   const promptToggle = document.createElement("button");
   promptToggle.textContent = "📝 Show Prompt";
+  promptToggle.className = "toggle-button";
   promptToggle.style.cssText = `
     background: transparent;
     color: var(--brand-primary);
@@ -2040,19 +2062,19 @@ if (entry.promptUsed) {
   `;
 
   const promptContent = document.createElement("div");
+  promptContent.className = "toggle-content";
   promptContent.innerHTML = `<strong>Prompt:</strong> <em>${entry.promptUsed}</em>`;
-  const isDarkThemeForPrompt = document.documentElement.getAttribute('data-theme') === 'dark';
   promptContent.style.cssText = `
     display: none;
     font-size: 0.9em;
-    color: ${isDarkThemeForPrompt ? 'rgba(137, 201, 212, 0.9)' : '#555'};
+    color: var(--font-secondary);
     font-style: italic;
     margin-bottom: 0.5em;
-    background: ${isDarkThemeForPrompt ? 'rgba(42, 105, 114, 0.1)' : '#f8f9fa'};
+    background: var(--bg-muted);
     padding: 0.75em;
     border-radius: 5px;
     border-left: 4px solid var(--brand-primary);
-    border: 1px solid ${isDarkThemeForPrompt ? 'rgba(137, 201, 212, 0.2)' : '#e9ecef'};
+    border: 1px solid var(--border-light);
   `;
 
   promptToggle.onclick = () => {
@@ -2068,6 +2090,7 @@ if (entry.promptUsed) {
 if (entry.reflectionUsed) {
   const reflectionToggle = document.createElement("button");
   reflectionToggle.textContent = "💭 Show Reflection";
+  reflectionToggle.className = "toggle-button";
   reflectionToggle.style.cssText = `
     background: transparent;
     color: var(--brand-primary);
@@ -2078,19 +2101,19 @@ if (entry.reflectionUsed) {
   `;
 
   const reflectionContent = document.createElement("div");
+  reflectionContent.className = "toggle-content";
   reflectionContent.innerHTML = `<strong>Sophy's Reflection:</strong><br/>${entry.reflectionUsed}`;
-  const isDarkThemeForReflection = document.documentElement.getAttribute('data-theme') === 'dark';
   reflectionContent.style.cssText = `
     display: none;
     font-size: 0.9em;
-    color: ${isDarkThemeForReflection ? 'rgba(137, 201, 212, 0.9)' : '#555'};
+    color: var(--font-secondary);
     font-style: italic;
     margin-bottom: 0.5em;
-    background: ${isDarkThemeForReflection ? 'rgba(42, 105, 114, 0.1)' : '#f8f9fa'};
+    background: var(--bg-muted);
     padding: 0.75em;
     border-radius: 5px;
     border-left: 4px solid var(--brand-primary);
-    border: 1px solid ${isDarkThemeForReflection ? 'rgba(137, 201, 212, 0.2)' : '#e9ecef'};
+    border: 1px solid var(--border-light);
   `;
 
   reflectionToggle.onclick = () => {
@@ -2106,22 +2129,26 @@ if (entry.reflectionUsed) {
   const body = document.createElement("div");
   body.textContent = entry.text;
   body.className = 'entry-text';
-  body.style.marginBottom = "0.75em";
+  body.style.cssText = `
+    margin-bottom: 0.75em;
+    color: var(--font-main);
+    font-size: 1em;
+    line-height: 1.6;
+  `;
   card.appendChild(body);
 
   if (entry.reflectionNote) {
     const note = document.createElement("div");
     note.innerHTML = `🧠 <strong>Reflection:</strong> ${entry.reflectionNote}`;
-    const isDarkThemeForNote = document.documentElement.getAttribute('data-theme') === 'dark';
     note.style.cssText = `
       font-size: 0.9em;
-      background: ${isDarkThemeForNote ? 'rgba(42, 105, 114, 0.1)' : '#f9f9f9'};
-      color: ${isDarkThemeForNote ? 'rgba(137, 201, 212, 0.9)' : 'inherit'};
+      background: var(--bg-muted);
+      color: var(--font-secondary);
       padding: 0.75em;
       border-left: 4px solid var(--brand-secondary);
       border-radius: 5px;
       margin-bottom: 0.5em;
-      border: ${isDarkThemeForNote ? '1px solid rgba(137, 201, 212, 0.2)' : 'none'};
+      border: 1px solid var(--border-light);
     `;
     card.appendChild(note);
   }
@@ -2129,16 +2156,15 @@ if (entry.reflectionUsed) {
   if (entry.coachResponse?.text || typeof entry.coachResponse === "string") {
     const coach = document.createElement("div");
     coach.innerHTML = `🧑‍🏫 <strong>Coach replied:</strong> ${entry.coachResponse.text || entry.coachResponse}`;
-    const isDarkThemeForCoach = document.documentElement.getAttribute('data-theme') === 'dark';
     coach.style.cssText = `
       font-size: 0.9em;
-      background: ${isDarkThemeForCoach ? 'rgba(42, 105, 114, 0.1)' : '#fff3ea'};
-      color: ${isDarkThemeForCoach ? 'rgba(137, 201, 212, 0.9)' : 'inherit'};
+      background: var(--bg-muted);
+      color: var(--font-secondary);
       padding: 0.75em;
       border-left: 4px solid #FFA76D;
       border-radius: 5px;
       margin-bottom: 0.5em;
-      border: ${isDarkThemeForCoach ? '1px solid rgba(137, 201, 212, 0.2)' : 'none'};
+      border: 1px solid var(--border-light);
     `;
     card.appendChild(coach);
   }
@@ -2179,16 +2205,16 @@ const checkForCoachReplies = async () => {
     if (!repliesSnapshot.empty) {
       // Create coach replies section
       const coachRepliesSection = document.createElement("div");
-      const isDarkThemeForCoachReplies = document.documentElement.getAttribute('data-theme') === 'dark';
+      coachRepliesSection.className = "coach-replies-section";
       coachRepliesSection.style.cssText = `
-        background: ${isDarkThemeForCoachReplies ? 'rgba(42, 105, 114, 0.1)' : '#f8f9fa'};
+        background: var(--bg-muted);
         border-left: 4px solid var(--brand-secondary, #388b97);
         padding: 1em;
         margin: 1em 0;
         border-radius: 8px;
         position: relative;
-        border: 1px solid ${isDarkThemeForCoachReplies ? 'rgba(42, 105, 114, 0.3)' : '#e9ecef'};
-        box-shadow: ${isDarkThemeForCoachReplies ? '0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(42, 105, 114, 0.1)' : '0 2px 4px rgba(0,0,0,0.1)'};
+        border: 1px solid var(--border-light);
+        box-shadow: var(--shadow-md);
         ${entry.newCoachReply ? 'border-left: 4px solid var(--accent, #d49489);' : ''}
       `;
       
@@ -2196,7 +2222,7 @@ const checkForCoachReplies = async () => {
       coachRepliesTitle.innerHTML = entry.newCoachReply ? "💬 New Coach Reply" : "💬 Coach Reply";
       coachRepliesTitle.style.cssText = `
         margin: 0 0 0.5em 0;
-        color: ${isDarkThemeForCoachReplies ? '#2A6972' : '#333'};
+        color: var(--font-main);
         font-size: 0.9em;
         font-weight: 600;
       `;
@@ -2208,21 +2234,21 @@ const checkForCoachReplies = async () => {
         const replyDate = replyData.timestamp?.toDate?.()?.toLocaleString() || "Recent";
         
         const replyDiv = document.createElement("div");
-        const isDarkThemeForReplyDiv = document.documentElement.getAttribute('data-theme') === 'dark';
+        replyDiv.className = "coach-reply-item";
         replyDiv.style.cssText = `
-          background: ${isDarkThemeForReplyDiv ? 'rgba(42, 105, 114, 0.05)' : 'white'};
+          background: var(--bg-card);
           padding: 0.75em;
           margin: 0.5em 0;
           border-radius: 6px;
-          border: 1px solid ${isDarkThemeForReplyDiv ? 'rgba(42, 105, 114, 0.2)' : '#e9ecef'};
-          box-shadow: ${isDarkThemeForReplyDiv ? '0 2px 6px rgba(0, 0, 0, 0.2)' : '0 1px 3px rgba(0,0,0,0.1)'};
+          border: 1px solid var(--border-light);
+          box-shadow: var(--shadow-sm);
         `;
         
         const replyText = document.createElement("p");
         replyText.textContent = replyData.replyText || replyData.reply || "No reply text found";
         replyText.style.cssText = `
           margin: 0 0 0.5em 0;
-          color: ${isDarkThemeForReplyDiv ? '#2A6972' : '#333'};
+          color: var(--font-main);
           line-height: 1.5;
         `;
         
@@ -2231,7 +2257,7 @@ const checkForCoachReplies = async () => {
         replyDateEl.style.cssText = `
           margin: 0;
           font-size: 0.8em;
-          color: ${isDarkThemeForReplyDiv ? 'rgba(42, 105, 114, 0.8)' : '#666'};
+          color: var(--font-muted);
           font-style: italic;
         `;
         
@@ -2273,17 +2299,9 @@ const checkForCoachReplies = async () => {
             // Find and update the parent entry card visual styling
             const entryCard = event.target.closest('.entry-card');
             if (entryCard) {
-              // Reset border to teal (from coral)
+              // Reset border to normal
               entryCard.style.borderLeft = '4px solid var(--brand-secondary, #7BB8C4)';
               entryCard.style.boxShadow = '';
-              
-              // Reset background to normal theme-appropriate color
-              const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
-              if (isDarkTheme) {
-                entryCard.style.background = 'linear-gradient(135deg, rgba(42, 105, 114, 0.15) 0%, rgba(30, 80, 85, 0.20) 100%)';
-              } else {
-                entryCard.style.background = 'linear-gradient(180deg, #ffffff 0%, #f2f2f2 100%)';
-              }
               
               // Remove NEW REPLY badge/sticker
               const newReplyBadge = entryCard.querySelector('.new-reply-badge, [style*="NEW REPLY"], .coach-reply-badge');
@@ -2364,24 +2382,7 @@ actions.style.marginTop = "1em";
 
 const editBtn = document.createElement("button");
 editBtn.textContent = "✏️ Edit";
-editBtn.style.cssText = `
-  background-color: #2A6972;
-  color: white;
-  border: 1px solid #2A6972;
-  padding: 12px 20px;
-  font-size: 16px;
-  min-width: 120px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3em;
-  font-weight: 500;
-  touch-action: manipulation;
-`;
-editBtn.onmouseover = () => editBtn.style.backgroundColor = "#1e5157";
-editBtn.onmouseout = () => editBtn.style.backgroundColor = "#2A6972";
+editBtn.className = "btn";
 editBtn.onclick = () => {
   // Show edit modal with current entry text
   const entryText = entry.text;
@@ -2439,24 +2440,7 @@ actions.appendChild(editBtn);
 
 const deleteBtn = document.createElement("button");
 deleteBtn.textContent = "🗑️ Delete";
-deleteBtn.style.cssText = `
-  background-color: #6b7280;
-  color: white;
-  border: 1px solid #6b7280;
-  padding: 12px 20px;
-  font-size: 16px;
-  min-width: 120px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3em;
-  font-weight: 500;
-  touch-action: manipulation;
-`;
-deleteBtn.onmouseover = () => deleteBtn.style.backgroundColor = "#4b5563";
-deleteBtn.onmouseout = () => deleteBtn.style.backgroundColor = "#6b7280";
+deleteBtn.className = "btn btn-gray";
 deleteBtn.onclick = async (e) => {
   e.preventDefault();
   const entryId = card.getAttribute('data-entry-id');
@@ -2608,22 +2592,6 @@ deleteBtn.onclick = async (e) => {
     }
   }
 };
-
-deleteBtn.className = "entry-btn themed-btn delete";
-deleteBtn.style.cssText = `
-  background-color: #ffdddd;
-  color: #b00020;
-  border: none;
-  padding: 0.45em 1em;
-  border-radius: 20px;
-  font-size: 0.85em;
-  cursor: pointer;
-  margin-left: 0.5em;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4em;
-`;
 
 actions.appendChild(deleteBtn);
 
