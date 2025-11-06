@@ -1,22 +1,20 @@
-node_modules/
-.DS_Store
-firebase-debug.log
-.env
-.vscode/
-echo "# Debug logs
+# Debug logs
 firebase-debug*.log
+firebase-debug.log
 firestore-debug.log
 pglite-debug.log
 
-# Development files
-*.md
+# System files
+.DS_Store
+**/.DS_Store
+
+# Development files (exclude documentation from git)
 test-*.js
 simple-*.js
 
 # Environment files
 .env
 .env.local
-config.js
 
 # Node modules
 node_modules/
@@ -24,7 +22,8 @@ functions/node_modules/
 
 # Firebase
 .firebase/
-firebase-debug.log" > .gitignore
-# Debug logs
-firebase-debug*.log
-firestore-debug.log
+.firebase-debug.log
+
+# IDE
+.vscode/
+.idea/
