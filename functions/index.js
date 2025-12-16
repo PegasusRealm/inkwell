@@ -14,6 +14,8 @@ const MAILCHIMP_LIST_ID = defineSecret("MAILCHIMP_LIST_ID");
 const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
 const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
 const TWILIO_PHONE_NUMBER = defineSecret("TWILIO_PHONE_NUMBER");
+const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
+const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET");
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 if (!getApps().length) {
   admin.initializeApp();
@@ -33,6 +35,15 @@ async function createUserProfileIfNotExists(uid, email) {
       special_code: "beta", // Tag all new users with beta
       agreementAccepted: false,
       avatar: "",
+      // Subscription fields (default to free tier)
+      subscriptionTier: "free",
+      subscriptionStatus: "active",
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      interactionsThisMonth: 0,
+      interactionsLimit: 0,
+      extraInteractionsPurchased: 0,
+      giftedBy: null,
       // Default insight preferences for new users (opt-in by default)
       insightsPreferences: {
         weeklyEnabled: true,
@@ -1570,6 +1581,50 @@ exports.saveCoachReplyHTTP = onRequest({
         .update({ newCoachReply: true });
 
       console.log("✅ Coach reply saved successfully");
+
+      // Send SMS notification to user if they have it enabled
+      try {
+        // Get the journal entry to find the user
+        const entryDoc = await admin.firestore().collection("journalEntries").doc(entryId).get();
+        if (entryDoc.exists) {
+          const entryData = entryDoc.data();
+          const userId = entryData.userId;
+          
+          // Get user's SMS preferences
+          const userDoc = await admin.firestore().collection("users").doc(userId).get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            
+            // Check if user has SMS enabled and wants practitioner reply notifications
+            if (userData.smsOptIn && userData.phoneNumber && userData.smsPreferences?.coachReplies) {
+              // Get coach's name
+              const coachDoc = await admin.firestore().collection("users").doc(coachUid).get();
+              const coachName = coachDoc.exists ? coachDoc.data().displayName || 'Your practitioner' : 'Your practitioner';
+              
+              // Send SMS
+              const twilio = require('twilio');
+              const client = twilio(
+                TWILIO_ACCOUNT_SID.value(),
+                TWILIO_AUTH_TOKEN.value()
+              );
+              
+              const messageText = `💬 InkWell: ${coachName} replied to your journal entry! Log in to read their message.\n\nReply STOP to unsubscribe`;
+              
+              await client.messages.create({
+                body: messageText,
+                from: TWILIO_PHONE_NUMBER.value(),
+                to: userData.phoneNumber
+              });
+              
+              console.log(`✅ Practitioner reply SMS sent to user ${userId}`);
+            }
+          }
+        }
+      } catch (smsError) {
+        // Don't fail the whole operation if SMS fails
+        console.error("❌ Failed to send practitioner reply SMS (non-fatal):", smsError);
+      }
+
       res.status(200).json({ success: true });
     } catch (error) {
       console.error("❌ Error saving coach reply:", error);
@@ -2126,6 +2181,101 @@ exports.sendPractitionerInvitation = onRequest({ secrets: [SENDGRID_API_KEY] }, 
     res.status(500).json({ error: 'Failed to send invitation' });
   }
 });
+
+// Send notification email when user expresses practitioner interest during signup
+exports.sendPractitionerInquiryNotification = onRequest(
+  { 
+    cors: true,
+    secrets: [SENDGRID_API_KEY] 
+  }, 
+  async (req, res) => {
+    try {
+      console.log('📧 Practitioner inquiry notification triggered');
+      
+      // Handle CORS preflight
+      if (req.method === 'OPTIONS') {
+        res.set('Access-Control-Allow-Origin', '*');
+        res.set('Access-Control-Allow-Methods', 'POST');
+        res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        res.status(204).send('');
+        return;
+      }
+
+      const { userName, userEmail, userId } = req.body;
+
+      if (!userName || !userEmail || !userId) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      const sgMail = require('@sendgrid/mail');
+      sgMail.setApiKey(SENDGRID_API_KEY.value());
+
+      const adminDashboardUrl = 'https://inkwelljournal.io/admin.html';
+
+      const emailContent = {
+        to: 'support@inkwelljournal.io',
+        from: 'noreply@inkwelljournal.io',
+        subject: `🆕 New Practitioner Inquiry: ${userName}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+            <div style="background: linear-gradient(135deg, #2A6972 0%, #1e5055 100%); padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">🆕 New Practitioner Inquiry</h1>
+            </div>
+            
+            <div style="background: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+              <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+                A new user has expressed interest in becoming an InkWell Practitioner during signup:
+              </p>
+              
+              <div style="background: #f0f8ff; border-left: 4px solid #2A6972; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                <p style="margin: 8px 0; color: #0D3F45;"><strong>Name:</strong> ${userName}</p>
+                <p style="margin: 8px 0; color: #0D3F45;"><strong>Email:</strong> ${userEmail}</p>
+                <p style="margin: 8px 0; color: #0D3F45;"><strong>User ID:</strong> ${userId}</p>
+                <p style="margin: 8px 0; color: #0D3F45;"><strong>Inquiry Date:</strong> ${new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })} EST</p>
+              </div>
+              
+              <div style="background: #fff8e1; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                <p style="margin: 0; color: #856404; font-size: 14px;">
+                  <strong>📋 Status:</strong> This inquiry has been saved to the <code style="background: #ffe082; padding: 2px 6px; border-radius: 3px;">practitionerRequests</code> collection with status: <strong>inquiry</strong>
+                </p>
+              </div>
+              
+              <h3 style="color: #2A6972; margin-top: 30px;">Next Steps:</h3>
+              <ol style="color: #333; line-height: 1.8;">
+                <li>Review the inquiry in your admin dashboard</li>
+                <li>Assess whether the applicant is a good fit for InkWell</li>
+                <li>Send a practitioner invitation link if approved</li>
+              </ol>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${adminDashboardUrl}" 
+                   style="display: inline-block; background: #2A6972; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 2px 8px rgba(42,105,114,0.3);">
+                  🔗 Open Admin Dashboard
+                </a>
+              </div>
+              
+              <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+              
+              <p style="font-size: 13px; color: #666; text-align: center; margin: 0;">
+                This is an automated notification from InkWell<br>
+                <a href="https://inkwelljournal.io" style="color: #2A6972;">inkwelljournal.io</a>
+              </p>
+            </div>
+          </div>
+        `
+      };
+
+      await sgMail.send(emailContent);
+      console.log('✅ Practitioner inquiry notification sent to support@inkwelljournal.io');
+
+      res.json({ success: true, message: 'Notification sent successfully' });
+
+    } catch (error) {
+      console.error('❌ Error sending practitioner inquiry notification:', error);
+      res.status(500).json({ error: 'Failed to send notification', details: error.message });
+    }
+  }
+);
 
 // File upload function to handle attachments
 exports.uploadFile = onRequest(async (req, res) => {
@@ -4610,16 +4760,18 @@ exports.sendWishMilestone = onCall(
       );
 
       let messageText = '';
+      const appLink = '\n\nOpen InkWell: https://inkwelljournal.io/app.html';
+      
       if (milestone === 'quarter') {
-        messageText = `🌱 InkWell: You're 25% through your WISH journey! (${daysElapsed}/${totalDays} days). Keep growing!`;
+        messageText = `🌱 InkWell: You're 25% through your WISH journey! (${daysElapsed}/${totalDays} days). Keep growing!${appLink}`;
       } else if (milestone === 'half') {
-        messageText = `🍀 InkWell: Halfway there! You've completed ${daysElapsed} of ${totalDays} days. Your WISH is blooming!`;
+        messageText = `🍀 InkWell: Halfway there! You've completed ${daysElapsed} of ${totalDays} days. Your WISH is blooming!${appLink}`;
       } else if (milestone === 'three-quarters') {
-        messageText = `🌿 InkWell: 75% complete! Only ${totalDays - daysElapsed} days left on your WISH journey. You're amazing!`;
+        messageText = `🌿 InkWell: 75% complete! Only ${totalDays - daysElapsed} days left on your WISH journey. You're amazing!${appLink}`;
       } else if (milestone === 'complete') {
-        messageText = `🌳 InkWell: Congratulations! You've completed your ${totalDays}-day WISH journey! Time to reflect and set a new WISH.`;
+        messageText = `🌳 InkWell: Congratulations! You've completed your ${totalDays}-day WISH journey! Time to reflect and set a new WISH.${appLink}`;
       } else {
-        messageText = `🌱 InkWell: WISH milestone reached! Keep up the great work on your journey.`;
+        messageText = `🌱 InkWell: WISH milestone reached! Keep up the great work on your journey.${appLink}`;
       }
 
       const message = await client.messages.create({
@@ -4664,7 +4816,9 @@ exports.sendDailyPrompt = onCall(
         TWILIO_AUTH_TOKEN.value()
       );
 
-      const messageText = prompt || '✍️ InkWell: Time to reflect. What went well today? What are you grateful for?';
+      const defaultPrompt = '✍️ InkWell: Time to reflect. What went well today? What are you grateful for?';
+      const appLink = '\n\nTap to journal: https://inkwelljournal.io/app.html\n\nReply STOP to unsubscribe';
+      const messageText = `✍️ InkWell Daily Prompt:\n\n${prompt || defaultPrompt}${appLink}`;
 
       const message = await client.messages.create({
         body: messageText,
@@ -4680,6 +4834,51 @@ exports.sendDailyPrompt = onCall(
       };
     } catch (error) {
       console.error('❌ Failed to send daily prompt SMS:', error);
+      throw new HttpsError('internal', `Failed to send SMS: ${error.message}`);
+    }
+  }
+);
+
+/**
+ * Send daily gratitude prompt SMS - simple, clean, no links
+ */
+exports.sendGratitudePrompt = onCall(
+  { secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER] },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'User must be logged in');
+    }
+
+    const { phoneNumber, prompt } = request.data;
+
+    if (!phoneNumber) {
+      throw new HttpsError('invalid-argument', 'Phone number is required');
+    }
+
+    try {
+      const twilio = require('twilio');
+      const client = twilio(
+        TWILIO_ACCOUNT_SID.value(),
+        TWILIO_AUTH_TOKEN.value()
+      );
+
+      const defaultPrompt = '🙏 What small thing made you smile today?';
+      const messageText = `${prompt || defaultPrompt}\n\nReply STOP to unsubscribe`;
+
+      const message = await client.messages.create({
+        body: messageText,
+        from: TWILIO_PHONE_NUMBER.value(),
+        to: phoneNumber
+      });
+
+      console.log('✅ Gratitude prompt SMS sent:', message.sid);
+
+      return {
+        success: true,
+        messageSid: message.sid
+      };
+    } catch (error) {
+      console.error('❌ Failed to send gratitude prompt SMS:', error);
       throw new HttpsError('internal', `Failed to send SMS: ${error.message}`);
     }
   }
@@ -4771,3 +4970,1097 @@ exports.sendSMS = onCall(
     }
   }
 );
+
+// =============================================================================
+// SCHEDULED DAILY PROMPTS SYSTEM
+// =============================================================================
+
+// Generic prompt library (80% of prompts come from here)
+const GENERIC_PROMPTS = [
+  "What made you smile today?",
+  "What's one thing you're grateful for right now?",
+  "What would make today feel complete?",
+  "What's weighing on your mind?",
+  "What gave you energy today?",
+  "What do you need to let go of?",
+  "What's one small win from today?",
+  "How are you really feeling?",
+  "What brought you peace today?",
+  "What's one thing you learned recently?",
+  "What would your future self thank you for doing today?",
+  "What's something kind you did or received today?",
+  "What challenge helped you grow?",
+  "What are you looking forward to?",
+  "What does self-care look like for you today?",
+  "What boundaries do you need to set?",
+  "What relationship brought you joy today?",
+  "What's something you accomplished that you're proud of?",
+  "What fear are you ready to face?",
+  "What pattern have you noticed about yourself lately?",
+  "What does success mean to you today?",
+  "What would you tell a friend going through your situation?",
+  "What's one thing you did just for yourself today?",
+  "What made you feel most alive recently?",
+  "What's one thing you want to remember about today?",
+  "What surprised you today?",
+  "What's a belief you're ready to challenge?",
+  "What gives your life meaning?",
+  "What would it look like to be gentle with yourself?",
+  "What progress have you made, even if it's small?",
+  "What emotion showed up most today?",
+  "What do you need more of in your life?",
+  "What do you need less of?",
+  "What's something you've been avoiding thinking about?",
+  "What would change if you trusted yourself more?",
+  "What makes you feel grounded?",
+  "What conversation do you need to have?",
+  "What part of your day felt most authentic to you?",
+  "What's one thing you want to create?",
+  "What healing happened today, even in small ways?"
+];
+
+// Gratitude prompts library - simple, clean, focused on appreciation
+const GRATITUDE_PROMPTS = [
+  "🙏 What small thing made you smile today?",
+  "🙏 Name one person you're thankful for right now.",
+  "🙏 What's something you're taking for granted that deserves appreciation?",
+  "🙏 What comfort do you have today that you're grateful for?",
+  "🙏 What made today a little bit easier?",
+  "🙏 Who showed you kindness recently?",
+  "🙏 What's one thing your body did for you today?",
+  "🙏 What brought you a moment of peace?",
+  "🙏 What's working well in your life right now?",
+  "🙏 What challenge taught you something valuable?",
+  "🙏 What meal or flavor brought you joy today?",
+  "🙏 What sound or song lifted your spirits?",
+  "🙏 What lesson are you grateful to have learned?",
+  "🙏 What place makes you feel safe?",
+  "🙏 What small pleasure did you enjoy today?",
+  "🙏 Wear gratitude like a cloak and it will feed every corner of your life. - Rumi",
+  "🙏 Gratitude turns what we have into enough. - Aesop",
+  "🙏 The way to develop the habit of savoring is to pause. - Brené Brown",
+  "🙏 Acknowledging the good that you already have is the foundation for all abundance. - Eckhart Tolle",
+  "🙏 This is it. This is your life. It's right in front of you. - Mary Oliver",
+  "🙏 Let gratitude be the pillow upon which you kneel. - Marcus Aurelius",
+  "🙏 When you arise in the morning, think of what a precious privilege it is to be alive. - Marcus Aurelius",
+  "🙏 What simple gift did today offer you?",
+  "🙏 What made you feel connected to others?",
+  "🙏 What ability do you have that makes life easier?",
+  "🙏 What beauty did you notice today?",
+  "🙏 What made you feel cared for?",
+  "🙏 What brought unexpected joy?",
+  "🙏 What are you glad didn't happen today?",
+  "🙏 What strength did you discover in yourself?",
+  "🙏 Trade your expectation for appreciation and the world changes instantly. - Tony Robbins",
+  "🙏 Gratitude is not only the greatest of virtues, but the parent of all others. - Cicero",
+  "🙏 What moment today deserves to be remembered?",
+  "🙏 What problem got solved today?",
+  "🙏 What made you laugh or feel lighter?",
+  "🙏 Who or what helped you today?",
+  "🙏 What's one thing you learned that you're thankful for?",
+  "🙏 What part of your routine brings you comfort?",
+  "🙏 What do you appreciate about where you are right now?",
+  "🙏 The root of joy is gratefulness. - David Steindl-Rast",
+  "🙏 What memory makes you smile when you think of it?",
+  "🙏 What opportunity came your way recently?",
+  "🙏 What simple pleasure are you looking forward to?",
+  "🙏 What choice are you glad you made?",
+  "🙏 What natural wonder brought you peace today?",
+  "🙏 What conversation brightened your day?",
+  "🙏 What resource do you have access to that helps you?",
+  "🙏 What quality in yourself are you grateful for?",
+  "🙏 When we focus on our gratitude, the tide of disappointment goes out. - Kristin Armstrong",
+  "🙏 What act of self-care did you manage today?",
+  "🙏 What progress, however small, did you make?",
+  "🙏 What relationship enriches your life?",
+  "🙏 What made you feel proud of yourself?",
+  "🙏 What gives your life meaning?",
+  "🙏 Enjoy the little things, for one day you may look back and realize they were the big things. - Robert Brault",
+  "🙏 What made today better than you expected?",
+  "🙏 What simple joy can you appreciate right now?",
+  "🙏 What's one thing you have that you once wished for?",
+  "🙏 Sometimes the smallest things take up the most room in your heart. - Winnie the Pooh"
+];
+
+/**
+ * Scheduled function to send daily prompts (runs every 3 hours)
+ */
+exports.scheduledDailyPrompts = onSchedule({
+  schedule: 'every 3 hours',
+  timeZone: 'America/New_York', // Adjust to your primary timezone
+  secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, ANTHROPIC_API_KEY]
+}, async (event) => {
+  console.log('🕐 Running scheduled daily prompts check...');
+  
+  try {
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    // Determine which time window we're in
+    let timeWindow = '';
+    if (currentHour >= 8 && currentHour < 10) timeWindow = 'morning';
+    else if (currentHour >= 12 && currentHour < 14) timeWindow = 'midday';
+    else if (currentHour >= 15 && currentHour < 17) timeWindow = 'afternoon';
+    else if (currentHour >= 19 && currentHour < 21) timeWindow = 'evening';
+    else {
+      console.log('⏰ Outside prompt windows, skipping');
+      return null;
+    }
+    
+    console.log(`📅 Current time window: ${timeWindow}`);
+    
+    // Get all users who need prompts
+    const usersSnapshot = await admin.firestore().collection('users').get();
+    let journalSentCount = 0;
+    let gratitudeSentCount = 0;
+    let skippedCount = 0;
+    
+    for (const userDoc of usersSnapshot.docs) {
+      const userData = userDoc.data();
+      const userId = userDoc.id;
+      
+      // Check base eligibility
+      if (!userData.smsOptIn || !userData.phoneNumber) continue;
+      
+      // Check if user's time slot matches current window
+      const userTimeSlot = userData.promptTimeSlot || 'morning';
+      if (userTimeSlot !== timeWindow) {
+        continue;
+      }
+      
+      // =======================================================================
+      // JOURNAL PROMPTS
+      // =======================================================================
+      if (userData.smsPreferences?.dailyPrompts) {
+        // Check if already sent today
+        const lastSent = userData.lastPromptSent?.toDate?.();
+        let shouldSendJournal = true;
+        
+        if (lastSent) {
+          const hoursSinceLastPrompt = (now - lastSent) / (1000 * 60 * 60);
+          if (hoursSinceLastPrompt < 20) { // At least 20 hours between prompts
+            shouldSendJournal = false;
+          }
+        }
+        
+        if (shouldSendJournal) {
+          // Check if user already journaled today (skip logic)
+          const todayStart = new Date();
+          todayStart.setHours(0, 0, 0, 0);
+          
+          const entriesSnapshot = await admin.firestore()
+            .collection('journalEntries')
+            .where('userId', '==', userId)
+            .where('createdAt', '>=', todayStart)
+            .limit(1)
+            .get();
+          
+          if (!entriesSnapshot.empty) {
+            console.log(`✅ User ${userId} already journaled today, skipping journal prompt`);
+            skippedCount++;
+          } else {
+            // Generate prompt (80% generic, 20% personalized)
+            let promptText = '';
+            const usePersonalized = Math.random() < 0.2; // 20% chance
+            
+            if (usePersonalized && ANTHROPIC_API_KEY && ANTHROPIC_API_KEY.value()) {
+              try {
+                // Get recent entries for context
+                const recentEntries = await admin.firestore()
+                  .collection('journalEntries')
+                  .where('userId', '==', userId)
+                  .orderBy('createdAt', 'desc')
+                  .limit(3)
+                  .get();
+                
+                if (!recentEntries.empty) {
+                  const recentText = recentEntries.docs
+                    .map(doc => doc.data().entry?.substring(0, 200))
+                    .join(' ');
+                  
+                  // Generate personalized prompt
+                  const aiResponse = await callAnthropicWithRetry({
+                    model: "claude-3-haiku-20240307",
+                    max_tokens: 150,
+                    messages: [{
+                      role: "user",
+                      content: `You are Sophy, a supportive journaling assistant. Based on these recent journal excerpts: "${recentText}", generate a single thoughtful journaling prompt (max 100 characters). Respond with ONLY the prompt text, no quotes or prefixes.`
+                    }]
+                  }, "dailyPromptPersonalized", generateRequestId());
+                  
+                  promptText = aiResponse.content[0].text.trim().substring(0, 120);
+                }
+              } catch (error) {
+                console.error('Failed to generate personalized prompt, using generic:', error);
+                promptText = ''; // Will fallback to generic
+              }
+            }
+            
+            // Use generic if personalized failed or wasn't selected
+            if (!promptText) {
+              promptText = GENERIC_PROMPTS[Math.floor(Math.random() * GENERIC_PROMPTS.length)];
+            }
+            
+            // Send journal prompt SMS
+            try {
+              const twilio = require('twilio');
+              const client = twilio(
+                TWILIO_ACCOUNT_SID.value(),
+                TWILIO_AUTH_TOKEN.value()
+              );
+              
+              const appLink = '\n\nTap to journal: https://inkwelljournal.io/app.html\n\nReply STOP to unsubscribe';
+              const messageText = `✍️ InkWell Daily Prompt:\n\n${promptText}${appLink}`;
+              
+              await client.messages.create({
+                body: messageText,
+                from: TWILIO_PHONE_NUMBER.value(),
+                to: userData.phoneNumber
+              });
+              
+              // Update user document with last sent time and rotate time slot
+              const nextSlots = { morning: 'midday', midday: 'afternoon', afternoon: 'evening', evening: 'morning' };
+              await admin.firestore().collection('users').doc(userId).update({
+                lastPromptSent: admin.firestore.FieldValue.serverTimestamp(),
+                promptTimeSlot: nextSlots[userTimeSlot] || 'morning'
+              });
+              
+              journalSentCount++;
+              console.log(`✅ Sent journal prompt to user ${userId}`);
+              
+              // Rate limiting: small delay between sends
+              await new Promise(resolve => setTimeout(resolve, 100));
+              
+            } catch (smsError) {
+              console.error(`❌ Failed to send journal SMS to user ${userId}:`, smsError);
+            }
+          }
+        } else {
+          skippedCount++;
+        }
+      }
+      
+      // =======================================================================
+      // GRATITUDE PROMPTS - Separate from journal prompts
+      // =======================================================================
+      if (userData.smsPreferences?.dailyGratitude) {
+        // Check if already sent gratitude today
+        const lastGratitudeSent = userData.lastGratitudeSent?.toDate?.();
+        let shouldSendGratitude = true;
+        
+        if (lastGratitudeSent) {
+          const hoursSinceLastGratitude = (now - lastGratitudeSent) / (1000 * 60 * 60);
+          if (hoursSinceLastGratitude < 20) { // At least 20 hours between gratitude prompts
+            shouldSendGratitude = false;
+          }
+        }
+        
+        // Ensure we don't send both journal and gratitude on same day
+        const lastJournalSent = userData.lastPromptSent?.toDate?.();
+        if (lastJournalSent) {
+          const todayStart = new Date();
+          todayStart.setHours(0, 0, 0, 0);
+          if (lastJournalSent >= todayStart) {
+            shouldSendGratitude = false; // Already sent journal today, skip gratitude
+          }
+        }
+        
+        if (shouldSendGratitude) {
+          // Select random gratitude prompt
+          const gratitudeText = GRATITUDE_PROMPTS[Math.floor(Math.random() * GRATITUDE_PROMPTS.length)];
+          
+          // Send gratitude SMS - simple, no links
+          try {
+            const twilio = require('twilio');
+            const client = twilio(
+              TWILIO_ACCOUNT_SID.value(),
+              TWILIO_AUTH_TOKEN.value()
+            );
+            
+            const messageText = `${gratitudeText}\n\nReply STOP to unsubscribe`;
+            
+            await client.messages.create({
+              body: messageText,
+              from: TWILIO_PHONE_NUMBER.value(),
+              to: userData.phoneNumber
+            });
+            
+            // Update user document with last gratitude sent time
+            await admin.firestore().collection('users').doc(userId).update({
+              lastGratitudeSent: admin.firestore.FieldValue.serverTimestamp()
+            });
+            
+            gratitudeSentCount++;
+            console.log(`✅ Sent gratitude prompt to user ${userId}`);
+            
+            // Rate limiting: small delay between sends
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+          } catch (smsError) {
+            console.error(`❌ Failed to send gratitude SMS to user ${userId}:`, smsError);
+          }
+        }
+      }
+    }
+    
+    console.log(`📊 Daily prompts complete: ${journalSentCount} journal, ${gratitudeSentCount} gratitude, ${skippedCount} skipped`);
+    return { success: true, journalSent: journalSentCount, gratitudeSent: gratitudeSentCount, skipped: skippedCount };
+    
+  } catch (error) {
+    console.error('❌ Scheduled daily prompts failed:', error);
+    throw error;
+  }
+});
+
+// =============================================================================
+// SCHEDULED WEEKLY INSIGHTS SMS
+// =============================================================================
+
+/**
+ * Send weekly insights via SMS - runs every Sunday at 9 PM ET
+ * Provides a brief summary of the user's week with key stats
+ */
+exports.scheduledWeeklyInsightsSMS = onSchedule({
+  schedule: '0 21 * * 0', // Every Sunday at 9 PM
+  timeZone: 'America/New_York',
+  secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER]
+}, async (event) => {
+  console.log('📅 Running scheduled weekly insights SMS check...');
+  
+  try {
+    const now = new Date();
+    
+    // Calculate date range for the past week (Monday to Sunday)
+    const weekEnd = new Date(now);
+    weekEnd.setHours(23, 59, 59, 999);
+    
+    const weekStart = new Date(now);
+    weekStart.setDate(weekStart.getDate() - 6); // Go back 6 days for full week
+    weekStart.setHours(0, 0, 0, 0);
+    
+    console.log(`📊 Analyzing week: ${weekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`);
+    
+    // Get all users who have SMS weekly insights enabled
+    const usersSnapshot = await admin.firestore().collection('users').get();
+    let sentCount = 0;
+    let skippedCount = 0;
+    
+    for (const userDoc of usersSnapshot.docs) {
+      const userData = userDoc.data();
+      const userId = userDoc.id;
+      
+      // Check eligibility
+      if (!userData.smsOptIn || !userData.phoneNumber) {
+        continue;
+      }
+      
+      if (!userData.smsPreferences?.weeklyInsights) {
+        continue;
+      }
+      
+      try {
+        // Get user's journal entries for the week
+        const entriesSnapshot = await admin.firestore()
+          .collection('journalEntries')
+          .where('userId', '==', userId)
+          .where('createdAt', '>=', weekStart)
+          .where('createdAt', '<=', weekEnd)
+          .get();
+        
+        const entryCount = entriesSnapshot.size;
+        
+        // Skip if no activity this week
+        if (entryCount === 0) {
+          console.log(`📭 User ${userId} had no entries this week, skipping`);
+          skippedCount++;
+          continue;
+        }
+        
+        // Calculate basic stats
+        let totalWords = 0;
+        let voiceEntries = 0;
+        const emotions = {};
+        
+        entriesSnapshot.docs.forEach(doc => {
+          const entry = doc.data();
+          
+          // Count words
+          if (entry.entry) {
+            totalWords += entry.entry.split(/\s+/).length;
+          }
+          
+          // Count voice entries
+          if (entry.isVoice) {
+            voiceEntries++;
+          }
+          
+          // Track emotions
+          if (entry.primaryEmotion) {
+            emotions[entry.primaryEmotion] = (emotions[entry.primaryEmotion] || 0) + 1;
+          }
+        });
+        
+        // Find most common emotion
+        let topEmotion = null;
+        let topEmotionCount = 0;
+        for (const [emotion, count] of Object.entries(emotions)) {
+          if (count > topEmotionCount) {
+            topEmotion = emotion;
+            topEmotionCount = count;
+          }
+        }
+        
+        // Build SMS message
+        const avgWords = Math.round(totalWords / entryCount);
+        let messageText = `📊 InkWell Weekly Summary\n\n`;
+        messageText += `This week you journaled ${entryCount} ${entryCount === 1 ? 'time' : 'times'}`;
+        
+        if (voiceEntries > 0) {
+          messageText += `, with ${voiceEntries} voice ${voiceEntries === 1 ? 'entry' : 'entries'}`;
+        }
+        
+        messageText += `.\n\n`;
+        messageText += `📝 Average: ${avgWords} words per entry\n`;
+        
+        if (topEmotion) {
+          const emotionEmojis = {
+            'happy': '😊',
+            'joy': '😊',
+            'grateful': '🙏',
+            'calm': '😌',
+            'peaceful': '😌',
+            'excited': '🎉',
+            'sad': '😢',
+            'anxious': '😰',
+            'worried': '😟',
+            'angry': '😠',
+            'frustrated': '😤',
+            'stressed': '😓',
+            'tired': '😴',
+            'confused': '😕',
+            'hopeful': '🌟',
+            'proud': '💪',
+            'loved': '❤️',
+            'content': '😊'
+          };
+          
+          const emoji = emotionEmojis[topEmotion.toLowerCase()] || '💭';
+          messageText += `${emoji} Most common feeling: ${topEmotion}\n`;
+        }
+        
+        messageText += `\nKeep up the great work! 🌱\n\nReply STOP to unsubscribe`;
+        
+        // Send SMS
+        const twilio = require('twilio');
+        const client = twilio(
+          TWILIO_ACCOUNT_SID.value(),
+          TWILIO_AUTH_TOKEN.value()
+        );
+        
+        await client.messages.create({
+          body: messageText,
+          from: TWILIO_PHONE_NUMBER.value(),
+          to: userData.phoneNumber
+        });
+        
+        sentCount++;
+        console.log(`✅ Sent weekly insights SMS to user ${userId}`);
+        
+        // Rate limiting
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+      } catch (userError) {
+        console.error(`❌ Failed to send weekly insights SMS to user ${userId}:`, userError);
+        skippedCount++;
+      }
+    }
+    
+    console.log(`📊 Weekly insights SMS complete: ${sentCount} sent, ${skippedCount} skipped`);
+    return { success: true, sent: sentCount, skipped: skippedCount };
+    
+  } catch (error) {
+    console.error('❌ Scheduled weekly insights SMS failed:', error);
+    throw error;
+  }
+});
+
+// ============================================================================
+// SUBSCRIPTION & PAYMENT FUNCTIONS (Stripe Integration)
+// ============================================================================
+
+/**
+ * Create a Stripe Checkout session for subscription or one-time purchase
+ * Supports: Plus subscription, Connect subscription, extra interactions
+ */
+exports.createCheckoutSession = onCall({
+  secrets: [STRIPE_SECRET_KEY],
+  cors: true,
+}, async (request) => {
+  try {
+    console.log('🔷 Creating checkout session, user:', request.auth?.uid);
+    console.log('🔷 Request data:', JSON.stringify(request.data));
+    
+    const stripe = require('stripe')(STRIPE_SECRET_KEY.value());
+    const { priceId, mode, metadata, successUrl, cancelUrl, giftCode } = request.data;
+    const userId = request.auth?.uid;
+    
+    if (!userId) {
+      console.error('❌ No user ID in request');
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
+    }
+
+    // Get or create Stripe customer
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+    const userData = userDoc.data();
+    
+    console.log('🔷 User data exists:', !!userData);
+    console.log('🔷 User email:', userData?.email);
+    
+    let customerId = userData?.stripeCustomerId;
+    
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: userData.email,
+        metadata: {
+          firebaseUID: userId,
+        },
+      });
+      customerId = customer.id;
+      
+      // Save customer ID to Firestore
+      await admin.firestore().collection('users').doc(userId).update({
+        stripeCustomerId: customerId,
+      });
+    }
+
+    // Check if gift code provided and valid
+    let discountAmount = 0;
+    let giftData = null;
+    
+    if (giftCode) {
+      const giftDoc = await admin.firestore()
+        .collection('giftMemberships')
+        .doc(giftCode)
+        .get();
+      
+      if (giftDoc.exists) {
+        giftData = giftDoc.data();
+        
+        // Validate gift code
+        const now = admin.firestore.Timestamp.now();
+        const isExpired = giftData.expiresAt && giftData.expiresAt < now;
+        const isUsed = giftData.redeemedBy && giftData.redeemedBy.length >= (giftData.maxUses || 1);
+        
+        if (isExpired) {
+          throw new HttpsError('failed-precondition', 'Gift code has expired');
+        }
+        if (isUsed) {
+          throw new HttpsError('failed-precondition', 'Gift code has already been used');
+        }
+        
+        discountAmount = giftData.discountPercent; // 0.50 to 1.0
+      }
+    }
+
+    // Build session config
+    const sessionConfig = {
+      customer: customerId,
+      mode: mode || 'subscription',
+      line_items: [{
+        price: priceId,
+        quantity: 1,
+      }],
+      success_url: successUrl || `${process.env.APP_URL}/app.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl || `${process.env.APP_URL}/app.html`,
+      metadata: {
+        firebaseUID: userId,
+        ...(metadata || {}),
+        ...(giftCode ? { giftCode } : {}),
+      },
+    };
+    
+    // Add subscription_data only for subscription mode
+    if (mode === 'subscription' || !mode) {
+      sessionConfig.subscription_data = {
+        metadata: {
+          firebaseUID: userId,
+        },
+      };
+    }
+    
+    console.log('🔷 Session config:', JSON.stringify(sessionConfig, null, 2));
+
+    // Apply discount if gift code valid
+    if (discountAmount > 0) {
+      const coupon = await stripe.coupons.create({
+        percent_off: discountAmount * 100,
+        duration: 'forever', // Discount applies for life of subscription
+        name: `Gift from practitioner (${discountAmount * 100}% off)`,
+      });
+      
+      sessionConfig.discounts = [{
+        coupon: coupon.id,
+      }];
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
+    
+    console.log('✅ Checkout session created:', session.id);
+
+    return {
+      sessionId: session.id,
+      url: session.url,
+    };
+    
+  } catch (error) {
+    console.error('❌ Error creating checkout session:', error);
+    console.error('❌ Error stack:', error.stack);
+    throw new HttpsError('internal', `Failed to create checkout: ${error.message}`);
+  }
+});
+
+/**
+ * Handle Stripe webhook events
+ * Processes: subscription creation, updates, cancellations, payment success/failure
+ */
+exports.handleStripeWebhook = onRequest({
+  secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET],
+  cors: true,
+}, async (req, res) => {
+  const stripe = require('stripe')(STRIPE_SECRET_KEY.value());
+  const sig = req.headers['stripe-signature'];
+  
+  let event;
+  
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.rawBody,
+      sig,
+      STRIPE_WEBHOOK_SECRET.value()
+    );
+  } catch (err) {
+    console.error('⚠️ Webhook signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  console.log(`📥 Stripe webhook received: ${event.type}`);
+
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        const userId = session.metadata.firebaseUID;
+        const giftCode = session.metadata.giftCode;
+        
+        if (session.mode === 'subscription') {
+          const subscription = await stripe.subscriptions.retrieve(session.subscription);
+          const priceId = subscription.items.data[0].price.id;
+          
+          // Determine tier based on price ID
+          let tier = 'free';
+          if (priceId.includes('plus')) tier = 'plus';
+          if (priceId.includes('connect')) tier = 'connect';
+          
+          // Update user document
+          await admin.firestore().collection('users').doc(userId).update({
+            subscriptionTier: tier,
+            subscriptionStatus: 'active',
+            stripeSubscriptionId: subscription.id,
+            stripeCustomerId: session.customer,
+            subscriptionStartedAt: admin.firestore.FieldValue.serverTimestamp(),
+            giftedBy: giftCode ? (await admin.firestore().collection('giftMemberships').doc(giftCode).get()).data()?.createdBy : null,
+          });
+          
+          // If Connect tier, initialize interaction tracking
+          if (tier === 'connect') {
+            await admin.firestore().collection('users').doc(userId).update({
+              interactionsThisMonth: 0,
+              interactionsLimit: 4,
+              extraInteractionsPurchased: 0,
+            });
+          }
+          
+          // Mark gift code as redeemed
+          if (giftCode) {
+            const giftRef = admin.firestore().collection('giftMemberships').doc(giftCode);
+            await giftRef.update({
+              redeemedBy: admin.firestore.FieldValue.arrayUnion(userId),
+              redeemedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+          }
+          
+          console.log(`✅ Subscription created for user ${userId}: ${tier}`);
+        } else if (session.mode === 'payment') {
+          // One-time purchase (extra interactions)
+          const quantity = session.metadata.extraInteractions || 1;
+          
+          await admin.firestore().collection('users').doc(userId).update({
+            extraInteractionsPurchased: admin.firestore.FieldValue.increment(parseInt(quantity)),
+            interactionsLimit: admin.firestore.FieldValue.increment(parseInt(quantity)),
+          });
+          
+          console.log(`✅ Extra interactions purchased for user ${userId}: ${quantity}`);
+        }
+        break;
+      }
+      
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object;
+        const userId = subscription.metadata.firebaseUID;
+        
+        await admin.firestore().collection('users').doc(userId).update({
+          subscriptionStatus: subscription.status,
+          subscriptionPeriodEnd: new Date(subscription.current_period_end * 1000),
+        });
+        
+        console.log(`✅ Subscription updated for user ${userId}: ${subscription.status}`);
+        break;
+      }
+      
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object;
+        const userId = subscription.metadata.firebaseUID;
+        
+        await admin.firestore().collection('users').doc(userId).update({
+          subscriptionTier: 'free',
+          subscriptionStatus: 'canceled',
+          subscriptionCanceledAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        
+        console.log(`✅ Subscription canceled for user ${userId}`);
+        break;
+      }
+      
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object;
+        const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
+        const userId = subscription.metadata.firebaseUID;
+        
+        await admin.firestore().collection('users').doc(userId).update({
+          subscriptionStatus: 'past_due',
+          lastPaymentFailed: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        
+        // TODO: Send email notification to user
+        console.log(`⚠️ Payment failed for user ${userId}`);
+        break;
+      }
+    }
+    
+    res.json({ received: true });
+  } catch (error) {
+    console.error('❌ Error processing webhook:', error);
+    res.status(500).send('Webhook processing failed');
+  }
+});
+
+/**
+ * Get subscription status and details for current user
+ */
+exports.getSubscriptionStatus = onCall({
+  cors: true,
+}, async (request) => {
+  try {
+    const userId = request.auth?.uid;
+    
+    if (!userId) {
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
+    }
+
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+    const userData = userDoc.data();
+    
+    return {
+      tier: userData?.subscriptionTier || 'free',
+      status: userData?.subscriptionStatus || 'active',
+      interactionsThisMonth: userData?.interactionsThisMonth || 0,
+      interactionsLimit: userData?.interactionsLimit || 0,
+      extraInteractionsPurchased: userData?.extraInteractionsPurchased || 0,
+      giftedBy: userData?.giftedBy || null,
+      canUpgrade: (userData?.subscriptionTier || 'free') !== 'connect',
+    };
+    
+  } catch (error) {
+    console.error('❌ Error getting subscription status:', error);
+    throw new HttpsError('internal', error.message);
+  }
+});
+
+/**
+ * Purchase extra practitioner interactions (Connect tier only)
+ */
+exports.purchaseExtraInteraction = onCall({
+  secrets: [STRIPE_SECRET_KEY],
+  cors: true,
+}, async (request) => {
+  try {
+    const userId = request.auth?.uid;
+    const { quantity } = request.data;
+    
+    if (!userId) {
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
+    }
+
+    // Verify user is on Connect tier
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+    const userData = userDoc.data();
+    
+    if (userData?.subscriptionTier !== 'connect') {
+      throw new HttpsError('failed-precondition', 'Must be on Connect tier to purchase extra interactions');
+    }
+    
+    // Check if already at maximum (7 total = 4 included + 3 extra)
+    const currentExtra = userData.extraInteractionsPurchased || 0;
+    if (currentExtra >= 3) {
+      throw new HttpsError('failed-precondition', 'Maximum extra interactions already purchased (3 per month)');
+    }
+    
+    const allowedQuantity = Math.min(quantity || 1, 3 - currentExtra);
+    
+    // Create checkout session for one-time payment
+    const stripe = require('stripe')(STRIPE_SECRET_KEY.value());
+    
+    const session = await stripe.checkout.sessions.create({
+      customer: userData.stripeCustomerId,
+      mode: 'payment',
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: 'Extra Practitioner Interaction',
+            description: 'Additional monthly interaction with your connected practitioner',
+          },
+          unit_amount: 999, // $9.99
+        },
+        quantity: allowedQuantity,
+      }],
+      success_url: `${process.env.APP_URL}/app.html?extra_purchased=true`,
+      cancel_url: `${process.env.APP_URL}/app.html`,
+      metadata: {
+        firebaseUID: userId,
+        extraInteractions: allowedQuantity,
+      },
+    });
+
+    return {
+      sessionId: session.id,
+      url: session.url,
+      quantity: allowedQuantity,
+    };
+    
+  } catch (error) {
+    console.error('❌ Error purchasing extra interaction:', error);
+    throw new HttpsError('internal', error.message);
+  }
+});
+
+/**
+ * Create a gift membership code (practitioner only)
+ * Allows practitioners to offer discounted Connect memberships to clients
+ */
+exports.createGiftMembership = onCall({
+  cors: true,
+}, async (request) => {
+  try {
+    const userId = request.auth?.uid;
+    const { discountPercent, maxUses, expirationDays, recipientEmail } = request.data;
+    
+    if (!userId) {
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
+    }
+
+    // Verify user is an approved practitioner
+    const practitionerDoc = await admin.firestore()
+      .collection('approvedPractitioners')
+      .doc(userId)
+      .get();
+    
+    if (!practitionerDoc.exists) {
+      throw new HttpsError('permission-denied', 'Only approved practitioners can create gift memberships');
+    }
+
+    // Validate discount (50-100%)
+    const discount = Math.min(Math.max(discountPercent || 0.50, 0.50), 1.0);
+    
+    // Generate unique gift code
+    const giftCode = generateGiftCode();
+    
+    // Calculate expiration
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + (expirationDays || 90));
+    
+    // Create gift membership document
+    await admin.firestore().collection('giftMemberships').doc(giftCode).set({
+      code: giftCode,
+      createdBy: userId,
+      createdByEmail: practitionerDoc.data().email,
+      discountPercent: discount,
+      maxUses: maxUses || 1,
+      recipientEmail: recipientEmail || null,
+      redeemedBy: [],
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+      status: 'active',
+    });
+    
+    console.log(`✅ Gift membership created by practitioner ${userId}: ${giftCode} (${discount * 100}% off)`);
+    
+    return {
+      giftCode,
+      discountPercent: discount,
+      expiresAt: expiresAt.toISOString(),
+      redeemUrl: `${process.env.APP_URL}/redeem?code=${giftCode}`,
+    };
+    
+  } catch (error) {
+    console.error('❌ Error creating gift membership:', error);
+    throw new HttpsError('internal', error.message);
+  }
+});
+
+/**
+ * Validate and get details of a gift code
+ */
+exports.validateGiftCode = onCall({
+  cors: true,
+}, async (request) => {
+  try {
+    const { giftCode } = request.data;
+    
+    if (!giftCode) {
+      throw new HttpsError('invalid-argument', 'Gift code is required');
+    }
+
+    const giftDoc = await admin.firestore()
+      .collection('giftMemberships')
+      .doc(giftCode.toUpperCase())
+      .get();
+    
+    if (!giftDoc.exists) {
+      return { valid: false, reason: 'Gift code not found' };
+    }
+    
+    const giftData = giftDoc.data();
+    const now = admin.firestore.Timestamp.now();
+    
+    // Check expiration
+    if (giftData.expiresAt && giftData.expiresAt < now) {
+      return { valid: false, reason: 'Gift code has expired' };
+    }
+    
+    // Check usage limit
+    if (giftData.redeemedBy.length >= giftData.maxUses) {
+      return { valid: false, reason: 'Gift code has been fully redeemed' };
+    }
+    
+    return {
+      valid: true,
+      discountPercent: giftData.discountPercent,
+      createdByEmail: giftData.createdByEmail,
+      expiresAt: giftData.expiresAt.toDate().toISOString(),
+    };
+    
+  } catch (error) {
+    console.error('❌ Error validating gift code:', error);
+    throw new HttpsError('internal', error.message);
+  }
+});
+
+/**
+ * Track practitioner interaction (increments monthly counter)
+ */
+exports.trackPractitionerInteraction = onCall({
+  cors: true,
+}, async (request) => {
+  try {
+    const userId = request.auth?.uid;
+    
+    if (!userId) {
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
+    }
+
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+    const userData = userDoc.data();
+    
+    // Verify Connect tier
+    if (userData?.subscriptionTier !== 'connect') {
+      throw new HttpsError('permission-denied', 'Must be on Connect tier');
+    }
+    
+    const current = userData.interactionsThisMonth || 0;
+    const limit = userData.interactionsLimit || 4;
+    
+    if (current >= limit) {
+      return {
+        success: false,
+        reason: 'interaction_limit_reached',
+        current,
+        limit,
+      };
+    }
+    
+    // Increment counter
+    await admin.firestore().collection('users').doc(userId).update({
+      interactionsThisMonth: admin.firestore.FieldValue.increment(1),
+    });
+    
+    return {
+      success: true,
+      current: current + 1,
+      limit,
+      remaining: limit - current - 1,
+    };
+    
+  } catch (error) {
+    console.error('❌ Error tracking interaction:', error);
+    throw new HttpsError('internal', error.message);
+  }
+});
+
+/**
+ * Reset monthly interaction counters (scheduled to run on 1st of each month)
+ */
+exports.resetMonthlyInteractions = onSchedule({
+  schedule: '0 0 1 * *', // Midnight on 1st of every month
+  timeZone: 'America/New_York',
+}, async (event) => {
+  try {
+    console.log('🔄 Resetting monthly interaction counters...');
+    
+    const usersSnapshot = await admin.firestore()
+      .collection('users')
+      .where('subscriptionTier', '==', 'connect')
+      .get();
+    
+    const batch = admin.firestore().batch();
+    let resetCount = 0;
+    
+    for (const doc of usersSnapshot.docs) {
+      batch.update(doc.ref, {
+        interactionsThisMonth: 0,
+        extraInteractionsPurchased: 0,
+        interactionsLimit: 4, // Reset to base 4 interactions
+      });
+      resetCount++;
+    }
+    
+    await batch.commit();
+    
+    console.log(`✅ Reset interaction counters for ${resetCount} Connect users`);
+    return { success: true, resetCount };
+    
+  } catch (error) {
+    console.error('❌ Error resetting monthly interactions:', error);
+    throw error;
+  }
+});
+
+// Helper function to generate unique gift codes
+function generateGiftCode(length = 8) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Exclude ambiguous chars
+  let code = '';
+  for (let i = 0; i < length; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}

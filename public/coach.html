@@ -438,6 +438,53 @@ const CONFIG = {
             <h3>👩‍⚕️ Practitioner Portal</h3>
             <p>Welcome to the practitioner dashboard.</p>
             <p>When clients tag entries for review, you'll receive email notifications with direct links to view and respond to their journal entries.</p>
+            
+            <!-- Gift Membership Section -->
+            <div id="giftCodeSection" style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border: 2px solid #667eea; border-radius: 12px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+              <h4 style="color: #667eea; margin-top: 0; display: flex; align-items: center; gap: 0.5rem;">
+                🎁 Gift Connect Membership
+              </h4>
+              <p style="font-size: 0.9rem; color: #666; margin-bottom: 1.5rem;">
+                Create discounted Connect memberships for your clients (50-100% off)
+              </p>
+              
+              <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Discount Amount:</label>
+                <select id="giftDiscount" style="width: 100%; padding: 0.75rem; border: 2px solid #667eea; border-radius: 8px; font-size: 1rem;">
+                  <option value="0.50">50% off ($24.99/month)</option>
+                  <option value="0.75">75% off ($12.50/month)</option>
+                  <option value="1.0">100% off (Free)</option>
+                </select>
+              </div>
+              
+              <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Client Email (Optional):</label>
+                <input type="email" id="giftRecipientEmail" placeholder="client@example.com" 
+                       style="width: 100%; padding: 0.75rem; border: 2px solid #667eea; border-radius: 8px; font-size: 1rem; box-sizing: border-box;" />
+                <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem; margin-bottom: 0;">
+                  Leave blank to create a shareable code
+                </p>
+              </div>
+              
+              <button onclick="generateGiftCode()" id="generateGiftBtn" 
+                      style="width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; padding: 0.75rem; font-weight: 600; font-size: 1rem; cursor: pointer;">
+                Generate Gift Code
+              </button>
+              
+              <div id="giftCodeResult" style="display: none; margin-top: 1.5rem; padding: 1.5rem; background: white; border-radius: 8px; border: 2px dashed #667eea;">
+                <div style="font-weight: 600; color: #667eea; margin-bottom: 0.5rem;">✅ Gift Code Created!</div>
+                <div style="font-family: monospace; font-size: 1.5rem; font-weight: bold; color: #333; padding: 1rem; background: #f8f9ff; border-radius: 6px; margin: 1rem 0; text-align: center;" id="giftCodeDisplay"></div>
+                <div style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">
+                  Share this code with your client or use the link below:
+                </div>
+                <div style="word-break: break-all; padding: 0.75rem; background: #f8f9ff; border-radius: 6px; font-size: 0.85rem; color: #667eea; margin-bottom: 1rem;" id="giftCodeLink"></div>
+                <button onclick="copyGiftCode()" style="width: 100%; background: white; border: 2px solid #667eea; color: #667eea; border-radius: 6px; padding: 0.5rem; font-weight: 600; cursor: pointer;">
+                  📋 Copy Code
+                </button>
+              </div>
+              
+              <div id="giftCodeError" style="display: none; margin-top: 1rem; padding: 1rem; background: #ffebee; border-radius: 8px; color: #d32f2f; font-size: 0.9rem;"></div>
+            </div>
           </div>
         `;
       }
@@ -676,6 +723,71 @@ document.getElementById("logoutBtn").onclick = async () => {
     alert('Logout failed. Please try again.');
   }
 };
+
+// Gift Code Generation Functions
+window.generateGiftCode = async function() {
+  const discountSelect = document.getElementById('giftDiscount');
+  const recipientEmail = document.getElementById('giftRecipientEmail');
+  const generateBtn = document.getElementById('generateGiftBtn');
+  const resultDiv = document.getElementById('giftCodeResult');
+  const errorDiv = document.getElementById('giftCodeError');
+  
+  if (!currentAuthenticatedUser) {
+    errorDiv.textContent = 'You must be logged in to generate gift codes.';
+    errorDiv.style.display = 'block';
+    return;
+  }
+  
+  try {
+    // Show loading state
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'Generating...';
+    errorDiv.style.display = 'none';
+    resultDiv.style.display = 'none';
+    
+    // Call Cloud Function
+    const createGift = httpsCallable(functions, 'createGiftMembership');
+    const result = await createGift({
+      discountPercent: parseFloat(discountSelect.value),
+      recipientEmail: recipientEmail.value.trim() || null,
+      maxUses: 1,
+      expirationDays: 90,
+    });
+    
+    // Display result
+    document.getElementById('giftCodeDisplay').textContent = result.data.giftCode;
+    document.getElementById('giftCodeLink').textContent = result.data.redeemUrl;
+    resultDiv.style.display = 'block';
+    
+    // Reset button
+    generateBtn.disabled = false;
+    generateBtn.textContent = 'Generate Another Code';
+    
+    console.log('✅ Gift code created:', result.data.giftCode);
+    
+  } catch (error) {
+    console.error('❌ Failed to create gift code:', error);
+    errorDiv.textContent = `Failed to create gift code: ${error.message}`;
+    errorDiv.style.display = 'block';
+    
+    // Reset button
+    generateBtn.disabled = false;
+    generateBtn.textContent = 'Generate Gift Code';
+  }
+};
+
+window.copyGiftCode = function() {
+  const codeText = document.getElementById('giftCodeDisplay').textContent;
+  navigator.clipboard.writeText(codeText).then(() => {
+    const btn = event.target;
+    const originalText = btn.textContent;
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => {
+      btn.textContent = originalText;
+    }, 2000);
+  });
+};
+
   </script>
 </head>
 <body>

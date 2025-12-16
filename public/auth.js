@@ -1009,6 +1009,24 @@ const betaAgreement = document.getElementById("betaAgreement");
 const signupSubmit = document.querySelector('#signupForm button[type="submit"]');
 const forgotPassword = document.getElementById("forgotPassword");
 
+// Practitioner interest toggle
+const practitionerInterest = document.getElementById("practitionerInterest");
+const practitionerInfoSection = document.getElementById("practitionerInfoSection");
+const practitionerInterestConfirm = document.getElementById("practitionerInterestConfirm");
+
+if (practitionerInterest && practitionerInfoSection) {
+  practitionerInterest.addEventListener('change', function(e) {
+    if (e.target.checked) {
+      practitionerInfoSection.style.display = 'block';
+    } else {
+      practitionerInfoSection.style.display = 'none';
+      if (practitionerInterestConfirm) {
+        practitionerInterestConfirm.checked = false;
+      }
+    }
+  });
+}
+
 // Toggle modals with delegated event listener
 document.addEventListener("click", (e) => {
   if (e.target && e.target.id === "toggleSignup") {
@@ -1301,15 +1319,23 @@ async function signUp() {
       let phoneData = {};
       if (phone) {
         const phoneValidation = window.validatePhoneNumber(phone);
+        // Assign random initial time slot for prompt variety
+        const timeSlots = ['morning', 'midday', 'afternoon', 'evening'];
+        const randomSlot = timeSlots[Math.floor(Math.random() * timeSlots.length)];
+        
         phoneData = {
           phoneNumber: phoneValidation.formatted,
           smsOptIn: smsOptIn,
           smsPreferences: {
             wishMilestones: true,
             dailyPrompts: false,
+            dailyGratitude: false,
             coachReplies: true,
             weeklyInsights: false
-          }
+          },
+          promptTimeSlot: randomSlot, // Random initial time window
+          lastPromptSent: null, // Track when last journal prompt was sent
+          lastGratitudeSent: null // Track when last gratitude prompt was sent
         };
       }
 
@@ -1336,6 +1362,58 @@ async function signUp() {
 
       // Update Firebase Auth profile AFTER creating user document
       await updateProfile(userCred.user, { displayName: username || "" });
+
+      // === Practitioner Interest Handling ===
+      const practitionerInterest = document.getElementById('practitionerInterest')?.checked;
+      const practitionerConfirm = document.getElementById('practitionerInterestConfirm')?.checked;
+      
+      if (practitionerInterest && practitionerConfirm) {
+        try {
+          console.log('📋 User expressed practitioner interest, creating inquiry...');
+          
+          // Create inquiry document in practitionerRequests collection
+          await setDoc(doc(db, "practitionerRequests", userCred.user.uid), {
+            userId: userCred.user.uid,
+            email: userCred.user.email,
+            fullName: username || email.split('@')[0],
+            status: 'inquiry',
+            requestType: 'signup_interest',
+            inquiredAt: serverTimestamp(),
+            // Pre-fill what we know (will be completed if they get invitation)
+            credentials: '',
+            practiceType: '',
+            licenseNumber: '',
+            practiceLocation: '',
+            practiceDescription: 'Expressed interest during signup - awaiting more information'
+          });
+          
+          // Flag on user document for easy reference
+          await updateDoc(doc(db, "users", userCred.user.uid), {
+            practitionerInterestExpressed: true,
+            practitionerInterestDate: serverTimestamp()
+          });
+          
+          // Send email notification to admin
+          const endpoint = location.hostname === "localhost" 
+            ? "http://localhost:5001/inkwell-alpha/us-central1/sendPractitionerInquiryNotification"
+            : "https://us-central1-inkwell-alpha.cloudfunctions.net/sendPractitionerInquiryNotification";
+          
+          await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userName: username || email.split('@')[0],
+              userEmail: userCred.user.email,
+              userId: userCred.user.uid
+            })
+          });
+          
+          console.log('✅ Practitioner inquiry saved and notification sent');
+        } catch (inquiryError) {
+          console.error('❌ Failed to process practitioner inquiry (non-fatal):', inquiryError);
+          // Don't fail signup if this fails
+        }
+      }
 
       // === MailChimp Integration ===
       // Note: Run MailChimp integration in background, don't block the UI

@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "dotenv": "^16.5.0",
-    "firebase": "^11.6.1"
+    "firebase": "^11.6.1",
+    "stripe": "^20.0.0"
   },
   "devDependencies": {
     "chokidar-cli": "^3.0.0"

@@ -47,6 +47,8 @@
             margin-bottom: 1em; 
         }
         .status-pending { color: #856404; background: #fff3cd; padding: 0.25em 0.5em; border-radius: 4px; font-size: 0.8em; }
+        .status-inquiry { color: #0c5460; background: #d1ecf1; padding: 0.25em 0.5em; border-radius: 4px; font-size: 0.8em; border: 1px solid #bee5eb; }
+        .inquiry-card { border-left: 5px solid #17a2b8; background: linear-gradient(135deg, #f0f8ff 0%, #e6f3f8 100%); }
         .btn { 
             padding: 0.5em 1em; 
             border: none; 
@@ -298,8 +300,17 @@
             requestsList.innerHTML = '<p>🔄 Loading pending requests...</p>';
             
             try {
-                const q = query(collection(db, 'practitionerRequests'), where('status', '==', 'pending_approval'));
-                const snapshot = await getDocs(q);
+                // Get both inquiries and pending approvals
+                const q1 = query(collection(db, 'practitionerRequests'), where('status', '==', 'inquiry'));
+                const q2 = query(collection(db, 'practitionerRequests'), where('status', '==', 'pending_approval'));
+                
+                const [inquiriesSnapshot, pendingSnapshot] = await Promise.all([
+                    getDocs(q1),
+                    getDocs(q2)
+                ]);
+                
+                const totalDocs = inquiriesSnapshot.size + pendingSnapshot.size;
+                const snapshot = { empty: totalDocs === 0, size: totalDocs };
                 
                 if (snapshot.empty) {
                     requestsList.innerHTML = `
@@ -315,13 +326,27 @@
                 }
                 
                 let html = '';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    html += createRequestCard(doc.id, data);
-                });
+                
+                // Show inquiries first (with special styling)
+                if (!inquiriesSnapshot.empty) {
+                    html += '<h2 style="color: #17a2b8; margin: 1.5em 0 1em 0; padding-bottom: 0.5em; border-bottom: 2px solid #17a2b8;">💼 Signup Inquiries</h2>';
+                    inquiriesSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        html += createRequestCard(doc.id, data);
+                    });
+                }
+                
+                // Show full applications
+                if (!pendingSnapshot.empty) {
+                    html += '<h2 style="color: #856404; margin: 1.5em 0 1em 0; padding-bottom: 0.5em; border-bottom: 2px solid #ffc107;">📋 Full Applications</h2>';
+                    pendingSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        html += createRequestCard(doc.id, data);
+                    });
+                }
                 
                 requestsList.innerHTML = html;
-                console.log(`📋 Loaded ${snapshot.size} pending request(s)`);
+                console.log(`📋 Loaded ${inquiriesSnapshot.size} inquiry(ies) and ${pendingSnapshot.size} pending request(s)`);
                 
             } catch (error) {
                 console.error('❌ Error loading requests:', error);
@@ -329,16 +354,76 @@
             }
         }
 
+        // Send practitioner invitation email (for signup inquiries)
+        window.sendPractitionerInvitation = async (requestId, email, name) => {
+            if (!confirm(`Send practitioner invitation to ${name} (${email})?\n\nThis will email them a registration link to complete their application.`)) {
+                return;
+            }
+            
+            try {
+                console.log(`📧 Sending invitation to ${email}`);
+                
+                // Get auth token
+                const idToken = await auth.currentUser.getIdToken();
+                
+                // Call the existing sendPractitionerInvitation Cloud Function
+                const endpoint = location.hostname === "localhost" 
+                    ? "http://localhost:5001/inkwell-alpha/us-central1/sendPractitionerInvitation"
+                    : "https://us-central1-inkwell-alpha.cloudfunctions.net/sendPractitionerInvitation";
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({
+                        practitionerEmail: email,
+                        practitionerName: name
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to send invitation');
+                }
+                
+                // Update the inquiry status to 'invitation_sent'
+                await updateDoc(doc(db, 'practitionerRequests', requestId), {
+                    status: 'invitation_sent',
+                    invitationSentAt: new Date(),
+                    invitationSentBy: auth.currentUser?.email || 'Unknown admin'
+                });
+                
+                alert(`✅ Invitation sent successfully to ${email}!\n\nThey will receive an email with a registration link. The inquiry status has been updated.`);
+                
+                // Reload the list
+                loadPendingRequests();
+                
+            } catch (error) {
+                console.error('❌ Error sending invitation:', error);
+                alert(`❌ Error sending invitation: ${error.message}\n\nPlease try again.`);
+            }
+        };
+
         function createRequestCard(requestId, data) {
             const requestedDate = data.requestedAt?.toDate?.() 
                 ? data.requestedAt.toDate().toLocaleDateString() + ' ' + data.requestedAt.toDate().toLocaleTimeString()
-                : 'Unknown date';
+                : (data.inquiredAt?.toDate?.() 
+                    ? data.inquiredAt.toDate().toLocaleDateString() + ' ' + data.inquiredAt.toDate().toLocaleTimeString()
+                    : 'Unknown date');
+            
+            const isInquiry = data.status === 'inquiry';
+            const statusBadge = isInquiry 
+                ? '<span class="status-inquiry">💼 Signup Inquiry</span>'
+                : '<span class="status-pending">⏳ Pending Approval</span>';
+            const cardClass = isInquiry ? 'request-card inquiry-card' : 'request-card';
             
             return `
-                <div class="request-card">
+                <div class="${cardClass}">
                     <div class="request-header">
                         <h3 style="margin: 0; color: var(--brand-primary);">${data.fullName || 'Unknown Name'}</h3>
-                        <span class="status-pending">⏳ Pending Approval</span>
+                        ${statusBadge}
                     </div>
                     
                     <div class="details-grid">
@@ -370,12 +455,21 @@
                     ` : ''}
                     
                     <div style="margin-top: 1.5em; text-align: center;">
-                        <button onclick="processPractitioner('${requestId}', 'approved')" class="btn btn-approve">
-                            ✅ Approve Practitioner
-                        </button>
-                        <button onclick="processPractitioner('${requestId}', 'denied')" class="btn btn-deny">
-                            ❌ Deny Registration
-                        </button>
+                        ${isInquiry ? `
+                            <button onclick="sendPractitionerInvitation('${requestId}', '${data.email}', '${data.fullName}')" class="btn btn-approve">
+                                📧 Send Invitation Link
+                            </button>
+                            <button onclick="processPractitioner('${requestId}', 'denied')" class="btn btn-deny">
+                                ❌ Decline Inquiry
+                            </button>
+                        ` : `
+                            <button onclick="processPractitioner('${requestId}', 'approved')" class="btn btn-approve">
+                                ✅ Approve Practitioner
+                            </button>
+                            <button onclick="processPractitioner('${requestId}', 'denied')" class="btn btn-deny">
+                                ❌ Deny Registration
+                            </button>
+                        `}
                     </div>
                 </div>
             `;

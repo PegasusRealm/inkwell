@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InkWell - SMS Opt-In Policy Review</title>
+  <style>
+    /* Base Styles */
+    :root {
+      --brand-primary: #2A6972;
+      --brand-secondary: #4A8B8B;
+      --font-main: #0D3F45;
+      --font-secondary: #333;
+      --font-muted: #666;
+      --bg-card: white;
+      --border-light: #ccc;
+      --body-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+      --btn-success: #4caf50;
+      --btn-success-hover: #45a049;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--body-font);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+      padding: 20px;
+      color: var(--font-main);
+    }
+
+    .page-header {
+      text-align: center;
+      color: white;
+      margin-bottom: 2em;
+    }
+
+    .page-header h1 {
+      font-size: 2em;
+      margin: 0 0 0.5em 0;
+    }
+
+    .page-header p {
+      font-size: 1.1em;
+      margin: 0;
+      opacity: 0.9;
+    }
+
+    .modal-container {
+      margin-bottom: 2em;
+    }
+
+    .modal-label {
+      background: white;
+      padding: 1em;
+      border-radius: 8px;
+      margin-bottom: 1em;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .modal-label h2 {
+      margin: 0;
+      color: var(--brand-primary);
+      font-size: 1.3em;
+    }
+
+    .modal-label p {
+      margin: 0.5em 0 0 0;
+      color: var(--font-muted);
+      font-size: 0.9em;
+    }
+
+    /* Modal Display Styles */
+    .modal-display {
+      background: rgba(0,0,0,0.7);
+      padding: 2em 1em;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-block {
+      max-width: 450px;
+      width: 100%;
+      background: white;
+      padding: 2em;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    /* SMS Notifications Section Styles */
+    .sms-section {
+      background: #f0fff4;
+      border: 1px solid #c6f6d5;
+      border-radius: 8px;
+      padding: 1.5em;
+      margin-bottom: 1.5em;
+      text-align: left;
+    }
+
+    .sms-section h3 {
+      color: var(--brand-primary);
+      margin-top: 0;
+      margin-bottom: 1em;
+      font-size: 1.1em;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+
+    .sms-input-group {
+      margin-bottom: 1em;
+    }
+
+    .sms-input-group label {
+      display: block;
+      margin-bottom: 0.5em;
+      font-weight: 500;
+      color: var(--font-secondary);
+      font-size: 0.9em;
+    }
+
+    .sms-input-group input[type="tel"] {
+      width: 100%;
+      padding: 0.6em;
+      border: 1px solid var(--border-light);
+      border-radius: 5px;
+      background-color: var(--bg-card);
+      color: var(--font-main);
+      font-size: 0.9em;
+      box-sizing: border-box;
+    }
+
+    .sms-help-text {
+      font-size: 0.8em;
+      color: var(--font-muted);
+      margin: 0.5em 0 0 0;
+    }
+
+    .sms-preferences-box {
+      margin-bottom: 1em;
+      padding: 1em;
+      background: rgba(42, 105, 114, 0.05);
+      border-radius: 5px;
+    }
+
+    .sms-opt-in-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      font-size: 0.9em;
+      color: var(--font-main);
+      cursor: pointer;
+      margin-bottom: 0.8em;
+    }
+
+    .sms-opt-in-label input[type="checkbox"] {
+      transform: scale(1.2);
+      margin-right: 0.3em;
+      cursor: pointer;
+    }
+
+    .sms-preferences-info {
+      font-size: 0.8em;
+      color: var(--font-muted);
+      margin: 0 0 1em 0;
+      line-height: 1.3;
+    }
+
+    .sms-preference-list {
+      margin-left: 1.5em;
+    }
+
+    .sms-preference-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      font-size: 0.85em;
+      color: var(--font-secondary);
+      cursor: pointer;
+      margin-bottom: 0.5em;
+    }
+
+    .sms-preference-item input[type="checkbox"] {
+      cursor: pointer;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.7em 0.8em;
+      background: var(--brand-primary);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.9em;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .sms-test-button {
+      width: 100%;
+      margin-top: 0.5em;
+      background: var(--btn-success);
+    }
+
+    /* Input Styles */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="url"] {
+      width: 100%;
+      padding: 1em 1.2em;
+      margin-bottom: 1em;
+      background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%);
+      border: 2px solid rgba(42,105,114,0.15);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(42,105,114,0.08);
+      color: #0D3F45;
+      font-family: var(--body-font);
+      font-size: 0.9em;
+      box-sizing: border-box;
+    }
+
+    input[type="checkbox"] {
+      margin-right: 0.5em;
+    }
+
+    a {
+      color: var(--brand-primary);
+      text-decoration: underline;
+    }
+
+    img {
+      max-height: 120px;
+      margin-bottom: 1.5em;
+    }
+
+    .info-box {
+      background: #f8f9fa;
+      border: 1px solid #e0e6ed;
+      border-radius: 8px;
+      padding: 1.5em;
+      margin-bottom: 1.5em;
+      text-align: left;
+    }
+
+    .info-box h3 {
+      color: var(--brand-primary);
+      margin-top: 0;
+      margin-bottom: 1em;
+      font-size: 1.1em;
+    }
+
+    .disabled-notice {
+      background: #fff9f0;
+      border: 2px solid #f0d5a8;
+      border-radius: 8px;
+      padding: 1em;
+      margin: 2em auto;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .disabled-notice h3 {
+      margin: 0 0 0.5em 0;
+      color: #d97706;
+    }
+
+    .disabled-notice p {
+      margin: 0;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <h1>📱 InkWell SMS Opt-In Policy Review</h1>
+    <p>Visual reference for SMS notification opt-in options</p>
+  </div>
+
+  <div class="disabled-notice">
+    <h3>⚠️ Notice</h3>
+    <p>This page is for visual review only. All form inputs and buttons are non-functional.</p>
+  </div>
+
+  <!-- SIGN-UP MODAL -->
+  <div class="modal-container">
+    <div class="modal-label">
+      <h2>1️⃣ Sign-Up Modal</h2>
+      <p>SMS opt-in presented during account registration</p>
+    </div>
+
+    <div class="modal-display">
+      <div class="card-block">
+        <img src="InkWell-Logo.png" alt="InkWell Logo" onerror="this.style.display='none'" />
+        
+        <form id="signupForm">
+          <input type="text" id="signupUsername" placeholder="User Name (optional)" disabled />
+          
+          <input type="url" id="signupAvatar" placeholder="Avatar/Profile Picture URL (optional)" disabled />
+          
+          <p style="font-size: 0.85em; color: #000000; margin: 0 0 1em 0; padding: 0 1em; text-align: left;">
+            💡 <strong>Tip:</strong> Upload your image to a free service like <a href="https://imgur.com" target="_blank">Imgur</a> or <a href="https://postimages.org" target="_blank">PostImages</a>, then copy the direct image URL here.
+          </p>
+          
+          <input type="email" id="signupEmail" placeholder="Email" disabled />
+          
+          <input type="password" id="signupPassword" placeholder="Password" disabled />
+          
+          <!-- Phone Number Field -->
+          <input type="tel" id="signupPhone" placeholder="Phone Number (optional) - e.g., +1234567890" disabled />
+          
+          <p style="font-size: 0.8em; color: #666; margin: 0 0 1em 0; padding: 0 1em; text-align: left;">
+            📱 Format: +1 (555) 123-4567 or +15551234567. Include country code with +.
+          </p>
+          
+          <!-- Agreement Checkboxes -->
+          <div style="width: 90%; margin: 1em auto; text-align: left;">
+            <label style="display: block; margin-bottom: 0.5em; font-size: 0.9em; color: #2A6972;">
+              <input type="checkbox" id="smsOptIn" checked disabled>
+              📱 I agree to receive SMS notifications from InkWell.
+            </label>
+            <p style="font-size: 0.75em; color: #666; margin: 0.3em 0 0 1.8em; line-height: 1.3;">
+              Receive wellness reminders, journal prompts, and practitioner replies via text message from InkWell's AI companion, Sophy. Standard messaging rates may apply. You can opt-out anytime and manage preferences in Settings or text STOP to unsubscribe.
+            </p>
+            
+            <label style="display: block; margin: 1em 0 0.5em 0; font-size: 0.9em; color: #2A6972;">
+              <input type="checkbox" id="termsAgreement" checked disabled>
+              I agree to the <a href="https://pegasusrealm.com/terms-conditions/" target="_blank">Terms & Conditions</a>
+            </label>
+            
+            <label style="display: block; margin-bottom: 0.5em; font-size: 0.9em; color: #2A6972;">
+              <input type="checkbox" id="privacyAgreement" checked disabled>
+              I agree to the <a href="https://pegasusrealm.com/privacy-policy/" target="_blank">Privacy Policy</a>
+            </label>
+            
+            <label style="display: block; margin-bottom: 1em; font-size: 0.9em; color: #2A6972;">
+              <input type="checkbox" id="betaAgreement" checked disabled>
+              I agree to the <a href="https://pegasusrealm.com/alpha-beta-testers/" target="_blank">Beta Testing Agreement</a>
+            </label>
+          </div>
+          
+          <button type="button" class="btn" disabled style="opacity: 0.6; cursor: not-allowed;">
+            Sign Up
+          </button>
+        </form>
+        
+        <div style="margin-top: 0.8em;">
+          <a href="#" onclick="return false;" style="color: #2A6972; text-decoration: underline;">Already have an account?</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-container">
+    <div class="modal-label">
+      <h2>2️⃣ Settings Modal</h2>
+      <p>SMS preferences management in user settings</p>
+    </div>
+
+    <div class="modal-display">
+      <div class="card-block" style="max-height: none;">
+        <img src="InkWell-Logo.png" alt="InkWell Logo" onerror="this.style.display='none'" />
+        
+        <h2 style="margin-top: 0; margin-bottom: 1.5em; color: #2A6972; font-size: 1.3em;">
+          ⚙️ Settings
+        </h2>
+        
+        <!-- Profile Section -->
+        <div class="info-box">
+          <h3>👤 Profile</h3>
+          
+          <div style="margin-bottom: 1em;">
+            <label for="settingsUserName" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">User Name:</label>
+            <input type="text" id="settingsUserName" placeholder="Enter your display name" disabled style="margin-bottom: 0;" />
+          </div>
+          
+          <div style="margin-bottom: 1em;">
+            <label class="settings-label">Avatar URL:</label>
+            <input type="url" id="settingsAvatar" placeholder="Enter avatar image URL" disabled style="margin-bottom: 0;" />
+            <p style="font-size: 0.8em; color: #666; margin: 0.5em 0 0 0; text-align: left;">
+              💡 <strong>Tip:</strong> Upload to <a href="https://imgur.com" target="_blank">Imgur</a> or <a href="https://postimages.org" target="_blank">PostImages</a>, then copy the URL here.
+            </p>
+          </div>
+          
+          <div style="margin-bottom: 0;">
+            <label for="settingsCurrentUser" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Email:</label>
+            <div id="settingsCurrentUser" style="width: 100%; padding: 0.6em; border: 1px solid #ddd; border-radius: 5px; background-color: #f8f9fa; color: #666; font-size: 0.9em; box-sizing: border-box;">user@example.com</div>
+          </div>
+        </div>
+        
+        <!-- SMS Notifications Section -->
+        <div class="sms-section">
+          <h3>📱 SMS Notifications</h3>
+          
+          <div class="sms-input-group">
+            <label for="settingsPhone">Phone Number:</label>
+            <input type="tel" id="settingsPhone" placeholder="+1 (555) 123-4567" disabled />
+            <p class="sms-help-text">
+              Format: +15551234567 (include country code with +)
+            </p>
+          </div>
+          
+          <div class="sms-preferences-box">
+            <label class="sms-opt-in-label">
+              <input type="checkbox" id="smsOptInSettings" checked disabled />
+              <span><strong>Enable SMS Notifications</strong></span>
+            </label>
+            <p class="sms-preferences-info">
+              Receive wellness reminders and insights from InkWell via text message. You can unsubscribe anytime by unchecking this box or texting STOP.
+            </p>
+            
+            <div id="smsPreferences" class="sms-preference-list">
+              <label class="sms-preference-item">
+                <input type="checkbox" id="smsWishMilestones" checked disabled />
+                <span>🌱 WISH milestone reminders</span>
+              </label>
+              
+              <label class="sms-preference-item">
+                <input type="checkbox" id="smsDailyPrompts" disabled />
+                <span>✍️ Daily journal prompts</span>
+              </label>
+              
+              <label class="sms-preference-item">
+                <input type="checkbox" id="smsGratitudePrompts" checked disabled />
+                <span>🙏 Daily gratitude from Sophy</span>
+              </label>
+              
+              <label class="sms-preference-item">
+                <input type="checkbox" id="smsCoachReplies" checked disabled />
+                <span>💬 Practitioner replies</span>
+              </label>
+              
+              <label class="sms-preference-item">
+                <input type="checkbox" id="smsWeeklyInsights" disabled />
+                <span>📊 Weekly insights</span>
+              </label>
+            </div>
+          </div>
+          
+          <button class="btn sms-test-button" disabled style="opacity: 0.6; cursor: not-allowed;">
+            📲 Send Test SMS
+          </button>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 0.5em; justify-content: center; margin-top: 1.5em;">
+          <button class="btn" disabled style="flex: 1; opacity: 0.6; cursor: not-allowed;">
+            💾 Save Changes
+          </button>
+          <button class="btn" disabled style="flex: 1; background-color: #6c757d; opacity: 0.6; cursor: not-allowed;">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Information -->
+  <div style="background: white; border-radius: 8px; padding: 2em; margin: 2em auto; max-width: 800px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <h2 style="color: var(--brand-primary); margin-top: 0;">📋 SMS Opt-In Summary</h2>
+    
+    <h3 style="color: var(--brand-secondary); margin-top: 1.5em;">During Sign-Up:</h3>
+    <ul style="color: var(--font-secondary); line-height: 1.8;">
+      <li>Users can optionally provide their phone number</li>
+      <li>SMS opt-in checkbox is <strong>pre-checked by default</strong> but can be unchecked</li>
+      <li>Clear disclosure about message types and rates</li>
+      <li>Opt-out information is prominently displayed</li>
+      <li>Phone number format guidance provided</li>
+    </ul>
+    
+    <h3 style="color: var(--brand-secondary); margin-top: 1.5em;">In Settings:</h3>
+    <ul style="color: var(--font-secondary); line-height: 1.8;">
+      <li>Users can add/update their phone number at any time</li>
+      <li>Master toggle to enable/disable all SMS notifications</li>
+      <li>Granular controls for specific notification types:
+        <ul>
+          <li>WISH milestone reminders (default: on)</li>
+          <li>Daily journal prompts (default: off)</li>
+          <li>Daily gratitude from Sophy (default: on)</li>
+          <li>Practitioner replies (default: on)</li>
+          <li>Weekly insights (default: off)</li>
+        </ul>
+      </li>
+      <li>Clear opt-out instructions (uncheck or text STOP)</li>
+      <li>Test SMS functionality to verify setup</li>
+    </ul>
+    
+    <h3 style="color: var(--brand-secondary); margin-top: 1.5em;">Compliance Features:</h3>
+    <ul style="color: var(--font-secondary); line-height: 1.8;">
+      <li>✅ Express written consent collected during signup</li>
+      <li>✅ Clear disclosure of message types and frequency</li>
+      <li>✅ Standard messaging rates disclaimer</li>
+      <li>✅ Multiple opt-out methods (settings + STOP keyword)</li>
+      <li>✅ Granular preference controls</li>
+      <li>✅ Easy access to privacy policy and terms</li>
+    </ul>
+  </div>
+
+  <div style="text-align: center; color: white; margin-top: 2em; padding: 1em;">
+    <p style="margin: 0; font-size: 0.9em; opacity: 0.8;">
+      InkWell™ by Pegasus Realm | SMS Opt-In Policy Review Page
+    </p>
+    <p style="margin: 0.5em 0 0 0; font-size: 0.85em; opacity: 0.7;">
+      Last Updated: November 11, 2025
+    </p>
+  </div>
+</body>
+</html>

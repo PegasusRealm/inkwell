@@ -1,0 +1,99 @@
+// Get Stripe key from environment variable
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'your-stripe-secret-key-here');
+
+async function createProducts() {
+  console.log('🚀 Creating InkWell subscription products in Stripe...\n');
+  
+  try {
+    // Create InkWell Plus product
+    console.log('Creating InkWell Plus product...');
+    const plusProduct = await stripe.products.create({
+      name: 'InkWell Plus',
+      description: 'Unlimited AI-powered journal prompts, SMS notifications, and data export',
+      metadata: {
+        tier: 'plus'
+      }
+    });
+    console.log(`✅ Product created: ${plusProduct.id}`);
+    
+    // Create Plus price ($14.99/month)
+    const plusPrice = await stripe.prices.create({
+      product: plusProduct.id,
+      unit_amount: 1499, // $14.99 in cents
+      currency: 'usd',
+      recurring: {
+        interval: 'month'
+      },
+      metadata: {
+        tier: 'plus'
+      }
+    });
+    console.log(`✅ Plus Price created: ${plusPrice.id} - $14.99/month\n`);
+    
+    // Create InkWell Connect product
+    console.log('Creating InkWell Connect product...');
+    const connectProduct = await stripe.products.create({
+      name: 'InkWell Connect',
+      description: 'Everything in Plus + practitioner connections with 4 included interactions per month',
+      metadata: {
+        tier: 'connect'
+      }
+    });
+    console.log(`✅ Product created: ${connectProduct.id}`);
+    
+    // Create Connect price ($49.99/month)
+    const connectPrice = await stripe.prices.create({
+      product: connectProduct.id,
+      unit_amount: 4999, // $49.99 in cents
+      currency: 'usd',
+      recurring: {
+        interval: 'month'
+      },
+      metadata: {
+        tier: 'connect'
+      }
+    });
+    console.log(`✅ Connect Price created: ${connectPrice.id} - $49.99/month\n`);
+    
+    // Create Extra Interaction product (one-time purchase)
+    console.log('Creating Extra Interaction product...');
+    const extraProduct = await stripe.products.create({
+      name: 'Extra Practitioner Interaction',
+      description: 'Add one additional practitioner interaction to your monthly limit',
+      metadata: {
+        type: 'extra_interaction'
+      }
+    });
+    console.log(`✅ Product created: ${extraProduct.id}`);
+    
+    // Create Extra Interaction price ($9.99 one-time)
+    const extraPrice = await stripe.prices.create({
+      product: extraProduct.id,
+      unit_amount: 999, // $9.99 in cents
+      currency: 'usd',
+      metadata: {
+        type: 'extra_interaction'
+      }
+    });
+    console.log(`✅ Extra Interaction Price created: ${extraPrice.id} - $9.99 one-time\n`);
+    
+    // Print summary for config file
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📋 UPDATE YOUR subscription-config.js WITH THESE PRICE IDs:');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+    console.log('PLUS:');
+    console.log(`  priceId: '${plusPrice.id}',\n`);
+    console.log('CONNECT:');
+    console.log(`  priceId: '${connectPrice.id}',\n`);
+    console.log('EXTRA_INTERACTION:');
+    console.log(`  priceId: '${extraPrice.id}',\n`);
+    
+  } catch (error) {
+    console.error('❌ Error:', error.message);
+    if (error.type === 'StripeInvalidRequestError') {
+      console.error('Details:', error.raw);
+    }
+  }
+}
+
+createProducts();

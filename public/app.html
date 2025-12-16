@@ -4231,21 +4231,85 @@ function initAutoResizeTextareas() {
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', initAutoResizeTextareas);
 
+// Tab Introduction Manager - Shows intro modals on first tab access with delay
+window.TabIntroManager = {
+  pendingIntros: {},
+  
+  // Schedule an intro to show after delay (only on first access)
+  scheduleIntro: function(tabId, delay = 3000) {
+    // Clear any existing timeout for this tab
+    if (this.pendingIntros[tabId]) {
+      clearTimeout(this.pendingIntros[tabId]);
+      delete this.pendingIntros[tabId];
+    }
+    
+    // Schedule new intro
+    this.pendingIntros[tabId] = setTimeout(() => {
+      this.showIntroForTab(tabId);
+      delete this.pendingIntros[tabId];
+    }, delay);
+  },
+  
+  // Cancel any pending intro (e.g., if user switches tabs quickly)
+  cancelIntro: function(tabId) {
+    if (this.pendingIntros[tabId]) {
+      clearTimeout(this.pendingIntros[tabId]);
+      delete this.pendingIntros[tabId];
+    }
+  },
+  
+  // Show the appropriate intro modal for the tab
+  showIntroForTab: function(tabId) {
+    if (!OnboardingManager) return;
+    
+    switch(tabId) {
+      case 'journalTab':
+        OnboardingManager.showJournalTabOnboarding();
+        break;
+      case 'manifestTab':
+        OnboardingManager.showWishTabOnboarding();
+        break;
+      case 'calendarTab':
+        OnboardingManager.showCalendarTabOnboarding();
+        break;
+    }
+  }
+};
+
 // Also reinitialize when manifest tab is opened
 const originalShowTab = window.showTab;
 window.showTab = function(tabId) {
   originalShowTab(tabId);
   
+  // Cancel any pending intros from previous tab
+  if (TabIntroManager) {
+    ['journalTab', 'manifestTab', 'calendarTab'].forEach(tab => {
+      TabIntroManager.cancelIntro(tab);
+    });
+  }
+  
   // If switching to manifest tab, ensure textareas are properly sized
   if (tabId === 'manifestTab') {
     setTimeout(initAutoResizeTextareas, 200);
     
-    // Show WISH onboarding for first-time visitors
-    setTimeout(() => {
-      if (OnboardingManager && OnboardingManager.shouldShow) {
-        OnboardingManager.showWishTabOnboarding();
-      }
-    }, 500);
+    // Schedule WISH onboarding for first-time visitors with 3-second delay
+    if (TabIntroManager) {
+      TabIntroManager.scheduleIntro('manifestTab', 3000);
+    }
+  }
+  
+  // Schedule intro for Journal tab on first access
+  if (tabId === 'journalTab') {
+    if (TabIntroManager) {
+      TabIntroManager.scheduleIntro('journalTab', 3000);
+    }
+  }
+  
+  // Schedule intro for Calendar/Past Entries tab on first access
+  if (tabId === 'calendarTab') {
+    if (TabIntroManager) {
+      TabIntroManager.scheduleIntro('calendarTab', 3000);
+    }
   }
 };
 
@@ -4388,7 +4452,8 @@ window.SwipeNavigation = {
         const diffY = Math.abs(startY - currentY);
         
         // If horizontal swipe is more significant than vertical, prevent default
-        if (diffX > diffY && diffX > 10) {
+        // Require horizontal movement to be at least 2x the vertical movement AND > 30px
+        if (diffX > diffY * 2 && diffX > 30) {
           e.preventDefault();
         }
       }, { passive: false });
@@ -4398,10 +4463,19 @@ window.SwipeNavigation = {
         isDragging = false;
         
         const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
         const diffX = startX - endX;
-        const threshold = 50; // Minimum swipe distance
+        const diffY = Math.abs(startY - endY);
+        const threshold = 100; // Minimum horizontal swipe distance (increased from 50)
+        const maxVerticalDrift = 80; // Maximum vertical movement allowed
         
-        if (Math.abs(diffX) > threshold) {
+        // Only trigger swipe if:
+        // 1. Horizontal movement exceeds threshold
+        // 2. Horizontal movement is significantly more than vertical (at least 1.5x)
+        // 3. Vertical drift is within acceptable range
+        if (Math.abs(diffX) > threshold && 
+            Math.abs(diffX) > diffY * 1.5 && 
+            diffY < maxVerticalDrift) {
           if (diffX > 0) {
             // Swiped left - next tab
             this.nextTab();
@@ -5097,10 +5171,10 @@ if (generatedPrompt) {
       
       if (entryData.coachReview) {
         try {
-          console.log("📨 Notifying coach with entryId:", docRef.id);
-          showSpinner("saveStatus", "Notifying coach...");
+          console.log("📨 Notifying practitioner with entryId:", docRef.id);
+          showSpinner("saveStatus", "Notifying practitioner...");
 
-          // Start coach notification as non-blocking operation
+          // Start practitioner notification as non-blocking operation
           const coachNotification = (async () => {
             try {
               const idToken = await auth.currentUser.getIdToken(true);
@@ -5124,43 +5198,43 @@ if (generatedPrompt) {
               });
 
               if (!response.ok) {
-                console.error("❌ Coach notify failed", response.status);
+                console.error("❌ Practitioner notify failed", response.status);
                 return false;
               } else {
-                console.log("📬 Coach notify OK");
+                console.log("📬 Practitioner notify OK");
                 return true;
               }
             } catch (notifyErr) {
-              console.error("❌ Coach notification threw:", notifyErr);
+              console.error("❌ Practitioner notification threw:", notifyErr);
               return false;
             }
           })();
 
-          // Wait for coach notification to complete
+          // Wait for practitioner notification to completeomplete
           const notificationSuccess = await coachNotification;
           
           const saveStatus = document.getElementById("saveStatus");
           if (saveStatus) {
             if (notificationSuccess) {
-              saveStatus.innerHTML = "✅ Entry saved • Coach notified";
+              saveStatus.innerHTML = "✅ Entry saved • Practitioner notified";
               saveStatus.style.color = "#4A8B8B";
             } else {
-              saveStatus.innerHTML = "✅ Entry saved • Coach notification pending";
+              saveStatus.innerHTML = "✅ Entry saved • Practitioner notification pending";
               saveStatus.style.color = "#D4A574";
             }
           }
-          console.log("📬 Entry saved with coach review flag.");
+          console.log("📬 Entry saved with practitioner review flag.");
           
         } catch (outerErr) {
-          console.error("❌ Coach notification section failed:", outerErr);
+          console.error("❌ Practitioner notification section failed:", outerErr);
           const saveStatus = document.getElementById("saveStatus");
           if (saveStatus) {
-            saveStatus.innerHTML = "✅ Entry saved • Coach notification failed";
+            saveStatus.innerHTML = "✅ Entry saved • Practitioner notification failed";
             saveStatus.style.color = "#D4A574";
           }
         }
       } else {
-        // Non-coach entries: show immediate success
+        // Non-practitioner entries: show immediate success
         const saveStatus = document.getElementById("saveStatus");
         if (saveStatus) {
           saveStatus.innerHTML = "✅ Entry saved";
@@ -5188,10 +5262,10 @@ if (generatedPrompt) {
       // Start embedding in background - don't wait for it
       embeddingOperation;
 
-      // Show final saved confirmation (only if not already set by coach notification)
+      // Show final saved confirmation (only if not already set by practitioner notification)
       setTimeout(() => {
         const saveStatus = document.getElementById("saveStatus");
-        if (saveStatus && !saveStatus.innerHTML.includes("Coach")) {
+        if (saveStatus && !saveStatus.innerHTML.includes("Practitioner")) {
           saveStatus.innerHTML = "✅ Saved!";
           saveStatus.style.color = "#4A8B8B";
           saveStatus.style.fontWeight = "500";
@@ -5284,7 +5358,7 @@ if (generatedPrompt) {
         autoInsertReflection.checked = false;
       }
       
-      // Uncheck the coach review checkbox
+      // Uncheck the practitioner review checkbox
       const coachReviewCheckbox = document.getElementById("coachReviewCheckbox");
       if (coachReviewCheckbox) {
         coachReviewCheckbox.checked = false;
@@ -5867,9 +5941,9 @@ if (planSuggestion) planSuggestion.textContent = "";
       }
 
       const entriesHtml = [];
-      let hasNewCoachReplies = false; // Track if there are new coach replies
+      let hasNewCoachReplies = false; // Track if there are new practitioner replies
       
-      console.log("🔍 DEBUGGING: Starting to process", snapshot.docs.length, "entries for coach replies");
+      console.log("🔍 DEBUGGING: Starting to process", snapshot.docs.length, "entries for practitioner replies");
       
       for (const doc of snapshot.docs) {
         const entry = doc.data();
@@ -5893,10 +5967,10 @@ if (planSuggestion) planSuggestion.textContent = "";
         }
       } // ✅ closes for-loop
 
-// Show toast notification if there are new coach replies
+// Show toast notification if there are new practitioner replies
 if (hasNewCoachReplies) {
   setTimeout(() => {
-    window.showToast("💬 You have new coach replies! Look for entries with the 'NEW REPLY' badge.", "success", 8000);
+    window.showToast("💬 You have new practitioner replies! Look for entries with the 'NEW REPLY' badge.", "success", 8000);
   }, 1000);
 }
 
@@ -6230,7 +6304,7 @@ function updateCalendarCellsDirectly() {
   console.log("Found", calendarCells.length, "calendar cells");
   
   calendarCells.forEach(cell => {
-    // Check if this cell has coral/red styling (indicating coach reply)
+    // Check if this cell has coral/red styling (indicating practitioner reply)
     const bgColor = cell.style.backgroundColor;
     const borderColor = cell.style.border;
     
@@ -6249,7 +6323,7 @@ function updateCalendarCellsDirectly() {
   });
 }
 
-// Function to update calendar highlighting based on remaining coach replies
+// Function to update calendar highlighting based on remaining practitioner replies
 async function updateCalendarHighlighting() {
   try {
     const user = auth.currentUser;
@@ -6257,7 +6331,7 @@ async function updateCalendarHighlighting() {
     
     console.log("🔄 Starting calendar highlighting update...");
     
-    // Get all entries with unread coach replies
+    // Get all entries with unread practitioner replies
     const snapshot = await window.getDocs(window.query(
       window.collection(window.db, "journalEntries"),
       window.where("userId", "==", user.uid),
@@ -6306,7 +6380,7 @@ async function updateCalendarHighlighting() {
         dateElement.style.backgroundColor = 'var(--accent, #d49489)';
         dateElement.style.color = '#fff';
         dateElement.style.fontWeight = 'bold';
-        dateElement.title = 'New coach reply available!';
+        dateElement.title = 'New practitioner reply available!';
         dateElement.style.boxShadow = '0 0 4px rgba(212, 148, 137, 0.5)';
       } else if (datesWithEntries.has(dateKey)) {
         // Revert to teal highlighting - has entries but no unread replies
@@ -6413,20 +6487,20 @@ async function updateCalendarHighlighting() {
           }
         }
 
-        // Delete coach replies subcollection first (if any exist)
+        // Delete practitioner replies subcollection first (if any exist)
         try {
           const coachRepliesRef = collection(db, "journalEntries", docId, "coachReplies");
           const coachRepliesSnapshot = await getDocs(coachRepliesRef);
           
           for (const replyDoc of coachRepliesSnapshot.docs) {
-            console.log("🗑️ Deleting coach reply:", replyDoc.id);
+            console.log("🗑️ Deleting practitioner reply:", replyDoc.id);
             await deleteDoc(replyDoc.ref);
           }
           
-          console.log(`🗑️ Deleted ${coachRepliesSnapshot.docs.length} coach replies`);
+          console.log(`🗑️ Deleted ${coachRepliesSnapshot.docs.length} practitioner replies`);
         } catch (coachDeleteErr) {
-          console.error("Error deleting coach responses:", coachDeleteErr);
-          // Continue with entry deletion even if coach replies fail
+          console.error("Error deleting practitioner responses:", coachDeleteErr);
+          // Continue with entry deletion even if practitioner replies fail
         }
 
         // Now delete the main entry
@@ -6770,10 +6844,11 @@ async function askSophyAboutEntry() {
           plan: planText,
           timelineDays: timelineDays, // NEW: Save timeline selection to Firestore
           timestamp: serverTimestamp(),
-          userId: user.uid
+          userId: user.uid,
+          milestonesSent: {} // Track which milestone SMS have been sent (quarter, half, three-quarters, complete)
         };
 
-        await setDoc(doc(db, "manifests", user.uid), manifestData);
+        await setDoc(doc(db, "manifests", user.uid), manifestData, { merge: true });
 
         // Also save to localStorage for faster loading
         const localStorageData = {
@@ -7267,6 +7342,106 @@ window.updateWishTimeline = function() {
 };
 
 // --- NEW: Progress Calculation & Animation ---
+// Check for WISH milestones and send SMS notifications
+async function checkAndSendMilestoneSMS(progressPercent, daysElapsed, totalDays, userId) {
+  try {
+    // Determine which milestone (if any) has been reached
+    let milestone = null;
+    if (progressPercent >= 100) {
+      milestone = 'complete';
+    } else if (progressPercent >= 75) {
+      milestone = 'three-quarters';
+    } else if (progressPercent >= 50) {
+      milestone = 'half';
+    } else if (progressPercent >= 25) {
+      milestone = 'quarter';
+    }
+    
+    if (!milestone) {
+      return; // No milestone reached yet
+    }
+    
+    // Check if this milestone has already been sent
+    const manifestRef = doc(db, "manifests", userId);
+    const manifestSnap = await getDoc(manifestRef);
+    
+    if (!manifestSnap.exists()) {
+      console.log("⚠️ No manifest found for milestone check");
+      return;
+    }
+    
+    const manifestData = manifestSnap.data();
+    const milestonesSent = manifestData.milestonesSent || {};
+    
+    if (milestonesSent[milestone]) {
+      // Already sent this milestone
+      return;
+    }
+    
+    // Get user's phone number and SMS preferences
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+    
+    if (!userSnap.exists()) {
+      console.log("⚠️ No user document found for SMS");
+      return;
+    }
+    
+    const userData = userSnap.data();
+    
+    // Check if user has SMS enabled for wish milestones
+    if (!userData.smsOptIn || !userData.phoneNumber) {
+      console.log("📵 User has not opted in to SMS or no phone number");
+      return;
+    }
+    
+    if (!userData.smsPreferences?.wishMilestones) {
+      console.log("📵 User has disabled WISH milestone SMS");
+      return;
+    }
+    
+    console.log(`🎯 Sending ${milestone} milestone SMS to ${userData.phoneNumber}`);
+    
+    // Call the Cloud Function to send SMS
+    const sendWishMilestone = window.functions ? 
+      window.httpsCallable(window.functions, 'sendWishMilestone') : 
+      firebase.functions().httpsCallable('sendWishMilestone');
+    
+    const result = await sendWishMilestone({
+      phoneNumber: userData.phoneNumber,
+      milestone: milestone,
+      daysElapsed: daysElapsed,
+      totalDays: totalDays
+    });
+    
+    if (result.data.success) {
+      console.log(`✅ ${milestone} milestone SMS sent successfully`);
+      
+      // Mark this milestone as sent in Firestore
+      await updateDoc(manifestRef, {
+        [`milestonesSent.${milestone}`]: serverTimestamp()
+      });
+      
+      // Show toast notification to user
+      if (window.showToast) {
+        let toastMessage = '';
+        if (milestone === 'quarter') toastMessage = '🌱 25% milestone! Check your phone for encouragement.';
+        else if (milestone === 'half') toastMessage = '🍀 Halfway there! SMS sent to celebrate your progress.';
+        else if (milestone === 'three-quarters') toastMessage = '🌿 75% complete! Motivation sent to your phone.';
+        else if (milestone === 'complete') toastMessage = '🌳 WISH completed! Celebration SMS sent!';
+        
+        window.showToast(toastMessage, 'success', 5000);
+      }
+    } else {
+      console.error("❌ Failed to send milestone SMS");
+    }
+    
+  } catch (error) {
+    console.error("❌ Error checking/sending milestone SMS:", error);
+    // Don't show error to user - SMS is a nice-to-have feature
+  }
+}
+
 window.updateWishProgress = function() {
   const progressBar = document.getElementById("wishProgressBar");
   const staticTimeline = document.getElementById("staticTimeline");
@@ -7346,6 +7521,9 @@ window.updateWishProgress = function() {
   const progressPercent = Math.min((daysElapsed / totalDays) * 100, 100);
   
   console.log(`🎯 Progress calculation: ${daysElapsed}/${totalDays} days (${progressPercent.toFixed(1)}%)`);
+  
+  // Check for milestone achievements and send SMS if needed
+  checkAndSendMilestoneSMS(progressPercent, daysElapsed, totalDays, currentUserId);
   
   // Show progress bar and hide static timeline
   console.log("✅ Showing progress bar");
@@ -7770,10 +7948,10 @@ document.head.appendChild(themeStyle);
       <div style="width: 90%; margin: 1em auto; text-align: left;">
         <label style="display: block; margin-bottom: 0.5em; font-size: 0.9em; color: #2A6972;">
           <input type="checkbox" id="smsOptIn" name="smsOptIn" checked style="margin-right: 0.5em;">
-          📱 I agree to receive SMS notifications from InkWell (you can opt-out anytime)
+          📱 I agree to receive SMS notifications from InkWell.
         </label>
         <p style="font-size: 0.75em; color: #666; margin: 0.3em 0 0 1.8em; line-height: 1.3;">
-          Receive WISH reminders, journal prompts, and coach replies via text message. Standard messaging rates may apply. You can manage preferences in Settings.
+          Receive wellness reminders, journal prompts, and coach replies via text message from InkWell's AI companion, Sophy. Standard messaging rates may apply. You can opt-out anytime and manage preferences in Settings or text STOP to unsubscribe.
         </p>
         
         <label style="display: block; margin: 1em 0 0.5em 0; font-size: 0.9em; color: #2A6972;">
@@ -7788,6 +7966,26 @@ document.head.appendChild(themeStyle);
           <input type="checkbox" id="betaAgreement" name="betaAgreement" checked style="margin-right: 0.5em;">
           I agree to the <a href="https://pegasusrealm.com/alpha-beta-testers/" target="_blank" style="color: #2A6972; text-decoration: underline;">Beta Testing Agreement</a>
         </label>
+        
+        <!-- Practitioner Interest Section -->
+        <div style="margin-top: 1.5em; padding-top: 1em; border-top: 1px solid #e0e0e0;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.95em; color: #2A6972; font-weight: 600;">
+            <input type="checkbox" id="practitionerInterest" style="width: auto; margin: 0;">
+            <span>💼 I'm interested in becoming an InkWell Practitioner</span>
+          </label>
+          
+          <!-- Expandable Info Section -->
+          <div id="practitionerInfoSection" style="display: none; background: linear-gradient(135deg, #f0f8ff 0%, #e6f3f8 100%); padding: 1em; border-radius: 8px; margin-top: 0.75em; border-left: 4px solid #2A6972; box-shadow: 0 2px 8px rgba(42,105,114,0.1);">
+            <h4 style="margin: 0 0 0.5em 0; color: #2A6972; font-size: 1em;">What is an InkWell Practitioner?</h4>
+            <p style="font-size: 0.85em; line-height: 1.6; color: #0D3F45; margin: 0 0 0.75em 0;">
+              InkWell Practitioners are licensed mental health professionals, therapists, coaches, and counselors who support clients through their journaling journey. Practitioners receive client-selected journal entries and can provide thoughtful, supportive responses.
+            </p>
+            <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; background: white; padding: 0.75em; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.1);">
+              <input type="checkbox" id="practitionerInterestConfirm" style="width: auto; margin-top: 4px;">
+              <span style="font-weight: 600; font-size: 0.9em; color: #2A6972;">✓ Yes, please notify the InkWell team about my interest</span>
+            </label>
+          </div>
+        </div>
       </div>
       
       <div class="g-recaptcha" data-sitekey="6LdV2MkrAAAAAIXSZT7NmB5i80vGjhB-tFZWrWYT"
@@ -8096,10 +8294,10 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 
     <div class="workflow-divider"></div>
 
-    <!-- Coach tag + Save belong to Journal tab -->
+    <!-- Practitioner tag + Save belong to Journal tab -->
     <div class="coach-tag-toggle">
       <input type="checkbox" id="coachReviewCheckbox" />
-      <label for="coachReviewCheckbox">📬 Send this entry to my coach</label>
+      <label for="coachReviewCheckbox">📬 Send this entry to my practitioner</label>
     </div>
 
     <button class="btn" onclick="saveJournalEntry()" style="margin-top:0.5em;">Save Journal Entry</button>
@@ -8924,11 +9122,65 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       </div>
     </div>
     
+    <!-- Subscription Section -->
+    <div style="background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border: 2px solid #667eea; border-radius: 12px; padding: 1.5em; margin-bottom: 1.5em; text-align: left;">
+      <h3 style="color: #667eea; margin-top: 0; margin-bottom: 1em; font-size: 1.2em; display: flex; align-items: center; gap: 0.5em;">
+        ✨ Subscription
+      </h3>
+      
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1em;">
+        <div>
+          <div style="font-size: 0.9em; color: #666; margin-bottom: 0.5em;">Current Plan:</div>
+          <div style="display: flex; align-items: center; gap: 0.5em;">
+            <span id="subscriptionBadge" style="padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; color: white; background: #6c757d; font-size: 1em;">Free</span>
+          </div>
+        </div>
+        <button id="upgradeButton" class="btn" disabled
+                style="background: var(--btn-secondary); color: var(--font-muted); border: 1px solid var(--border-medium); border-radius: 8px; padding: 0.6rem 1.5rem; font-weight: 500; display: none; cursor: not-allowed; opacity: 0.7;">
+          <span style="display: block; font-size: 0.9rem;">Free During Beta</span>
+          <span style="display: block; font-size: 0.75rem; font-weight: 400; margin-top: 0.2rem;">Paid plans coming soon</span>
+        </button>
+      </div>
+      
+      <div id="subscriptionDetails" style="display: none; padding: 1em; background: white; border-radius: 8px; margin-top: 1em;">
+        <!-- Subscription details will be populated here -->
+      </div>
+      
+      <div id="interactionTracker" style="display: none; padding: 1em; background: white; border-radius: 8px; margin-top: 1em; border-left: 4px solid #667eea;">
+        <div style="font-weight: 600; margin-bottom: 0.5em; color: #667eea;">Practitioner Interactions This Month</div>
+        <div style="display: flex; align-items: center; gap: 1em; margin-bottom: 0.5em;">
+          <div style="flex: 1; background: #e9ecef; height: 8px; border-radius: 4px; overflow: hidden;">
+            <div id="interactionProgress" style="height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); width: 0%; transition: width 0.3s;"></div>
+          </div>
+          <span id="interactionCount" style="font-weight: 600; color: #667eea; min-width: 60px; text-align: right;">0 / 4</span>
+        </div>
+        <div style="font-size: 0.85em; color: #666; margin-bottom: 1em;">
+          <span id="interactionRemaining">4 interactions remaining</span>
+        </div>
+        <button id="buyExtraButton" onclick="purchaseExtraInteraction()" class="btn" 
+                style="background: white; border: 2px solid #667eea; color: #667eea; border-radius: 8px; padding: 0.5rem 1rem; font-weight: 600; width: 100%; display: none;">
+          Purchase Extra Interaction - $9.99
+        </button>
+      </div>
+    </div>
+    
     <!-- SMS Notifications Section -->
     <div class="sms-section">
       <h3>
         📱 SMS Notifications
+        <span id="smsUpgradeBadge" style="display: none; margin-left: 0.5rem; padding: 0.25rem 0.75rem; background: #667eea; color: white; border-radius: 12px; font-size: 0.7em; font-weight: 600;">PLUS</span>
       </h3>
+      
+      <div id="smsUpgradePrompt" style="display: none; background: #f8f9ff; border-left: 4px solid #667eea; padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
+        <div style="font-weight: 600; color: #667eea; margin-bottom: 0.5rem;">🚀 Upgrade to Plus for SMS Notifications</div>
+        <div style="font-size: 0.9em; color: #666; margin-bottom: 0.75rem;">
+          Stay connected with daily prompts, gratitude messages, and milestone celebrations delivered right to your phone.
+        </div>
+        <button onclick="showUpgradePrompt('smsNotifications', 'Get daily wellness reminders via SMS')" class="btn"
+                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-weight: 600;">
+          Upgrade to Plus - $14.99/month
+        </button>
+      </div>
       
       <div class="sms-input-group">
         <label for="settingsPhone">Phone Number:</label>
@@ -8945,7 +9197,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
           <span><strong>Enable SMS Notifications</strong></span>
         </label>
         <p class="sms-preferences-info">
-          Receive InkWell notifications via text message. You can unsubscribe anytime by unchecking this box or texting STOP.
+          Receive wellness reminders and insights from InkWell via text message. You can unsubscribe anytime by unchecking this box or texting STOP.
         </p>
         
         <div id="smsPreferences" class="sms-preference-list">
@@ -9011,10 +9263,10 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       </p>
     </div>
     
-<!-- Coach Section -->
+<!-- Practitioner Section -->
 <div style="background: #f0f8ff; border: 1px solid #c5d7f0; border-radius: 8px; padding: 1.5em; margin-bottom: 1.5em; text-align: left;">
   <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em; justify-content: space-between;">
-    🔹 My Coach
+    🔹 My Practitioner
     <button onclick="clearPendingCoachInvite()" class="btn-gray" style="padding: 0.2em 0.5em; font-size: 0.8em;">🔄 Refresh</button>
   </h3>
   
@@ -9023,16 +9275,16 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     <!-- Will be populated by JavaScript -->
   </div>
   
-  <!-- Invite New Coach -->
+  <!-- Invite New Practitioner -->
   <div style="margin-bottom: 1em;">
-    <label for="coachEmail" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Coach's Email Address:</label>
+    <label for="coachEmail" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Practitioner's Email Address:</label>
     <input type="email" id="coachEmail" 
            placeholder="doctor@practice.com" 
            style="width: 100%; padding: 0.6em; border: 1px solid #ccc; border-radius: 5px; background-color: white; color: #0D3F45; font-size: 0.9em; box-sizing: border-box;" />
   </div>
   
   <div style="margin-bottom: 1.5em;">
-    <label for="coachName" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Coach's Name:</label>
+    <label for="coachName" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Practitioner's Name:</label>
     <input type="text" id="coachName" 
            placeholder="Dr. Jane Smith" 
            style="width: 100%; padding: 0.6em; border: 1px solid #ccc; border-radius: 5px; background-color: white; color: #0D3F45; font-size: 0.9em; box-sizing: border-box;" />
@@ -9047,10 +9299,10 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   <!-- Disconnect Section (initially hidden) -->
   <div id="disconnectSection" style="display: none; border-top: 1px solid #ddd; padding-top: 1em; margin-top: 1em;">
     <button onclick="disconnectCoach()" class="btn-danger" style="width: 100%;">
-      🚫 Disconnect from coach
+      🚫 Disconnect from practitioner
     </button>
     <p style="font-size: 0.8em; color: #666; text-align: center; margin: 0.5em 0 0 0;">
-      This will remove your coach connection. They will no longer receive your journal entries.
+      This will remove your practitioner connection. They will no longer receive your journal entries.
     </p>
   </div>
 </div>
@@ -9177,7 +9429,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         This action will:<br>
         • Delete all journal entries and manifests<br>
         • Remove all personal data from our servers<br>
-        • Cancel any coach connections<br>
+        • Cancel any practitioner connections<br>
         • Send you a confirmation email
       </p>
     </div>
@@ -9234,7 +9486,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         <li>All WISH manifests and progress tracking</li>
         <li>Your profile, settings, and preferences</li>
         <li>All behavioral analytics and insights</li>
-        <li>Any coach connections and shared data</li>
+        <li>Any practitioner connections and shared data</li>
       </ul>
       <div style="margin-top: 1em; padding: 1em; background: #ffebee; border-left: 4px solid #d32f2f; color: #c62828; font-weight: 500;">
         ⚠️ This cannot be undone. Your data will be gone forever.
@@ -10181,6 +10433,237 @@ function formatReadableDate(date) {
   // Make testSMS globally available
   window.testSMS = testSMS;
 
+// ============================================================================
+// SUBSCRIPTION UI FUNCTIONS
+// ============================================================================
+
+/**
+ * Load and display subscription status in settings modal
+ */
+async function loadSubscriptionUI() {
+  if (!window.auth?.currentUser || !window.db) return;
+  
+  try {
+    const userId = window.auth.currentUser.uid;
+    const userDoc = await window.getDoc(window.doc(window.db, "users", userId));
+    
+    if (!userDoc.exists()) return;
+    
+    const userData = userDoc.data();
+    const tier = userData.subscriptionTier || 'free';
+    const interactionsCurrent = userData.interactionsThisMonth || 0;
+    const interactionsLimit = userData.interactionsLimit || 0;
+    const extraPurchased = userData.extraInteractionsPurchased || 0;
+    
+    // Update subscription badge
+    const badge = document.getElementById('subscriptionBadge');
+    if (badge) {
+      const tierNames = { free: 'Free', plus: 'Plus', connect: 'Connect' };
+      const tierColors = { free: '#6c757d', plus: '#667eea', connect: '#764ba2' };
+      badge.textContent = tierNames[tier] || 'Free';
+      badge.style.background = tierColors[tier] || '#6c757d';
+    }
+    
+    // Show/hide upgrade button
+    const upgradeBtn = document.getElementById('upgradeButton');
+    if (upgradeBtn) {
+      // Always show upgrade button for testing (even when paywall is off)
+      upgradeBtn.style.display = tier === 'connect' ? 'none' : 'inline-block';
+    }
+    
+    // Show/hide interaction tracker (Connect tier only)
+    const tracker = document.getElementById('interactionTracker');
+    if (tracker) {
+      tracker.style.display = tier === 'connect' ? 'block' : 'none';
+      
+      if (tier === 'connect') {
+        const progress = document.getElementById('interactionProgress');
+        const count = document.getElementById('interactionCount');
+        const remaining = document.getElementById('interactionRemaining');
+        const buyExtraBtn = document.getElementById('buyExtraButton');
+        
+        const percentage = (interactionsCurrent / interactionsLimit) * 100;
+        
+        if (progress) progress.style.width = `${percentage}%`;
+        if (count) count.textContent = `${interactionsCurrent} / ${interactionsLimit}`;
+        if (remaining) {
+          const left = Math.max(0, interactionsLimit - interactionsCurrent);
+          remaining.textContent = `${left} ${left === 1 ? 'interaction' : 'interactions'} remaining`;
+        }
+        
+        // Show buy extra button if approaching limit and haven't bought max
+        if (buyExtraBtn && SUBSCRIPTION_CONFIG.PAYWALL_ENABLED) {
+          const canBuyMore = extraPurchased < 3;
+          const shouldShow = interactionsCurrent >= interactionsLimit - 1 && canBuyMore;
+          buyExtraBtn.style.display = shouldShow ? 'block' : 'none';
+          
+          if (extraPurchased > 0) {
+            buyExtraBtn.textContent = `Purchase Extra Interaction - $9.99 (${3 - extraPurchased} remaining)`;
+          }
+        }
+      }
+    }
+    
+    // Handle SMS section gating
+    const smsUpgradeBadge = document.getElementById('smsUpgradeBadge');
+    const smsUpgradePrompt = document.getElementById('smsUpgradePrompt');
+    const smsPreferences = document.getElementById('smsPreferences');
+    const smsTestButton = document.querySelector('.sms-test-button');
+    
+    if (SUBSCRIPTION_CONFIG.PAYWALL_ENABLED && SUBSCRIPTION_CONFIG.FEATURES.RESTRICT_SMS) {
+      const hasSMSAccess = tier === 'plus' || tier === 'connect';
+      
+      if (!hasSMSAccess) {
+        // Show upgrade prompt and hide SMS controls
+        if (smsUpgradeBadge) smsUpgradeBadge.style.display = 'inline';
+        if (smsUpgradePrompt) smsUpgradePrompt.style.display = 'block';
+        if (smsPreferences) smsPreferences.style.opacity = '0.5';
+        if (smsTestButton) smsTestButton.disabled = true;
+        
+        // Disable all SMS checkboxes
+        const smsCheckboxes = ['smsOptInSettings', 'smsWishMilestones', 'smsDailyPrompts', 'smsGratitudePrompts', 'smsCoachReplies', 'smsWeeklyInsights'];
+        smsCheckboxes.forEach(id => {
+          const checkbox = document.getElementById(id);
+          if (checkbox) checkbox.disabled = true;
+        });
+      } else {
+        // Hide upgrade prompt and enable controls
+        if (smsUpgradeBadge) smsUpgradeBadge.style.display = 'none';
+        if (smsUpgradePrompt) smsUpgradePrompt.style.display = 'none';
+        if (smsPreferences) smsPreferences.style.opacity = '1';
+        if (smsTestButton) smsTestButton.disabled = false;
+      }
+    }
+    
+  } catch (error) {
+    console.error('Failed to load subscription UI:', error);
+  }
+}
+
+/**
+ * Show pricing comparison modal
+ */
+function showPricingComparison() {
+  const modal = document.getElementById('pricingModal');
+  if (!modal) {
+    createPricingModal();
+    return showPricingComparison();
+  }
+  
+  // Show modal using simple display style
+  modal.style.display = 'flex';
+}
+
+/**
+ * Create pricing comparison modal
+ */
+function createPricingModal() {
+  const modalHTML = `
+    <div class="modal" id="pricingModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
+      <div style="max-width: 1000px; width: 100%; max-height: 95vh; overflow-y: auto; background: var(--bg-card); border-radius: 20px; box-shadow: var(--shadow-xl); border: 1px solid var(--border-light);">
+        
+        <!-- Header -->
+        <div style="padding: 2rem 2rem 1rem; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h3 style="margin: 0; color: var(--font-main); font-family: var(--title-font); font-weight: 600; font-size: 1.75rem;">Choose Your Plan</h3>
+            <p style="margin: 0.5rem 0 0; color: var(--font-muted); font-size: 0.95rem;">Unlock your full potential with InkWell</p>
+          </div>
+          <button onclick="document.getElementById('pricingModal').style.display='none'" style="background: none; border: none; color: var(--font-muted); font-size: 1.75rem; cursor: pointer; padding: 0.5rem; line-height: 1; transition: color 0.2s;" onmouseover="this.style.color='var(--font-main)'" onmouseout="this.style.color='var(--font-muted)'">&times;</button>
+        </div>
+        
+        <!-- Pricing Cards -->
+        <div style="padding: 2rem;">
+        <!-- Pricing Cards -->
+        <div style="padding: 2rem;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            
+            <!-- Free Tier -->
+            <div style="background: var(--bg-muted); border: 2px solid var(--border-light); border-radius: 16px; padding: 2rem; display: flex; flex-direction: column; transition: all 0.3s;">
+              <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div style="font-size: 1.25rem; font-weight: 600; color: var(--font-secondary); margin-bottom: 1rem; font-family: var(--title-font);">Free</div>
+                <div style="font-size: 3rem; font-weight: 700; color: var(--font-main); line-height: 1; font-family: var(--title-font);">$0</div>
+                <div style="font-size: 0.9rem; color: var(--font-muted); margin-top: 0.5rem;">Forever free</div>
+              </div>
+              
+              <ul style="list-style: none; padding: 0; margin: 0 0 1.5rem; flex-grow: 1;">
+                <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>Unlimited journaling</span></li>
+                <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>WISH manifestation tool</span></li>
+                <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>Weekly & monthly email recaps</span></li>
+                <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>20% AI-powered prompts</span></li>
+                <li style="padding: 0.5rem 0; color: var(--font-muted); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem; opacity: 0.5;"><span>×</span> <span>SMS notifications</span></li>
+                <li style="padding: 0.5rem 0; color: var(--font-muted); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem; opacity: 0.5;"><span>×</span> <span>Practitioner connection</span></li>
+              </ul>
+              
+              <button disabled style="width: 100%; padding: 0.875rem; background: var(--bg-card); border: 2px solid var(--border-medium); color: var(--font-secondary); border-radius: 10px; font-weight: 600; font-size: 1rem; cursor: not-allowed; opacity: 0.6; font-family: var(--title-font);">Current Plan</button>
+            </div>
+            
+            <!-- Plus Tier -->
+            <div style="background: linear-gradient(135deg, rgba(42, 105, 114, 0.05) 0%, rgba(74, 155, 168, 0.05) 100%); border: 2px solid var(--brand-primary); border-radius: 16px; padding: 2rem; display: flex; flex-direction: column; position: relative; box-shadow: 0 8px 24px rgba(42, 105, 114, 0.15); transform: scale(1.02);">
+              <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--brand-primary); color: white; padding: 0.375rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; box-shadow: var(--shadow-md);">POPULAR</div>
+              
+              <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div style="font-size: 1.25rem; font-weight: 600; color: var(--brand-primary); margin-bottom: 1rem; font-family: var(--title-font);">Plus</div>
+                <div style="font-size: 3rem; font-weight: 700; color: var(--brand-primary); line-height: 1; font-family: var(--title-font);">$14<span style="font-size: 1.5rem; font-weight: 500;">.99</span></div>
+                <div style="font-size: 0.9rem; color: var(--font-muted); margin-top: 0.5rem;">per month</div>
+              </div>
+              
+              <ul style="list-style: none; padding: 0; margin: 0 0 1.5rem; flex-grow: 1;">
+                <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>All Free features</span></li>
+                <li style="padding: 0.5rem 0; color: var(--brand-primary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem; font-weight: 600;"><span>✨</span> <span>Unlimited AI prompts</span></li>
+                <li style="padding: 0.5rem 0; color: var(--brand-primary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem; font-weight: 600;"><span>📱</span> <span>SMS notifications</span></li>
+                <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>WISH milestones via SMS</span></li>
+                <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>Daily gratitude prompts</span></li>
+                <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>Weekly insights</span></li>
+                <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>Data export</span></li>
+              </ul>
+              
+              <button onclick="startUpgradeFlow('plus')" style="width: 100%; padding: 0.875rem; background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 1rem; cursor: pointer; box-shadow: var(--shadow-md); transition: all 0.3s; font-family: var(--title-font);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-md)'">Upgrade to Plus</button>
+            </div>
+            
+            <!-- Connect Tier -->
+            <div style="background: var(--bg-muted); border: 2px solid var(--brand-alt); border-radius: 16px; padding: 2rem; display: flex; flex-direction: column; transition: all 0.3s;">
+              <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div style="font-size: 1.25rem; font-weight: 600; color: var(--brand-alt); margin-bottom: 1rem; font-family: var(--title-font);">Connect</div>
+                <div style="font-size: 3rem; font-weight: 700; color: var(--brand-alt); line-height: 1; font-family: var(--title-font);">$49<span style="font-size: 1.5rem; font-weight: 500;">.99</span></div>
+                <div style="font-size: 0.9rem; color: var(--font-muted); margin-top: 0.5rem;">per month</div>
+              </div>
+              
+              <ul style="list-style: none; padding: 0; margin: 0 0 1.5rem; flex-grow: 1;">
+                <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>All Plus features</span></li>
+                <li style="padding: 0.5rem 0; color: var(--brand-alt); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem; font-weight: 600;"><span>🤝</span> <span>Practitioner connection</span></li>
+                <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>4 monthly interactions</span></li>
+                <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>24-hour response SLA</span></li>
+                <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>Extra interactions available</span></li>
+                <li style="padding: 0.5rem 0; color: var(--font-muted); display: flex; align-items: start; gap: 0.5rem; font-size: 0.85rem; font-style: italic;"><span>✨</span> <span>Professional guidance included</span></li>
+              </ul>
+              
+              <button onclick="startUpgradeFlow('connect')" style="width: 100%; padding: 0.875rem; background: linear-gradient(135deg, var(--brand-alt) 0%, var(--brand-light) 100%); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 1rem; cursor: pointer; box-shadow: var(--shadow-md); transition: all 0.3s; font-family: var(--title-font);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-md)'">Upgrade to Connect</button>
+            </div>
+            
+          </div>
+          
+          <!-- Footer Info -->
+          <div style="text-align: center; padding: 1.5rem; background: var(--bg-muted); border-radius: 12px; border: 1px solid var(--border-light);">
+            <div style="color: var(--font-secondary); font-size: 0.95rem; margin-bottom: 0.5rem;">
+              💝 <strong>Have a gift code?</strong> Apply it at checkout for exclusive practitioner discounts
+            </div>
+            <div style="color: var(--font-muted); font-size: 0.85rem;">
+              Cancel anytime • No hidden fees • Secure payment
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// Make functions globally available
+window.loadSubscriptionUI = loadSubscriptionUI;
+window.showPricingComparison = showPricingComparison;
+
 // Load current user settings into the modal
   async function loadCurrentUserSettings() {
     try {
@@ -10229,7 +10712,7 @@ function formatReadableDate(date) {
             if (userData.smsPreferences) {
               if (smsWishMilestonesField) smsWishMilestonesField.checked = userData.smsPreferences.wishMilestones !== false;
               if (smsDailyPromptsField) smsDailyPromptsField.checked = userData.smsPreferences.dailyPrompts || false;
-              if (smsGratitudePromptsField) smsGratitudePromptsField.checked = userData.smsPreferences.gratitudePrompts !== false;
+              if (smsGratitudePromptsField) smsGratitudePromptsField.checked = userData.smsPreferences.dailyGratitude !== false;
               if (smsCoachRepliesField) smsCoachRepliesField.checked = userData.smsPreferences.coachReplies !== false;
               if (smsWeeklyInsightsField) smsWeeklyInsightsField.checked = userData.smsPreferences.weeklyInsights || false;
             } else {
@@ -10279,6 +10762,10 @@ function formatReadableDate(date) {
       // Load practitioner status when settings modal opens
       await loadPractitionerStatus();
       console.log("Coach status loaded");
+      
+      // Load subscription status and update UI
+      await loadSubscriptionUI();
+      console.log("Subscription status loaded");
       
     } catch (error) {
       console.error("Error loading user settings:", error);
@@ -10379,7 +10866,7 @@ function startPractitionerStatusRefresh() {
         updateData.smsPreferences = {
           wishMilestones: smsWishMilestones,
           dailyPrompts: smsDailyPrompts,
-          gratitudePrompts: document.getElementById('smsGratitudePrompts')?.checked || false,
+          dailyGratitude: document.getElementById('smsGratitudePrompts')?.checked || false,
           coachReplies: smsCoachReplies,
           weeklyInsights: smsWeeklyInsights
         };
@@ -11263,6 +11750,9 @@ function startPractitionerStatusRefresh() {
 
 </script>
 
+<!-- Subscription System Scripts -->
+<script src="./subscription-config.js"></script>
+<script src="./subscription-utils.js"></script>
 
 <script defer type="module" src="./auth.js?v=1.8"></script>
 
@@ -11536,10 +12026,10 @@ async function loadPractitionerStatus() {
         <div style="margin-bottom: 1em;">
           <label style="display: block; margin-bottom: 0.5em; font-weight: 500; color: ${labelColor}; font-size: 0.9em;">Choose from approved practitioners:</label>
 <select id="approvedPractitionerSelect" 
-       style="width: 100%; padding: 0.6em; border: 1px solid ${selectBorder}; border-radius: 5px; background-color: ${selectBg}; color: ${selectColor}; font-size: 0.9em; box-sizing: border-box;">
+       style="width: 100%; padding: 0.6em; border: 1px solid ${selectBorder}; border-radius: 5px; background-color: ${selectBg}; color: ${selectColor}; font-size: 0.9em; box-sizing: border-box; cursor: pointer;">
   ${practitionerOptions}
 </select>
-       <button id="connectToPractitionerBtn" class="btn-info" onclick="window.connectToApprovedPractitioner()" style="width: 100%; margin-top: 0.5em; transition: all 0.3s ease;">
+       <button id="connectToPractitionerBtn" class="btn" onclick="window.connectToApprovedPractitioner()" style="width: 100%; margin-top: 0.5em;">
   Connect to Selected Practitioner
 </button>
         </div>
@@ -11764,8 +12254,8 @@ async function clearPendingPractitionerInvite() {
 
 // Invite practitioner function
 async function invitePractitioner() {
-  const email = document.getElementById("practitionerEmail").value.trim();
-  const name = document.getElementById("practitionerName").value.trim();
+  const email = document.getElementById("coachEmail").value.trim();
+  const name = document.getElementById("coachName").value.trim();
   const inviteButton = document.getElementById("inviteButtonText");
   const statusDiv = document.getElementById("inviteStatus");
   
@@ -11858,6 +12348,10 @@ async function invitePractitioner() {
     });
   }
 }
+
+// Alias for backward compatibility with HTML onclick
+window.inviteCoach = invitePractitioner;
+window.disconnectCoach = disconnectPractitioner;
 
 // Disconnect practitioner function
 async function disconnectPractitioner() {
@@ -12231,6 +12725,45 @@ window.OnboardingManager = {
     }, 300);
   },
 
+  // Show Journal tab onboarding
+  showJournalTabOnboarding: function() {
+    if (!this.shouldShow('journal_tab_intro')) return;
+
+    OnboardingOverlay.create({
+      id: 'journal_tab_intro',
+      keepCentered: true,
+      icon: '✍️',
+      title: 'Welcome to Your Journal!',
+      content: `
+        <p>This is your personal space for daily reflection and growth:</p>
+        <ul style="text-align: left; margin: 1em 0;">
+          <li><strong>Daily Entries:</strong> Write freely about your thoughts and experiences</li>
+          <li><strong>Voice Recording:</strong> Record audio entries on mobile devices</li>
+          <li><strong>Photo Attachments:</strong> Add images to capture moments</li>
+          <li><strong>Mood Tracking:</strong> Track your emotional state each day</li>
+          <li><strong>Sophy AI:</strong> Get personalized insights and guidance</li>
+        </ul>
+        <p>Start by writing your first entry or asking Sophy for prompts!</p>
+      `,
+      primaryButton: 'Start Writing',
+      primaryAction: 'OnboardingManager.startJournalAction()',
+      dismissText: 'Got it!',
+      pointer: false
+    });
+  },
+
+  // Handle Journal start action
+  startJournalAction: function() {
+    OnboardingOverlay.close();
+    setTimeout(() => {
+      const journalInput = document.getElementById('journalInput');
+      if (journalInput) {
+        journalInput.focus();
+        journalInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 300);
+  },
+
   // Show WISH tab onboarding
   showWishTabOnboarding: function() {
     if (!this.shouldShow('wish_tab_intro')) return;
@@ -12253,6 +12786,32 @@ window.OnboardingManager = {
       `,
       primaryButton: 'Start My WISH',
       primaryAction: 'OnboardingManager.startWishAction()',
+      dismissText: 'Got it!',
+      pointer: false
+    });
+  },
+
+  // Show Past Entries (Calendar) tab onboarding
+  showCalendarTabOnboarding: function() {
+    if (!this.shouldShow('calendar_tab_intro')) return;
+
+    OnboardingOverlay.create({
+      id: 'calendar_tab_intro',
+      keepCentered: true,
+      icon: '📚',
+      title: 'Welcome to Past Entries!',
+      content: `
+        <p>Browse and explore your journaling history:</p>
+        <ul style="text-align: left; margin: 1em 0;">
+          <li><strong>Calendar View:</strong> See all days with entries highlighted</li>
+          <li><strong>Search & Filter:</strong> Find entries by content or date</li>
+          <li><strong>View Details:</strong> Tap any entry to see your full reflection</li>
+          <li><strong>Track Progress:</strong> Review your emotional growth over time</li>
+          <li><strong>Export Data:</strong> Download your journal entries anytime</li>
+        </ul>
+        <p>Navigate through months to explore your journey!</p>
+      `,
+      dismissText: 'Got it!',
       pointer: false
     });
   },
