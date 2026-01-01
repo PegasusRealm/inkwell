@@ -5087,27 +5087,14 @@ const GRATITUDE_PROMPTS = [
  */
 exports.scheduledDailyPrompts = onSchedule({
   schedule: 'every 3 hours',
-  timeZone: 'America/New_York', // Adjust to your primary timezone
+  timeZone: 'UTC', // Run in UTC so we check all timezones
   secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, ANTHROPIC_API_KEY]
 }, async (event) => {
-  console.log('🕐 Running scheduled daily prompts check...');
+  console.log('🕐 Running scheduled daily prompts check (all timezones)...');
   
   try {
     const now = new Date();
-    const currentHour = now.getHours();
-    
-    // Determine which time window we're in
-    let timeWindow = '';
-    if (currentHour >= 8 && currentHour < 10) timeWindow = 'morning';
-    else if (currentHour >= 12 && currentHour < 14) timeWindow = 'midday';
-    else if (currentHour >= 15 && currentHour < 17) timeWindow = 'afternoon';
-    else if (currentHour >= 19 && currentHour < 21) timeWindow = 'evening';
-    else {
-      console.log('⏰ Outside prompt windows, skipping');
-      return null;
-    }
-    
-    console.log(`📅 Current time window: ${timeWindow}`);
+    console.log(`🌍 UTC time: ${now.toISOString()}`);
     
     // Get all users who need prompts
     const usersSnapshot = await admin.firestore().collection('users').get();
@@ -5122,11 +5109,34 @@ exports.scheduledDailyPrompts = onSchedule({
       // Check base eligibility
       if (!userData.smsOptIn || !userData.phoneNumber) continue;
       
-      // Check if user's time slot matches current window
-      const userTimeSlot = userData.promptTimeSlot || 'morning';
-      if (userTimeSlot !== timeWindow) {
+      // Get user's timezone (default to Pacific/Honolulu for Hawaii users, or America/New_York)
+      const userTimezone = userData.timezone || 'America/New_York';
+      
+      // Get current hour in USER'S timezone
+      const userHour = parseInt(now.toLocaleString('en-US', { 
+        timeZone: userTimezone,
+        hour: 'numeric',
+        hour12: false 
+      }));
+      
+      // Determine which time window the user is in
+      let currentWindow = '';
+      if (userHour >= 8 && userHour < 10) currentWindow = 'morning';
+      else if (userHour >= 12 && userHour < 14) currentWindow = 'midday';
+      else if (userHour >= 15 && userHour < 17) currentWindow = 'afternoon';
+      else if (userHour >= 19 && userHour < 21) currentWindow = 'evening';
+      else {
+        // User is outside prompt windows in their timezone, skip
         continue;
       }
+      
+      // Check if user's preferred time slot matches current window
+      const userTimeSlot = userData.promptTimeSlot || 'morning';
+      if (userTimeSlot !== currentWindow) {
+        continue; // Not their preferred time yet
+      }
+      
+      console.log(`📍 User ${userId} in ${userTimezone}: hour ${userHour} = ${currentWindow} window`);
       
       // =======================================================================
       // JOURNAL PROMPTS

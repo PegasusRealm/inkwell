@@ -6731,10 +6731,11 @@ window.showToast = function (message, type = "info", duration = 4000) {
   }, duration);
 };
 
-window.logOutUser = async function () {
-  console.log("Logout started.");
+window.logOutUser = async function (reason = "manual") {
+  console.log("Logout started. Reason:", reason);
   try {
     localStorage.setItem("userJustLoggedOut", "true");
+    localStorage.setItem("logoutReason", reason);
     await auth.signOut();
     document.querySelector("main").style.display = "none";
     {
@@ -6743,7 +6744,23 @@ window.logOutUser = async function () {
     }
     setTimeout(() => {
       const modal = document.getElementById("goodbyeModal");
+      const titleEl = document.getElementById("goodbyeTitle");
+      const messageEl = document.getElementById("goodbyeMessage");
+      const subMessageEl = document.getElementById("goodbyeSubMessage");
+      
       if (modal) {
+        // Update message based on reason
+        if (reason === "timeout") {
+          if (titleEl) titleEl.textContent = "Session Timed Out ⏰";
+          if (messageEl) messageEl.textContent = "For your security, your session has been logged out after a period of inactivity.";
+          if (subMessageEl) subMessageEl.textContent = "Simply sign in again to continue where you left off.";
+        } else {
+          // Default manual logout messages
+          if (titleEl) titleEl.textContent = "See You Soon! 👋";
+          if (messageEl) messageEl.textContent = "Thanks for journaling with InkWell today.";
+          if (subMessageEl) subMessageEl.textContent = "Take care, and don't forget to stay positive.";
+        }
+        
         modal.style.display = "flex";
         modal.style.position = "fixed";
         modal.style.top = "0";
@@ -7854,7 +7871,33 @@ document.head.appendChild(themeStyle);
       <div class="g-recaptcha" data-sitekey="6LdV2MkrAAAAAIXSZT7NmB5i80vGjhB-tFZWrWYT"
         style="margin: 0 auto 1em auto; width: 90%; display: flex; justify-content: flex-start;"></div>
       <button type="submit" class="btn"
-        style="width: 90%; padding: 0.6em; background-color: #2A6972; color: white; border: none; border-radius: 5px;">Log In</button>
+        style="width: 90%; padding: 0.6em; background-color: #2A6972; color: white; border: none; border-radius: 5px; cursor: pointer; transition: opacity 0.3s;">Log In</button>
+      
+      <!-- OR Divider -->
+      <div style="margin: 1.5em auto; width: 90%; display: flex; align-items: center; gap: 0.5em;">
+        <div style="flex: 1; height: 1px; background: rgba(42,105,114,0.2);"></div>
+        <span style="color: #666; font-size: 0.9em;">OR</span>
+        <div style="flex: 1; height: 1px; background: rgba(42,105,114,0.2);"></div>
+      </div>
+
+      <!-- Social Sign-In Buttons -->
+      <button type="button" onclick="signInWithGoogle()" class="btn"
+        style="width: 90%; padding: 0.6em; background-color: white; color: #333; border: 2px solid #ddd; border-radius: 5px; cursor: pointer; margin: 0 auto 0.75em auto; display: flex; align-items: center; justify-content: center; gap: 0.5em; transition: all 0.3s;">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64,9.2c0,-0.64 -0.05,-1.25 -0.16,-1.84H9v3.48h4.84c-0.21,1.13 -0.85,2.08 -1.8,2.72v2.26h2.92C16.66,14.09 17.64,11.85 17.64,9.2z"/><path fill="#34A853" d="M9,18c2.43,0 4.47,-0.81 5.96,-2.18l-2.92,-2.26c-0.81,0.54 -1.84,0.86 -3.04,0.86c-2.34,0 -4.32,-1.58 -5.03,-3.71H0.96v2.33C2.44,15.98 5.48,18 9,18z"/><path fill="#FBBC05" d="M3.97,10.71c-0.18,-0.54 -0.28,-1.12 -0.28,-1.71s0.1,-1.17 0.28,-1.71V4.96H0.96C0.35,6.18 0,7.55 0,9s0.35,2.82 0.96,4.04L3.97,10.71z"/><path fill="#EA4335" d="M9,3.58c1.32,0 2.5,0.45 3.43,1.35l2.57,-2.57C13.47,0.89 11.43,0 9,0C5.48,0 2.44,2.02 0.96,4.96l3.01,2.33C4.68,5.16 6.66,3.58 9,3.58z"/></svg>
+        Continue with Google
+      </button>
+      
+      <button type="button" onclick="signInWithApple()" class="btn"
+        style="width: 90%; padding: 0.6em; background-color: black; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 0 auto 1em auto; display: flex; align-items: center; justify-content: center; gap: 0.5em; transition: all 0.3s;">
+        <svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor"><path d="M15.5 13.9c-.3.8-.8 1.7-1.4 2.4-.6.8-1.1 1.4-1.5 1.8-.6.6-1.3.9-2 .9-.5 0-1.1-.1-1.8-.4-.7-.3-1.3-.4-2-.4s-1.4.1-2.1.4c-.7.3-1.3.4-1.8.4-.7.1-1.4-.2-2.1-.9-.4-.4-.9-1-1.5-1.8-.7-.9-1.2-1.9-1.6-3-.4-1.2-.6-2.3-.6-3.4 0-1.3.3-2.4.9-3.3.5-.7 1.1-1.2 1.9-1.6.8-.4 1.6-.6 2.5-.6.5 0 1.2.2 2 .5.8.3 1.3.5 1.6.5.2 0 .9-.2 1.9-.6.9-.4 1.7-.5 2.3-.5 1.7.1 3 .8 3.9 2.1-1.6.9-2.3 2.2-2.3 3.9 0 1.3.5 2.4 1.4 3.2.4.4.9.7 1.5.9-.1.3-.2.6-.4.9zM11.8 0c0 1-.4 1.9-1.1 2.7-.8.9-1.8 1.5-2.9 1.4-.1-.2-.1-.3-.1-.5 0-.9.4-1.9 1.2-2.7.4-.4.9-.8 1.5-1s1.2-.4 1.7-.4c0 .2.1.3.1.5z"/></svg>
+        Continue with Apple
+      </button>
+      <style>
+        #loginForm button[type="submit"]:disabled {
+          opacity: 0.8;
+          cursor: not-allowed;
+        }
+      </style>
     </form>
     <div style="display: flex; justify-content: space-between; margin-top: 0.8em; font-size: 0.9em; width: 90%; margin-left: auto; margin-right: auto;">
       <a href="#" id="forgotPassword" style="color: #2A6972; text-decoration: underline;">Forgot password?</a>
@@ -7966,7 +8009,37 @@ document.head.appendChild(themeStyle);
           <input type="checkbox" id="betaAgreement" name="betaAgreement" checked style="margin-right: 0.5em;">
           I agree to the <a href="https://pegasusrealm.com/alpha-beta-testers/" target="_blank" style="color: #2A6972; text-decoration: underline;">Beta Testing Agreement</a>
         </label>
-        
+      </div>
+      
+      <!-- reCAPTCHA -->
+      <div class="g-recaptcha" data-sitekey="6LdV2MkrAAAAAIXSZT7NmB5i80vGjhB-tFZWrWYT"
+        style="margin: 0 auto 1em auto; width: 90%; display: flex; justify-content: flex-start;"></div>
+      
+      <!-- Submit Button -->
+      <button type="submit" class="btn"
+        style="width: 90%; padding: 0.6em; background-color: #2A6972; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 0 auto 1.5em auto; display: block; transition: opacity 0.3s;">Sign Up</button>
+      
+      <!-- OR Divider -->
+      <div style="margin: 0 auto 1.5em auto; width: 90%; display: flex; align-items: center; gap: 0.5em;">
+        <div style="flex: 1; height: 1px; background: rgba(42,105,114,0.2);"></div>
+        <span style="color: #666; font-size: 0.9em;">OR</span>
+        <div style="flex: 1; height: 1px; background: rgba(42,105,114,0.2);"></div>
+      </div>
+
+      <!-- Social Sign-In Buttons -->
+      <button type="button" onclick="signInWithGoogle()" class="btn"
+        style="width: 90%; padding: 0.6em; background-color: white; color: #333; border: 2px solid #ddd; border-radius: 5px; cursor: pointer; margin: 0 auto 0.75em auto; display: flex; align-items: center; justify-content: center; gap: 0.5em; transition: all 0.3s;">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64,9.2c0,-0.64 -0.05,-1.25 -0.16,-1.84H9v3.48h4.84c-0.21,1.13 -0.85,2.08 -1.8,2.72v2.26h2.92C16.66,14.09 17.64,11.85 17.64,9.2z"/><path fill="#34A853" d="M9,18c2.43,0 4.47,-0.81 5.96,-2.18l-2.92,-2.26c-0.81,0.54 -1.84,0.86 -3.04,0.86c-2.34,0 -4.32,-1.58 -5.03,-3.71H0.96v2.33C2.44,15.98 5.48,18 9,18z"/><path fill="#FBBC05" d="M3.97,10.71c-0.18,-0.54 -0.28,-1.12 -0.28,-1.71s0.1,-1.17 0.28,-1.71V4.96H0.96C0.35,6.18 0,7.55 0,9s0.35,2.82 0.96,4.04L3.97,10.71z"/><path fill="#EA4335" d="M9,3.58c1.32,0 2.5,0.45 3.43,1.35l2.57,-2.57C13.47,0.89 11.43,0 9,0C5.48,0 2.44,2.02 0.96,4.96l3.01,2.33C4.68,5.16 6.66,3.58 9,3.58z"/></svg>
+        Continue with Google
+      </button>
+      
+      <button type="button" onclick="signInWithApple()" class="btn"
+        style="width: 90%; padding: 0.6em; background-color: black; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 0 auto 1.5em auto; display: flex; align-items: center; justify-content: center; gap: 0.5em; transition: all 0.3s;">
+        <svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor"><path d="M15.5 13.9c-.3.8-.8 1.7-1.4 2.4-.6.8-1.1 1.4-1.5 1.8-.6.6-1.3.9-2 .9-.5 0-1.1-.1-1.8-.4-.7-.3-1.3-.4-2-.4s-1.4.1-2.1.4c-.7.3-1.3.4-1.8.4-.7.1-1.4-.2-2.1-.9-.4-.4-.9-1-1.5-1.8-.7-.9-1.2-1.9-1.6-3-.4-1.2-.6-2.3-.6-3.4 0-1.3.3-2.4.9-3.3.5-.7 1.1-1.2 1.9-1.6.8-.4 1.6-.6 2.5-.6.5 0 1.2.2 2 .5.8.3 1.3.5 1.6.5.2 0 .9-.2 1.9-.6.9-.4 1.7-.5 2.3-.5 1.7.1 3 .8 3.9 2.1-1.6.9-2.3 2.2-2.3 3.9 0 1.3.5 2.4 1.4 3.2.4.4.9.7 1.5.9-.1.3-.2.6-.4.9zM11.8 0c0 1-.4 1.9-1.1 2.7-.8.9-1.8 1.5-2.9 1.4-.1-.2-.1-.3-.1-.5 0-.9.4-1.9 1.2-2.7.4-.4.9-.8 1.5-1s1.2-.4 1.7-.4c0 .2.1.3.1.5z"/></svg>
+        Continue with Apple
+      </button>
+      
+      <div style="width: 90%; margin: 0 auto;">
         <!-- Practitioner Interest Section -->
         <div style="margin-top: 1.5em; padding-top: 1em; border-top: 1px solid #e0e0e0;">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.95em; color: #2A6972; font-weight: 600;">
@@ -7988,10 +8061,7 @@ document.head.appendChild(themeStyle);
         </div>
       </div>
       
-      <div class="g-recaptcha" data-sitekey="6LdV2MkrAAAAAIXSZT7NmB5i80vGjhB-tFZWrWYT"
-        style="margin: 0 auto 1em auto; width: 90%; display: flex; justify-content: flex-start;"></div>
-      <button type="submit" class="btn"
-        style="width: 90%; padding: 0.6em; background-color: #2A6972; color: white; border: none; border-radius: 5px;">Sign Up</button>
+
       </form>
     <div style="margin-top: 0.8em;">
       <a href="#" id="toggleLogin" style="color: #2A6972; text-decoration: underline;">Already have an account?</a>
@@ -8057,15 +8127,15 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   <div class="card-block" style="max-width: 400px; width: 90%; background: white; padding: 2em; border-radius: 8px; text-align: center;">
     <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 120px; margin-bottom: 1.5em;" />
     
-    <h2 style="margin-top: 0; margin-bottom: 1em; color: #2A6972; font-size: 1.3em;">
+    <h2 id="goodbyeTitle" style="margin-top: 0; margin-bottom: 1em; color: #2A6972; font-size: 1.3em;">
       See You Soon! 👋
     </h2>
     
-    <p style="color: #000000; margin-bottom: 0.5em; font-size: 1em;">
+    <p id="goodbyeMessage" style="color: #000000; margin-bottom: 0.5em; font-size: 1em;">
       Thanks for journaling with InkWell today.
     </p>
     
-    <p style="color: #000000; margin-bottom: 2em; font-size: 0.95em;">
+    <p id="goodbyeSubMessage" style="color: #000000; margin-bottom: 2em; font-size: 0.95em;">
       Take care, and don't forget to stay positive.
     </p>
     
@@ -9189,6 +9259,30 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
           Format: +15551234567 (include country code with +)
         </p>
         <div id="settingsPhoneError" class="sms-error"></div>
+      </div>
+      
+      <div class="sms-input-group">
+        <label for="settingsTimezone">Your Timezone:</label>
+        <select id="settingsTimezone" style="width: 100%; padding: 0.75em; background: white; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95em;">
+          <option value="Pacific/Honolulu">Hawaii (Pacific/Honolulu)</option>
+          <option value="America/Anchorage">Alaska (America/Anchorage)</option>
+          <option value="America/Los_Angeles">Pacific Time (America/Los_Angeles)</option>
+          <option value="America/Denver">Mountain Time (America/Denver)</option>
+          <option value="America/Phoenix">Arizona (America/Phoenix)</option>
+          <option value="America/Chicago">Central Time (America/Chicago)</option>
+          <option value="America/New_York" selected>Eastern Time (America/New_York)</option>
+          <option value="America/Puerto_Rico">Puerto Rico (America/Puerto_Rico)</option>
+          <option value="Europe/London">London (Europe/London)</option>
+          <option value="Europe/Paris">Paris (Europe/Paris)</option>
+          <option value="Europe/Berlin">Berlin (Europe/Berlin)</option>
+          <option value="Asia/Tokyo">Tokyo (Asia/Tokyo)</option>
+          <option value="Asia/Shanghai">Shanghai (Asia/Shanghai)</option>
+          <option value="Asia/Dubai">Dubai (Asia/Dubai)</option>
+          <option value="Australia/Sydney">Sydney (Australia/Sydney)</option>
+        </select>
+        <p class="sms-help-text">
+          SMS prompts will be sent during your local daytime hours
+        </p>
       </div>
       
       <div class="sms-preferences-box">
@@ -10698,6 +10792,10 @@ window.showPricingComparison = showPricingComparison;
             if (phoneField) {
               phoneField.value = userData.phoneNumber || "";
             }
+            const timezoneField = document.getElementById("settingsTimezone");
+            if (timezoneField) {
+              timezoneField.value = userData.timezone || "America/New_York";
+            }
             if (smsOptInField) {
               smsOptInField.checked = userData.smsOptIn || false;
             }
@@ -10812,8 +10910,9 @@ function startPractitionerStatusRefresh() {
       const avatar = document.getElementById("settingsAvatar").value.trim();
       const theme = document.getElementById("settingsThemeSelect").value;
       
-      // Get phone number and SMS preferences
+      // Get phone number, SMS preferences, and timezone
       const phone = document.getElementById("settingsPhone").value.trim();
+      const timezone = document.getElementById("settingsTimezone").value;
       const smsOptIn = document.getElementById("smsOptInSettings").checked;
       const smsWishMilestones = document.getElementById("smsWishMilestones").checked;
       const smsDailyPrompts = document.getElementById("smsDailyPrompts").checked;
@@ -10848,6 +10947,7 @@ function startPractitionerStatusRefresh() {
         signupUsername: username,
         displayName: username,
         avatar: avatar,
+        timezone: timezone, // Save user's timezone for SMS scheduling
         // Insights preferences
         insightsPreferences: {
           weeklyEnabled: weeklyInsights,
@@ -12642,21 +12742,32 @@ window.OnboardingToast = {
 window.OnboardingManager = {
   // Check if user should see onboarding
   shouldShow: function(id) {
+    // CRITICAL: Only show to authenticated users
+    if (!window.auth?.currentUser?.uid) {
+      return false;
+    }
+    
     const shown = JSON.parse(localStorage.getItem('onboarding_shown') || '{}');
-    const user = window.auth?.currentUser?.uid || 'guest';
+    const user = window.auth.currentUser.uid;
     return !shown[user]?.[id];
   },
 
   // Mark onboarding as shown
   markShown: function(id) {
+    // Only mark for authenticated users
+    if (!window.auth?.currentUser?.uid) return;
+    
     const shown = JSON.parse(localStorage.getItem('onboarding_shown') || '{}');
-    const user = window.auth?.currentUser?.uid || 'guest';
+    const user = window.auth.currentUser.uid;
     if (!shown[user]) shown[user] = {};
     shown[user][id] = Date.now();
     localStorage.setItem('onboarding_shown', JSON.stringify(shown));
   },
-
-  // Mark milestone completion
+// Only mark for authenticated users
+    if (!window.auth?.currentUser?.uid) return;
+    
+    const milestones = JSON.parse(localStorage.getItem('onboarding_milestones') || '{}');
+    const user = window.auth.currentUser.uid
   markMilestone: function(milestone) {
     const milestones = JSON.parse(localStorage.getItem('onboarding_milestones') || '{}');
     const user = window.auth?.currentUser?.uid || 'guest';
@@ -12666,7 +12777,10 @@ window.OnboardingManager = {
     
     console.log(`🎯 Milestone completed: ${milestone}`);
   },
-
+// Only return progress for authenticated users
+    if (!window.auth?.currentUser?.uid) return {};
+    
+    const user = window.auth.currentUser.uid
   // Get user's progress
   getProgress: function() {
     const user = window.auth?.currentUser?.uid || 'guest';
