@@ -453,20 +453,20 @@ async function loadInvitation() {
                 const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
                 const user = userCredential.user;
                 
-                // Create practitioner request document
-                await setDoc(doc(db, 'practitionerRequests', user.uid), {
+                // Create practitioner application document (matches approvePractitioner function)
+                await setDoc(doc(db, 'practitionerApplications', user.uid), {
                     userId: user.uid,
                     invitationToken: token,
                     email: formData.email,
-                    fullName: formData.fullName,
+                    name: formData.fullName,
                     credentials: formData.credentials,
-                    practiceType: formData.practiceType,
+                    specialty: formData.practiceType,
                     licenseNumber: formData.licenseNumber,
                     practiceLocation: formData.practiceLocation,
                     practiceDescription: formData.practiceDescription,
                     requiresHipaaWaiver: formData.requiresHipaaWaiver,
-                    status: 'pending_approval',
-                    requestedAt: serverTimestamp()
+                    status: 'pending',
+                    createdAt: serverTimestamp()
                 });
                 
                 // Create basic user document
@@ -475,6 +475,7 @@ async function loadInvitation() {
                     email: formData.email,
                     displayName: formData.fullName,
                     signupUsername: formData.fullName,
+                    accountType: 'standard', // Will be set to 'coach' upon approval
                     userRole: 'practitioner_pending',
                     requiresHipaaWaiver: formData.requiresHipaaWaiver,
                     agreementAccepted: true,
@@ -497,44 +498,60 @@ async function loadInvitation() {
 status.innerHTML = `
     <div style="background: linear-gradient(135deg, #e8f5e8 0%, #d4f5d4 100%); border: 1px solid #4caf50; border-left: 6px solid #2A6972; padding: 2em; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 1.5em;">
-            <div style="font-size: 3em; color: #2A6972; margin-bottom: 0.5em;">🌟</div>
-            <h2 style="color: #2A6972; margin: 0; font-size: 1.8em; font-weight: 600;">Welcome Aboard, ${formData.fullName}!</h2>
+            <div style="font-size: 3em; color: #2A6972; margin-bottom: 0.5em;">�</div>
+            <h2 style="color: #2A6972; margin: 0; font-size: 1.8em; font-weight: 600;">Thank You for Your Application!</h2>
         </div>
         
         <div style="background: rgba(255,255,255,0.7); padding: 1.5em; border-radius: 8px; margin-bottom: 1.5em;">
-            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.3em;">✅ Registration Complete</h3>
-            <p style="margin: 0.5em 0; color: #333;">Your InkWell practitioner account has been successfully created and is now <strong>pending approval</strong>. You'll receive an email confirmation within 24-48 hours once your credentials are verified.</p>
+            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.3em;">✅ Application Submitted Successfully</h3>
+            <p style="margin: 0.5em 0; color: #333; line-height: 1.6;">
+                Thank you for filling out the application, <strong>${formData.fullName}</strong>! Our team will review your information and you will receive a confirmation email with a link to onboard into our system, typically within <strong>72 hours</strong>.
+            </p>
+            <p style="margin: 1em 0 0 0; color: #666; font-size: 0.95em;">
+                If you have any questions, please reach out to <a href="mailto:support@inkwelljournal.io" style="color: #2A6972; text-decoration: none; font-weight: 600;">support@inkwelljournal.io</a>
+            </p>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, rgba(42,105,114,0.1), rgba(42,105,114,0.05)); padding: 1.5em; border-radius: 8px; border: 2px solid #2A6972; margin-bottom: 1.5em;">
+            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.3em;">🎁 Practitioner Benefit: 25% Discount!</h3>
+            <p style="margin: 0.5em 0; color: #333; line-height: 1.6;">
+                As a mental health professional, you receive a <strong>25% discount</strong> on all InkWell paid subscriptions. Experience the power of journaling firsthand and better support your clients who use our platform.
+            </p>
+            <div style="margin-top: 1.2em;">
+                <a href="https://inkwelljournal.io/app.html" target="_blank" style="display: inline-block; background: #2A6972; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; margin-right: 0.5em; margin-bottom: 0.5em;">
+                    🌐 Launch Web App
+                </a>
+            </div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.9); padding: 1.5em; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 1.5em;">
+            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.2em;">📱 Get the Mobile App</h3>
+            <p style="margin: 0.5em 0 1em 0; color: #666;">Download InkWell for iOS and Android (coming soon)</p>
+            <div style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center;">
+                <a href="https://apps.apple.com/app/inkwell" target="_blank" style="display: inline-block;">
+                    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on App Store" style="height: 40px;">
+                </a>
+                <a href="https://play.google.com/store/apps/details?id=com.inkwellmobile" target="_blank" style="display: inline-block;">
+                    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" style="height: 60px;">
+                </a>
+            </div>
+            <p style="margin: 1em 0 0 0; color: #888; font-size: 0.85em; font-style: italic;">
+                Apps are currently in beta testing and will be available in app stores soon.
+            </p>
         </div>
         
         <div style="background: rgba(42,105,114,0.05); padding: 1.5em; border-radius: 8px; border-left: 4px solid #2A6972; margin-bottom: 1.5em;">
             <h3 style="color: #2A6972; margin-top: 0; font-size: 1.2em;">📋 How InkWell Works</h3>
             <ul style="margin: 0; padding-left: 1.5em; color: #444; line-height: 1.6;">
-                <li><strong>Client Selection:</strong> Your clients will hand-select specific journal entries they want to share with you</li>
-                <li><strong>Email Notifications:</strong> When a client shares an entry, you'll receive an email with a secure link</li>
-                <li><strong>Review & Respond:</strong> Click the link to read the entry and all associated context (mood, tags, etc.)</li>
-                <li><strong>One-Time Reply:</strong> You can provide one thoughtful response per shared entry</li>
-                <li><strong>Secure Communication:</strong> All interactions are HIPAA-compliant and encrypted</li>
+                <li><strong>Client Selection:</strong> Your clients hand-select specific journal entries to share with you</li>
+                <li><strong>Email Notifications:</strong> Receive secure email links when a client shares an entry</li>
+                <li><strong>Review & Respond:</strong> Read entries with full context (mood, tags, audio) and provide support</li>
+                <li><strong>HIPAA Compliance:</strong> All communications are encrypted and secure</li>
             </ul>
         </div>
         
-        <div style="background: rgba(255,255,255,0.9); padding: 1.5em; border-radius: 8px; border: 1px solid #ddd;">
-            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.1em;">💡 What's Next?</h3>
-            <div style="display: grid; grid-template-columns: auto 1fr; gap: 0.5em 1em; align-items: start;">
-                <span style="color: #2A6972; font-weight: bold;">1.</span>
-                <span>Await approval confirmation email</span>
-                <span style="color: #2A6972; font-weight: bold;">2.</span>
-                <span>Complete any additional verification steps (if required)</span>
-                <span style="color: #2A6972; font-weight: bold;">3.</span>
-                <span>Start receiving client journal entries and providing support</span>
-            </div>
-        </div>
-        
         <div style="text-align: center; margin-top: 1.5em; padding-top: 1.5em; border-top: 1px solid rgba(42,105,114,0.2);">
-            <p style="margin: 0.5em 0; color: #666; font-size: 0.95em;">
-                <strong>Questions or need support?</strong><br>
-                Contact our team at <a href="mailto:support@inkwelljournal.io" style="color: #2A6972; text-decoration: none; font-weight: 600;">support@inkwelljournal.io</a>
-            </p>
-            <p style="margin: 0.5em 0 0 0; color: #888; font-size: 0.85em; font-style: italic;">
+            <p style="margin: 0.5em 0 0 0; color: #888; font-size: 0.95em; font-style: italic;">
                 Thank you for joining the InkWell community of mental health professionals.
             </p>
         </div>

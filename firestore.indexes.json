@@ -1,6 +1,20 @@
 {
   "indexes": [
     {
+      "collectionGroup": "practitionerApplications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "favoritePrompts",
       "queryScope": "COLLECTION",
       "fields": [

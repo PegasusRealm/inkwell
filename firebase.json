@@ -14,11 +14,22 @@
     ],
     "rewrites": [
       {
-        "source": "!/migrate-users.html",
+        "source": "!/@(migrate-users|practitioner-portal|practitioner-register|admin|admin-enhanced|app|coach).html",
         "destination": "/index.html"
       }
     ],
-    "cleanUrls": true
+    "cleanUrls": true,
+    "headers": [
+      {
+        "source": "**/*.@(html|js)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      }
+    ]
   },
   "emulators": {
     "auth": {

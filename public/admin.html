@@ -300,53 +300,36 @@
             requestsList.innerHTML = '<p>🔄 Loading pending requests...</p>';
             
             try {
-                // Get both inquiries and pending approvals
-                const q1 = query(collection(db, 'practitionerRequests'), where('status', '==', 'inquiry'));
-                const q2 = query(collection(db, 'practitionerRequests'), where('status', '==', 'pending_approval'));
+                // Get pending applications from new practitionerApplications collection
+                const q = query(collection(db, 'practitionerApplications'), where('status', '==', 'pending'));
                 
-                const [inquiriesSnapshot, pendingSnapshot] = await Promise.all([
-                    getDocs(q1),
-                    getDocs(q2)
-                ]);
+                const pendingSnapshot = await getDocs(q);
                 
-                const totalDocs = inquiriesSnapshot.size + pendingSnapshot.size;
+                const totalDocs = pendingSnapshot.size;
                 const snapshot = { empty: totalDocs === 0, size: totalDocs };
                 
                 if (snapshot.empty) {
                     requestsList.innerHTML = `
                         <div class="empty-state">
-                            <h3>✅ No Pending Requests</h3>
-                            <p>All practitioner registrations have been processed.</p>
+                            <h3>✅ No Pending Applications</h3>
+                            <p>All practitioner applications have been processed.</p>
                             <p style="font-size: 0.9em; color: #666; margin-top: 1em;">
-                                📧 New registrations will appear here and trigger email notifications
+                                📧 New applications will appear here automatically
                             </p>
                         </div>
                     `;
                     return;
                 }
                 
-                let html = '';
+                let html = '<h2 style="color: #856404; margin: 1.5em 0 1em 0; padding-bottom: 0.5em; border-bottom: 2px solid #ffc107;">📋 Pending Practitioner Applications</h2>';
                 
-                // Show inquiries first (with special styling)
-                if (!inquiriesSnapshot.empty) {
-                    html += '<h2 style="color: #17a2b8; margin: 1.5em 0 1em 0; padding-bottom: 0.5em; border-bottom: 2px solid #17a2b8;">💼 Signup Inquiries</h2>';
-                    inquiriesSnapshot.forEach(doc => {
-                        const data = doc.data();
-                        html += createRequestCard(doc.id, data);
-                    });
-                }
-                
-                // Show full applications
-                if (!pendingSnapshot.empty) {
-                    html += '<h2 style="color: #856404; margin: 1.5em 0 1em 0; padding-bottom: 0.5em; border-bottom: 2px solid #ffc107;">📋 Full Applications</h2>';
-                    pendingSnapshot.forEach(doc => {
-                        const data = doc.data();
-                        html += createRequestCard(doc.id, data);
-                    });
-                }
+                pendingSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    html += createRequestCard(doc.id, data);
+                });
                 
                 requestsList.innerHTML = html;
-                console.log(`📋 Loaded ${inquiriesSnapshot.size} inquiry(ies) and ${pendingSnapshot.size} pending request(s)`);
+                console.log(`📋 Loaded ${pendingSnapshot.size} pending application(s)`);
                 
             } catch (error) {
                 console.error('❌ Error loading requests:', error);
@@ -407,22 +390,17 @@
         };
 
         function createRequestCard(requestId, data) {
-            const requestedDate = data.requestedAt?.toDate?.() 
-                ? data.requestedAt.toDate().toLocaleDateString() + ' ' + data.requestedAt.toDate().toLocaleTimeString()
-                : (data.inquiredAt?.toDate?.() 
-                    ? data.inquiredAt.toDate().toLocaleDateString() + ' ' + data.inquiredAt.toDate().toLocaleTimeString()
-                    : 'Unknown date');
+            const requestedDate = data.createdAt?.toDate?.() 
+                ? data.createdAt.toDate().toLocaleDateString() + ' ' + data.createdAt.toDate().toLocaleTimeString()
+                : 'Unknown date';
             
-            const isInquiry = data.status === 'inquiry';
-            const statusBadge = isInquiry 
-                ? '<span class="status-inquiry">💼 Signup Inquiry</span>'
-                : '<span class="status-pending">⏳ Pending Approval</span>';
-            const cardClass = isInquiry ? 'request-card inquiry-card' : 'request-card';
+            const statusBadge = '<span class="status-pending">⏳ Pending Approval</span>';
+            const cardClass = 'request-card';
             
             return `
                 <div class="${cardClass}">
                     <div class="request-header">
-                        <h3 style="margin: 0; color: var(--brand-primary);">${data.fullName || 'Unknown Name'}</h3>
+                        <h3 style="margin: 0; color: var(--brand-primary);">${data.name || 'Unknown Name'}</h3>
                         ${statusBadge}
                     </div>
                     
@@ -434,7 +412,7 @@
                             <span class="detail-label">🎓 Credentials:</span> ${data.credentials || 'Not provided'}
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">🏥 Practice Type:</span> ${data.practiceType || 'Not provided'}
+                            <span class="detail-label">🏥 Specialty:</span> ${data.specialty || 'Not provided'}
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">📜 License #:</span> ${data.licenseNumber || 'Not provided'}
@@ -443,7 +421,7 @@
                             <span class="detail-label">📍 Location:</span> ${data.practiceLocation || 'Not provided'}
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">📅 Registered:</span> ${requestedDate}
+                            <span class="detail-label">📅 Applied:</span> ${requestedDate}
                         </div>
                     </div>
                     
@@ -455,87 +433,73 @@
                     ` : ''}
                     
                     <div style="margin-top: 1.5em; text-align: center;">
-                        ${isInquiry ? `
-                            <button onclick="sendPractitionerInvitation('${requestId}', '${data.email}', '${data.fullName}')" class="btn btn-approve">
-                                📧 Send Invitation Link
-                            </button>
-                            <button onclick="processPractitioner('${requestId}', 'denied')" class="btn btn-deny">
-                                ❌ Decline Inquiry
-                            </button>
-                        ` : `
-                            <button onclick="processPractitioner('${requestId}', 'approved')" class="btn btn-approve">
-                                ✅ Approve Practitioner
-                            </button>
-                            <button onclick="processPractitioner('${requestId}', 'denied')" class="btn btn-deny">
-                                ❌ Deny Registration
-                            </button>
-                        `}
+                        <button onclick="approvePractitionerApplication('${requestId}')" class="btn btn-approve">
+                            ✅ Approve Practitioner
+                        </button>
+                        <button onclick="rejectPractitionerApplication('${requestId}')" class="btn btn-deny">
+                            ❌ Reject Application
+                        </button>
                     </div>
                 </div>
             `;
         }
 
-        window.processPractitioner = async (requestId, action) => {
-            const confirmMessage = action === 'approved' 
-                ? '✅ Are you sure you want to APPROVE this practitioner registration?' 
-                : '❌ Are you sure you want to DENY this practitioner registration?';
-                
-            if (!confirm(confirmMessage)) {
+        // Approve practitioner using Cloud Function
+        window.approvePractitionerApplication = async (practitionerId) => {
+            if (!confirm('✅ Are you sure you want to APPROVE this practitioner application?\n\nThis will:\n- Grant them "coach" role (25% discount)\n- Send approval email\n- Enable portal access')) {
                 return;
             }
             
             try {
-                console.log(`🔄 Processing practitioner ${requestId} with action: ${action}`);
+                console.log(`🔄 Approving practitioner ${practitionerId}`);
                 
-                // Update the practitioner request status
-                await updateDoc(doc(db, 'practitionerRequests', requestId), {
-                    status: action,
-                    processedAt: new Date(),
-                    processedBy: auth.currentUser?.email || 'Unknown admin'
-                });
+                const approvePractitioner = httpsCallable(functions, 'approvePractitioner');
+                const result = await approvePractitioner({ practitionerId });
                 
-                if (action === 'approved') {
-                    // Get the practitioner request data
-                    const requestDoc = await getDoc(doc(db, 'practitionerRequests', requestId));
-                    const requestData = requestDoc.data();
-                    
-                    // Add to approved practitioners collection
-                    await setDoc(doc(db, 'approvedPractitioners', requestId), {
-                        name: requestData.fullName,
-                        email: requestData.email,
-                        credentials: requestData.credentials,
-                        practiceType: requestData.practiceType,
-                        licenseNumber: requestData.licenseNumber,
-                        practiceLocation: requestData.practiceLocation,
-                        practiceDescription: requestData.practiceDescription,
-                        approvedAt: new Date(),
-                        approvedBy: auth.currentUser?.email,
-                        status: 'active'
-                    });
-                    
-                    // Update user role to practitioner (if user document exists)
-                    try {
-                        const userDoc = doc(db, 'users', requestData.userId);
-                        await updateDoc(userDoc, {
-                            userRole: 'practitioner',
-                            practitionerStatus: 'approved'
-                        });
-                        console.log('✅ Updated user role to practitioner');
-                    } catch (userUpdateError) {
-                        console.warn('⚠️ Could not update user role:', userUpdateError);
-                    }
-                    
-                    alert('✅ Practitioner approved successfully!\n\nThey have been added to the approved practitioners list and can now receive client journal entries.');
-                } else {
-                    alert('❌ Practitioner registration denied.\n\nThe applicant will be notified of the decision.');
-                }
+                console.log('✅ Approval result:', result.data);
+                
+                alert('✅ Practitioner approved successfully!\n\n- Account type set to "coach" (25% discount)\n- Approval email sent\n- Portal access enabled\n- Revenue tracking initialized');
                 
                 // Reload the list
                 loadPendingRequests();
                 
             } catch (error) {
-                console.error('❌ Error processing practitioner:', error);
-                alert('❌ Error processing request. Please try again.');
+                console.error('❌ Error approving practitioner:', error);
+                alert(`❌ Error approving practitioner: ${error.message}\n\nPlease try again or check the console for details.`);
+            }
+        };
+        
+        // Reject practitioner using Cloud Function
+        window.rejectPractitionerApplication = async (practitionerId) => {
+            const reason = prompt('❌ Why are you rejecting this application?\n\n(Optional - leave blank for default message)');
+            
+            if (reason === null) {
+                return; // User cancelled
+            }
+            
+            if (!confirm('Are you sure you want to REJECT this application?')) {
+                return;
+            }
+            
+            try {
+                console.log(`🔄 Rejecting practitioner ${practitionerId}`);
+                
+                const rejectPractitioner = httpsCallable(functions, 'rejectPractitioner');
+                const result = await rejectPractitioner({ 
+                    practitionerId,
+                    reason: reason || undefined
+                });
+                
+                console.log('✅ Rejection result:', result.data);
+                
+                alert('❌ Application rejected.\n\nThe applicant has been notified via email.');
+                
+                // Reload the list
+                loadPendingRequests();
+                
+            } catch (error) {
+                console.error('❌ Error rejecting practitioner:', error);
+                alert(`❌ Error rejecting practitioner: ${error.message}\n\nPlease try again or check the console for details.`);
             }
         };
 

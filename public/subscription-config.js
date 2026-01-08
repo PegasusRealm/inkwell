@@ -73,20 +73,60 @@ const SUBSCRIPTION_CONFIG = {
     priceId: 'price_1SeRgDI0M1vXVDeSKnNcmPOd', // Practitioner Interaction - $9.99 one-time
   },
 
+  // Role-based permanent discounts (InkWell absorbs cost)
+  ROLE_DISCOUNTS: {
+    alpha: {
+      plus: 1.0,      // 100% off Plus tier (free)
+      connect: 0.25,  // 25% off Connect tier ($37.49/mo)
+    },
+    beta: {
+      plus: 0.80,     // 80% off Plus tier ($2.99/mo)
+      connect: 0.25,  // 25% off Connect tier ($37.49/mo)
+    },
+    coach: {
+      plus: 0.25,     // 25% off Plus tier
+      connect: 0.25,  // 25% off Connect tier
+    },
+  },
+
+  // Special practitioners (can offer higher discounts by waiving their fee)
+  SPECIAL_PRACTITIONERS: {
+    // Hollis Verdant (founder) - waives practitioner fee for infrastructure-only pricing
+    'hollis-verdant': {
+      displayName: 'Hollis Verdant',
+      discountPercent: 0.80,        // 80% off Connect ($9.99/mo)
+      waivePractitionerFee: true,   // Practitioner gets $0
+      isPenName: true,
+      disclosure: 'Hollis Verdant is a pen name used by InkWell\'s founder for pro-bono alpha/beta client support.',
+    },
+  },
+
   // Practitioner gift/discount system
   GIFT_SYSTEM: {
     ENABLED: true,
-    MIN_DISCOUNT: 0.50, // Minimum 50% discount
-    MAX_DISCOUNT: 1.0,  // Maximum 100% discount (free)
+    MIN_DISCOUNT: 0.50,           // Minimum 50% discount
+    MAX_DISCOUNT: 1.0,            // Maximum 100% discount (free)
     GIFT_CODE_LENGTH: 8,
-    EXPIRATION_DAYS: 90, // Gift codes expire after 90 days
+    DURATION_MONTHS: 3,           // Gift codes valid for 3 months (monthly billing)
+    BILLING: 'monthly',           // Not prepaid - cancellable anytime
+    PRORATION: true,              // Stripe auto-prorates on changes
+    RENEWAL_ALLOWED: true,        // Practitioner can reissue after expiration
+  },
+
+  // Connect tier downgrade grace period
+  CONNECT_REQUIREMENTS: {
+    REQUIRES_PRACTITIONER: true,
+    GRACE_PERIOD_DAYS: 14,        // 14 days to reconnect before auto-downgrade
+    AUTO_DOWNGRADE: true,         // Downgrade to Plus if no practitioner after grace period
+    ALLOW_FULL_PRICE: true,       // User can opt to keep Connect without practitioner
+    NOTIFICATIONS: [0, 7, 13],    // Send emails on these days during grace period
   },
 
   // Revenue split for Connect tier
   REVENUE_SPLIT: {
-    PRACTITIONER_PERCENT: 0.60,  // 60% to practitioner
-    PLATFORM_PERCENT: 0.30,      // 30% to platform
-    PROCESSING_PERCENT: 0.10,    // 10% to Stripe fees
+    PRACTITIONER_FIXED: 30.00,   // Practitioner always gets $30 (not percentage)
+    PLATFORM_PERCENT: 0.30,      // 30% to platform (on full price)
+    PROCESSING_PERCENT: 0.10,    // 10% to Stripe fees (calculated on actual payment)
   },
 
   // Practitioner limits

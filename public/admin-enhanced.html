@@ -1,0 +1,2370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InkWell Admin Dashboard</title>
+    <style>
+        :root {
+            --brand-primary: #2A6972;
+            --brand-secondary: #388b97;
+            --brand-light: #4A9BA8;
+            --brand-lighter: #7BB8C4;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            margin: 0; 
+            padding: 0; 
+            background: #f5f7fa; 
+            color: #333;
+        }
+        
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 20px;
+        }
+        
+        /* Login Screen */
+        .login-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-light) 100%);
+        }
+        
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 400px;
+        }
+        
+        .login-card h1 {
+            text-align: center;
+            color: var(--brand-primary);
+            margin: 0 0 30px 0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--brand-primary);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-primary {
+            background: var(--brand-primary);
+            color: white;
+            width: 100%;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #1e5055;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(42, 105, 114, 0.3);
+        }
+        
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .error-message.show { display: block; }
+        
+        /* Dashboard Layout */
+        .dashboard {
+            display: none;
+        }
+        
+        .dashboard.active {
+            display: block;
+        }
+        
+        .dashboard-header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dashboard-header h1 {
+            margin: 0;
+            color: var(--brand-primary);
+            font-size: 28px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info span {
+            color: #666;
+            font-size: 15px;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e1e8ed;
+            padding-bottom: 0;
+        }
+        
+        .tab {
+            background: transparent;
+            border: none;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            position: relative;
+            bottom: -2px;
+        }
+        
+        .tab:hover {
+            color: var(--brand-primary);
+        }
+        
+        .tab.active {
+            color: var(--brand-primary);
+            border-bottom-color: var(--brand-primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--brand-primary);
+        }
+        
+        .metric-card.success { border-left-color: var(--success); }
+        .metric-card.warning { border-left-color: var(--warning); }
+        .metric-card.info { border-left-color: var(--info); }
+        .metric-card.danger { border-left-color: var(--danger); }
+        
+        .metric-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #333;
+            margin: 8px 0;
+        }
+        
+        .metric-trend {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 8px;
+        }
+        
+        .metric-trend.up { color: var(--success); }
+        .metric-trend.down { color: var(--danger); }
+        .metric-trend.neutral { color: #666; }
+        
+        /* Data Table */
+        .data-table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .data-table-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e1e8ed;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .data-table-header h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .search-box {
+            padding: 8px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 300px;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: var(--brand-primary);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: #f8f9fa;
+        }
+        
+        th {
+            text-align: left;
+            padding: 16px 24px;
+            font-weight: 600;
+            color: #666;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        td {
+            padding: 16px 24px;
+            border-top: 1px solid #e1e8ed;
+            color: #333;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+        .badge-secondary { background: #e2e3e5; color: #383d41; }
+        
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+        
+        /* Request Cards */
+        .request-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--warning);
+        }
+        
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        
+        .request-header h3 {
+            margin: 0;
+            color: var(--brand-primary);
+            font-size: 20px;
+        }
+        
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+        
+        .detail-item {
+            font-size: 14px;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--brand-primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Charts placeholder */
+        .chart-container {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 12px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalIn 0.3s ease;
+        }
+        
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e1e8ed;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--brand-primary);
+            color: white;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: white;
+            opacity: 0.8;
+        }
+        
+        .modal-close:hover {
+            opacity: 1;
+        }
+        
+        .modal-body {
+            padding: 24px;
+        }
+        
+        .user-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        
+        .user-detail-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .user-detail-item label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .user-detail-item .value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e8ed;
+        }
+        
+        .stat-box {
+            text-align: center;
+            padding: 16px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 8px;
+        }
+        
+        .stat-box .number {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--brand-primary);
+        }
+        
+        .stat-box .label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Section -->
+    <div id="loginSection" class="login-wrapper">
+        <div class="login-card">
+            <h1>🛡️ Admin Portal</h1>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="adminEmail" placeholder="admin@inkwell.com" autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="adminPassword" placeholder="Enter password" autocomplete="current-password">
+            </div>
+            <button onclick="adminLogin()" class="btn btn-primary" id="loginBtn">
+                Sign In
+            </button>
+            <div id="loginError" class="error-message"></div>
+        </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboardSection" class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>📊 InkWell Admin Dashboard</h1>
+                <div class="user-info">
+                    <span>👋 <strong id="adminName">Admin</strong></span>
+                    <button onclick="adminLogout()" class="btn btn-secondary btn-sm">Logout</button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('overview')">📊 Overview</button>
+                <button class="tab" onclick="switchTab('users')">👥 Users</button>
+                <button class="tab" onclick="switchTab('betaProgress')">🧪 Beta Progress</button>
+                <button class="tab" onclick="switchTab('practitioners')">🏥 Practitioners</button>
+                <button class="tab" onclick="switchTab('subscriptions')">💳 Subscriptions</button>
+                <button class="tab" onclick="switchTab('pending')">⏳ Pending Approvals</button>
+                <button class="tab" onclick="switchTab('tools')">🔧 Tools</button>
+            </div>
+
+            <!-- Overview Tab -->
+            <div id="overviewTab" class="tab-content active">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h3>Total Users</h3>
+                        <div class="metric-value" id="totalUsers">-</div>
+                        <div class="metric-trend neutral" id="usersTrend">
+                            <span>Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card success">
+                        <h3>Active Practitioners</h3>
+                        <div class="metric-value" id="totalPractitioners">-</div>
+                        <div class="metric-trend neutral" id="practitionersTrend">
+                            <span>Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card info">
+                        <h3>Paid Subscribers</h3>
+                        <div class="metric-value" id="totalSubscribers">-</div>
+                        <div class="metric-trend neutral" id="subscribersTrend">
+                            <span>Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card warning">
+                        <h3>Pending Applications</h3>
+                        <div class="metric-value" id="totalPending">-</div>
+                        <div class="metric-trend neutral">
+                            <span>Awaiting review</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h3>Journal Entries (30d)</h3>
+                        <div class="metric-value" id="recentEntries">-</div>
+                        <div class="metric-trend neutral" id="entriesTrend">
+                            <span>Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card success">
+                        <h3>Stripe Connected</h3>
+                        <div class="metric-value" id="stripeConnected">-</div>
+                        <div class="metric-trend neutral">
+                            <span>Practitioners with bank linked</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card info">
+                        <h3>Plus Tier</h3>
+                        <div class="metric-value" id="plusTier">-</div>
+                        <div class="metric-trend neutral">
+                            <span>$14.99/month subscribers</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card warning">
+                        <h3>Connect Tier</h3>
+                        <div class="metric-value" id="connectTier">-</div>
+                        <div class="metric-trend neutral">
+                            <span>$49.99/month subscribers</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div style="text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📈</div>
+                        <div>User Growth Chart (Coming Soon)</div>
+                        <div style="font-size: 14px; color: #999; margin-top: 8px;">
+                            Will display signup trends and active user metrics
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="usersTab" class="tab-content">
+                <div class="data-table-container">
+                    <div class="data-table-header">
+                        <h2>👥 All Users</h2>
+                        <input type="text" class="search-box" placeholder="Search users..." id="userSearch" oninput="filterUsers()">
+                    </div>
+                    <div id="usersTableContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Loading users...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Beta Progress Tab -->
+            <div id="betaProgressTab" class="tab-content">
+                <div class="metrics-grid" style="margin-bottom: 24px;">
+                    <div class="metric-card">
+                        <h3>Week 1 Complete</h3>
+                        <div class="metric-value" id="week1Complete">-</div>
+                        <div class="metric-trend neutral">Free tier exploration</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Week 2 Complete</h3>
+                        <div class="metric-value" id="week2Complete">-</div>
+                        <div class="metric-trend neutral">Plus tier + Sophy</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Week 3 Complete</h3>
+                        <div class="metric-value" id="week3Complete">-</div>
+                        <div class="metric-trend neutral">Connect tier</div>
+                    </div>
+                    <div class="metric-card" style="background: linear-gradient(135deg, #ffd700 0%, #ffb700 100%); color: #333;">
+                        <h3 style="color: #333;">Alpha Graduates 🏆</h3>
+                        <div class="metric-value" id="alphaGraduates">-</div>
+                        <div class="metric-trend" style="color: #555;">Completed all 3 weeks</div>
+                    </div>
+                </div>
+                
+                <div class="data-table-container">
+                    <div class="data-table-header">
+                        <h2>🧪 Beta Tester Progress</h2>
+                        <div style="display: flex; gap: 12px;">
+                            <select id="betaWeekFilter" onchange="filterBetaProgress()" style="padding: 8px 12px; border-radius: 6px; border: 2px solid #e1e8ed;">
+                                <option value="all">All Weeks</option>
+                                <option value="week1">Week 1 In Progress</option>
+                                <option value="week2">Week 2 In Progress</option>
+                                <option value="week3">Week 3 In Progress</option>
+                                <option value="alpha">Alpha Graduates</option>
+                            </select>
+                            <input type="text" class="search-box" placeholder="Search testers..." id="betaSearch" oninput="filterBetaProgress()">
+                        </div>
+                    </div>
+                    <div id="betaProgressTableContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Loading beta progress...
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="data-table-container" style="margin-top: 24px;">
+                    <div class="data-table-header">
+                        <h2>⚡ Quick Actions</h2>
+                    </div>
+                    <div style="padding: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+                        <div style="background: #e8f5e9; border: 1px solid #a5d6a7; padding: 20px; border-radius: 8px;">
+                            <h4 style="margin-top: 0; color: #2e7d32;">🎓 Promote to Alpha</h4>
+                            <p style="margin-bottom: 12px; color: #555;">Manually promote a beta tester who completed all requirements.</p>
+                            <input type="text" id="promoteUserId" placeholder="User ID or Email" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 12px;">
+                            <button onclick="promoteToAlpha()" class="btn btn-success" style="width: 100%;">Promote to Alpha</button>
+                        </div>
+                        <div style="background: #e3f2fd; border: 1px solid #90caf9; padding: 20px; border-radius: 8px;">
+                            <h4 style="margin-top: 0; color: #1565c0;">📊 Tier Override</h4>
+                            <p style="margin-bottom: 12px; color: #555;">Manually set a user's subscription tier for testing.</p>
+                            <input type="text" id="tierUserId" placeholder="User ID or Email" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 8px;">
+                            <select id="tierOverride" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 12px;">
+                                <option value="free">Free</option>
+                                <option value="plus">Plus</option>
+                                <option value="connect">Connect</option>
+                            </select>
+                            <button onclick="overrideUserTier()" class="btn btn-primary" style="width: 100%;">Set Tier</button>
+                        </div>
+                        <div style="background: #fff3e0; border: 1px solid #ffcc80; padding: 20px; border-radius: 8px;">
+                            <h4 style="margin-top: 0; color: #e65100;">📧 Send Reminder</h4>
+                            <p style="margin-bottom: 12px; color: #555;">Send a gentle nudge to inactive beta testers.</p>
+                            <select id="reminderType" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 12px;">
+                                <option value="journal">Haven't journaled this week</option>
+                                <option value="manifest">No manifest started</option>
+                                <option value="feedback">Feedback form reminder</option>
+                            </select>
+                            <button onclick="sendBetaReminder()" class="btn btn-warning" style="width: 100%;">Send Reminders</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Practitioners Tab -->
+            <div id="practitionersTab" class="tab-content">
+                <div class="data-table-container">
+                    <div class="data-table-header">
+                        <h2>🏥 Approved Practitioners</h2>
+                        <input type="text" class="search-box" placeholder="Search practitioners..." id="practitionerSearch" oninput="filterPractitioners()">
+                    </div>
+                    <div id="practitionersTableContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Loading practitioners...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subscriptions Tab -->
+            <div id="subscriptionsTab" class="tab-content">
+                <div class="data-table-container">
+                    <div class="data-table-header">
+                        <h2>💳 Active Subscriptions</h2>
+                        <input type="text" class="search-box" placeholder="Search subscriptions..." id="subSearch" oninput="filterSubscriptions()">
+                    </div>
+                    <div id="subscriptionsTableContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Loading subscriptions...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Approvals Tab -->
+            <div id="pendingTab" class="tab-content">
+                <div id="pendingApplicationsList">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading pending applications...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tools Tab -->
+            <div id="toolsTab" class="tab-content">
+                <div class="data-table-container">
+                    <div class="data-table-header">
+                        <h2>🔄 User Data Migration</h2>
+                    </div>
+                    <div style="padding: 24px;">
+                        <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                            <h4 style="margin-top: 0; color: #856404;">⚠️ Direct Migration Tool</h4>
+                            <p style="margin-bottom: 8px;">This tool updates existing user documents directly through Firestore to include new required fields while preserving all existing data.</p>
+                            <p style="margin-bottom: 8px;"><strong>What it adds:</strong> userId, createdAt, special_code: "beta", insightsPreferences, onboardingState</p>
+                            <p style="margin-bottom: 8px;"><strong>Features:</strong> Progressive onboarding tracking with milestones and feature usage analytics</p>
+                            <p style="margin-bottom: 0;"><strong>Safe to run multiple times</strong> - only migrates users missing the new fields.</p>
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+                            <button onclick="testAuthentication()" class="btn btn-secondary">
+                                🔍 Test Auth
+                            </button>
+                            <button id="migrationButton" onclick="runUserMigration()" class="btn btn-primary">
+                                🔄 Run Migration
+                            </button>
+                        </div>
+                        
+                        <div id="migrationResult"></div>
+                    </div>
+                </div>
+                
+                <div class="data-table-container" style="margin-top: 24px;">
+                    <div class="data-table-header">
+                        <h2>📧 Practitioner Invitations</h2>
+                    </div>
+                    <div style="padding: 24px;">
+                        <div style="background: #d1ecf1; border: 1px solid #bee5eb; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                            <h4 style="margin-top: 0; color: #0c5460;">📬 Send Registration Invitations</h4>
+                            <p style="margin-bottom: 0;">Use this tool to manually invite practitioners to register. Enter their email and name below.</p>
+                        </div>
+                        
+                        <div style="display: grid; gap: 16px; max-width: 500px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Practitioner Email</label>
+                                <input type="email" id="inviteEmail" placeholder="practitioner@example.com" style="width: 100%; padding: 12px; border: 2px solid #e1e8ed; border-radius: 6px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Practitioner Name</label>
+                                <input type="text" id="inviteName" placeholder="Dr. Jane Smith" style="width: 100%; padding: 12px; border: 2px solid #e1e8ed; border-radius: 6px;">
+                            </div>
+                            <button onclick="sendManualInvitation()" class="btn btn-success">
+                                📧 Send Invitation
+                            </button>
+                        </div>
+                        
+                        <div id="invitationResult" style="margin-top: 16px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, getDocs, collection, query, where, orderBy, limit, updateDoc, deleteDoc, Timestamp, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+        import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
+            authDomain: "inkwell-alpha.firebaseapp.com",
+            projectId: "inkwell-alpha",
+            storageBucket: "inkwell-alpha.appspot.com"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const functions = getFunctions(app, 'us-central1');
+
+        window.auth = auth;
+        window.db = db;
+        window.functions = functions;
+        window.httpsCallable = httpsCallable;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.getDocs = getDocs;
+        window.collection = collection;
+        window.query = query;
+        window.where = where;
+        window.orderBy = orderBy;
+        window.limit = limit;
+        window.updateDoc = updateDoc;
+        window.deleteDoc = deleteDoc;
+        window.Timestamp = Timestamp;
+
+        // Store data globally for filtering
+        window.allUsers = [];
+        window.allPractitioners = [];
+        window.allSubscriptions = [];
+
+        // Login
+        window.adminLogin = async () => {
+            const email = document.getElementById('adminEmail').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            const loginBtn = document.getElementById('loginBtn');
+            
+            errorDiv.classList.remove('show');
+            
+            if (!email || !password) {
+                errorDiv.textContent = 'Please enter email and password';
+                errorDiv.classList.add('show');
+                return;
+            }
+            
+            try {
+                loginBtn.disabled = true;
+                loginBtn.textContent = 'Signing in...';
+                
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const adminDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+                
+                if (!adminDoc.exists() || adminDoc.data().userRole !== 'admin') {
+                    await signOut(auth);
+                    throw new Error('Access denied: Admin privileges required');
+                }
+                
+                document.getElementById('adminName').textContent = adminDoc.data().displayName || email;
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('dashboardSection').classList.add('active');
+                
+                // Load all data
+                await loadDashboard();
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                let message = 'Login failed';
+                if (error.code === 'auth/user-not-found') message = 'Admin account not found';
+                else if (error.code === 'auth/wrong-password') message = 'Invalid password';
+                else if (error.message) message = error.message;
+                
+                errorDiv.textContent = message;
+                errorDiv.classList.add('show');
+                
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
+            }
+        };
+
+        // Logout
+        window.adminLogout = async () => {
+            await signOut(auth);
+            document.getElementById('loginSection').style.display = 'flex';
+            document.getElementById('dashboardSection').classList.remove('active');
+        };
+
+        // Tab switching
+        window.switchTab = (tabName) => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        };
+
+        // Load all dashboard data
+        window.loadDashboard = async () => {
+            try {
+                await Promise.all([
+                    loadMetrics(),
+                    loadUsers(),
+                    loadPractitioners(),
+                    loadSubscriptions(),
+                    loadPendingApplications(),
+                    loadBetaProgress()
+                ]);
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        };
+
+        // Load metrics
+        window.loadMetrics = async () => {
+            try {
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                
+                // Count practitioners from both accountType and userRole fields
+                const [accountTypeSnapshot, userRoleSnapshot] = await Promise.all([
+                    getDocs(query(
+                        collection(db, 'users'),
+                        where('accountType', '==', 'coach')
+                    )),
+                    getDocs(query(
+                        collection(db, 'users'),
+                        where('userRole', '==', 'coach')
+                    ))
+                ]);
+                
+                // Deduplicate practitioner count
+                const practitionerIds = new Set();
+                accountTypeSnapshot.docs.forEach(d => practitionerIds.add(d.id));
+                userRoleSnapshot.docs.forEach(d => practitionerIds.add(d.id));
+                const practitionerCount = practitionerIds.size;
+                
+                const now = new Date();
+                const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                
+                // Get subscription counts
+                let plusCount = 0;
+                let connectCount = 0;
+                let stripeConnectedCount = 0;
+                
+                usersSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.subscriptionTier === 'plus' && data.subscriptionStatus === 'active') plusCount++;
+                    if (data.subscriptionTier === 'connect' && data.subscriptionStatus === 'active') connectCount++;
+                });
+                
+                // Get practitioners with Stripe Connect
+                const practitionerDocs = await getDocs(collection(db, 'practitioners'));
+                practitionerDocs.forEach(doc => {
+                    if (doc.data().stripeConnectAccountId && doc.data().stripeConnectStatus === 'active') {
+                        stripeConnectedCount++;
+                    }
+                });
+                
+                // Get pending applications
+                const pendingSnapshot = await getDocs(query(
+                    collection(db, 'practitionerApplications'),
+                    where('status', '==', 'pending')
+                ));
+                
+                // Get recent entries
+                const entriesSnapshot = await getDocs(query(
+                    collection(db, 'journalEntries'),
+                    orderBy('createdAt', 'desc'),
+                    limit(1000)
+                ));
+                
+                let recentEntriesCount = 0;
+                entriesSnapshot.forEach(doc => {
+                    const createdAt = doc.data().createdAt?.toDate?.();
+                    if (createdAt && createdAt >= thirtyDaysAgo) {
+                        recentEntriesCount++;
+                    }
+                });
+                
+                // Update UI
+                document.getElementById('totalUsers').textContent = usersSnapshot.size;
+                document.getElementById('totalPractitioners').textContent = practitionerCount;
+                document.getElementById('totalSubscribers').textContent = plusCount + connectCount;
+                document.getElementById('totalPending').textContent = pendingSnapshot.size;
+                document.getElementById('recentEntries').textContent = recentEntriesCount;
+                document.getElementById('stripeConnected').textContent = stripeConnectedCount;
+                document.getElementById('plusTier').textContent = plusCount;
+                document.getElementById('connectTier').textContent = connectCount;
+                
+                // Set trends (placeholder for now)
+                document.getElementById('usersTrend').innerHTML = '<span>📊 Last 30 days</span>';
+                document.getElementById('practitionersTrend').innerHTML = '<span>📊 All time</span>';
+                document.getElementById('subscribersTrend').innerHTML = '<span>💰 Active now</span>';
+                document.getElementById('entriesTrend').innerHTML = '<span>📝 Last 30 days</span>';
+                
+            } catch (error) {
+                console.error('Error loading metrics:', error);
+            }
+        };
+
+        // Load users table
+        window.loadUsers = async () => {
+            try {
+                const snapshot = await getDocs(collection(db, 'users'));
+                window.allUsers = [];
+                
+                snapshot.forEach(doc => {
+                    window.allUsers.push({ id: doc.id, ...doc.data() });
+                });
+                
+                renderUsersTable(window.allUsers);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('usersTableContainer').innerHTML = '<div class="empty-state">Error loading users</div>';
+            }
+        };
+
+        window.renderUsersTable = (users) => {
+            if (users.length === 0) {
+                document.getElementById('usersTableContainer').innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><div>No users found</div></div>';
+                return;
+            }
+            
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Subscription</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            users.forEach(user => {
+                const createdAt = user.createdAt?.toDate?.() ? user.createdAt.toDate().toLocaleDateString() : 'Unknown';
+                const role = user.userRole || user.accountType || 'journaler';
+                const sub = user.subscriptionTier || 'free';
+                const status = user.subscriptionStatus || 'active';
+                
+                let roleBadge = 'badge-secondary';
+                if (role === 'admin') roleBadge = 'badge-danger';
+                else if (role === 'coach') roleBadge = 'badge-success';
+                
+                let subBadge = 'badge-secondary';
+                if (sub === 'plus') subBadge = 'badge-info';
+                else if (sub === 'connect') subBadge = 'badge-success';
+                
+                html += `
+                    <tr>
+                        <td>${user.displayName || user.signupUsername || 'Unknown'}</td>
+                        <td>${user.email || 'N/A'}</td>
+                        <td><span class="badge ${roleBadge}">${role}</span></td>
+                        <td><span class="badge ${subBadge}">${sub}</span></td>
+                        <td>${createdAt}</td>
+                        <td class="action-btns">
+                            <button class="btn btn-secondary btn-sm" onclick="viewUserDetails('${user.id}')">View</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('usersTableContainer').innerHTML = html;
+        };
+
+        window.filterUsers = () => {
+            const search = document.getElementById('userSearch').value.toLowerCase();
+            const filtered = window.allUsers.filter(user => {
+                return (user.displayName || '').toLowerCase().includes(search) ||
+                       (user.email || '').toLowerCase().includes(search) ||
+                       (user.userRole || '').toLowerCase().includes(search);
+            });
+            renderUsersTable(filtered);
+        };
+
+        // Load practitioners
+        window.loadPractitioners = async () => {
+            try {
+                // Query for both accountType='coach' and userRole='coach' to catch all practitioners
+                const [accountTypeSnapshot, userRoleSnapshot] = await Promise.all([
+                    getDocs(query(
+                        collection(db, 'users'),
+                        where('accountType', '==', 'coach')
+                    )),
+                    getDocs(query(
+                        collection(db, 'users'),
+                        where('userRole', '==', 'coach')
+                    ))
+                ]);
+                
+                // Combine and deduplicate by user ID
+                const practitionerMap = new Map();
+                
+                accountTypeSnapshot.docs.forEach(doc => {
+                    practitionerMap.set(doc.id, { id: doc.id, ...doc.data() });
+                });
+                
+                userRoleSnapshot.docs.forEach(doc => {
+                    if (!practitionerMap.has(doc.id)) {
+                        practitionerMap.set(doc.id, { id: doc.id, ...doc.data() });
+                    }
+                });
+                
+                window.allPractitioners = [];
+                
+                for (const [userId, userData] of practitionerMap) {
+                    // Get practitioner details
+                    const practDoc = await getDoc(doc(db, 'practitioners', userId));
+                    if (practDoc.exists()) {
+                        userData.practitionerData = practDoc.data();
+                    }
+                    
+                    window.allPractitioners.push(userData);
+                }
+                
+                console.log('Loaded practitioners:', window.allPractitioners.length);
+                renderPractitionersTable(window.allPractitioners);
+            } catch (error) {
+                console.error('Error loading practitioners:', error);
+                document.getElementById('practitionersTableContainer').innerHTML = '<div class="empty-state">Error loading practitioners: ' + error.message + '</div>';
+            }
+        };
+
+        window.renderPractitionersTable = (practitioners) => {
+            if (practitioners.length === 0) {
+                document.getElementById('practitionersTableContainer').innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏥</div><div>No practitioners found</div></div>';
+                return;
+            }
+            
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Clients</th>
+                            <th>Stripe Status</th>
+                            <th>Revenue</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            practitioners.forEach(prac => {
+                const clients = prac.practitionerData?.clientCount || 0;
+                const revenue = prac.practitionerData?.totalEarnings || 0;
+                const stripeStatus = prac.practitionerData?.stripeConnectStatus || 'none';
+                
+                let statusBadge = 'badge-secondary';
+                let statusText = 'Not Connected';
+                if (stripeStatus === 'active') {
+                    statusBadge = 'badge-success';
+                    statusText = 'Connected';
+                } else if (stripeStatus === 'pending') {
+                    statusBadge = 'badge-warning';
+                    statusText = 'Pending';
+                }
+                
+                html += `
+                    <tr>
+                        <td>${prac.displayName || prac.email}</td>
+                        <td>${prac.email}</td>
+                        <td>${clients}</td>
+                        <td><span class="badge ${statusBadge}">${statusText}</span></td>
+                        <td>$${revenue.toFixed(2)}</td>
+                        <td class="action-btns">
+                            <button class="btn btn-secondary btn-sm" onclick="viewPractitionerDetails('${prac.id}')">View</button>
+                            <button class="btn btn-danger btn-sm" onclick="removePractitioner('${prac.id}')">Remove</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('practitionersTableContainer').innerHTML = html;
+        };
+
+        window.filterPractitioners = () => {
+            const search = document.getElementById('practitionerSearch').value.toLowerCase();
+            const filtered = window.allPractitioners.filter(prac => {
+                return (prac.displayName || '').toLowerCase().includes(search) ||
+                       (prac.email || '').toLowerCase().includes(search);
+            });
+            renderPractitionersTable(filtered);
+        };
+
+        window.removePractitioner = async (practitionerId) => {
+            if (!confirm('⚠️ Remove practitioner access?\n\nThis will:\n- Remove coach role\n- Disable portal access\n- Preserve historical data\n\nContinue?')) {
+                return;
+            }
+            
+            try {
+                await updateDoc(doc(db, 'users', practitionerId), {
+                    accountType: 'journaler',
+                    userRole: 'journaler',
+                    updatedAt: Timestamp.now()
+                });
+                
+                alert('✅ Practitioner access removed');
+                await loadPractitioners();
+                await loadMetrics();
+            } catch (error) {
+                console.error('Error removing practitioner:', error);
+                alert('Error: ' + error.message);
+            }
+        };
+
+        // Load subscriptions
+        window.loadSubscriptions = async () => {
+            try {
+                const snapshot = await getDocs(collection(db, 'users'));
+                window.allSubscriptions = [];
+                
+                snapshot.forEach(doc => {
+                    const data = { id: doc.id, ...doc.data() };
+                    if (data.subscriptionTier && data.subscriptionTier !== 'free') {
+                        window.allSubscriptions.push(data);
+                    }
+                });
+                
+                renderSubscriptionsTable(window.allSubscriptions);
+            } catch (error) {
+                console.error('Error loading subscriptions:', error);
+                document.getElementById('subscriptionsTableContainer').innerHTML = '<div class="empty-state">Error loading subscriptions</div>';
+            }
+        };
+
+        window.renderSubscriptionsTable = (subs) => {
+            if (subs.length === 0) {
+                document.getElementById('subscriptionsTableContainer').innerHTML = '<div class="empty-state"><div class="empty-state-icon">💳</div><div>No paid subscriptions found</div></div>';
+                return;
+            }
+            
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Tier</th>
+                            <th>Status</th>
+                            <th>Stripe ID</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            subs.forEach(sub => {
+                const tier = sub.subscriptionTier || 'free';
+                const status = sub.subscriptionStatus || 'active';
+                
+                let tierBadge = 'badge-info';
+                if (tier === 'connect') tierBadge = 'badge-success';
+                
+                let statusBadge = 'badge-success';
+                if (status === 'canceled') statusBadge = 'badge-danger';
+                else if (status === 'past_due') statusBadge = 'badge-warning';
+                
+                html += `
+                    <tr>
+                        <td>${sub.displayName || 'Unknown'}</td>
+                        <td>${sub.email}</td>
+                        <td><span class="badge ${tierBadge}">${tier}</span></td>
+                        <td><span class="badge ${statusBadge}">${status}</span></td>
+                        <td style="font-family: monospace; font-size: 12px;">${sub.stripeSubscriptionId || 'N/A'}</td>
+                        <td class="action-btns">
+                            <button class="btn btn-secondary btn-sm" onclick="viewSubscriptionDetails('${sub.id}')">View</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('subscriptionsTableContainer').innerHTML = html;
+        };
+
+        window.filterSubscriptions = () => {
+            const search = document.getElementById('subSearch').value.toLowerCase();
+            const filtered = window.allSubscriptions.filter(sub => {
+                return (sub.displayName || '').toLowerCase().includes(search) ||
+                       (sub.email || '').toLowerCase().includes(search) ||
+                       (sub.subscriptionTier || '').toLowerCase().includes(search);
+            });
+            renderSubscriptionsTable(filtered);
+        };
+
+        // Load pending applications
+        window.loadPendingApplications = async () => {
+            try {
+                const snapshot = await getDocs(query(
+                    collection(db, 'practitionerApplications'),
+                    where('status', '==', 'pending'),
+                    orderBy('createdAt', 'desc')
+                ));
+                
+                if (snapshot.empty) {
+                    document.getElementById('pendingApplicationsList').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">✅</div>
+                            <h3>All Caught Up!</h3>
+                            <p>No pending applications to review</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const createdAt = data.createdAt?.toDate?.() ? data.createdAt.toDate().toLocaleDateString() : 'Unknown';
+                    
+                    html += `
+                        <div class="request-card">
+                            <div class="request-header">
+                                <h3>${data.name || 'Unknown'}</h3>
+                                <span class="badge badge-warning">Pending</span>
+                            </div>
+                            <div class="details-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">Email</span>
+                                    ${data.email || 'N/A'}
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Credentials</span>
+                                    ${data.credentials || 'N/A'}
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Specialty</span>
+                                    ${data.specialty || 'N/A'}
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">License #</span>
+                                    ${data.licenseNumber || 'N/A'}
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Location</span>
+                                    ${data.practiceLocation || 'N/A'}
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Applied</span>
+                                    ${createdAt}
+                                </div>
+                            </div>
+                            ${data.practiceDescription ? `
+                                <div style="margin-top: 16px; padding: 16px; background: #f8f9fa; border-radius: 8px;">
+                                    <span class="detail-label">Practice Description</span>
+                                    <p style="margin: 8px 0 0 0; font-style: italic;">${data.practiceDescription}</p>
+                                </div>
+                            ` : ''}
+                            <div style="margin-top: 20px; display: flex; gap: 12px; justify-content: center;">
+                                <button onclick="approvePractitioner('${doc.id}')" class="btn btn-success">
+                                    ✅ Approve
+                                </button>
+                                <button onclick="rejectPractitioner('${doc.id}')" class="btn btn-danger">
+                                    ❌ Reject
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('pendingApplicationsList').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading pending applications:', error);
+                document.getElementById('pendingApplicationsList').innerHTML = '<div class="empty-state">Error loading applications</div>';
+            }
+        };
+
+        window.approvePractitioner = async (practitionerId) => {
+            if (!confirm('Approve this practitioner application?')) return;
+            
+            try {
+                const approveFn = httpsCallable(functions, 'approvePractitioner');
+                await approveFn({ practitionerId });
+                alert('✅ Practitioner approved!');
+                await loadPendingApplications();
+                await loadMetrics();
+                await loadPractitioners();
+            } catch (error) {
+                console.error('Error approving:', error);
+                alert('Error: ' + error.message);
+            }
+        };
+
+        window.rejectPractitioner = async (practitionerId) => {
+            const reason = prompt('Rejection reason (optional):');
+            if (reason === null) return;
+            
+            if (!confirm('Reject this application?')) return;
+            
+            try {
+                const rejectFn = httpsCallable(functions, 'rejectPractitioner');
+                await rejectFn({ practitionerId, reason: reason || undefined });
+                alert('❌ Application rejected');
+                await loadPendingApplications();
+                await loadMetrics();
+            } catch (error) {
+                console.error('Error rejecting:', error);
+                alert('Error: ' + error.message);
+            }
+        };
+
+        // Auto-login if already authenticated
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const adminDoc = await getDoc(doc(db, 'users', user.uid));
+                    if (adminDoc.exists() && adminDoc.data().userRole === 'admin') {
+                        document.getElementById('adminName').textContent = adminDoc.data().displayName || user.email;
+                        document.getElementById('loginSection').style.display = 'none';
+                        document.getElementById('dashboardSection').classList.add('active');
+                        await loadDashboard();
+                    }
+                } catch (error) {
+                    console.error('Auto-login error:', error);
+                }
+            }
+        });
+
+        // Enter key login
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && document.getElementById('loginSection').style.display !== 'none') {
+                adminLogin();
+            }
+        });
+
+        // ==================== TOOLS ====================
+
+        // Test Authentication Function
+        window.testAuthentication = async function() {
+            const resultDiv = document.getElementById('migrationResult');
+            
+            try {
+                resultDiv.innerHTML = '<p style="color: #17a2b8;">Testing authentication...</p>';
+                
+                const currentUser = auth.currentUser;
+                if (!currentUser) {
+                    throw new Error('No current user - please login first');
+                }
+                
+                console.log('Current user:', currentUser);
+                
+                // Test getting a fresh token
+                const token = await currentUser.getIdToken(true);
+                console.log('Token length:', token.length);
+                
+                resultDiv.innerHTML = `
+                    <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 20px; border-radius: 8px;">
+                        <h4 style="color: #155724; margin-top: 0;">✅ Authentication Test Passed</h4>
+                        <p><strong>User:</strong> ${currentUser.email}</p>
+                        <p><strong>UID:</strong> ${currentUser.uid}</p>
+                        <p><strong>Token Length:</strong> ${token.length}</p>
+                        <p style="margin-bottom: 0;">Ready to run migration.</p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Auth test failed:', error);
+                resultDiv.innerHTML = `
+                    <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 20px; border-radius: 8px;">
+                        <h4 style="color: #721c24; margin-top: 0;">❌ Authentication Test Failed</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        };
+
+        // User Migration Function
+        window.runUserMigration = async function() {
+            const button = document.getElementById('migrationButton');
+            const resultDiv = document.getElementById('migrationResult');
+
+            button.disabled = true;
+            button.textContent = '⏳ Running Migration...';
+            resultDiv.innerHTML = '<p style="color: #17a2b8;">Starting migration via secure endpoint...</p>';
+
+            try {
+                const response = await fetch('https://us-central1-inkwell-alpha.cloudfunctions.net/runAdminMigration', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        adminKey: 'migrate-users-2024-beta'
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                console.log('Migration result:', result);
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 20px; border-radius: 8px;">
+                            <h4 style="color: #155724; margin-top: 0;">✅ Migration Completed Successfully!</h4>
+                            <p><strong>Total Users:</strong> ${result.totalUsers}</p>
+                            <p><strong>Migrated:</strong> ${result.migrated}</p>
+                            <p><strong>Skipped (already current):</strong> ${result.skipped}</p>
+                            <p><strong>Errors:</strong> ${result.errors}</p>
+                            ${result.results ? `
+                                <details style="margin-top: 12px;">
+                                    <summary style="cursor: pointer; color: #155724;">View Sample Results</summary>
+                                    <pre style="background: #f8f9fa; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 12px; margin-top: 8px;">
+${JSON.stringify(result.results.slice(0, 5), null, 2)}
+                                    </pre>
+                                </details>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    throw new Error(result.error || 'Migration failed');
+                }
+                
+            } catch (error) {
+                console.error('Migration failed:', error);
+                resultDiv.innerHTML = `
+                    <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 20px; border-radius: 8px;">
+                        <h4 style="color: #721c24; margin-top: 0;">❌ Migration Failed</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                button.disabled = false;
+                button.textContent = '🔄 Run Migration';
+            }
+        };
+
+        // Send Manual Practitioner Invitation
+        window.sendManualInvitation = async function() {
+            const email = document.getElementById('inviteEmail').value.trim();
+            const name = document.getElementById('inviteName').value.trim();
+            const resultDiv = document.getElementById('invitationResult');
+            
+            if (!email || !name) {
+                resultDiv.innerHTML = '<div style="background: #fff3cd; padding: 12px; border-radius: 6px; color: #856404;">Please enter both email and name.</div>';
+                return;
+            }
+            
+            if (!confirm(`Send invitation to ${name} (${email})?`)) {
+                return;
+            }
+            
+            try {
+                resultDiv.innerHTML = '<p style="color: #17a2b8;">Sending invitation...</p>';
+                
+                const idToken = await auth.currentUser.getIdToken();
+                
+                const endpoint = location.hostname === "localhost" 
+                    ? "http://localhost:5001/inkwell-alpha/us-central1/sendPractitionerInvitation"
+                    : "https://us-central1-inkwell-alpha.cloudfunctions.net/sendPractitionerInvitation";
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({
+                        practitionerEmail: email,
+                        practitionerName: name
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to send invitation');
+                }
+                
+                resultDiv.innerHTML = `
+                    <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 16px; border-radius: 8px;">
+                        <strong>✅ Invitation sent to ${email}</strong>
+                    </div>
+                `;
+                
+                // Clear inputs
+                document.getElementById('inviteEmail').value = '';
+                document.getElementById('inviteName').value = '';
+                
+            } catch (error) {
+                console.error('Error sending invitation:', error);
+                resultDiv.innerHTML = `
+                    <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 16px; border-radius: 8px;">
+                        <strong>❌ Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        };
+
+        // ==================== MODALS ====================
+
+        window.closeModal = () => {
+            document.getElementById('detailModal').classList.remove('active');
+        };
+
+        // Close modal on overlay click
+        document.getElementById('detailModal')?.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeModal();
+            }
+        });
+
+        // View User Details
+        window.viewUserDetails = async (userId) => {
+            const user = window.allUsers.find(u => u.id === userId);
+            if (!user) {
+                alert('User not found');
+                return;
+            }
+
+            // Get journal entry count for this user
+            let entryCount = 0;
+            let manifestCount = 0;
+            try {
+                const entriesSnap = await getDocs(query(
+                    collection(db, 'journalEntries'),
+                    where('userId', '==', userId)
+                ));
+                entryCount = entriesSnap.size;
+
+                const manifestSnap = await getDocs(query(
+                    collection(db, 'manifests'),
+                    where('userId', '==', userId)
+                ));
+                manifestCount = manifestSnap.size;
+            } catch (e) {
+                console.log('Could not load user stats:', e);
+            }
+
+            const createdAt = user.createdAt?.toDate?.() ? user.createdAt.toDate().toLocaleDateString() : 'Unknown';
+            const lastLogin = user.lastLoginAt?.toDate?.() ? user.lastLoginAt.toDate().toLocaleDateString() : 'Never';
+            
+            const modalContent = `
+                <div class="modal-header">
+                    <h2>👤 ${user.displayName || user.signupUsername || 'Unknown User'}</h2>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="user-detail-grid">
+                        <div class="user-detail-item">
+                            <label>Email</label>
+                            <div class="value">${user.email || 'N/A'}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>User ID</label>
+                            <div class="value" style="font-size: 12px; font-family: monospace;">${userId}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>Role</label>
+                            <div class="value"><span class="badge ${user.userRole === 'admin' ? 'badge-danger' : user.userRole === 'coach' ? 'badge-success' : 'badge-secondary'}">${user.userRole || user.accountType || 'journaler'}</span></div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>Subscription</label>
+                            <div class="value"><span class="badge ${user.subscriptionTier === 'connect' ? 'badge-success' : user.subscriptionTier === 'plus' ? 'badge-info' : 'badge-secondary'}">${user.subscriptionTier || 'free'}</span></div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>Created</label>
+                            <div class="value">${createdAt}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>Last Login</label>
+                            <div class="value">${lastLogin}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>Phone</label>
+                            <div class="value">${user.phone ? '✓ Provided' : 'Not provided'}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>Timezone</label>
+                            <div class="value">${user.timezone || 'Not set'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="user-stats">
+                        <div class="stat-box">
+                            <div class="number">${entryCount}</div>
+                            <div class="label">Journal Entries</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">${manifestCount}</div>
+                            <div class="label">Manifests</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">${user.aiUsageToday || 0}</div>
+                            <div class="label">AI Uses Today</div>
+                        </div>
+                    </div>
+                    
+                    ${user.stripeCustomerId ? `
+                        <div style="margin-top: 20px; padding: 16px; background: #e8f5e9; border-radius: 8px;">
+                            <strong>💳 Stripe Customer ID:</strong>
+                            <code style="margin-left: 8px;">${user.stripeCustomerId}</code>
+                        </div>
+                    ` : ''}
+                    
+                    ${user.specialCode ? `
+                        <div style="margin-top: 12px; padding: 12px; background: #fff3cd; border-radius: 8px;">
+                            <strong>🏷️ Special Code:</strong> ${user.specialCode}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            document.getElementById('modalContent').innerHTML = modalContent;
+            document.getElementById('detailModal').classList.add('active');
+        };
+
+        // View Practitioner Details
+        window.viewPractitionerDetails = async (practId) => {
+            const prac = window.allPractitioners.find(p => p.id === practId);
+            if (!prac) {
+                alert('Practitioner not found');
+                return;
+            }
+
+            const pd = prac.practitionerData || {};
+            const createdAt = prac.createdAt?.toDate?.() ? prac.createdAt.toDate().toLocaleDateString() : 'Unknown';
+            
+            const modalContent = `
+                <div class="modal-header" style="background: #28a745;">
+                    <h2>🏥 ${prac.displayName || prac.email}</h2>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="user-detail-grid">
+                        <div class="user-detail-item">
+                            <label>Email</label>
+                            <div class="value">${prac.email}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>Practitioner ID</label>
+                            <div class="value" style="font-size: 12px; font-family: monospace;">${practId}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>Credentials</label>
+                            <div class="value">${pd.credentials || 'N/A'}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>Specialty</label>
+                            <div class="value">${pd.specialty || 'N/A'}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>License #</label>
+                            <div class="value">${pd.licenseNumber || 'N/A'}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>Location</label>
+                            <div class="value">${pd.practiceLocation || 'N/A'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="user-stats">
+                        <div class="stat-box">
+                            <div class="number">${pd.clientCount || 0}</div>
+                            <div class="label">Clients</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">$${(pd.totalEarnings || 0).toFixed(2)}</div>
+                            <div class="label">Total Earnings</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number"><span class="badge ${pd.stripeConnectStatus === 'active' ? 'badge-success' : 'badge-warning'}">${pd.stripeConnectStatus || 'Not Connected'}</span></div>
+                            <div class="label">Stripe Status</div>
+                        </div>
+                    </div>
+                    
+                    ${pd.stripeConnectAccountId ? `
+                        <div style="margin-top: 20px; padding: 16px; background: #e8f5e9; border-radius: 8px;">
+                            <strong>💳 Stripe Connect ID:</strong>
+                            <code style="margin-left: 8px;">${pd.stripeConnectAccountId}</code>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            document.getElementById('modalContent').innerHTML = modalContent;
+            document.getElementById('detailModal').classList.add('active');
+        };
+
+        // View Subscription Details
+        window.viewSubscriptionDetails = async (userId) => {
+            const sub = window.allSubscriptions.find(s => s.id === userId);
+            if (!sub) {
+                alert('Subscription not found');
+                return;
+            }
+
+            const createdAt = sub.subscriptionStartDate?.toDate?.() ? sub.subscriptionStartDate.toDate().toLocaleDateString() : 'Unknown';
+            const renewalDate = sub.subscriptionRenewalDate?.toDate?.() ? sub.subscriptionRenewalDate.toDate().toLocaleDateString() : 'Unknown';
+            
+            const modalContent = `
+                <div class="modal-header" style="background: #17a2b8;">
+                    <h2>💳 ${sub.displayName || sub.email}</h2>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="user-detail-grid">
+                        <div class="user-detail-item">
+                            <label>Email</label>
+                            <div class="value">${sub.email}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>User ID</label>
+                            <div class="value" style="font-size: 12px; font-family: monospace;">${userId}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>Subscription Tier</label>
+                            <div class="value"><span class="badge ${sub.subscriptionTier === 'connect' ? 'badge-success' : 'badge-info'}">${sub.subscriptionTier}</span></div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>Status</label>
+                            <div class="value"><span class="badge ${sub.subscriptionStatus === 'active' ? 'badge-success' : sub.subscriptionStatus === 'canceled' ? 'badge-danger' : 'badge-warning'}">${sub.subscriptionStatus || 'active'}</span></div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>Start Date</label>
+                            <div class="value">${createdAt}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <label>Next Renewal</label>
+                            <div class="value">${renewalDate}</div>
+                        </div>
+                    </div>
+                    
+                    ${sub.stripeSubscriptionId ? `
+                        <div style="margin-top: 20px; padding: 16px; background: #e3f2fd; border-radius: 8px;">
+                            <strong>📋 Stripe Subscription ID:</strong>
+                            <code style="margin-left: 8px;">${sub.stripeSubscriptionId}</code>
+                        </div>
+                    ` : ''}
+                    
+                    ${sub.stripeCustomerId ? `
+                        <div style="margin-top: 12px; padding: 16px; background: #e8f5e9; border-radius: 8px;">
+                            <strong>👤 Stripe Customer ID:</strong>
+                            <code style="margin-left: 8px;">${sub.stripeCustomerId}</code>
+                        </div>
+                    ` : ''}
+                    
+                    <div style="margin-top: 20px; text-align: center;">
+                        <p style="color: #666; font-size: 14px;">To manage this subscription, use the Stripe Dashboard</p>
+                        <a href="https://dashboard.stripe.com/customers/${sub.stripeCustomerId || ''}" target="_blank" class="btn btn-primary" style="text-decoration: none;">
+                            Open in Stripe →
+                        </a>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('modalContent').innerHTML = modalContent;
+            document.getElementById('detailModal').classList.add('active');
+        };
+
+        // ==================== BETA PROGRESS TRACKING ====================
+        
+        window.allBetaTesters = [];
+        
+        // Load beta progress for all users
+        window.loadBetaProgress = async () => {
+            try {
+                // Get all beta testers (users with special_code = 'beta' or 'alpha')
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                
+                window.allBetaTesters = [];
+                let week1Complete = 0;
+                let week2Complete = 0;
+                let week3Complete = 0;
+                let alphaGraduates = 0;
+                
+                const now = new Date();
+                const betaStartDate = new Date('2026-01-07'); // Beta start date
+                
+                for (const userDoc of usersSnapshot.docs) {
+                    const userData = { id: userDoc.id, ...userDoc.data() };
+                    
+                    // Skip non-beta users
+                    if (!userData.special_code || (userData.special_code !== 'beta' && userData.special_code !== 'alpha')) {
+                        continue;
+                    }
+                    
+                    // Get beta progress data
+                    const betaProgress = userData.betaProgress || {};
+                    
+                    // Get journal entry count for this week
+                    const weekStart = getWeekStart(now);
+                    const entriesSnapshot = await getDocs(query(
+                        collection(db, 'journalEntries'),
+                        where('userId', '==', userDoc.id),
+                        where('createdAt', '>=', weekStart),
+                        orderBy('createdAt', 'desc')
+                    ));
+                    
+                    userData.thisWeekEntries = entriesSnapshot.size;
+                    
+                    // Check for manifest
+                    const manifestsSnapshot = await getDocs(query(
+                        collection(db, 'manifests'),
+                        where('userId', '==', userDoc.id),
+                        limit(1)
+                    ));
+                    userData.hasManifest = manifestsSnapshot.size > 0;
+                    
+                    // Calculate completion status
+                    userData.week1Complete = betaProgress.week1Complete || false;
+                    userData.week2Complete = betaProgress.week2Complete || false;
+                    userData.week3Complete = betaProgress.week3Complete || false;
+                    userData.isAlpha = userData.special_code === 'alpha';
+                    
+                    // Count completions
+                    if (userData.week1Complete) week1Complete++;
+                    if (userData.week2Complete) week2Complete++;
+                    if (userData.week3Complete) week3Complete++;
+                    if (userData.isAlpha) alphaGraduates++;
+                    
+                    window.allBetaTesters.push(userData);
+                }
+                
+                // Update metrics
+                document.getElementById('week1Complete').textContent = week1Complete;
+                document.getElementById('week2Complete').textContent = week2Complete;
+                document.getElementById('week3Complete').textContent = week3Complete;
+                document.getElementById('alphaGraduates').textContent = alphaGraduates;
+                
+                renderBetaProgressTable(window.allBetaTesters);
+            } catch (error) {
+                console.error('Error loading beta progress:', error);
+                document.getElementById('betaProgressTableContainer').innerHTML = '<div class="empty-state">Error loading beta progress: ' + error.message + '</div>';
+            }
+        };
+        
+        // Helper to get start of current week
+        function getWeekStart(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day;
+            d.setDate(diff);
+            d.setHours(0, 0, 0, 0);
+            return d;
+        }
+        
+        // Render beta progress table
+        window.renderBetaProgressTable = (testers) => {
+            if (testers.length === 0) {
+                document.getElementById('betaProgressTableContainer').innerHTML = '<div class="empty-state"><div class="empty-state-icon">🧪</div><div>No beta testers found</div></div>';
+                return;
+            }
+            
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Status</th>
+                            <th>This Week Entries</th>
+                            <th>Has Manifest</th>
+                            <th>Week 1</th>
+                            <th>Week 2</th>
+                            <th>Week 3</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            testers.forEach(tester => {
+                const statusBadge = tester.isAlpha 
+                    ? '<span class="badge" style="background: linear-gradient(135deg, #ffd700, #ffb700); color: #333;">🏆 Alpha</span>'
+                    : '<span class="badge badge-info">🧪 Beta</span>';
+                
+                const manifestBadge = tester.hasManifest 
+                    ? '<span class="badge badge-success">✓ Yes</span>'
+                    : '<span class="badge badge-secondary">✗ No</span>';
+                
+                const week1Badge = tester.week1Complete 
+                    ? '<span class="badge badge-success">✓</span>'
+                    : '<span class="badge badge-secondary">○</span>';
+                const week2Badge = tester.week2Complete 
+                    ? '<span class="badge badge-success">✓</span>'
+                    : '<span class="badge badge-secondary">○</span>';
+                const week3Badge = tester.week3Complete 
+                    ? '<span class="badge badge-success">✓</span>'
+                    : '<span class="badge badge-secondary">○</span>';
+                
+                const entriesStyle = tester.thisWeekEntries >= 2 
+                    ? 'color: #28a745; font-weight: bold;' 
+                    : (tester.thisWeekEntries > 0 ? 'color: #ffc107;' : 'color: #dc3545;');
+                
+                html += `
+                    <tr>
+                        <td>
+                            <strong>${tester.displayName || 'No Name'}</strong><br>
+                            <small style="color: #666;">${tester.email || 'No email'}</small>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td style="${entriesStyle}">${tester.thisWeekEntries} / 2</td>
+                        <td>${manifestBadge}</td>
+                        <td>${week1Badge}</td>
+                        <td>${week2Badge}</td>
+                        <td>${week3Badge}</td>
+                        <td class="action-btns">
+                            <button class="btn btn-secondary btn-sm" onclick="viewBetaTester('${tester.id}')">View</button>
+                            ${!tester.isAlpha ? `<button class="btn btn-success btn-sm" onclick="promoteUserToAlpha('${tester.id}')">→ Alpha</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('betaProgressTableContainer').innerHTML = html;
+        };
+        
+        // Filter beta progress
+        window.filterBetaProgress = () => {
+            const search = document.getElementById('betaSearch').value.toLowerCase();
+            const weekFilter = document.getElementById('betaWeekFilter').value;
+            
+            let filtered = window.allBetaTesters.filter(t => {
+                const matchesSearch = !search || 
+                    (t.displayName || '').toLowerCase().includes(search) ||
+                    (t.email || '').toLowerCase().includes(search);
+                
+                let matchesWeek = true;
+                if (weekFilter === 'week1') matchesWeek = !t.week1Complete && !t.isAlpha;
+                if (weekFilter === 'week2') matchesWeek = t.week1Complete && !t.week2Complete && !t.isAlpha;
+                if (weekFilter === 'week3') matchesWeek = t.week2Complete && !t.week3Complete && !t.isAlpha;
+                if (weekFilter === 'alpha') matchesWeek = t.isAlpha;
+                
+                return matchesSearch && matchesWeek;
+            });
+            
+            renderBetaProgressTable(filtered);
+        };
+        
+        // View beta tester details
+        window.viewBetaTester = async (userId) => {
+            const tester = window.allBetaTesters.find(t => t.id === userId);
+            if (!tester) return;
+            
+            // Get more detailed stats
+            const entriesSnapshot = await getDocs(query(
+                collection(db, 'journalEntries'),
+                where('userId', '==', userId),
+                orderBy('createdAt', 'desc'),
+                limit(50)
+            ));
+            
+            const totalEntries = entriesSnapshot.size;
+            
+            const modalContent = `
+                <div style="padding: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <h2 style="margin: 0;">🧪 Beta Tester Details</h2>
+                        <button onclick="closeModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">×</button>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px;">
+                        <div>
+                            <strong>Name:</strong> ${tester.displayName || 'Not set'}
+                        </div>
+                        <div>
+                            <strong>Email:</strong> ${tester.email}
+                        </div>
+                        <div>
+                            <strong>Status:</strong> ${tester.isAlpha ? '🏆 Alpha' : '🧪 Beta'}
+                        </div>
+                        <div>
+                            <strong>Joined:</strong> ${tester.createdAt?.toDate?.()?.toLocaleDateString() || 'Unknown'}
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f5f7fa; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                        <h3 style="margin-top: 0;">📊 Progress Overview</h3>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: center;">
+                            <div style="padding: 16px; background: ${tester.week1Complete ? '#d4edda' : '#fff3cd'}; border-radius: 8px;">
+                                <div style="font-size: 24px; margin-bottom: 8px;">${tester.week1Complete ? '✅' : '⏳'}</div>
+                                <div><strong>Week 1</strong></div>
+                                <div style="font-size: 12px; color: #666;">Free Tier</div>
+                            </div>
+                            <div style="padding: 16px; background: ${tester.week2Complete ? '#d4edda' : '#f8f9fa'}; border-radius: 8px;">
+                                <div style="font-size: 24px; margin-bottom: 8px;">${tester.week2Complete ? '✅' : '⏳'}</div>
+                                <div><strong>Week 2</strong></div>
+                                <div style="font-size: 12px; color: #666;">Plus Tier</div>
+                            </div>
+                            <div style="padding: 16px; background: ${tester.week3Complete ? '#d4edda' : '#f8f9fa'}; border-radius: 8px;">
+                                <div style="font-size: 24px; margin-bottom: 8px;">${tester.week3Complete ? '✅' : '⏳'}</div>
+                                <div><strong>Week 3</strong></div>
+                                <div style="font-size: 12px; color: #666;">Connect Tier</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;">
+                        <div style="padding: 20px; background: #e8f5e9; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 32px; font-weight: bold; color: #2e7d32;">${totalEntries}</div>
+                            <div style="color: #555;">Total Journal Entries</div>
+                        </div>
+                        <div style="padding: 20px; background: #e3f2fd; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 32px; font-weight: bold; color: #1565c0;">${tester.thisWeekEntries}</div>
+                            <div style="color: #555;">This Week's Entries</div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 24px;">
+                        ${!tester.isAlpha ? `
+                            <button onclick="promoteUserToAlpha('${tester.id}'); closeModal();" class="btn btn-success" style="margin-right: 12px;">
+                                🏆 Promote to Alpha
+                            </button>
+                        ` : ''}
+                        <button onclick="markWeekComplete('${tester.id}')" class="btn btn-primary">
+                            ✓ Mark Current Week Complete
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modalContent').innerHTML = modalContent;
+            document.getElementById('detailModal').classList.add('active');
+        };
+        
+        // Promote user to Alpha
+        window.promoteUserToAlpha = async (userId) => {
+            if (!confirm('Promote this user to Alpha status? They will receive 6 months free + 50% lifetime discount.')) return;
+            
+            try {
+                await updateDoc(doc(db, 'users', userId), {
+                    special_code: 'alpha',
+                    'betaProgress.promotedToAlpha': serverTimestamp(),
+                    'betaProgress.alphaPerks': {
+                        freeMonths: 6,
+                        lifetimeDiscount: 50,
+                        grantedAt: serverTimestamp()
+                    }
+                });
+                
+                alert('User promoted to Alpha! 🏆');
+                await loadBetaProgress();
+            } catch (error) {
+                console.error('Error promoting user:', error);
+                alert('Error promoting user: ' + error.message);
+            }
+        };
+        
+        // Promote to alpha (from quick action input)
+        window.promoteToAlpha = async () => {
+            const input = document.getElementById('promoteUserId').value.trim();
+            if (!input) {
+                alert('Please enter a User ID or Email');
+                return;
+            }
+            
+            try {
+                let userId = input;
+                
+                // If it looks like an email, find the user first
+                if (input.includes('@')) {
+                    const userQuery = await getDocs(query(
+                        collection(db, 'users'),
+                        where('email', '==', input)
+                    ));
+                    if (userQuery.empty) {
+                        alert('No user found with that email');
+                        return;
+                    }
+                    userId = userQuery.docs[0].id;
+                }
+                
+                await promoteUserToAlpha(userId);
+                document.getElementById('promoteUserId').value = '';
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        };
+        
+        // Override user tier
+        window.overrideUserTier = async () => {
+            const input = document.getElementById('tierUserId').value.trim();
+            const tier = document.getElementById('tierOverride').value;
+            
+            if (!input) {
+                alert('Please enter a User ID or Email');
+                return;
+            }
+            
+            try {
+                let userId = input;
+                
+                if (input.includes('@')) {
+                    const userQuery = await getDocs(query(
+                        collection(db, 'users'),
+                        where('email', '==', input)
+                    ));
+                    if (userQuery.empty) {
+                        alert('No user found with that email');
+                        return;
+                    }
+                    userId = userQuery.docs[0].id;
+                }
+                
+                await updateDoc(doc(db, 'users', userId), {
+                    subscriptionTier: tier,
+                    subscriptionStatus: 'active',
+                    'betaProgress.tierOverride': {
+                        tier: tier,
+                        setAt: serverTimestamp(),
+                        setBy: 'admin'
+                    }
+                });
+                
+                alert(`User tier set to ${tier}!`);
+                document.getElementById('tierUserId').value = '';
+                await loadUsers();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        };
+        
+        // Mark week complete for a user
+        window.markWeekComplete = async (userId) => {
+            const tester = window.allBetaTesters.find(t => t.id === userId);
+            if (!tester) return;
+            
+            let weekToMark = 'week1Complete';
+            if (tester.week1Complete && !tester.week2Complete) weekToMark = 'week2Complete';
+            if (tester.week2Complete && !tester.week3Complete) weekToMark = 'week3Complete';
+            
+            if (tester.week3Complete) {
+                alert('All weeks already complete! Consider promoting to Alpha.');
+                return;
+            }
+            
+            try {
+                await updateDoc(doc(db, 'users', userId), {
+                    [`betaProgress.${weekToMark}`]: true,
+                    [`betaProgress.${weekToMark}At`]: serverTimestamp()
+                });
+                
+                alert(`${weekToMark.replace('Complete', '')} marked complete!`);
+                await loadBetaProgress();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        };
+        
+        // Send beta reminder (placeholder - would integrate with email service)
+        window.sendBetaReminder = async () => {
+            const reminderType = document.getElementById('reminderType').value;
+            
+            // Filter users who need reminders
+            let needsReminder = [];
+            
+            if (reminderType === 'journal') {
+                needsReminder = window.allBetaTesters.filter(t => t.thisWeekEntries < 2 && !t.isAlpha);
+            } else if (reminderType === 'manifest') {
+                needsReminder = window.allBetaTesters.filter(t => !t.hasManifest && !t.isAlpha);
+            } else if (reminderType === 'feedback') {
+                needsReminder = window.allBetaTesters.filter(t => !t.isAlpha);
+            }
+            
+            if (needsReminder.length === 0) {
+                alert('No users need this reminder!');
+                return;
+            }
+            
+            alert(`Would send ${reminderType} reminder to ${needsReminder.length} users:\n\n${needsReminder.map(u => u.email).join('\n')}\n\n(Email integration coming soon)`);
+        };
+    </script>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="modal-overlay">
+        <div class="modal">
+            <div id="modalContent"></div>
+        </div>
+    </div>
+</body>
+</html>

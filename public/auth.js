@@ -11,7 +11,10 @@ import {
   signOut,
   updatePassword,
   reauthenticateWithCredential,
-  EmailAuthProvider
+  EmailAuthProvider,
+  GoogleAuthProvider,
+  OAuthProvider,
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore,
@@ -1455,9 +1458,155 @@ async function signUp() {
   }, 100); // allow autofill to populate fields
 }
 
+// Social Authentication Functions
+async function signInWithGoogle() {
+  try {
+    console.log("🔵 Initiating Google Sign-In...");
+    const provider = new GoogleAuthProvider();
+    provider.addScope('email');
+    provider.addScope('profile');
+    
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    
+    console.log("✅ Google sign-in successful:", user.email);
+    
+    // Check if user document exists, create if new user
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+    
+    if (!userDoc.exists()) {
+      console.log("🆕 Creating new user profile for Google sign-in");
+      await setDoc(userDocRef, {
+        userId: user.uid,
+        email: user.email,
+        displayName: user.displayName || "",
+        signupUsername: user.displayName || user.email?.split('@')[0] || "",
+        photoURL: user.photoURL || "",
+        userRole: "user",
+        authProvider: "google",
+        subscriptionTier: "free",
+        subscriptionStatus: "active",
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+        insightsPreferences: {
+          weeklyEnabled: true,
+          monthlyEnabled: true,
+          createdAt: serverTimestamp()
+        },
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    } else {
+      // Update last login
+      await updateDoc(userDocRef, {
+        updatedAt: serverTimestamp()
+      });
+    }
+    
+    // Close login/signup modals
+    const loginModal = document.getElementById("loginModal");
+    const signupModal = document.getElementById("signupModal");
+    if (loginModal) loginModal.style.display = "none";
+    if (signupModal) signupModal.style.display = "none";
+    
+    showToast(`Welcome back, ${user.displayName || user.email}!`, "success");
+    
+  } catch (error) {
+    console.error("❌ Google sign-in error:", error);
+    
+    if (error.code === 'auth/popup-closed-by-user') {
+      showToast("Sign-in cancelled", "info");
+    } else if (error.code === 'auth/popup-blocked') {
+      showToast("Pop-up blocked. Please allow pop-ups and try again.", "error");
+    } else if (error.code === 'auth/account-exists-with-different-credential') {
+      showToast("An account already exists with this email using a different sign-in method.", "error");
+    } else {
+      showToast(`Google sign-in failed: ${error.message}`, "error");
+    }
+  }
+}
+
+async function signInWithApple() {
+  try {
+    console.log("🍎 Initiating Apple Sign-In...");
+    const provider = new OAuthProvider('apple.com');
+    provider.addScope('email');
+    provider.addScope('name');
+    
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    
+    console.log("✅ Apple sign-in successful:", user.email);
+    
+    // Check if user document exists, create if new user
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+    
+    if (!userDoc.exists()) {
+      console.log("🆕 Creating new user profile for Apple sign-in");
+      
+      // Apple may provide full name in additionalUserInfo on first sign-in
+      const displayName = user.displayName || 
+                         result._tokenResponse?.fullName?.displayName ||
+                         user.email?.split('@')[0] || 
+                         "InkWell User";
+      
+      await setDoc(userDocRef, {
+        userId: user.uid,
+        email: user.email,
+        displayName: displayName,
+        signupUsername: displayName,
+        photoURL: user.photoURL || "",
+        userRole: "user",
+        authProvider: "apple",
+        subscriptionTier: "free",
+        subscriptionStatus: "active",
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+        insightsPreferences: {
+          weeklyEnabled: true,
+          monthlyEnabled: true,
+          createdAt: serverTimestamp()
+        },
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    } else {
+      // Update last login
+      await updateDoc(userDocRef, {
+        updatedAt: serverTimestamp()
+      });
+    }
+    
+    // Close login/signup modals
+    const loginModal = document.getElementById("loginModal");
+    const signupModal = document.getElementById("signupModal");
+    if (loginModal) loginModal.style.display = "none";
+    if (signupModal) signupModal.style.display = "none";
+    
+    showToast(`Welcome back, ${user.displayName || user.email}!`, "success");
+    
+  } catch (error) {
+    console.error("❌ Apple sign-in error:", error);
+    
+    if (error.code === 'auth/popup-closed-by-user') {
+      showToast("Sign-in cancelled", "info");
+    } else if (error.code === 'auth/popup-blocked') {
+      showToast("Pop-up blocked. Please allow pop-ups and try again.", "error");
+    } else if (error.code === 'auth/account-exists-with-different-credential') {
+      showToast("An account already exists with this email using a different sign-in method.", "error");
+    } else {
+      showToast(`Apple sign-in failed: ${error.message}`, "error");
+    }
+  }
+}
+
 // Expose auth functions globally
 window.signIn = signIn;
 window.signUp = signUp;
+window.signInWithGoogle = signInWithGoogle;
+window.signInWithApple = signInWithApple;
 
 /* ===========================================================
    🚀 FAST LOGIN PATCH — CLOSE MODAL IMMEDIATELY

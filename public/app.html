@@ -4630,7 +4630,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Journal Tab - Ask Sophy for Reflection  
   const journal = document.getElementById("journal");
+  const journalCharCount = document.getElementById("journalCharCount");
   if (journal) {
+    // Update character count on input
+    journal.addEventListener("input", () => {
+      const count = journal.value.length;
+      if (journalCharCount) {
+        journalCharCount.textContent = `${count} character${count !== 1 ? 's' : ''}`;
+      }
+    });
+
     journal.addEventListener("keypress", (e) => {
       if (e.key === "Enter" && e.ctrlKey && journal.value.trim().length > 0) {
         e.preventDefault(); // Prevent newline when Ctrl+Enter
@@ -8344,6 +8353,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 
     <h2 class="journal-heading" style="text-align:center;margin-bottom:2rem;color:var(--font-main);">Journal Entry</h2>
     <textarea id="journal" placeholder="Write your thoughts here..." style="width:100%;box-sizing:border-box;margin-bottom:0.5em;"></textarea>
+    <div id="journalCharCount" style="font-size:0.75em;color:#93A5A8;text-align:right;margin-top:-0.25em;margin-bottom:0.5em;">0 characters</div>
     <div id="entryStatus" style="font-size:0.85em;margin-top:0.5em;"></div>
 
 <button type="button" class="btn btn-sophy" id="askSophyBtn" style="color:#ffffff;" onclick="askSophyToReflect()">Ask Sophy for Reflection</button>    <div id="sophyInsight" class="sophy-info" style="white-space:pre-wrap;"></div>

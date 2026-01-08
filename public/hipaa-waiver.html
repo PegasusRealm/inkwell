@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InkWell - HIPAA Authorization and Consent</title>
+    <style>
+        :root {
+            --brand-primary: #2A6972;
+            --brand-secondary: #388b97;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 2em auto;
+            padding: 2em;
+            background: #f8f9fa;
+            color: #333;
+        }
+        
+        .waiver-container {
+            background: white;
+            padding: 3em;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 2em;
+        }
+        
+        h1 {
+            color: var(--brand-primary);
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 0.5em;
+        }
+        
+        .effective-date {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 2em;
+        }
+        
+        h2 {
+            color: var(--brand-primary);
+            font-size: 1.3em;
+            margin-top: 1.5em;
+            margin-bottom: 0.75em;
+            border-bottom: 2px solid var(--brand-primary);
+            padding-bottom: 0.25em;
+        }
+        
+        p {
+            margin-bottom: 1em;
+            text-align: justify;
+        }
+        
+        ul, ol {
+            margin-bottom: 1em;
+            padding-left: 2em;
+        }
+        
+        li {
+            margin-bottom: 0.5em;
+        }
+        
+        .important-notice {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1em;
+            margin: 1.5em 0;
+            border-radius: 4px;
+        }
+        
+        .signature-section {
+            margin-top: 3em;
+            padding-top: 2em;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .checkbox-item {
+            margin: 1.5em 0;
+            padding: 1em;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .checkbox-item label {
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 1em;
+            margin-top: 0.25em;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .print-button {
+            background: var(--brand-primary);
+            color: white;
+            border: none;
+            padding: 1em 2em;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 1em 0.5em;
+        }
+        
+        .print-button:hover {
+            background: #1e5055;
+        }
+        
+        .close-button {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 1em 2em;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 1em 0.5em;
+        }
+        
+        .close-button:hover {
+            background: #5a6268;
+        }
+        
+        .button-container {
+            text-align: center;
+            margin: 2em 0;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                margin: 0;
+                padding: 1em;
+            }
+            .waiver-container {
+                box-shadow: none;
+                padding: 1em;
+            }
+            .print-button, .close-button, .button-container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="waiver-container">
+        <div class="logo">
+            <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 80px;">
+        </div>
+        
+        <h1>HIPAA Authorization and Practitioner Consent Agreement</h1>
+        <p class="effective-date">Effective Date: January 1, 2026</p>
+        
+        <div class="important-notice">
+            <strong>Important Notice:</strong> This authorization permits the disclosure of your Protected Health Information (PHI) to your selected mental health practitioner(s) through the InkWell platform. Please read this document carefully and retain a copy for your records.
+        </div>
+        
+        <h2>1. Purpose of Authorization</h2>
+        <p>
+            By accepting this agreement, you authorize Pegasus Realm LLC d/b/a InkWell ("InkWell," "we," "us," or "our") to use and disclose your Protected Health Information (PHI) to mental health practitioners, therapists, coaches, and counselors (collectively, "Practitioners") whom you voluntarily connect with through the InkWell Connect subscription service.
+        </p>
+        
+        <h2>2. Information That May Be Disclosed</h2>
+        <p>The following types of information may be shared with your selected Practitioner(s):</p>
+        <ul>
+            <li><strong>Journal Entries:</strong> Written reflections, daily entries, and emotional check-ins you create within the InkWell application</li>
+            <li><strong>Manifest Statements:</strong> Goal-setting content, wishes, imagined outcomes, identified obstacles, and action plans</li>
+            <li><strong>AI-Generated Reflections:</strong> Insights, prompts, and responses generated by "Sophy" (our AI assistant) in response to your journal entries</li>
+            <li><strong>User Profile Information:</strong> Display name, email address, subscription status, and connection preferences</li>
+            <li><strong>Communication History:</strong> Messages, replies, and interaction records between you and your Practitioner through the InkWell platform</li>
+            <li><strong>Usage Metadata:</strong> Journaling frequency, streak data, and engagement patterns (anonymized when possible)</li>
+        </ul>
+        
+        <h2>3. Who Will Receive Your Information</h2>
+        <p>
+            Your PHI will be disclosed only to Practitioners whom <strong>you explicitly select and connect with</strong> through the InkWell platform. You have complete control over which Practitioners can access your information. Information will not be shared with:
+        </p>
+        <ul>
+            <li>Practitioners you have not selected or approved</li>
+            <li>Third-party marketing companies</li>
+            <li>Insurance companies (unless legally required)</li>
+            <li>Employers or educational institutions</li>
+            <li>Any entity not explicitly mentioned in this agreement</li>
+        </ul>
+        
+        <h2>4. Electronic Storage and Security</h2>
+        <p>
+            Your PHI is stored electronically using industry-standard security measures:
+        </p>
+        <ul>
+            <li><strong>Encryption:</strong> All data transmitted between your device and our servers is encrypted using TLS 1.3 protocol</li>
+            <li><strong>Cloud Storage:</strong> Data is stored on HIPAA-compliant Google Cloud Platform (Firebase) infrastructure with encryption at rest</li>
+            <li><strong>Access Controls:</strong> Role-based access ensures only authorized Practitioners can view your information</li>
+            <li><strong>Audit Logs:</strong> All access to your PHI is logged and monitored for security purposes</li>
+            <li><strong>Regular Backups:</strong> Your data is backed up daily with geographic redundancy</li>
+        </ul>
+        
+        <h2>5. Business Associate Relationship</h2>
+        <p>
+            Practitioners who use InkWell to connect with clients are <strong>independent contractors</strong> and not employees of Pegasus Realm LLC. Each Practitioner maintains their own HIPAA compliance obligations and professional liability. InkWell serves as a Business Associate under HIPAA regulations, providing a secure platform for communication and information sharing between you and your Practitioner.
+        </p>
+        <p>
+            <strong>Important:</strong> The therapeutic relationship, treatment decisions, and professional responsibility remain between you and your Practitioner. InkWell is a communication platform and does not provide mental health services, diagnoses, or treatment.
+        </p>
+        
+        <h2>6. Your Rights</h2>
+        <p>You have the following rights regarding this authorization:</p>
+        <ul>
+            <li><strong>Right to Revoke:</strong> You may revoke this authorization at any time by disconnecting from your Practitioner in the app settings or by emailing support@inkwellapp.com</li>
+            <li><strong>Right to Access:</strong> You may request copies of all PHI stored in your InkWell account at any time through the data export feature</li>
+            <li><strong>Right to Delete:</strong> You may request deletion of your account and all associated PHI (subject to legal retention requirements) through the account deletion feature</li>
+            <li><strong>Right to Restrict:</strong> You may choose which specific journal entries or information to share with your Practitioner</li>
+            <li><strong>Right to Be Informed:</strong> You will be notified of any data breaches affecting your PHI as required by law</li>
+        </ul>
+        
+        <h2>7. Revocation Process</h2>
+        <p>
+            To revoke this authorization:
+        </p>
+        <ol>
+            <li>Navigate to Settings → Connected Practitioner in the InkWell mobile app or web portal</li>
+            <li>Select "Disconnect from Practitioner" and confirm your choice</li>
+            <li>Alternatively, email support@inkwellapp.com with "Revoke HIPAA Authorization" in the subject line</li>
+        </ol>
+        <p>
+            <strong>Please note:</strong> Revocation does not affect information already disclosed prior to revocation. Your Practitioner may retain records as required by their professional obligations and state licensing laws.
+        </p>
+        
+        <h2>8. Expiration</h2>
+        <p>
+            This authorization remains in effect until:
+        </p>
+        <ul>
+            <li>You revoke the authorization as described in Section 7</li>
+            <li>You disconnect from your Practitioner through the InkWell platform</li>
+            <li>Your InkWell Connect subscription is canceled or expires (30-day grace period applies)</li>
+            <li>You delete your InkWell account (subject to legal retention requirements)</li>
+        </ul>
+        
+        <h2>9. Consequences of Not Signing</h2>
+        <p>
+            Signing this authorization is <strong>voluntary</strong>. However, if you do not accept this authorization, you will not be able to:
+        </p>
+        <ul>
+            <li>Connect with Practitioners through the InkWell platform</li>
+            <li>Share your journal entries with mental health professionals via InkWell</li>
+            <li>Receive Practitioner responses or clinical feedback through the app</li>
+            <li>Access InkWell Connect subscription features that involve Practitioner interaction</li>
+        </ul>
+        <p>
+            You may still use the Free and Plus subscription tiers, which do not involve Practitioner connections.
+        </p>
+        
+        <h2>10. Re-disclosure and Confidentiality</h2>
+        <p>
+            <strong>Important Notice:</strong> Information disclosed to your Practitioner may no longer be protected by federal HIPAA privacy regulations once it leaves the InkWell platform. Your Practitioner is bound by professional ethics codes, state licensing laws, and their own privacy policies. We encourage you to discuss confidentiality practices with your Practitioner directly.
+        </p>
+        <p>
+            InkWell cannot control or guarantee what Practitioners do with your information after it is disclosed, though all Practitioners must agree to our Terms of Service and Business Associate Agreement.
+        </p>
+        
+        <h2>11. Minors and Guardianship</h2>
+        <p>
+            If you are under 18 years of age (or the age of majority in your jurisdiction), this authorization must be accepted by your parent or legal guardian. By accepting as a guardian, you acknowledge that you have the legal authority to consent to the disclosure of the minor's PHI.
+        </p>
+        
+        <h2>12. State-Specific Rights</h2>
+        <p>
+            Some states provide additional privacy protections beyond HIPAA. Depending on your location, you may have additional rights regarding mental health records, substance abuse treatment information, HIV/AIDS status, genetic information, or other sensitive health data. This authorization complies with federal HIPAA requirements and state laws where applicable.
+        </p>
+        
+        <h2>13. Contact Information</h2>
+        <p>
+            If you have questions about this authorization or your privacy rights, please contact:
+        </p>
+        <p style="margin-left: 2em;">
+            <strong>Pegasus Realm LLC</strong><br>
+            Privacy Officer<br>
+            Email: privacy@inkwellapp.com<br>
+            Support: support@inkwellapp.com
+        </p>
+        <p>
+            To file a complaint about our privacy practices, you may also contact:
+        </p>
+        <p style="margin-left: 2em;">
+            <strong>U.S. Department of Health and Human Services</strong><br>
+            Office for Civil Rights<br>
+            <a href="https://www.hhs.gov/ocr/privacy/hipaa/complaints/">https://www.hhs.gov/ocr/privacy/hipaa/complaints/</a>
+        </p>
+        
+        <h2>14. Acceptance and Electronic Signature</h2>
+        <p>
+            By checking the box below and clicking "I Accept," you acknowledge that:
+        </p>
+        <ul>
+            <li>You have read and understand this HIPAA Authorization and Consent Agreement</li>
+            <li>You voluntarily consent to the use and disclosure of your PHI as described</li>
+            <li>You understand your rights, including the right to revoke this authorization</li>
+            <li>You have been offered a copy of this agreement for your records</li>
+            <li>Your electronic signature has the same legal effect as a handwritten signature</li>
+        </ul>
+        
+        <div class="signature-section">
+            <div class="checkbox-item">
+                <label>
+                    <input type="checkbox" id="hipaaConsent" required>
+                    <span>
+                        <strong>I have read, understand, and agree to this HIPAA Authorization and Practitioner Consent Agreement.</strong>
+                        I authorize InkWell to disclose my Protected Health Information to mental health Practitioners I select through the platform. I understand I may revoke this authorization at any time.
+                    </span>
+                </label>
+            </div>
+            
+            <div class="checkbox-item">
+                <label>
+                    <input type="checkbox" id="electronicSignature" required>
+                    <span>
+                        <strong>I acknowledge that my electronic acceptance constitutes a legally binding signature</strong>
+                        equivalent to a handwritten signature under the ESIGN Act and applicable state laws.
+                    </span>
+                </label>
+            </div>
+            
+            <div class="checkbox-item">
+                <label>
+                    <input type="checkbox" id="copyReceived" required>
+                    <span>
+                        <strong>I acknowledge that I have been provided access to a copy of this agreement</strong>
+                        and can download or print it for my personal records at any time.
+                    </span>
+                </label>
+            </div>
+        </div>
+        
+        <button class="print-button" onclick="window.print()">📄 Print or Save as PDF</button>
+        
+        <p style="text-align: center; color: #666; font-size: 0.85em; margin-top: 2em;">
+            <strong>Document Version:</strong> 1.0 | <strong>Last Updated:</strong> January 1, 2026<br>
+            © 2026 Pegasus Realm LLC. All rights reserved.
+        </p>
+    </div>
+</body>
+</html>

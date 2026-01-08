@@ -34,11 +34,14 @@ service cloud.firestore {
 
    // User profile docs
     match /users/{userId} {
+      // Allow admins to list/read ALL user docs for admin dashboard
+      allow read: if request.auth != null && isAdmin(request.auth.uid);
+      
+      // Allow individual reads for coaches and self
       allow read: if request.auth != null && (
         request.auth.uid == userId ||  // allow self
         isCoach() ||                   // allow coaches to read user profiles (custom claim)
-        isCoachByRole(request.auth.uid) || // fallback for role-based coaches
-        isAdmin(request.auth.uid)      // allow admins to read user profiles
+        isCoachByRole(request.auth.uid) // fallback for role-based coaches
       );
       // Allow users to write/update all their own data (including phone, smsPreferences, timezone, etc.)
       allow write: if request.auth != null && request.auth.uid == userId;
@@ -65,6 +68,12 @@ service cloud.firestore {
     // Manifest docs
     match /manifests/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Journal entries - admin access for metrics
+    match /journalEntries/{entryId} {
+      // Allow admins to read all entries for metrics/dashboard
+      allow read: if request.auth != null && isAdmin(request.auth.uid);
     }
 
     // Journal entries
@@ -212,6 +221,33 @@ service cloud.firestore {
       // Allow practitioners to update their own profiles
       allow update: if request.auth != null && 
                        resource.data.email == request.auth.token.email;
+    }
+
+    // Practitioner tax information
+    match /practitionerTaxInfo/{practitionerId} {
+      // Allow practitioners to read and write their own tax info
+      allow read, write: if request.auth != null && request.auth.uid == practitionerId;
+      
+      // Allow admins to read tax info
+      allow read: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
+    // Practitioner applications
+    match /practitionerApplications/{applicationId} {
+      // Allow users to read and create their own applications
+      allow read, create: if request.auth != null && request.auth.uid == applicationId;
+      
+      // Allow admins to read ALL applications and update any application
+      allow read, update: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
+    // Practitioners collection (for admin dashboard)
+    match /practitioners/{practitionerId} {
+      // Allow practitioners to read/write their own data
+      allow read, write: if request.auth != null && request.auth.uid == practitionerId;
+      
+      // Allow admins to read all practitioners
+      allow read: if request.auth != null && isAdmin(request.auth.uid);
     }
   }
 }
