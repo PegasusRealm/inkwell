@@ -29,7 +29,6 @@ async function initializeSubscriptionData() {
       status: userData?.subscriptionStatus || 'active',
       interactionsThisMonth: userData?.interactionsThisMonth || 0,
       interactionsLimit: userData?.interactionsLimit || 0,
-      extraInteractionsPurchased: userData?.extraInteractionsPurchased || 0,
       giftedBy: userData?.giftedBy || null,
     };
 
@@ -164,7 +163,7 @@ function createUpgradeModal() {
             
             <div class="text-center mb-4">
               <div style="font-size: 2.5rem; font-weight: bold; color: var(--brand-primary); font-family: var(--title-font);">
-                <span id="upgradeModalPrice">$14.99</span>
+                <span id="upgradeModalPrice">$6.99</span>
               </div>
               <div style="color: var(--font-muted); font-size: 0.9rem;">per month</div>
             </div>
@@ -268,36 +267,6 @@ async function startUpgradeFlow(tier = null) {
     console.error('Failed to start upgrade flow:', error);
     hideLoadingOverlay();
     alert('Failed to start upgrade process. Please try again.');
-  }
-}
-
-/**
- * Purchase extra practitioner interactions
- */
-async function purchaseExtraInteraction() {
-  try {
-    if (userSubscription.tier !== 'connect') {
-      showUpgradePrompt('practitionerConnection', 'Extra interactions are only available on the Connect plan');
-      return;
-    }
-
-    const remaining = 3 - (userSubscription.extraInteractionsPurchased || 0);
-    if (remaining <= 0) {
-      alert('You have already purchased the maximum extra interactions for this month (3).');
-      return;
-    }
-
-    showLoadingOverlay('Creating checkout session...');
-
-    const purchaseExtra = window.httpsCallable(window.functions, 'purchaseExtraInteraction');
-    const result = await purchaseExtra({ quantity: 1 });
-
-    window.location.href = result.data.url;
-
-  } catch (error) {
-    console.error('Failed to purchase extra interaction:', error);
-    hideLoadingOverlay();
-    alert(error.message || 'Failed to start purchase. Please try again.');
   }
 }
 

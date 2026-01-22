@@ -14,9 +14,8 @@ The complete paywall and subscription system is now implemented and ready to go.
    ```
    - Log into Stripe Dashboard (https://dashboard.stripe.com)
    - Create Products:
-     • "InkWell Plus" - $14.99/month recurring
-     • "InkWell Connect" - $49.99/month recurring
-     • "Extra Interaction" - $9.99 one-time payment
+     • "InkWell Plus" - $6.99/month recurring
+     • "InkWell Connect" - $29.99/month recurring
    
    - Copy the Price IDs for each product
    ```
@@ -26,14 +25,11 @@ The complete paywall and subscription system is now implemented and ready to go.
    ```javascript
    TIERS: {
      PLUS: {
-       priceId: 'price_XXXXXXXXXXXXXX', // Replace with real Stripe price ID
+       priceId: 'price_XXXXXXXXXXXXXX', // Replace with real Stripe price ID ($6.99/mo)
      },
      CONNECT: {
-       priceId: 'price_YYYYYYYYYYYYYY', // Replace with real Stripe price ID
+       priceId: 'price_YYYYYYYYYYYYYY', // Replace with real Stripe price ID ($29.99/mo)
      }
-   },
-   EXTRA_INTERACTION: {
-     priceId: 'price_ZZZZZZZZZZZZZZ', // Replace with real Stripe price ID
    },
    STRIPE: {
      PUBLISHABLE_KEY: 'pk_live_XXXXXXXXXXXXXXXXXXXXXXXX', // Replace with real key
@@ -70,7 +66,7 @@ cd functions
 npm install
 
 # Deploy Cloud Functions
-firebase deploy --only functions:createCheckoutSession,functions:handleStripeWebhook,functions:getSubscriptionStatus,functions:purchaseExtraInteraction,functions:createGiftMembership,functions:validateGiftCode,functions:trackPractitionerInteraction,functions:resetMonthlyInteractions
+firebase deploy --only functions:createCheckoutSession,functions:handleStripeWebhook,functions:getSubscriptionStatus,functions:createGiftMembership,functions:validateGiftCode,functions:trackPractitionerInteraction,functions:resetMonthlyInteractions
 
 # Deploy updated frontend files
 firebase deploy --only hosting
@@ -114,29 +110,27 @@ firebase deploy --only hosting
 - ❌ No SMS notifications
 - ❌ No practitioner connection
 
-### Plus Tier ($14.99/month)
+### Plus Tier ($6.99/month)
 - All Free features
 - **100% AI-powered prompts**
 - **SMS notifications** (daily prompts, gratitude, milestones, weekly insights)
 - Data export
 - No practitioner access
 
-### Connect Tier ($49.99/month)
+### Connect Tier ($29.99/month)
 - All Plus features
 - **Practitioner connection**
 - **4 interactions per month** (weekly check-ins)
-- Purchase up to **3 extra interactions** ($9.99 each)
-- **Maximum 7 interactions/month** (4 included + 3 extra)
 - Revenue split:
-  - Practitioner: 60% ($30/month base)
-  - Platform: 30% ($15/month)
-  - Stripe fees: 10% ($5/month)
+  - Practitioner: 60% ($18/month base)
+  - Platform: 30% ($9/month)
+  - Stripe fees: 10% ($3/month)
 
 ### Practitioner Limits
 - **Max 50 clients per practitioner**
-- **Max 7 interactions per client per month**
+- **Max 4 interactions per client per month**
 - Gift codes: 50-100% discount for clients
-- Earnings: $30-50 per client/month + extra interaction fees
+- Earnings: $18 per client/month
 
 ---
 
@@ -162,15 +156,14 @@ Practitioners can create discounted Connect memberships for their clients:
 
 ## 📊 What Was Built
 
-### Cloud Functions (10 new functions)
-1. **createCheckoutSession** - Create Stripe checkout for subscriptions/one-time purchases
+### Cloud Functions (7 new functions)
+1. **createCheckoutSession** - Create Stripe checkout for subscriptions
 2. **handleStripeWebhook** - Process Stripe events (subscriptions, payments, cancellations)
 3. **getSubscriptionStatus** - Get current user's subscription tier and interaction count
-4. **purchaseExtraInteraction** - Buy additional practitioner interactions (Connect only)
-5. **createGiftMembership** - Practitioners create gift codes with discounts
-6. **validateGiftCode** - Check if gift code is valid and get details
-7. **trackPractitionerInteraction** - Increment monthly interaction counter
-8. **resetMonthlyInteractions** - Scheduled function (1st of each month) to reset counters
+4. **createGiftMembership** - Practitioners create gift codes with discounts
+5. **validateGiftCode** - Check if gift code is valid and get details
+6. **trackPractitionerInteraction** - Increment monthly interaction counter
+7. **resetMonthlyInteractions** - Scheduled function (1st of each month) to reset counters
 
 ### Frontend Files
 1. **subscription-config.js** - Central configuration with master kill switch
@@ -401,12 +394,12 @@ firebase deploy:status
 - **Total:** ~$365/month
 
 **Break-Even:**
-- 25 Connect users ($49.99 × 25 = $1,250 revenue - $750 practitioner payouts = $500 profit - $365 costs = $135 net)
-- **Or** 50 Plus users ($14.99 × 50 = $750 revenue - $365 costs = $385 net)
-- **Or** Mix: 15 Connect + 20 Plus = Break-even ✅
+- 60 Connect users ($29.99 × 60 = $1,800 revenue - $1,080 practitioner payouts = $720 profit - $365 costs = $355 net)
+- **Or** 75 Plus users ($6.99 × 75 = $524 revenue - $365 costs = $159 net)
+- **Or** Mix: 30 Connect + 30 Plus = Break-even ✅
 
 **Target for Profitability:**
-- 50 Connect + 100 Plus = **~$2,500/month profit** 🎉
+- 100 Connect + 200 Plus = **~$2,000/month profit** 🎉
 
 ---
 

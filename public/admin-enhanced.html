@@ -654,7 +654,7 @@
                         <h3>Plus Tier</h3>
                         <div class="metric-value" id="plusTier">-</div>
                         <div class="metric-trend neutral">
-                            <span>$14.99/month subscribers</span>
+                            <span>$6.99/month subscribers</span>
                         </div>
                     </div>
                     
@@ -662,7 +662,7 @@
                         <h3>Connect Tier</h3>
                         <div class="metric-value" id="connectTier">-</div>
                         <div class="metric-trend neutral">
-                            <span>$49.99/month subscribers</span>
+                            <span>$29.99/month subscribers</span>
                         </div>
                     </div>
                 </div>
@@ -762,6 +762,17 @@
                                 <option value="connect">Connect</option>
                             </select>
                             <button onclick="overrideUserTier()" class="btn btn-primary" style="width: 100%;">Set Tier</button>
+                        </div>
+                        <div style="background: #fce4ec; border: 1px solid #f48fb1; padding: 20px; border-radius: 8px;">
+                            <h4 style="margin-top: 0; color: #c2185b;">🧪 All Users Tier Override</h4>
+                            <p style="margin-bottom: 12px; color: #555;">Set tier for ALL users at once (testing only).</p>
+                            <select id="allUsersTierOverride" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 12px;">
+                                <option value="free">Free</option>
+                                <option value="plus">Plus</option>
+                                <option value="connect">Connect</option>
+                            </select>
+                            <button onclick="overrideAllUsersTier()" class="btn" style="width: 100%; background: #c2185b; color: white;">⚠️ Set All Users Tier</button>
+                            <p style="margin-top: 8px; font-size: 0.8em; color: #c2185b;">⚠️ Use with caution - affects all users!</p>
                         </div>
                         <div style="background: #fff3e0; border: 1px solid #ffcc80; padding: 20px; border-radius: 8px;">
                             <h4 style="margin-top: 0; color: #e65100;">📧 Send Reminder</h4>
@@ -872,6 +883,19 @@
                         </div>
                         
                         <div id="invitationResult" style="margin-top: 16px;"></div>
+                        
+                        <!-- Pending Invitations List -->
+                        <div style="margin-top: 32px; border-top: 2px solid #e1e8ed; padding-top: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h4 style="margin: 0; color: #2A6972;">📋 Pending Invitations</h4>
+                                <button onclick="loadPendingInvitations()" class="btn btn-secondary" style="padding: 8px 16px;">
+                                    🔄 Refresh
+                                </button>
+                            </div>
+                            <div id="pendingInvitationsContainer">
+                                <p style="color: #666; font-style: italic;">Click "Refresh" to load pending invitations...</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -887,7 +911,7 @@
 
         const firebaseConfig = {
             apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
-            authDomain: "inkwell-alpha.firebaseapp.com",
+            authDomain: "www.inkwelljournal.io",
             projectId: "inkwell-alpha",
             storageBucket: "inkwell-alpha.appspot.com"
         };
@@ -1685,6 +1709,168 @@ ${JSON.stringify(result.results.slice(0, 5), null, 2)}
             }
         };
 
+        // Load Pending Invitations
+        window.loadPendingInvitations = async function() {
+            const container = document.getElementById('pendingInvitationsContainer');
+            container.innerHTML = '<p style="color: #17a2b8;">Loading invitations...</p>';
+            
+            try {
+                // Query all invitations (admin can see all)
+                const invitationsSnap = await getDocs(collection(db, 'practitionerInvitations'));
+                
+                if (invitationsSnap.empty) {
+                    container.innerHTML = '<p style="color: #666;">No invitations found.</p>';
+                    return;
+                }
+                
+                // Sort by createdAt descending
+                const invitations = [];
+                invitationsSnap.forEach(doc => {
+                    invitations.push({ id: doc.id, ...doc.data() });
+                });
+                invitations.sort((a, b) => {
+                    const aTime = a.createdAt?.toDate?.() || new Date(0);
+                    const bTime = b.createdAt?.toDate?.() || new Date(0);
+                    return bTime - aTime;
+                });
+                
+                let html = `
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <thead>
+                            <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                <th style="padding: 12px; text-align: left;">Practitioner</th>
+                                <th style="padding: 12px; text-align: left;">Invited By</th>
+                                <th style="padding: 12px; text-align: left;">Status</th>
+                                <th style="padding: 12px; text-align: left;">Created</th>
+                                <th style="padding: 12px; text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                for (const inv of invitations) {
+                    const createdAt = inv.createdAt?.toDate?.() 
+                        ? inv.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                        : 'Unknown';
+                    
+                    const statusColor = inv.status === 'pending' ? '#ffc107' : 
+                                       inv.status === 'accepted' ? '#28a745' : '#dc3545';
+                    const statusBg = inv.status === 'pending' ? '#fff3cd' : 
+                                    inv.status === 'accepted' ? '#d4edda' : '#f8d7da';
+                    
+                    const registrationLink = `https://inkwelljournal.io/practitioner-register.html?token=${inv.id}`;
+                    
+                    html += `
+                        <tr style="border-bottom: 1px solid #dee2e6;">
+                            <td style="padding: 12px;">
+                                <strong>${inv.practitionerName || 'N/A'}</strong><br>
+                                <small style="color: #666;">${inv.practitionerEmail || 'N/A'}</small>
+                            </td>
+                            <td style="padding: 12px;">
+                                ${inv.fromUserName || 'Unknown'}<br>
+                                <small style="color: #666;">${inv.fromUserEmail || ''}</small>
+                            </td>
+                            <td style="padding: 12px;">
+                                <span style="background: ${statusBg}; color: ${statusColor}; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 12px;">
+                                    ${inv.status?.toUpperCase() || 'UNKNOWN'}
+                                </span>
+                            </td>
+                            <td style="padding: 12px;">${createdAt}</td>
+                            <td style="padding: 12px; text-align: center;">
+                                <button onclick="copyInviteLink('${inv.id}')" class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px; margin-right: 4px;" title="Copy Registration Link">
+                                    📋 Copy Link
+                                </button>
+                                ${inv.status === 'pending' ? `
+                                    <button onclick="resendInvitation('${inv.id}', '${inv.practitionerEmail}', '${inv.practitionerName}')" class="btn btn-primary" style="padding: 4px 8px; font-size: 12px; margin-right: 4px;" title="Resend Invitation Email">
+                                        📧 Resend
+                                    </button>
+                                    <button onclick="deleteInvitation('${inv.id}')" class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" title="Delete Invitation">
+                                        🗑️
+                                    </button>
+                                ` : ''}
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading invitations:', error);
+                container.innerHTML = `
+                    <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 16px; border-radius: 8px;">
+                        <strong>❌ Error loading invitations:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        };
+
+        // Copy Invitation Link
+        window.copyInviteLink = function(inviteId) {
+            const link = `https://inkwelljournal.io/practitioner-register.html?token=${inviteId}`;
+            navigator.clipboard.writeText(link).then(() => {
+                alert('✅ Registration link copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                prompt('Copy this link:', link);
+            });
+        };
+
+        // Resend Invitation
+        window.resendInvitation = async function(inviteId, email, name) {
+            if (!confirm(`Resend invitation email to ${name} (${email})?`)) {
+                return;
+            }
+            
+            try {
+                const idToken = await auth.currentUser.getIdToken();
+                
+                const endpoint = location.hostname === "localhost" 
+                    ? "http://localhost:5001/inkwell-alpha/us-central1/sendPractitionerInvitation"
+                    : "https://us-central1-inkwell-alpha.cloudfunctions.net/sendPractitionerInvitation";
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({
+                        practitionerEmail: email,
+                        practitionerName: name
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to resend invitation');
+                }
+                
+                alert(`✅ Invitation resent to ${email}`);
+                
+            } catch (error) {
+                console.error('Error resending invitation:', error);
+                alert(`❌ Error: ${error.message}`);
+            }
+        };
+
+        // Delete Invitation
+        window.deleteInvitation = async function(inviteId) {
+            if (!confirm('Are you sure you want to delete this invitation? This cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                await deleteDoc(doc(db, 'practitionerInvitations', inviteId));
+                alert('✅ Invitation deleted');
+                loadPendingInvitations(); // Refresh the list
+            } catch (error) {
+                console.error('Error deleting invitation:', error);
+                alert(`❌ Error: ${error.message}`);
+            }
+        };
+
         // ==================== MODALS ====================
 
         window.closeModal = () => {
@@ -1978,22 +2164,32 @@ ${JSON.stringify(result.results.slice(0, 5), null, 2)}
                     
                     // Get journal entry count for this week
                     const weekStart = getWeekStart(now);
-                    const entriesSnapshot = await getDocs(query(
-                        collection(db, 'journalEntries'),
-                        where('userId', '==', userDoc.id),
-                        where('createdAt', '>=', weekStart),
-                        orderBy('createdAt', 'desc')
-                    ));
-                    
-                    userData.thisWeekEntries = entriesSnapshot.size;
+                    try {
+                        const entriesSnapshot = await getDocs(query(
+                            collection(db, 'journalEntries'),
+                            where('userId', '==', userDoc.id),
+                            where('createdAt', '>=', weekStart),
+                            orderBy('createdAt', 'desc')
+                        ));
+                        
+                        userData.thisWeekEntries = entriesSnapshot.size;
+                    } catch (error) {
+                        console.warn(`Could not load entries for user ${userDoc.id}:`, error.message);
+                        userData.thisWeekEntries = 0;
+                    }
                     
                     // Check for manifest
-                    const manifestsSnapshot = await getDocs(query(
-                        collection(db, 'manifests'),
-                        where('userId', '==', userDoc.id),
-                        limit(1)
-                    ));
-                    userData.hasManifest = manifestsSnapshot.size > 0;
+                    try {
+                        const manifestsSnapshot = await getDocs(query(
+                            collection(db, 'manifests'),
+                            where('userId', '==', userDoc.id),
+                            limit(1)
+                        ));
+                        userData.hasManifest = manifestsSnapshot.size > 0;
+                    } catch (error) {
+                        console.warn(`Could not load manifests for user ${userDoc.id}:`, error.message);
+                        userData.hasManifest = false;
+                    }
                     
                     // Calculate completion status
                     userData.week1Complete = betaProgress.week1Complete || false;
@@ -2309,6 +2505,79 @@ ${JSON.stringify(result.results.slice(0, 5), null, 2)}
             }
         };
         
+        // Override ALL users tier (for testing)
+        window.overrideAllUsersTier = async () => {
+            const tier = document.getElementById('allUsersTierOverride').value;
+            
+            const confirmed = confirm(
+                `⚠️ WARNING: This will set ALL users to "${tier}" tier.\n\n` +
+                `This is intended for TESTING ONLY.\n\n` +
+                `Are you absolutely sure you want to continue?`
+            );
+            
+            if (!confirmed) return;
+            
+            const doubleConfirm = confirm(
+                `Final confirmation: Set ALL users to "${tier}"?\n\n` +
+                `Type OK to proceed.`
+            );
+            
+            if (!doubleConfirm) return;
+            
+            try {
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                
+                if (usersSnapshot.empty) {
+                    alert('No users found in database.');
+                    return;
+                }
+                
+                let successCount = 0;
+                let errorCount = 0;
+                const totalUsers = usersSnapshot.size;
+                
+                // Show progress
+                const progressDiv = document.createElement('div');
+                progressDiv.id = 'bulkTierProgress';
+                progressDiv.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 10000; text-align: center;';
+                progressDiv.innerHTML = `<h3>⏳ Updating Users...</h3><p>0 / ${totalUsers}</p>`;
+                document.body.appendChild(progressDiv);
+                
+                for (const userDoc of usersSnapshot.docs) {
+                    try {
+                        await updateDoc(doc(db, 'users', userDoc.id), {
+                            subscriptionTier: tier,
+                            subscriptionStatus: 'active',
+                            'betaProgress.tierOverride': {
+                                tier: tier,
+                                setAt: serverTimestamp(),
+                                setBy: 'admin-bulk'
+                            }
+                        });
+                        successCount++;
+                    } catch (err) {
+                        console.error(`Failed to update user ${userDoc.id}:`, err);
+                        errorCount++;
+                    }
+                    progressDiv.querySelector('p').textContent = `${successCount + errorCount} / ${totalUsers}`;
+                }
+                
+                // Remove progress div
+                document.body.removeChild(progressDiv);
+                
+                alert(`✅ Bulk tier update complete!\n\n` +
+                    `Successfully updated: ${successCount} users\n` +
+                    `Errors: ${errorCount} users\n\n` +
+                    `All users now set to: ${tier}`);
+                
+                await loadUsers();
+            } catch (error) {
+                alert('Error: ' + error.message);
+                const progressDiv = document.getElementById('bulkTierProgress');
+                if (progressDiv) document.body.removeChild(progressDiv);
+            }
+        };
+        
         // Mark week complete for a user
         window.markWeekComplete = async (userId) => {
             const tester = window.allBetaTesters.find(t => t.id === userId);
@@ -2340,16 +2609,30 @@ ${JSON.stringify(result.results.slice(0, 5), null, 2)}
         window.sendBetaReminder = async () => {
             const reminderType = document.getElementById('reminderType').value;
             
+            console.log('📧 Beta Reminder Debug:');
+            console.log('Total beta testers:', window.allBetaTesters?.length || 0);
+            console.log('Reminder type:', reminderType);
+            
+            if (!window.allBetaTesters || window.allBetaTesters.length === 0) {
+                alert('No beta testers loaded. Please wait for data to load and try again.');
+                return;
+            }
+            
             // Filter users who need reminders
             let needsReminder = [];
             
             if (reminderType === 'journal') {
                 needsReminder = window.allBetaTesters.filter(t => t.thisWeekEntries < 2 && !t.isAlpha);
+                console.log('Testers with < 2 entries this week:', needsReminder.length);
             } else if (reminderType === 'manifest') {
                 needsReminder = window.allBetaTesters.filter(t => !t.hasManifest && !t.isAlpha);
+                console.log('Testers without manifest:', needsReminder.length);
             } else if (reminderType === 'feedback') {
                 needsReminder = window.allBetaTesters.filter(t => !t.isAlpha);
+                console.log('All beta testers (non-alpha):', needsReminder.length);
             }
+            
+            console.log('Users to remind:', needsReminder);
             
             if (needsReminder.length === 0) {
                 alert('No users need this reminder!');

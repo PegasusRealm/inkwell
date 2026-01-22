@@ -11,20 +11,17 @@
 | Tier | Price | Features | Target User |
 |------|-------|----------|-------------|
 | **Free** | $0 | Journaling + 20% AI + Email recaps | Casual users, trial |
-| **Plus** | $14.99/mo | + 100% AI + SMS notifications | Engaged journalers |
-| **Connect** | $49.99/mo | + Practitioner (4 interactions/mo) | Therapy alternative |
-
-**Extra Interactions:** $9.99 each (max 3/month) - Connect tier only
+| **Plus** | $6.99/mo | + 100% AI + SMS notifications | Engaged journalers |
+| **Connect** | $29.99/mo | + Practitioner (4 interactions/mo) | Therapy alternative |
 
 ---
 
 ## Practitioner Economics
 
 ### Per Client/Month:
-- **Receives:** $30 base (60% of $49.99)
-- **Can Earn Extra:** $7 per extra interaction (70% of $9.99)
+- **Receives:** $18 base (60% of $29.99)
 - **Max Clients:** 50
-- **Max Earnings:** $2,025/month ($1,500 base + 75 extras × $7)
+- **Max Earnings:** $900/month (50 clients × $18)
 
 ### Gift Codes:
 - 50-100% discount
@@ -42,7 +39,7 @@
 3. `SUBSCRIPTION-SYSTEM-GUIDE.md` - Full documentation
 
 ### Files Updated:
-1. `functions/index.js` - Added 8 subscription functions
+1. `functions/index.js` - Added 7 subscription functions
 2. `functions/package.json` - Added Stripe dependency
 3. `public/app.html` - Added subscription UI & gating
 4. `public/coach.html` - Added gift code generator
@@ -54,18 +51,17 @@
 1. `createCheckoutSession` - Start Stripe checkout
 2. `handleStripeWebhook` - Process Stripe events
 3. `getSubscriptionStatus` - Get user tier/limits
-4. `purchaseExtraInteraction` - Buy extra interactions
-5. `createGiftMembership` - Create practitioner gift code
-6. `validateGiftCode` - Check gift code validity
-7. `trackPractitionerInteraction` - Count interactions
-8. `resetMonthlyInteractions` - Monthly reset (scheduled)
+4. `createGiftMembership` - Create practitioner gift code
+5. `validateGiftCode` - Check gift code validity
+6. `trackPractitionerInteraction` - Count interactions
+7. `resetMonthlyInteractions` - Monthly reset (scheduled)
 
 ---
 
 ## Activation Checklist
 
 ### Before Launch:
-- [ ] Create Stripe products (Plus, Connect, Extra)
+- [ ] Create Stripe products (Plus, Connect)
 - [ ] Update `subscription-config.js` with real price IDs
 - [ ] Set Firebase secrets: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
 - [ ] Set up Stripe webhook endpoint
@@ -161,7 +157,6 @@ firebase functions:log
 - Free → Plus conversion rate
 - Plus → Connect conversion rate
 - Gifted vs. paid Connect users
-- Extra interactions purchased per Connect user
 
 ### Practitioner Metrics:
 - Active practitioners

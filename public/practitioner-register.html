@@ -375,26 +375,29 @@ async function loadInvitation() {
     try {
         console.log("Loading invitation for token:", token);
         
-        const inviteDoc = await getDoc(doc(db, 'practitionerInvitations', token));
-        console.log("Invitation document exists:", inviteDoc.exists);
+        // Use Cloud Function to validate invitation (more secure than direct Firestore read)
+        const response = await fetch('https://us-central1-inkwell-alpha.cloudfunctions.net/validateInvitation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ token: token })
+        });
         
-        if (!inviteDoc.exists) {
-            throw new Error('Invitation not found or expired. Please contact support.');
+        const result = await response.json();
+        console.log("Validation result:", result);
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Invitation not found or expired. Please contact support.');
         }
         
-        const inviteData = inviteDoc.data();
-        console.log("Invitation data:", inviteData);
-        
-        if (inviteData.status !== 'pending') {
-            throw new Error('This invitation has already been used or is no longer valid.');
-        }
+        const inviteData = result.invitation;
         
         // Display invitation info
         document.getElementById('invitationInfo').innerHTML = `
             <div style="background: #e8f5e8; border: 1px solid #4caf50; padding: 1em; border-radius: 8px;">
                 <p><strong>✅ Valid Invitation Found!</strong></p>
                 <p><strong>Invitation from:</strong> ${inviteData.fromUserName || 'InkWell User'}</p>
-                <p><strong>Email:</strong> ${inviteData.fromUserEmail || 'Not provided'}</p>
                 <p>You've been invited to join InkWell as <strong>${inviteData.practitionerName}</strong>'s practitioner.</p>
             </div>
         `;
@@ -414,9 +417,7 @@ async function loadInvitation() {
         // Add debugging info
         document.getElementById('errorMessage').innerHTML += `
             <br><br><small style="color: #666;">
-                Debug info: Token = ${token}<br>
-                Error: ${error.message}<br>
-                If this persists, please contact support with this information.
+                If this persists, please contact support.
             </small>
         `;
     }

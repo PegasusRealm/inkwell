@@ -5,10 +5,9 @@
 ### ✅ Completed:
 - Stripe test publishable key configured
 - Stripe test secret key stored in Firebase secrets
-- Price IDs configured for all 3 products:
-  - Plus ($14.99/month): `price_1SeQaJIu1E0bDEgZq6V8lATE`
-  - Connect ($49.99/month): `price_1SeQcGIu1E0bDEgZQWWqkrjK`
-  - Extra Interaction ($9.99): `price_1SeQd5Iu1E0bDEgZTf771tJK`
+- Price IDs configured for subscription products:
+  - Plus ($6.99/month): `price_XXXXXXXX` (update with new Stripe price ID)
+  - Connect ($29.99/month): `price_YYYYYYYY` (update with new Stripe price ID)
 - Stripe package installed
 
 ---
@@ -56,7 +55,7 @@ Once you've set up the webhook secret, deploy:
 cd /Users/Grimm/Documents/Pegasus_Realm/15_App_Projects/inkwell
 
 # Deploy all subscription functions
-firebase deploy --only functions:createCheckoutSession,functions:handleStripeWebhook,functions:getSubscriptionStatus,functions:purchaseExtraInteraction,functions:createGiftMembership,functions:validateGiftCode,functions:trackPractitionerInteraction,functions:resetMonthlyInteractions
+firebase deploy --only functions:createCheckoutSession,functions:handleStripeWebhook,functions:getSubscriptionStatus,functions:createGiftMembership,functions:validateGiftCode,functions:trackPractitionerInteraction,functions:resetMonthlyInteractions
 
 # Deploy updated frontend
 firebase deploy --only hosting

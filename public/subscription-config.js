@@ -37,7 +37,7 @@ const SUBSCRIPTION_CONFIG = {
       id: 'plus',
       name: 'Plus',
       price: 14.99,
-      priceId: 'price_1SeRgCI0M1vXVDeSRRA8iYRh', // InkWell Plus - $14.99/month
+      priceId: 'price_1SeRgCI0M1vXVDeSRRA8iYRh', // InkWell Plus - $6.99/month (UPDATE STRIPE PRICE ID)
       features: {
         journaling: true,
         manifestTool: true,
@@ -52,7 +52,7 @@ const SUBSCRIPTION_CONFIG = {
       id: 'connect',
       name: 'Connect',
       price: 49.99,
-      priceId: 'price_1SeRgCI0M1vXVDeStsmhHyOz', // InkWell Connect - $49.99/month
+      priceId: 'price_1SeRgCI0M1vXVDeStsmhHyOz', // InkWell Connect - $29.99/month (UPDATE STRIPE PRICE ID)
       features: {
         journaling: true,
         manifestTool: true,

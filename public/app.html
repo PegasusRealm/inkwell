@@ -9237,10 +9237,6 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         <div style="font-size: 0.85em; color: #666; margin-bottom: 1em;">
           <span id="interactionRemaining">4 interactions remaining</span>
         </div>
-        <button id="buyExtraButton" onclick="purchaseExtraInteraction()" class="btn" 
-                style="background: white; border: 2px solid #667eea; color: #667eea; border-radius: 8px; padding: 0.5rem 1rem; font-weight: 600; width: 100%; display: none;">
-          Purchase Extra Interaction - $9.99
-        </button>
       </div>
     </div>
     
@@ -9258,7 +9254,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         </div>
         <button onclick="showUpgradePrompt('smsNotifications', 'Get daily wellness reminders via SMS')" class="btn"
                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-weight: 600;">
-          Upgrade to Plus - $14.99/month
+          Upgrade to Plus - $6.99/month
         </button>
       </div>
       
@@ -10102,9 +10098,7 @@ async function collectAllUserData() {
       entriesWithEmotionalAnalysis: exportData.journalEntries.filter(e => e.emotionalAnalysis).length,
       entriesWithVoiceTranscription: exportData.journalEntries.filter(e => e.voiceTranscription).length,
       activeManifests: exportData.wishManifests.filter(m => m.status === 'active').length,
-      completedManifests: exportData.wishManifests.filter(m => m.status === 'completed').length,
-      averageEntryLength: exportData.journalEntries.length > 0 ?
-        Math.round(exportData.journalEntries.reduce((sum, e) => sum + (e.text?.length || 0), 0) / exportData.journalEntries.length) : 0
+      completedManifests: exportData.wishManifests.filter(m => m.status === 'completed').length
     };
 
     console.log('✅ Data collection complete:', {
@@ -10239,10 +10233,6 @@ function generateReadableHTML(data) {
                 <div class="stat-number">${statistics.entriesWithEmotionalAnalysis}</div>
                 <div>With Emotional Insights</div>
             </div>
-            <div class="stat-box">
-                <div class="stat-number">${Math.round(statistics.averageEntryLength / 10) / 10}k</div>
-                <div>Avg. Words per Entry</div>
-            </div>
         </div>
         ${statistics.firstEntryDate ? `<p><strong>Journey Started:</strong> ${statistics.firstEntryDate}</p>` : ''}
     </div>
@@ -10349,7 +10339,6 @@ function generateSummaryCSV(data) {
     ['Completed Goals', statistics.completedManifests],
     ['Entries with Emotional Analysis', statistics.entriesWithEmotionalAnalysis],
     ['Entries with Voice Recording', statistics.entriesWithVoiceTranscription],
-    ['Average Entry Length (characters)', statistics.averageEntryLength],
     ['First Entry Date', statistics.firstEntryDate || 'N/A'],
     ['Most Recent Entry Date', statistics.mostRecentEntryDate || 'N/A']
   ];
