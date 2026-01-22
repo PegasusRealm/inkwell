@@ -657,13 +657,54 @@ onAuthStateChanged(auth, async (user) => {
       if (journalTab) journalTab.style.display = "block";
     }, 50);
 
-    // Fetch user document
+    // Fetch user document with retry for OAuth sign-ins (race condition handling)
     const userDocRef = doc(db, "users", currentUserId);
-    const userDoc = await getDoc(userDocRef);
+    let userDoc = await getDoc(userDocRef);
     
+    // If document doesn't exist, wait and retry (handles OAuth race condition)
     if (!userDoc.exists()) {
-      console.error("User document not found");
-      return;
+      console.log("⏳ User document not found, waiting for creation (OAuth race condition)...");
+      
+      // Wait up to 3 seconds with progressive backoff
+      for (let attempt = 0; attempt < 5; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+        userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          console.log(`✅ User document found after ${attempt + 1} attempts`);
+          break;
+        }
+      }
+      
+      // If still doesn't exist, create it for OAuth users
+      if (!userDoc.exists()) {
+        console.log("🆕 Creating user document from auth state handler");
+        const providerData = user.providerData?.[0];
+        const authProvider = providerData?.providerId || "unknown";
+        
+        await setDoc(userDocRef, {
+          userId: user.uid,
+          email: user.email,
+          displayName: user.displayName || "",
+          signupUsername: user.displayName || user.email?.split('@')[0] || "",
+          photoURL: user.photoURL || "",
+          userRole: "user",
+          authProvider: authProvider,
+          subscriptionTier: "free",
+          subscriptionStatus: "active",
+          stripeCustomerId: null,
+          stripeSubscriptionId: null,
+          insightsPreferences: {
+            weeklyEnabled: true,
+            monthlyEnabled: true,
+            createdAt: serverTimestamp()
+          },
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+        
+        // Refetch to get the created document
+        userDoc = await getDoc(userDocRef);
+      }
     }
     
     const userData = userDoc.data();

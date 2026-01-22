@@ -101,7 +101,7 @@ function showUpgradePrompt(feature, context = '') {
   const featureNames = {
     smsNotifications: 'SMS Notifications',
     aiPrompts: 'Unlimited AI Prompts',
-    practitionerConnection: 'Practitioner Connection',
+    practitionerConnection: 'Coach Connection',
     dataExport: 'Data Export',
   };
 

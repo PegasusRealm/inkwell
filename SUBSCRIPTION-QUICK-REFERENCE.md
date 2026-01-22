@@ -12,11 +12,11 @@
 |------|-------|----------|-------------|
 | **Free** | $0 | Journaling + 20% AI + Email recaps | Casual users, trial |
 | **Plus** | $6.99/mo | + 100% AI + SMS notifications | Engaged journalers |
-| **Connect** | $29.99/mo | + Practitioner (4 interactions/mo) | Therapy alternative |
+| **Connect** | $29.99/mo | + Coach (4 interactions/mo) | Coaching support |
 
 ---
 
-## Practitioner Economics
+## Coach Economics
 
 ### Per Client/Month:
 - **Receives:** $18 base (60% of $29.99)
@@ -51,7 +51,7 @@
 1. `createCheckoutSession` - Start Stripe checkout
 2. `handleStripeWebhook` - Process Stripe events
 3. `getSubscriptionStatus` - Get user tier/limits
-4. `createGiftMembership` - Create practitioner gift code
+4. `createGiftMembership` - Create coach gift code
 5. `validateGiftCode` - Check gift code validity
 6. `trackPractitionerInteraction` - Count interactions
 7. `resetMonthlyInteractions` - Monthly reset (scheduled)
@@ -158,9 +158,9 @@ firebase functions:log
 - Plus → Connect conversion rate
 - Gifted vs. paid Connect users
 
-### Practitioner Metrics:
-- Active practitioners
-- Clients per practitioner (average)
+### Coach Metrics:
+- Active coaches
+- Clients per coach (average)
 - Gift codes created vs. redeemed
 - Monthly payout totals
 
@@ -181,7 +181,7 @@ firebase functions:log
 **Gift code not applying:**
 - Verify code hasn't expired (90 days)
 - Check if already redeemed (maxUses reached)
-- Ensure practitioner who created it is approved
+- Ensure coach who created it is approved
 
 ---
 

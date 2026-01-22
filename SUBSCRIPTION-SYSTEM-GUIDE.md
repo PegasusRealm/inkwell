@@ -108,26 +108,26 @@ firebase deploy --only hosting
 - Weekly/monthly email recaps
 - **20% AI-powered prompts**
 - ❌ No SMS notifications
-- ❌ No practitioner connection
+- ❌ No coach connection
 
 ### Plus Tier ($6.99/month)
 - All Free features
 - **100% AI-powered prompts**
 - **SMS notifications** (daily prompts, gratitude, milestones, weekly insights)
 - Data export
-- No practitioner access
+- No coach access
 
 ### Connect Tier ($29.99/month)
 - All Plus features
-- **Practitioner connection**
+- **Coach connection**
 - **4 interactions per month** (weekly check-ins)
 - Revenue split:
-  - Practitioner: 60% ($18/month base)
+  - Coach: 60% ($18/month base)
   - Platform: 30% ($9/month)
   - Stripe fees: 10% ($3/month)
 
-### Practitioner Limits
-- **Max 50 clients per practitioner**
+### Coach Limits
+- **Max 50 clients per coach**
 - **Max 4 interactions per client per month**
 - Gift codes: 50-100% discount for clients
 - Earnings: $18 per client/month
@@ -136,16 +136,16 @@ firebase deploy --only hosting
 
 ## 🎁 Gift Code System
 
-Practitioners can create discounted Connect memberships for their clients:
+Coaches can create discounted Connect memberships for their clients:
 
-1. **Access:** Practitioner Portal (coach.html) when no entry is loaded
+1. **Access:** Coach Portal (coach.html) when no entry is loaded
 2. **Discounts:** 50%, 75%, or 100% off
 3. **Duration:** Gift codes expire after 90 days
 4. **Usage:** One-time use per code
 5. **Tracking:** All gifted memberships tracked in `giftMemberships` collection
 
 ### How It Works:
-1. Practitioner logs into portal
+1. Coach logs into portal
 2. Selects discount amount (50-100% off)
 3. Optionally enters client email
 4. Generates unique gift code (e.g., `AB3K9XP2`)
@@ -160,7 +160,7 @@ Practitioners can create discounted Connect memberships for their clients:
 1. **createCheckoutSession** - Create Stripe checkout for subscriptions
 2. **handleStripeWebhook** - Process Stripe events (subscriptions, payments, cancellations)
 3. **getSubscriptionStatus** - Get current user's subscription tier and interaction count
-4. **createGiftMembership** - Practitioners create gift codes with discounts
+4. **createGiftMembership** - Coaches create gift codes with discounts
 5. **validateGiftCode** - Check if gift code is valid and get details
 6. **trackPractitionerInteraction** - Increment monthly interaction counter
 7. **resetMonthlyInteractions** - Scheduled function (1st of each month) to reset counters
@@ -174,7 +174,7 @@ Practitioners can create discounted Connect memberships for their clients:
    - SMS upgrade prompts (Plus tier required)
    - Pricing comparison modal
    - Upgrade buttons throughout
-4. **coach.html** - Added gift code generator for practitioners
+4. **coach.html** - Added gift code generator for coaches
 
 ### Firestore Schema Updates
 New fields added to `users` collection:
@@ -222,7 +222,7 @@ service cloud.firestore {
     
     // Gift memberships
     match /giftMemberships/{giftId} {
-      // Practitioners can create gift codes
+      // Coaches can create gift codes
       allow create: if request.auth != null 
                     && exists(/databases/$(database)/documents/approvedPractitioners/$(request.auth.uid));
       
@@ -245,10 +245,9 @@ service cloud.firestore {
 }
 ```
 
-### HIPAA Compliance Notes
-- Practitioner sessions timeout after 30 minutes
+### Security Notes
+- Coach sessions timeout after 30 minutes
 - All payment processing handled by Stripe (PCI compliant)
-- No PHI stored in subscription data
 - Gift codes don't expose client information
 
 ---
@@ -262,8 +261,8 @@ To complete the system, add to `admin.html`:
 - Subscriber counts by tier (Free, Plus, Connect)
 - Churn rate and trends
 - Gifted membership tracking
-- Practitioner payout summaries
-- Top practitioners by revenue
+- Coach payout summaries
+- Top coaches by revenue
 - Conversion funnel (Free → Plus → Connect)
 
 ### Quick Stats Cards
@@ -293,7 +292,7 @@ To complete the system, add to `admin.html`:
 ### Feature Gating
 1. [ ] Verify Free tier limits (20% AI, no SMS)
 2. [ ] Verify Plus tier unlocks (100% AI, SMS enabled)
-3. [ ] Verify Connect tier unlocks (practitioner access)
+3. [ ] Verify Connect tier unlocks (coach access)
 4. [ ] Test upgrade prompts appear when gated features accessed
 5. [ ] Test interaction cap enforcement (7 max)
 
@@ -302,7 +301,7 @@ To complete the system, add to `admin.html`:
 2. [ ] Pricing modal shows all 3 tiers
 3. [ ] Interaction tracker updates in real-time (Connect)
 4. [ ] SMS upgrade prompt shows for Free users
-5. [ ] Gift code UI works in practitioner portal
+5. [ ] Gift code UI works in coach portal
 6. [ ] Gift badge shows for gifted subscriptions
 
 ---
@@ -331,16 +330,16 @@ To complete the system, add to `admin.html`:
 ## 💡 Future Enhancements
 
 ### Phase 2 (After 100+ Connections)
-- [ ] Practitioner referral bonuses (Option C from pricing discussion)
-- [ ] Performance rewards for highly-rated practitioners
+- [ ] Coach referral bonuses (Option C from pricing discussion)
+- [ ] Performance rewards for highly-rated coaches
 - [ ] Client satisfaction surveys
-- [ ] Practitioner earnings dashboard
+- [ ] Coach earnings dashboard
 - [ ] Automated monthly payout reports
 
 ### Phase 3 (Scale)
 - [ ] Annual subscription discounts (save 2 months)
 - [ ] Team/organization plans
-- [ ] Enterprise practitioner networks
+- [ ] Enterprise coach networks
 - [ ] White-label options for clinics
 
 ---

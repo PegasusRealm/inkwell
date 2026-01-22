@@ -6,7 +6,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Practitioner Portal</title>
+  <title>Coach Portal</title>
   <style>
     :root {
       --brand-primary: #2A6972;
@@ -115,9 +115,10 @@
    console.log('🚀 COACH.HTML SCRIPT LOADED - VERSION 2.0 - HTTP FUNCTION');
    
    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-   import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+   import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, orderBy, limit, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
+   import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const CONFIG = {
   firebase: {
@@ -133,6 +134,7 @@ const CONFIG = {
 
     const db = getFirestore(app);
     const functions = getFunctions(app, 'us-central1'); // Specify the correct region
+    const storage = getStorage(app);
 
     console.log('🔧 Firebase initialized:', { 
       app: app.name, 
@@ -435,8 +437,8 @@ const CONFIG = {
         const entryBox = document.getElementById("entryText");
         entryBox.innerHTML = `
           <div style="text-align: center; padding: 2em; color: var(--brand-primary);">
-            <h3>👩‍⚕️ Practitioner Portal</h3>
-            <p>Welcome to the practitioner dashboard.</p>
+            <h3>👩‍⚕️ Coach Portal</h3>
+            <p>Welcome to the coach dashboard.</p>
             <p>When clients tag entries for review, you'll receive email notifications with direct links to view and respond to their journal entries.</p>
             
             <!-- Gift Membership Section -->
@@ -485,18 +487,289 @@ const CONFIG = {
               
               <div id="giftCodeError" style="display: none; margin-top: 1rem; padding: 1rem; background: #ffebee; border-radius: 8px; color: #d32f2f; font-size: 0.9rem;"></div>
             </div>
+            
+            <!-- Insurance Management Section -->
+            <div id="insuranceSection" style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); border: 2px solid #22c55e; border-radius: 12px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+              <h4 style="color: #16a34a; margin-top: 0; display: flex; align-items: center; gap: 0.5rem;">
+                🛡️ Insurance Certificate
+              </h4>
+              <div id="insuranceStatus" style="margin-bottom: 1.5rem;">
+                <p style="color: #666;">Loading insurance status...</p>
+              </div>
+              
+              <div id="insuranceUploadForm" style="display: none;">
+                <div style="margin-bottom: 1rem;">
+                  <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">New Expiration Date:</label>
+                  <input type="date" id="newInsuranceExpiration" 
+                         style="width: 100%; padding: 0.75rem; border: 2px solid #22c55e; border-radius: 8px; font-size: 1rem; box-sizing: border-box;" />
+                  <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem; margin-bottom: 0;">
+                    Must be at least 60 days from today
+                  </p>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                  <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Insurance Certificate (PDF or image):</label>
+                  <input type="file" id="newInsuranceFile" accept=".pdf,.jpg,.jpeg,.png" 
+                         style="width: 100%; padding: 0.5rem; border: 2px dashed #22c55e; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box; background: #f0fdf4;" />
+                </div>
+                
+                <button onclick="uploadNewInsurance()" id="uploadInsuranceBtn" 
+                        style="width: 100%; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border: none; border-radius: 8px; padding: 0.75rem; font-weight: 600; font-size: 1rem; cursor: pointer;">
+                  📤 Upload Updated Insurance
+                </button>
+              </div>
+              
+              <div id="insuranceUploadResult" style="display: none; margin-top: 1rem; padding: 1rem; background: white; border-radius: 8px; border: 2px solid #22c55e;">
+              </div>
+              
+              <div id="insuranceError" style="display: none; margin-top: 1rem; padding: 1rem; background: #ffebee; border-radius: 8px; color: #d32f2f; font-size: 0.9rem;"></div>
+            </div>
           </div>
         `;
+        
+        // Load insurance status after dashboard renders
+        loadInsuranceStatus();
       }
     }
+    
+    // Function to load current insurance status
+    async function loadInsuranceStatus() {
+      const statusDiv = document.getElementById('insuranceStatus');
+      const uploadFormDiv = document.getElementById('insuranceUploadForm');
+      
+      if (!statusDiv || !currentAuthenticatedUser) return;
+      
+      try {
+        // Query for current insurance record
+        const insuranceQuery = query(
+          collection(db, 'coachInsuranceRecords'),
+          where('coachId', '==', currentAuthenticatedUser.uid),
+          where('status', '==', 'current'),
+          orderBy('uploadedAt', 'desc'),
+          limit(1)
+        );
+        
+        const snapshot = await getDocs(insuranceQuery);
+        
+        if (snapshot.empty) {
+          statusDiv.innerHTML = `
+            <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b;">
+              <p style="margin: 0; color: #92400e;">⚠️ No insurance certificate on file.</p>
+              <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">Please upload your current insurance certificate.</p>
+            </div>
+          `;
+          uploadFormDiv.style.display = 'block';
+          return;
+        }
+        
+        const insuranceData = snapshot.docs[0].data();
+        const expirationDate = insuranceData.expirationDate ? new Date(insuranceData.expirationDate) : null;
+        const now = new Date();
+        
+        let statusClass = '#22c55e';
+        let statusIcon = '✅';
+        let statusText = 'Active';
+        let showUpdateForm = false;
+        
+        if (expirationDate) {
+          const daysUntilExpiration = Math.ceil((expirationDate - now) / (24 * 60 * 60 * 1000));
+          
+          if (daysUntilExpiration <= 0) {
+            statusClass = '#ef4444';
+            statusIcon = '❌';
+            statusText = 'Expired';
+            showUpdateForm = true;
+          } else if (daysUntilExpiration <= 60) {
+            statusClass = '#f59e0b';
+            statusIcon = '⚠️';
+            statusText = `Expiring in ${daysUntilExpiration} days`;
+            showUpdateForm = true;
+          }
+          
+          statusDiv.innerHTML = `
+            <div style="background: ${statusClass}15; padding: 1rem; border-radius: 8px; border-left: 4px solid ${statusClass};">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <p style="margin: 0; color: ${statusClass}; font-weight: 600;">${statusIcon} ${statusText}</p>
+                  <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
+                    Expires: ${expirationDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  </p>
+                </div>
+                ${insuranceData.fileUrl ? `<a href="${insuranceData.fileUrl}" target="_blank" style="color: ${statusClass}; font-size: 0.9rem;">View Certificate →</a>` : ''}
+              </div>
+            </div>
+          `;
+          
+          // Show update form button if expiring soon or expired
+          if (showUpdateForm) {
+            statusDiv.innerHTML += `
+              <button onclick="document.getElementById('insuranceUploadForm').style.display='block'" 
+                      style="margin-top: 1rem; width: 100%; background: white; border: 2px solid ${statusClass}; color: ${statusClass}; border-radius: 8px; padding: 0.5rem; font-weight: 600; cursor: pointer;">
+                🔄 Update Insurance
+              </button>
+            `;
+          } else {
+            // Always allow updates, just less prominently
+            statusDiv.innerHTML += `
+              <button onclick="document.getElementById('insuranceUploadForm').style.display='block'" 
+                      style="margin-top: 1rem; background: transparent; border: none; color: #666; cursor: pointer; font-size: 0.85rem; text-decoration: underline;">
+                Update Certificate
+              </button>
+            `;
+          }
+        }
+        
+        // Keep form hidden initially unless needed
+        if (!showUpdateForm) {
+          uploadFormDiv.style.display = 'none';
+        } else {
+          uploadFormDiv.style.display = 'block';
+        }
+        
+      } catch (error) {
+        console.error('Error loading insurance status:', error);
+        statusDiv.innerHTML = `
+          <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0; color: #92400e;">Unable to load insurance status.</p>
+          </div>
+        `;
+        uploadFormDiv.style.display = 'block';
+      }
+    }
+    
+    // Function to upload new insurance
+    window.uploadNewInsurance = async function() {
+      const expirationInput = document.getElementById('newInsuranceExpiration');
+      const fileInput = document.getElementById('newInsuranceFile');
+      const uploadBtn = document.getElementById('uploadInsuranceBtn');
+      const resultDiv = document.getElementById('insuranceUploadResult');
+      const errorDiv = document.getElementById('insuranceError');
+      
+      errorDiv.style.display = 'none';
+      resultDiv.style.display = 'none';
+      
+      // Validate expiration date
+      const expirationDate = new Date(expirationInput.value);
+      const now = new Date();
+      const sixtyDaysFromNow = new Date(now.getTime() + (60 * 24 * 60 * 60 * 1000));
+      
+      if (!expirationInput.value) {
+        errorDiv.textContent = 'Please select an expiration date.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      if (expirationDate <= sixtyDaysFromNow) {
+        errorDiv.textContent = 'Insurance must be valid for at least 60 days. Please renew your insurance before updating.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      // Validate file
+      const file = fileInput.files[0];
+      if (!file) {
+        errorDiv.textContent = 'Please select an insurance certificate file.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+      if (!allowedTypes.includes(file.type)) {
+        errorDiv.textContent = 'Please upload a PDF or image file (JPG, PNG).';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      if (file.size > 10 * 1024 * 1024) {
+        errorDiv.textContent = 'File size must be less than 10MB.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      try {
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<span class="spinner"></span> Uploading...';
+        
+        const timestamp = Date.now();
+        const fileExt = file.name.split('.').pop();
+        const storagePath = `coach-insurance/${currentAuthenticatedUser.uid}/${timestamp}_insurance.${fileExt}`;
+        
+        // Upload file
+        const storageRef = ref(storage, storagePath);
+        await uploadBytes(storageRef, file);
+        const downloadUrl = await getDownloadURL(storageRef);
+        
+        // Mark old records as superseded
+        const oldRecordsQuery = query(
+          collection(db, 'coachInsuranceRecords'),
+          where('coachId', '==', currentAuthenticatedUser.uid),
+          where('status', '==', 'current')
+        );
+        const oldRecords = await getDocs(oldRecordsQuery);
+        for (const oldDoc of oldRecords.docs) {
+          await updateDoc(oldDoc.ref, { status: 'superseded' });
+        }
+        
+        // Create new insurance record
+        await setDoc(doc(db, 'coachInsuranceRecords', `${currentAuthenticatedUser.uid}_${timestamp}`), {
+          coachId: currentAuthenticatedUser.uid,
+          coachEmail: currentAuthenticatedUser.email,
+          fileName: file.name,
+          fileUrl: downloadUrl,
+          storagePath: storagePath,
+          expirationDate: expirationInput.value,
+          uploadedAt: serverTimestamp(),
+          status: 'current'
+        });
+        
+        // Update practitioner application if exists
+        const appRef = doc(db, 'practitionerApplications', currentAuthenticatedUser.uid);
+        const appDoc = await getDoc(appRef);
+        if (appDoc.exists()) {
+          await updateDoc(appRef, {
+            'insuranceCertificate.url': downloadUrl,
+            'insuranceCertificate.fileName': file.name,
+            'insuranceCertificate.storagePath': storagePath,
+            'insuranceCertificate.expirationDate': expirationInput.value,
+            'insuranceCertificate.uploadedAt': serverTimestamp()
+          });
+        }
+        
+        resultDiv.innerHTML = `
+          <div style="color: #16a34a; font-weight: 600;">✅ Insurance Updated Successfully!</div>
+          <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
+            New expiration: ${expirationDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          </p>
+        `;
+        resultDiv.style.display = 'block';
+        
+        // Reload insurance status
+        setTimeout(() => loadInsuranceStatus(), 1500);
+        
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '📤 Upload Updated Insurance';
+        
+        // Clear form
+        expirationInput.value = '';
+        fileInput.value = '';
+        
+      } catch (error) {
+        console.error('Error uploading insurance:', error);
+        errorDiv.textContent = `Upload failed: ${error.message}`;
+        errorDiv.style.display = 'block';
+        
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '📤 Upload Updated Insurance';
+      }
+    };
 
-// SECURITY: Force fresh authentication for HIPAA compliance
+// SECURITY: Force fresh authentication for portal security
 // Clear any existing authentication session on page load
-console.log('🔒 SECURITY: Forcing fresh authentication for clinical compliance');
+console.log('🔒 SECURITY: Forcing fresh authentication for portal access');
 signOut(auth).catch(err => console.log('No existing session to clear:', err));
 
 // Always show login modal initially
-showCoachLoginModal("Welcome! Please sign in to access your practitioner portal.");
+showCoachLoginModal("Welcome! Please sign in to access your coach portal.");
 
 // Authentication state listener
 onAuthStateChanged(auth, (user) => {
@@ -795,7 +1068,7 @@ window.copyGiftCode = function() {
   <div style="background:#fff;color:var(--brand-primary);padding:3em 2.5em 2.5em 2.5em;border-radius:16px;box-shadow:0 20px 40px var(--brand-primary-rgba);max-width:420px;width:90%;position:relative;">
     <div style="text-align:center;margin-bottom:2em;">
       <h2 style="margin:0;color:var(--brand-primary);font-size:1.8em;font-weight:300;margin-bottom:0.5em;">✨ Welcome</h2>
-      <p style="color:#667;font-size:1em;margin:0;line-height:1.4;">Access your practitioner portal to support your clients' wellness journey</p>
+      <p style="color:#667;font-size:1em;margin:0;line-height:1.4;">Access your coach portal to support your clients' wellness journey</p>
     </div>
     
     <div style="margin-bottom:1.5em;">
@@ -816,7 +1089,7 @@ window.copyGiftCode = function() {
     
     <div style="text-align:center;margin-top:2em;padding-top:1.5em;border-top:1px solid #f0f8f9;">
       <p style="color:#8fa8ac;font-size:0.85em;margin:0;line-height:1.4;">
-        🔐 Secure access for wellness practitioners<br>
+        🔐 Secure access for wellness coaches<br>
         
       </p>
     </div>

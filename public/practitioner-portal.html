@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InkWell - Practitioner Portal</title>
+    <title>InkWell - Coach Portal</title>
     <style>
         :root {
             --brand-primary: #2A6972;
@@ -506,7 +506,7 @@
         <div class="login-container">
             <div class="login-logo">
                 <img src="InkWell-Logo.png" alt="InkWell">
-                <h1>Practitioner Portal</h1>
+                <h1>Coach Portal</h1>
                 <p>Sign in to access your dashboard</p>
             </div>
             
@@ -546,7 +546,7 @@
             </form>
             
             <div class="login-footer">
-                <p>Don't have practitioner access?</p>
+                <p>Don't have coach access?</p>
                 <p><a href="mailto:support@inkwelljournal.io">Contact Support</a> to apply</p>
             </div>
         </div>
@@ -559,7 +559,7 @@
         <div class="header-logo">
             <img src="InkWell-Logo.png" alt="InkWell">
             <div>
-                <h1 style="font-size: 1.5em;">Practitioner Portal</h1>
+                <h1 style="font-size: 1.5em;">Coach Portal</h1>
                 <p style="font-size: 0.9em; opacity: 0.9;" id="headerUserInfo">Loading...</p>
             </div>
         </div>
@@ -846,27 +846,14 @@
             <div class="card">
                 <h2 class="card-title">⚙️ Practice Settings</h2>
                 
-                <div class="checkbox-group" style="background: #fef3c7; border: 2px solid var(--warning-yellow);">
-                    <input type="checkbox" id="requiresHipaaWaiver">
-                    <div>
-                        <label for="requiresHipaaWaiver" style="font-weight: 600; color: #92400e;">
-                            ⚕️ My practice requires HIPAA compliance
-                        </label>
-                        <p style="margin: 0.5em 0 0 0; color: #92400e; font-size: 0.9em;">
-                            If checked, all clients who connect with you will be required to acknowledge our 
-                            <a href="hipaa-waiver.html" target="_blank" style="color: var(--brand-primary); text-decoration: underline;">HIPAA authorization and consent form</a>.
-                        </p>
-                    </div>
-                </div>
-                
-                <div class="checkbox-group" style="margin-top: 1.5em;">
+                <div class="checkbox-group" style="margin-top: 1em;">
                     <input type="checkbox" id="freeAgentOptIn">
                     <div>
                         <label for="freeAgentOptIn" style="font-weight: 600;">
                             🌟 Become an InkWell Free Agent
                         </label>
                         <p style="margin: 0.5em 0 0 0; color: #6b7280; font-size: 0.9em;">
-                            Allow any InkWell user to select you as their practitioner. You'll appear in the practitioner directory and can grow your practice through the platform.
+                            Allow any InkWell user to select you as their coach. You'll appear in the coach directory and can grow your practice through the platform.
                         </p>
                     </div>
                 </div>
@@ -968,13 +955,13 @@
                     try {
                         const appDoc = await getDoc(doc(db, 'practitionerApplications', user.uid));
                         if (appDoc.exists() && appDoc.data().status === 'pending') {
-                            alert('Your practitioner application is pending approval. You will receive an email when approved (typically within 72 hours).');
+                            alert('Your coach application is pending approval. You will receive an email when approved (typically within 72 hours).');
                         } else {
-                            alert('You do not have practitioner access. Please apply to become a practitioner first.');
+                            alert('You do not have coach access. Please apply to become a coach first.');
                         }
                     } catch (appError) {
                         console.error('Error checking application:', appError);
-                        alert('You do not have practitioner access.');
+                        alert('You do not have coach access.');
                     }
                     await signOut(auth);
                     showLoginScreen();
@@ -1117,7 +1104,6 @@
 
         function loadSettings() {
             try {
-                document.getElementById('requiresHipaaWaiver').checked = practitionerData.requiresHipaaWaiver || false;
                 document.getElementById('freeAgentOptIn').checked = practitionerData.freeAgentOptIn || false;
                 
                 if (practitionerData.freeAgentOptIn) {
@@ -1239,7 +1225,6 @@
             const freeAgentOptIn = document.getElementById('freeAgentOptIn').checked;
 
             const updates = {
-                requiresHipaaWaiver: document.getElementById('requiresHipaaWaiver').checked,
                 freeAgentOptIn: freeAgentOptIn,
                 updatedAt: serverTimestamp()
             };

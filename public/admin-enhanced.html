@@ -591,7 +591,7 @@
                 <button class="tab active" onclick="switchTab('overview')">📊 Overview</button>
                 <button class="tab" onclick="switchTab('users')">👥 Users</button>
                 <button class="tab" onclick="switchTab('betaProgress')">🧪 Beta Progress</button>
-                <button class="tab" onclick="switchTab('practitioners')">🏥 Practitioners</button>
+                <button class="tab" onclick="switchTab('practitioners')">🏥 Coaches</button>
                 <button class="tab" onclick="switchTab('subscriptions')">💳 Subscriptions</button>
                 <button class="tab" onclick="switchTab('pending')">⏳ Pending Approvals</button>
                 <button class="tab" onclick="switchTab('tools')">🔧 Tools</button>
@@ -609,7 +609,7 @@
                     </div>
                     
                     <div class="metric-card success">
-                        <h3>Active Practitioners</h3>
+                        <h3>Active Coaches</h3>
                         <div class="metric-value" id="totalPractitioners">-</div>
                         <div class="metric-trend neutral" id="practitionersTrend">
                             <span>Loading...</span>
@@ -646,7 +646,7 @@
                         <h3>Stripe Connected</h3>
                         <div class="metric-value" id="stripeConnected">-</div>
                         <div class="metric-trend neutral">
-                            <span>Practitioners with bank linked</span>
+                            <span>Coaches with bank linked</span>
                         </div>
                     </div>
                     
@@ -792,13 +792,13 @@
             <div id="practitionersTab" class="tab-content">
                 <div class="data-table-container">
                     <div class="data-table-header">
-                        <h2>🏥 Approved Practitioners</h2>
-                        <input type="text" class="search-box" placeholder="Search practitioners..." id="practitionerSearch" oninput="filterPractitioners()">
+                        <h2>🏥 Approved Coaches</h2>
+                        <input type="text" class="search-box" placeholder="Search coaches..." id="practitionerSearch" oninput="filterPractitioners()">
                     </div>
                     <div id="practitionersTableContainer">
                         <div class="loading">
                             <div class="spinner"></div>
-                            Loading practitioners...
+                            Loading coaches...
                         </div>
                     </div>
                 </div>
@@ -860,21 +860,21 @@
                 
                 <div class="data-table-container" style="margin-top: 24px;">
                     <div class="data-table-header">
-                        <h2>📧 Practitioner Invitations</h2>
+                        <h2>📧 Coach Invitations</h2>
                     </div>
                     <div style="padding: 24px;">
                         <div style="background: #d1ecf1; border: 1px solid #bee5eb; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
                             <h4 style="margin-top: 0; color: #0c5460;">📬 Send Registration Invitations</h4>
-                            <p style="margin-bottom: 0;">Use this tool to manually invite practitioners to register. Enter their email and name below.</p>
+                            <p style="margin-bottom: 0;">Use this tool to manually invite coaches to register. Enter their email and name below.</p>
                         </div>
                         
                         <div style="display: grid; gap: 16px; max-width: 500px;">
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label>Practitioner Email</label>
-                                <input type="email" id="inviteEmail" placeholder="practitioner@example.com" style="width: 100%; padding: 12px; border: 2px solid #e1e8ed; border-radius: 6px;">
+                                <label>Coach Email</label>
+                                <input type="email" id="inviteEmail" placeholder="coach@example.com" style="width: 100%; padding: 12px; border: 2px solid #e1e8ed; border-radius: 6px;">
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label>Practitioner Name</label>
+                                <label>Coach Name</label>
                                 <input type="text" id="inviteName" placeholder="Dr. Jane Smith" style="width: 100%; padding: 12px; border: 2px solid #e1e8ed; border-radius: 6px;">
                             </div>
                             <button onclick="sendManualInvitation()" class="btn btn-success">
@@ -896,6 +896,94 @@
                                 <p style="color: #666; font-style: italic;">Click "Refresh" to load pending invitations...</p>
                             </div>
                         </div>
+                    </div>
+                </div>
+                
+                <!-- Insurance Expiration Management -->
+                <div class="data-table-container" style="margin-top: 24px;">
+                    <div class="data-table-header">
+                        <h2>🛡️ Coach Insurance Status</h2>
+                    </div>
+                    <div style="padding: 24px;">
+                        <div style="background: #fef3c7; border: 1px solid #fcd34d; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                            <h4 style="margin-top: 0; color: #92400e;">⚠️ Insurance Expiration Monitoring</h4>
+                            <p style="margin-bottom: 8px;">This section shows coaches with insurance expiring within 60 days or already expired.</p>
+                            <p style="margin-bottom: 0;"><strong>Automated:</strong> Monthly emails are sent to coaches with expiring insurance on the 1st of each month.</p>
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+                            <button onclick="loadExpiringInsurance()" class="btn btn-primary">
+                                🔍 Check Expiring Insurance
+                            </button>
+                            <button onclick="triggerInsuranceCheck()" class="btn btn-warning" style="background: #f59e0b; color: white;">
+                                📧 Send Warning Emails Now
+                            </button>
+                        </div>
+                        
+                        <div id="expiringInsuranceContainer">
+                            <p style="color: #666; font-style: italic;">Click "Check Expiring Insurance" to load the list...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Test Insights Email -->
+                <div class="data-table-container" style="margin-top: 24px;">
+                    <div class="data-table-header">
+                        <h2>✉️ Test Sophy Insights Email</h2>
+                    </div>
+                    <div style="padding: 24px;">
+                        <div style="background: #e8f4f8; border: 1px solid #b8daff; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                            <h4 style="margin-top: 0; color: #004085;">🧪 Test Insights for Specific User</h4>
+                            <p style="margin-bottom: 0;">Manually trigger weekly insights email for a user to debug email delivery issues.</p>
+                        </div>
+                        
+                        <div style="display: grid; gap: 16px; max-width: 500px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>User Email</label>
+                                <input type="email" id="testInsightsEmail" placeholder="user@example.com" value="tfershi@pm.me" style="width: 100%; padding: 12px; border: 2px solid #e1e8ed; border-radius: 6px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Period</label>
+                                <select id="testInsightsPeriod" style="width: 100%; padding: 12px; border: 2px solid #e1e8ed; border-radius: 6px;">
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                            </div>
+                            <button onclick="testInsightsEmail()" class="btn btn-primary" id="testInsightsBtn">
+                                📧 Send Test Insights
+                            </button>
+                        </div>
+                        
+                        <div id="testInsightsResult" style="margin-top: 16px;"></div>
+                    </div>
+                </div>
+                
+                <!-- SMS Deduplication Cleanup -->
+                <div class="data-table-container" style="margin-top: 24px;">
+                    <div class="data-table-header">
+                        <h2>📱 SMS Deduplication Cleanup</h2>
+                    </div>
+                    <div style="padding: 24px;">
+                        <div style="background: #f0fdf4; border: 1px solid #86efac; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                            <h4 style="margin-top: 0; color: #166534;">🧹 Database Maintenance</h4>
+                            <p style="margin-bottom: 8px;">The <code>smsDeduplication</code> collection tracks sent SMS milestones to prevent duplicates.</p>
+                            <p style="margin-bottom: 0;"><strong>Automated:</strong> Old records (30+ days) are cleaned up monthly on the 1st at 3 AM ET.</p>
+                        </div>
+                        
+                        <div id="smsDedupeStatus" style="margin-bottom: 16px;">
+                            <p style="color: #666; font-style: italic;">Loading status...</p>
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                            <button onclick="loadSmsDedupeStatus()" class="btn btn-secondary">
+                                🔄 Refresh Status
+                            </button>
+                            <button onclick="runSmsDedupeCleanup()" class="btn btn-warning" style="background: #f59e0b; color: white;" id="cleanupBtn">
+                                🗑️ Run Cleanup Now
+                            </button>
+                        </div>
+                        
+                        <div id="smsDedupeResult" style="margin-top: 16px;"></div>
                     </div>
                 </div>
             </div>
@@ -920,6 +1008,10 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const functions = getFunctions(app, 'us-central1');
+        
+        // Flag to prevent duplicate loading (manual login vs onAuthStateChanged)
+        let isManualLoginInProgress = false;
+        let dashboardAlreadyLoaded = false;
 
         window.auth = auth;
         window.db = db;
@@ -961,6 +1053,9 @@
                 loginBtn.disabled = true;
                 loginBtn.textContent = 'Signing in...';
                 
+                // Set flag to prevent duplicate loading from onAuthStateChanged
+                isManualLoginInProgress = true;
+                
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const adminDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
                 
@@ -975,6 +1070,8 @@
                 
                 // Load all data
                 await loadDashboard();
+                dashboardAlreadyLoaded = true;
+                isManualLoginInProgress = false;
                 
             } catch (error) {
                 console.error('Login error:', error);
@@ -994,6 +1091,8 @@
         // Logout
         window.adminLogout = async () => {
             await signOut(auth);
+            dashboardAlreadyLoaded = false;
+            isManualLoginInProgress = false;
             document.getElementById('loginSection').style.display = 'flex';
             document.getElementById('dashboardSection').classList.remove('active');
         };
@@ -1240,7 +1339,7 @@
 
         window.renderPractitionersTable = (practitioners) => {
             if (practitioners.length === 0) {
-                document.getElementById('practitionersTableContainer').innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏥</div><div>No practitioners found</div></div>';
+                document.getElementById('practitionersTableContainer').innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏥</div><div>No coaches found</div></div>';
                 return;
             }
             
@@ -1303,7 +1402,7 @@
         };
 
         window.removePractitioner = async (practitionerId) => {
-            if (!confirm('⚠️ Remove practitioner access?\n\nThis will:\n- Remove coach role\n- Disable portal access\n- Preserve historical data\n\nContinue?')) {
+            if (!confirm('⚠️ Remove coach access?\n\nThis will:\n- Remove coach role\n- Disable portal access\n- Preserve historical data\n\nContinue?')) {
                 return;
             }
             
@@ -1314,7 +1413,7 @@
                     updatedAt: Timestamp.now()
                 });
                 
-                alert('✅ Practitioner access removed');
+                alert('✅ Coach access removed');
                 await loadPractitioners();
                 await loadMetrics();
             } catch (error) {
@@ -1486,12 +1585,12 @@
         };
 
         window.approvePractitioner = async (practitionerId) => {
-            if (!confirm('Approve this practitioner application?')) return;
+            if (!confirm('Approve this coach application?')) return;
             
             try {
                 const approveFn = httpsCallable(functions, 'approvePractitioner');
                 await approveFn({ practitionerId });
-                alert('✅ Practitioner approved!');
+                alert('✅ Coach approved!');
                 await loadPendingApplications();
                 await loadMetrics();
                 await loadPractitioners();
@@ -1521,6 +1620,12 @@
 
         // Auto-login if already authenticated
         onAuthStateChanged(auth, async (user) => {
+            // Skip if manual login is in progress (prevents duplicate loading)
+            if (isManualLoginInProgress || dashboardAlreadyLoaded) {
+                console.log('Skipping onAuthStateChanged - manual login in progress or already loaded');
+                return;
+            }
+            
             if (user) {
                 try {
                     const adminDoc = await getDoc(doc(db, 'users', user.uid));
@@ -1529,6 +1634,7 @@
                         document.getElementById('loginSection').style.display = 'none';
                         document.getElementById('dashboardSection').classList.add('active');
                         await loadDashboard();
+                        dashboardAlreadyLoaded = true;
                     }
                 } catch (error) {
                     console.error('Auto-login error:', error);
@@ -2641,6 +2747,367 @@ ${JSON.stringify(result.results.slice(0, 5), null, 2)}
             
             alert(`Would send ${reminderType} reminder to ${needsReminder.length} users:\n\n${needsReminder.map(u => u.email).join('\n')}\n\n(Email integration coming soon)`);
         };
+        
+        // Load expiring insurance list
+        window.loadExpiringInsurance = async function() {
+            const container = document.getElementById('expiringInsuranceContainer');
+            container.innerHTML = '<p style="color: #17a2b8;">🔍 Checking insurance status...</p>';
+            
+            try {
+                const now = new Date();
+                const sixtyDaysFromNow = new Date(now.getTime() + (60 * 24 * 60 * 60 * 1000));
+                
+                // Get all coaches
+                const coachesQuery = query(collection(db, 'users'), where('userRole', '==', 'practitioner'));
+                const coachesSnap = await getDocs(coachesQuery);
+                
+                if (coachesSnap.empty) {
+                    container.innerHTML = '<p style="color: #666;">No coaches found in the system.</p>';
+                    return;
+                }
+                
+                const expiringCoaches = [];
+                const noInsurance = [];
+                
+                for (const coachDoc of coachesSnap.docs) {
+                    const coach = coachDoc.data();
+                    
+                    // Get their current insurance record
+                    const insuranceQuery = query(
+                        collection(db, 'coachInsuranceRecords'),
+                        where('coachId', '==', coachDoc.id),
+                        where('status', '==', 'current'),
+                        orderBy('uploadedAt', 'desc'),
+                        limit(1)
+                    );
+                    
+                    const insuranceSnap = await getDocs(insuranceQuery);
+                    
+                    if (insuranceSnap.empty) {
+                        noInsurance.push({
+                            id: coachDoc.id,
+                            name: coach.displayName || coach.email,
+                            email: coach.email
+                        });
+                        continue;
+                    }
+                    
+                    const insuranceData = insuranceSnap.docs[0].data();
+                    const expirationDate = insuranceData.expirationDate ? new Date(insuranceData.expirationDate) : null;
+                    
+                    if (expirationDate && expirationDate <= sixtyDaysFromNow) {
+                        const daysUntilExpiration = Math.ceil((expirationDate - now) / (24 * 60 * 60 * 1000));
+                        expiringCoaches.push({
+                            id: coachDoc.id,
+                            name: coach.displayName || coach.email,
+                            email: coach.email,
+                            expirationDate: expirationDate,
+                            daysUntilExpiration: daysUntilExpiration,
+                            fileUrl: insuranceData.fileUrl
+                        });
+                    }
+                }
+                
+                // Sort by days until expiration (most urgent first)
+                expiringCoaches.sort((a, b) => a.daysUntilExpiration - b.daysUntilExpiration);
+                
+                let html = `
+                    <div style="margin-bottom: 16px; padding: 12px; background: #e8f5e9; border-radius: 8px;">
+                        <strong>📊 Summary:</strong> ${coachesSnap.size} total coaches, 
+                        <span style="color: ${expiringCoaches.length > 0 ? '#f59e0b' : '#22c55e'}; font-weight: bold;">
+                            ${expiringCoaches.length} expiring within 60 days
+                        </span>, 
+                        <span style="color: ${noInsurance.length > 0 ? '#ef4444' : '#22c55e'}; font-weight: bold;">
+                            ${noInsurance.length} with no insurance on file
+                        </span>
+                    </div>
+                `;
+                
+                if (expiringCoaches.length > 0 || noInsurance.length > 0) {
+                    html += `
+                        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                            <thead>
+                                <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                    <th style="padding: 12px; text-align: left;">Coach</th>
+                                    <th style="padding: 12px; text-align: left;">Status</th>
+                                    <th style="padding: 12px; text-align: left;">Expires</th>
+                                    <th style="padding: 12px; text-align: center;">Certificate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    for (const coach of expiringCoaches) {
+                        let statusColor = '#f59e0b';
+                        let statusBg = '#fef3c7';
+                        let statusText = `⚠️ ${coach.daysUntilExpiration} days`;
+                        
+                        if (coach.daysUntilExpiration <= 0) {
+                            statusColor = '#ef4444';
+                            statusBg = '#fee2e2';
+                            statusText = '❌ EXPIRED';
+                        } else if (coach.daysUntilExpiration <= 30) {
+                            statusColor = '#f97316';
+                            statusBg = '#ffedd5';
+                            statusText = `🔥 ${coach.daysUntilExpiration} days`;
+                        }
+                        
+                        html += `
+                            <tr style="border-bottom: 1px solid #dee2e6;">
+                                <td style="padding: 12px;">
+                                    <strong>${coach.name}</strong><br>
+                                    <small style="color: #666;">${coach.email}</small>
+                                </td>
+                                <td style="padding: 12px;">
+                                    <span style="background: ${statusBg}; color: ${statusColor}; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 12px;">
+                                        ${statusText}
+                                    </span>
+                                </td>
+                                <td style="padding: 12px;">
+                                    ${coach.expirationDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                </td>
+                                <td style="padding: 12px; text-align: center;">
+                                    ${coach.fileUrl ? `<a href="${coach.fileUrl}" target="_blank" style="color: #2A6972;">View →</a>` : '-'}
+                                </td>
+                            </tr>
+                        `;
+                    }
+                    
+                    for (const coach of noInsurance) {
+                        html += `
+                            <tr style="border-bottom: 1px solid #dee2e6; background: #fef2f2;">
+                                <td style="padding: 12px;">
+                                    <strong>${coach.name}</strong><br>
+                                    <small style="color: #666;">${coach.email}</small>
+                                </td>
+                                <td style="padding: 12px;">
+                                    <span style="background: #fee2e2; color: #ef4444; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 12px;">
+                                        ❌ NO RECORD
+                                    </span>
+                                </td>
+                                <td style="padding: 12px; color: #999;">-</td>
+                                <td style="padding: 12px; text-align: center; color: #999;">-</td>
+                            </tr>
+                        `;
+                    }
+                    
+                    html += '</tbody></table>';
+                } else {
+                    html += '<p style="color: #22c55e; font-weight: 600;">✅ All coaches have valid insurance for 60+ days!</p>';
+                }
+                
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading insurance status:', error);
+                container.innerHTML = `
+                    <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 16px; border-radius: 8px;">
+                        <strong>❌ Error loading insurance status:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        };
+        
+        // Trigger manual insurance check (sends warning emails)
+        window.triggerInsuranceCheck = async function() {
+            if (!confirm('This will send warning emails to all coaches with insurance expiring within 60 days. Continue?')) {
+                return;
+            }
+            
+            const container = document.getElementById('expiringInsuranceContainer');
+            container.innerHTML = '<p style="color: #f59e0b;">📧 Sending warning emails...</p>';
+            
+            try {
+                const triggerCheck = httpsCallable(functions, 'triggerInsuranceCheck');
+                const result = await triggerCheck();
+                
+                container.innerHTML = `
+                    <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                        <strong>✅ Insurance check complete!</strong><br>
+                        <p style="margin: 8px 0 0 0;">
+                            Checked ${result.data.totalChecked} coaches, found ${result.data.expiringCoaches?.length || 0} with expiring insurance.
+                        </p>
+                    </div>
+                `;
+                
+                // Reload the list
+                await window.loadExpiringInsurance();
+                
+            } catch (error) {
+                console.error('Error triggering insurance check:', error);
+                container.innerHTML = `
+                    <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 16px; border-radius: 8px;">
+                        <strong>❌ Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        };
+        
+        // Test insights email for specific user
+        window.testInsightsEmail = async function() {
+            const email = document.getElementById('testInsightsEmail').value.trim();
+            const period = document.getElementById('testInsightsPeriod').value;
+            const btn = document.getElementById('testInsightsBtn');
+            const resultDiv = document.getElementById('testInsightsResult');
+            
+            if (!email) {
+                resultDiv.innerHTML = '<div style="background: #f8d7da; padding: 12px; border-radius: 8px; color: #721c24;">Please enter an email address.</div>';
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Sending...';
+            resultDiv.innerHTML = '<p style="color: #17a2b8;">Generating and sending insights email...</p>';
+            
+            try {
+                const testInsights = httpsCallable(functions, 'testInsightsForUser');
+                const result = await testInsights({ email, period });
+                
+                if (result.data.success) {
+                    resultDiv.innerHTML = `
+                        <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 16px; border-radius: 8px;">
+                            <strong>✅ ${result.data.message}</strong>
+                            <p style="margin: 8px 0 0 0;"><strong>User Preferences:</strong></p>
+                            <pre style="background: #f8f9fa; padding: 8px; border-radius: 4px; font-size: 12px; overflow-x: auto;">${JSON.stringify(result.data.insightsPreferences, null, 2)}</pre>
+                            <p style="margin: 8px 0 0 0;"><strong>Stats:</strong></p>
+                            <pre style="background: #f8f9fa; padding: 8px; border-radius: 4px; font-size: 12px; overflow-x: auto;">${JSON.stringify(result.data.stats, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div style="background: #fff3cd; border: 1px solid #ffeeba; padding: 16px; border-radius: 8px;">
+                            <strong>⚠️ Test failed:</strong> ${result.data.error}
+                            ${result.data.insightsPreferences ? `<p style="margin: 8px 0 0 0;"><strong>User Preferences:</strong></p><pre style="background: #f8f9fa; padding: 8px; border-radius: 4px; font-size: 12px;">${JSON.stringify(result.data.insightsPreferences, null, 2)}</pre>` : ''}
+                            ${result.data.stats ? `<p style="margin: 8px 0 0 0;"><strong>Stats:</strong></p><pre style="background: #f8f9fa; padding: 8px; border-radius: 4px; font-size: 12px;">${JSON.stringify(result.data.stats, null, 2)}</pre>` : ''}
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error testing insights:', error);
+                resultDiv.innerHTML = `
+                    <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 16px; border-radius: 8px;">
+                        <strong>❌ Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '📧 Send Test Insights';
+        };
+        
+        // SMS Deduplication Cleanup Functions
+        window.loadSmsDedupeStatus = async function() {
+            const statusDiv = document.getElementById('smsDedupeStatus');
+            
+            try {
+                // Get total count of deduplication records
+                const dedupeSnapshot = await getDocs(collection(db, 'smsDeduplication'));
+                const totalRecords = dedupeSnapshot.size;
+                
+                // Get last cleanup report
+                const reportDoc = await getDoc(doc(db, 'adminReports', 'smsDeduplicationCleanup'));
+                const reportData = reportDoc.exists() ? reportDoc.data() : null;
+                
+                // Count old records (older than 30 days)
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                
+                let oldRecords = 0;
+                dedupeSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.sentAt && data.sentAt.toDate() < thirtyDaysAgo) {
+                        oldRecords++;
+                    }
+                });
+                
+                let lastCleanupHtml = 'Never run';
+                if (reportData && reportData.lastRun) {
+                    const lastRun = reportData.lastRun.toDate();
+                    lastCleanupHtml = `${lastRun.toLocaleDateString()} at ${lastRun.toLocaleTimeString()} (deleted ${reportData.recordsDeleted} records)`;
+                }
+                
+                statusDiv.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
+                        <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: bold; color: #1e88e5;">${totalRecords}</div>
+                            <div style="color: #666; font-size: 14px;">Total Records</div>
+                        </div>
+                        <div style="background: ${oldRecords > 0 ? '#fff3cd' : '#d4edda'}; padding: 16px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: bold; color: ${oldRecords > 0 ? '#856404' : '#155724'};">${oldRecords}</div>
+                            <div style="color: #666; font-size: 14px;">Old Records (30+ days)</div>
+                        </div>
+                    </div>
+                    <p style="margin-top: 12px; color: #666; font-size: 14px;">
+                        <strong>Last Cleanup:</strong> ${lastCleanupHtml}
+                    </p>
+                `;
+                
+            } catch (error) {
+                console.error('Error loading SMS dedupe status:', error);
+                statusDiv.innerHTML = `<div style="background: #f8d7da; padding: 12px; border-radius: 8px; color: #721c24;">Error loading status: ${error.message}</div>`;
+            }
+        };
+        
+        window.runSmsDedupeCleanup = async function() {
+            const btn = document.getElementById('cleanupBtn');
+            const resultDiv = document.getElementById('smsDedupeResult');
+            
+            if (!confirm('This will delete SMS deduplication records older than 30 days. Continue?')) {
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Running cleanup...';
+            resultDiv.innerHTML = '<p style="color: #17a2b8;">Running SMS deduplication cleanup...</p>';
+            
+            try {
+                const triggerCleanup = httpsCallable(functions, 'triggerSmsDeduplicationCleanup');
+                const result = await triggerCleanup({ daysToKeep: 30 });
+                
+                if (result.data.success) {
+                    resultDiv.innerHTML = `
+                        <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 16px; border-radius: 8px;">
+                            <strong>✅ Cleanup Complete</strong>
+                            <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                                <li>Deleted: ${result.data.deleted} records</li>
+                                <li>Records before: ${result.data.totalRecordsBefore}</li>
+                                <li>Records after: ${result.data.totalRecordsAfter}</li>
+                                <li>Cutoff date: ${new Date(result.data.cutoffDate).toLocaleDateString()}</li>
+                            </ul>
+                        </div>
+                    `;
+                    // Refresh status
+                    await loadSmsDedupeStatus();
+                } else {
+                    resultDiv.innerHTML = `
+                        <div style="background: #fff3cd; border: 1px solid #ffeeba; padding: 16px; border-radius: 8px;">
+                            <strong>⚠️ ${result.data.message}</strong>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error running cleanup:', error);
+                resultDiv.innerHTML = `
+                    <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 16px; border-radius: 8px;">
+                        <strong>❌ Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '🗑️ Run Cleanup Now';
+        };
+        
+        // Load SMS dedupe status when Tools tab is opened
+        document.querySelectorAll('.main-nav a').forEach(link => {
+            link.addEventListener('click', function() {
+                if (this.textContent.includes('Tools')) {
+                    setTimeout(loadSmsDedupeStatus, 100);
+                }
+            });
+        });
     </script>
 
     <!-- Detail Modal -->

@@ -7368,6 +7368,9 @@ window.updateWishTimeline = function() {
 };
 
 // --- NEW: Progress Calculation & Animation ---
+// Track milestones being sent to prevent race conditions
+const milestoneSendingLock = {};
+
 // Check for WISH milestones and send SMS notifications
 async function checkAndSendMilestoneSMS(progressPercent, daysElapsed, totalDays, userId) {
   try {
@@ -7387,9 +7390,18 @@ async function checkAndSendMilestoneSMS(progressPercent, daysElapsed, totalDays,
       return; // No milestone reached yet
     }
     
-    // Check if this milestone has already been sent
-    const manifestRef = doc(db, "manifests", userId);
-    const manifestSnap = await getDoc(manifestRef);
+    // In-memory lock to prevent race conditions from multiple calls
+    const lockKey = `${userId}_${milestone}`;
+    if (milestoneSendingLock[lockKey]) {
+      console.log(`⏳ Already sending ${milestone} milestone for this user, skipping duplicate`);
+      return;
+    }
+    milestoneSendingLock[lockKey] = true;
+    
+    try {
+      // Check if this milestone has already been sent
+      const manifestRef = doc(db, "manifests", userId);
+      const manifestSnap = await getDoc(manifestRef);
     
     if (!manifestSnap.exists()) {
       console.log("⚠️ No manifest found for milestone check");
@@ -7460,6 +7472,13 @@ async function checkAndSendMilestoneSMS(progressPercent, daysElapsed, totalDays,
       }
     } else {
       console.error("❌ Failed to send milestone SMS");
+    }
+    
+    } catch (innerError) {
+      console.error("❌ Error in milestone SMS logic:", innerError);
+    } finally {
+      // Release the lock
+      delete milestoneSendingLock[lockKey];
     }
     
   } catch (error) {
@@ -8049,18 +8068,18 @@ document.head.appendChild(themeStyle);
       </button>
       
       <div style="width: 90%; margin: 0 auto;">
-        <!-- Practitioner Interest Section -->
+        <!-- Coach Interest Section -->
         <div style="margin-top: 1.5em; padding-top: 1em; border-top: 1px solid #e0e0e0;">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.95em; color: #2A6972; font-weight: 600;">
             <input type="checkbox" id="practitionerInterest" style="width: auto; margin: 0;">
-            <span>💼 I'm interested in becoming an InkWell Practitioner</span>
+            <span>💼 I'm interested in becoming an InkWell Coach</span>
           </label>
           
           <!-- Expandable Info Section -->
           <div id="practitionerInfoSection" style="display: none; background: linear-gradient(135deg, #f0f8ff 0%, #e6f3f8 100%); padding: 1em; border-radius: 8px; margin-top: 0.75em; border-left: 4px solid #2A6972; box-shadow: 0 2px 8px rgba(42,105,114,0.1);">
-            <h4 style="margin: 0 0 0.5em 0; color: #2A6972; font-size: 1em;">What is an InkWell Practitioner?</h4>
+            <h4 style="margin: 0 0 0.5em 0; color: #2A6972; font-size: 1em;">What is an InkWell Coach?</h4>
             <p style="font-size: 0.85em; line-height: 1.6; color: #0D3F45; margin: 0 0 0.75em 0;">
-              InkWell Practitioners are licensed mental health professionals, therapists, coaches, and counselors who support clients through their journaling journey. Practitioners receive client-selected journal entries and can provide thoughtful, supportive responses.
+              InkWell Coaches are certified life coaches and wellness professionals who support clients through their journaling journey. Coaches receive client-selected journal entries and can provide thoughtful, supportive responses.
             </p>
             <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; background: white; padding: 0.75em; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.1);">
               <input type="checkbox" id="practitionerInterestConfirm" style="width: auto; margin-top: 4px;">
@@ -8374,10 +8393,10 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 
     <div class="workflow-divider"></div>
 
-    <!-- Practitioner tag + Save belong to Journal tab -->
+    <!-- Coach tag + Save belong to Journal tab -->
     <div class="coach-tag-toggle">
       <input type="checkbox" id="coachReviewCheckbox" />
-      <label for="coachReviewCheckbox">📬 Send this entry to my practitioner</label>
+      <label for="coachReviewCheckbox">📬 Send this entry to my coach</label>
     </div>
 
     <button class="btn" onclick="saveJournalEntry()" style="margin-top:0.5em;">Save Journal Entry</button>
@@ -9363,11 +9382,11 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       </p>
     </div>
     
-<!-- Practitioner Section -->
+<!-- Coach Section -->
 <div style="background: #f0f8ff; border: 1px solid #c5d7f0; border-radius: 8px; padding: 1.5em; margin-bottom: 1.5em; text-align: left;">
   <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em; justify-content: space-between;">
-    🔹 My Practitioner
-    <button onclick="clearPendingCoachInvite()" class="btn-gray" style="padding: 0.2em 0.5em; font-size: 0.8em;">🔄 Refresh</button>
+    🔹 My Coach
+    <button onclick="loadPractitionerStatus()" class="btn-gray" style="padding: 0.2em 0.5em; font-size: 0.8em;">🔄 Refresh</button>
   </h3>
   
   <!-- Current Connection Status -->
@@ -9375,34 +9394,36 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     <!-- Will be populated by JavaScript -->
   </div>
   
-  <!-- Invite New Practitioner -->
-  <div style="margin-bottom: 1em;">
-    <label for="coachEmail" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Practitioner's Email Address:</label>
-    <input type="email" id="coachEmail" 
-           placeholder="doctor@practice.com" 
-           style="width: 100%; padding: 0.6em; border: 1px solid #ccc; border-radius: 5px; background-color: white; color: #0D3F45; font-size: 0.9em; box-sizing: border-box;" />
+  <!-- Invite New Coach (hidden when connected or pending) -->
+  <div id="inviteCoachSection">
+    <div style="margin-bottom: 1em;">
+      <label for="coachEmail" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Coach's Email Address:</label>
+      <input type="email" id="coachEmail" 
+             placeholder="coach@example.com" 
+             style="width: 100%; padding: 0.6em; border: 1px solid #ccc; border-radius: 5px; background-color: white; color: #0D3F45; font-size: 0.9em; box-sizing: border-box;" />
+    </div>
+    
+    <div style="margin-bottom: 1.5em;">
+      <label for="coachName" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Coach's Name:</label>
+      <input type="text" id="coachName" 
+             placeholder="Jane Smith" 
+             style="width: 100%; padding: 0.6em; border: 1px solid #ccc; border-radius: 5px; background-color: white; color: #0D3F45; font-size: 0.9em; box-sizing: border-box;" />
+    </div>
+    
+    <button onclick="inviteCoach()" class="btn" style="width: 100%; margin-bottom: 1em;">
+      <span id="inviteButtonText">Send InkWell Invitation</span>
+    </button>
+    
+    <div id="inviteStatus" style="margin-bottom: 1em; text-align: center;"></div>
   </div>
-  
-  <div style="margin-bottom: 1.5em;">
-    <label for="coachName" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Practitioner's Name:</label>
-    <input type="text" id="coachName" 
-           placeholder="Dr. Jane Smith" 
-           style="width: 100%; padding: 0.6em; border: 1px solid #ccc; border-radius: 5px; background-color: white; color: #0D3F45; font-size: 0.9em; box-sizing: border-box;" />
-  </div>
-  
-  <button onclick="inviteCoach()" class="btn" style="width: 100%; margin-bottom: 1em;">
-    <span id="inviteButtonText">Send InkWell Invitation</span>
-  </button>
-  
-  <div id="inviteStatus" style="margin-bottom: 1em; text-align: center;"></div>
   
   <!-- Disconnect Section (initially hidden) -->
   <div id="disconnectSection" style="display: none; border-top: 1px solid #ddd; padding-top: 1em; margin-top: 1em;">
     <button onclick="disconnectCoach()" class="btn-danger" style="width: 100%;">
-      🚫 Disconnect from practitioner
+      🚫 Disconnect from coach
     </button>
     <p style="font-size: 0.8em; color: #666; text-align: center; margin: 0.5em 0 0 0;">
-      This will remove your practitioner connection. They will no longer receive your journal entries.
+      This will remove your coach connection. They will no longer receive your journal entries.
     </p>
   </div>
 </div>
@@ -9529,7 +9550,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         This action will:<br>
         • Delete all journal entries and manifests<br>
         • Remove all personal data from our servers<br>
-        • Cancel any practitioner connections<br>
+        • Cancel any coach connections<br>
         • Send you a confirmation email
       </p>
     </div>
@@ -9586,7 +9607,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         <li>All WISH manifests and progress tracking</li>
         <li>Your profile, settings, and preferences</li>
         <li>All behavioral analytics and insights</li>
-        <li>Any practitioner connections and shared data</li>
+        <li>Any coach connections and shared data</li>
       </ul>
       <div style="margin-top: 1em; padding: 1em; background: #ffebee; border-left: 4px solid #d32f2f; color: #c62828; font-weight: 500;">
         ⚠️ This cannot be undone. Your data will be gone forever.
@@ -10684,7 +10705,7 @@ function createPricingModal() {
                 <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>Weekly & monthly email recaps</span></li>
                 <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>20% AI-powered prompts</span></li>
                 <li style="padding: 0.5rem 0; color: var(--font-muted); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem; opacity: 0.5;"><span>×</span> <span>SMS notifications</span></li>
-                <li style="padding: 0.5rem 0; color: var(--font-muted); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem; opacity: 0.5;"><span>×</span> <span>Practitioner connection</span></li>
+                <li style="padding: 0.5rem 0; color: var(--font-muted); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem; opacity: 0.5;"><span>×</span> <span>Coach connection</span></li>
               </ul>
               
               <button disabled style="width: 100%; padding: 0.875rem; background: var(--bg-card); border: 2px solid var(--border-medium); color: var(--font-secondary); border-radius: 10px; font-weight: 600; font-size: 1rem; cursor: not-allowed; opacity: 0.6; font-family: var(--title-font);">Current Plan</button>
@@ -10717,13 +10738,13 @@ function createPricingModal() {
             <div style="background: var(--bg-muted); border: 2px solid var(--brand-alt); border-radius: 16px; padding: 2rem; display: flex; flex-direction: column; transition: all 0.3s;">
               <div style="text-align: center; margin-bottom: 1.5rem;">
                 <div style="font-size: 1.25rem; font-weight: 600; color: var(--brand-alt); margin-bottom: 1rem; font-family: var(--title-font);">Connect</div>
-                <div style="font-size: 3rem; font-weight: 700; color: var(--brand-alt); line-height: 1; font-family: var(--title-font);">$49<span style="font-size: 1.5rem; font-weight: 500;">.99</span></div>
+                <div style="font-size: 3rem; font-weight: 700; color: var(--brand-alt); line-height: 1; font-family: var(--title-font);">$29<span style="font-size: 1.5rem; font-weight: 500;">.99</span></div>
                 <div style="font-size: 0.9rem; color: var(--font-muted); margin-top: 0.5rem;">per month</div>
               </div>
               
               <ul style="list-style: none; padding: 0; margin: 0 0 1.5rem; flex-grow: 1;">
                 <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>All Plus features</span></li>
-                <li style="padding: 0.5rem 0; color: var(--brand-alt); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem; font-weight: 600;"><span>🤝</span> <span>Practitioner connection</span></li>
+                <li style="padding: 0.5rem 0; color: var(--brand-alt); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem; font-weight: 600;"><span>🤝</span> <span>Coach connection</span></li>
                 <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>4 monthly interactions</span></li>
                 <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>24-hour response SLA</span></li>
                 <li style="padding: 0.5rem 0; color: var(--font-secondary); display: flex; align-items: start; gap: 0.5rem; font-size: 0.95rem;"><span style="color: var(--accent-growth);">✓</span> <span>Extra interactions available</span></li>
@@ -12056,6 +12077,7 @@ async function loadPractitionerStatus() {
     const userData = userDoc.data();
     const statusDiv = document.getElementById("coachStatus");
     const disconnectSection = document.getElementById("disconnectSection");
+    const inviteCoachSection = document.getElementById("inviteCoachSection");
     
     // Check if dark theme is active
     const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -12064,7 +12086,9 @@ async function loadPractitionerStatus() {
     const approvedCoaches = await loadApprovedCoaches();
     
     if (userData.connectedCoach) {
-      // User has connected coach
+      // User has connected coach - HIDE invite form to prevent spam
+      if (inviteCoachSection) inviteCoachSection.style.display = "none";
+      
       const connectedBg = isDarkTheme ? 'rgba(42, 105, 114, 0.15)' : '#d4edda';
       const connectedBorder = isDarkTheme ? 'rgba(42, 105, 114, 0.3)' : '#c3e6cb';
       const connectedColor = isDarkTheme ? '#89C9D4' : '#155724';
@@ -12083,7 +12107,9 @@ async function loadPractitionerStatus() {
       document.getElementById("practitionerName").value = userData.connectedPractitioner.name || "";
       
     } else if (userData.pendingPractitionerInvite) {
-      // Invitation sent, waiting
+      // Invitation sent, waiting - HIDE invite form to prevent spam
+      if (inviteCoachSection) inviteCoachSection.style.display = "none";
+      
       const status = userData.pendingPractitionerInvite.status === 'invitation_sent' 
         ? 'Professional invitation sent - awaiting registration'
         : 'Invitation sent - awaiting response';
@@ -12098,11 +12124,16 @@ async function loadPractitionerStatus() {
           <small>Email: ${userData.pendingPractitionerInvite.email}</small><br>
           <small>Sent: ${new Date(userData.pendingPractitionerInvite.sentAt.toDate()).toLocaleDateString()}</small>
         </div>
+        <button onclick="cancelPendingInvite()" class="btn-gray" style="width: 100%; margin-top: 0.5em;">
+          ❌ Cancel Pending Invitation
+        </button>
       `;
       disconnectSection.style.display = "none";
     } else {
-      // No practitioner - show selection options
-      let practitionerOptions = '<option value="">Select a practitioner...</option>';
+      // No coach - SHOW invite form
+      if (inviteCoachSection) inviteCoachSection.style.display = "block";
+      
+      let practitionerOptions = '<option value="">Select a coach...</option>';
       approvedCoaches.forEach(practitioner => {
         practitionerOptions += `<option value="${practitioner.email}" data-name="${practitioner.name}">${practitioner.name}</option>`;
       });
@@ -12118,23 +12149,23 @@ async function loadPractitionerStatus() {
       
       statusDiv.innerHTML = `
         <div style="background: ${noPractitionerBg}; border: 1px solid ${noPractitionerBorder}; color: ${noPractitionerColor}; padding: 0.75rem; border-radius: 4px; margin-bottom: 1em;">
-          <strong>No practitioner connected</strong><br>
-          <small>Choose from approved practitioners or invite a new one</small>
+          <strong>No coach connected</strong><br>
+          <small>Choose from approved coaches or invite a new one</small>
         </div>
         
         <div style="margin-bottom: 1em;">
-          <label style="display: block; margin-bottom: 0.5em; font-weight: 500; color: ${labelColor}; font-size: 0.9em;">Choose from approved practitioners:</label>
+          <label style="display: block; margin-bottom: 0.5em; font-weight: 500; color: ${labelColor}; font-size: 0.9em;">Choose from approved coaches:</label>
 <select id="approvedPractitionerSelect" 
        style="width: 100%; padding: 0.6em; border: 1px solid ${selectBorder}; border-radius: 5px; background-color: ${selectBg}; color: ${selectColor}; font-size: 0.9em; box-sizing: border-box; cursor: pointer;">
   ${practitionerOptions}
 </select>
        <button id="connectToPractitionerBtn" class="btn" onclick="window.connectToApprovedPractitioner()" style="width: 100%; margin-top: 0.5em;">
-  Connect to Selected Practitioner
+  Connect to Selected Coach
 </button>
         </div>
         
         <div style="text-align: center; margin: 1em 0; color: ${dividerColor}; font-style: italic;">
-          — or invite a new practitioner —
+          — or invite a new coach —
         </div>
       `;
 
@@ -12240,7 +12271,7 @@ const connectButton = document.getElementById('connectToPractitionerBtn');
       const originalText = connectButton.innerHTML;
       const originalClass = connectButton.className;
       
-      connectButton.innerHTML = "❌ Please select a practitioner";
+      connectButton.innerHTML = "❌ Please select a coach";
       connectButton.className = "btn-danger";
       connectButton.style.width = "100%";
       connectButton.style.marginTop = "0.5em";
@@ -12358,6 +12389,27 @@ async function invitePractitioner() {
   const inviteButton = document.getElementById("inviteButtonText");
   const statusDiv = document.getElementById("inviteStatus");
   
+  // SPAM PREVENTION: Check if user already has a coach or pending invite
+  try {
+    const auth = window.auth;
+    if (auth?.currentUser) {
+      const userDoc = await window.getDoc(window.doc(window.db, "users", auth.currentUser.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        if (userData.connectedCoach || userData.connectedPractitioner) {
+          statusDiv.innerHTML = '<span style="color: #dc3545;">⚠️ You already have a coach connected. Disconnect first to invite a new one.</span>';
+          return;
+        }
+        if (userData.pendingPractitionerInvite) {
+          statusDiv.innerHTML = '<span style="color: #dc3545;">⚠️ You already have a pending invitation. Wait for a response or cancel it first.</span>';
+          return;
+        }
+      }
+    }
+  } catch (checkError) {
+    console.error("Error checking existing coach status:", checkError);
+  }
+  
   if (!email || !name) {
     statusDiv.innerHTML = '<span style="color: #dc3545;">Please fill in both email and name</span>';
     return;
@@ -12451,10 +12503,40 @@ async function invitePractitioner() {
 // Alias for backward compatibility with HTML onclick
 window.inviteCoach = invitePractitioner;
 window.disconnectCoach = disconnectPractitioner;
+window.cancelPendingInvite = cancelPendingInvite;
+
+// Cancel pending invitation function
+async function cancelPendingInvite() {
+  if (!confirm("Are you sure you want to cancel this pending invitation? You can send a new one afterward.")) {
+    return;
+  }
+  
+  try {
+    const auth = window.auth;
+    if (!auth?.currentUser) return;
+    
+    // Remove pending invitation from user document
+    await window.updateDoc(window.doc(window.db, "users", auth.currentUser.uid), {
+      pendingPractitionerInvite: window.deleteField()
+    });
+    
+    // Clear form fields
+    document.getElementById("coachEmail").value = "";
+    document.getElementById("coachName").value = "";
+    document.getElementById("inviteStatus").innerHTML = '<span style="color: #28a745;">✅ Invitation cancelled. You can now send a new one.</span>';
+    
+    // Reload status to show invite form again
+    loadPractitionerStatus();
+    
+  } catch (error) {
+    console.error("Error cancelling invitation:", error);
+    alert("Error cancelling invitation. Please try again.");
+  }
+}
 
 // Disconnect practitioner function
 async function disconnectPractitioner() {
-  if (!confirm("Are you sure you want to disconnect from your practitioner? They will no longer receive your journal entries.")) {
+  if (!confirm("Are you sure you want to disconnect from your coach? They will no longer receive your journal entries.")) {
     return;
   }
   

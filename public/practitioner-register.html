@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InkWell - Practitioner Registration</title>
+    <title>InkWell - Coach Registration</title>
     <style>
         :root {
             --brand-primary: #2A6972;
@@ -115,6 +115,100 @@
         .required {
             color: #dc3545;
         }
+        .file-upload {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 1.5em;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+        .file-upload:hover {
+            border-color: var(--brand-primary);
+            background: var(--brand-primary-light-rgba);
+        }
+        .file-upload.has-file {
+            border-color: #28a745;
+            background: #e8f5e8;
+        }
+        .file-upload input[type="file"] {
+            display: none;
+        }
+        .file-upload-icon {
+            font-size: 2em;
+            color: #888;
+            margin-bottom: 0.5em;
+        }
+        .file-upload.has-file .file-upload-icon {
+            color: #28a745;
+        }
+        .file-name {
+            color: #28a745;
+            font-weight: 600;
+            margin-top: 0.5em;
+        }
+        .help-text {
+            color: #666;
+            font-size: 0.85em;
+            margin-top: 0.5em;
+        }
+        .terms-section {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5em;
+            margin-bottom: 1.5em;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .terms-section h3 {
+            color: var(--brand-primary);
+            margin-top: 0;
+            margin-bottom: 1em;
+            font-size: 1.1em;
+            border-bottom: 2px solid var(--brand-primary);
+            padding-bottom: 0.5em;
+        }
+        .terms-section ol {
+            padding-left: 1.5em;
+            margin: 0;
+        }
+        .terms-section li {
+            margin-bottom: 1em;
+            line-height: 1.5;
+            font-size: 0.9em;
+        }
+        .terms-section li strong {
+            color: #333;
+        }
+        .agreement-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 1em;
+            margin-bottom: 1.5em;
+        }
+        .agreement-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .agreement-checkbox label {
+            margin: 0;
+            font-weight: 500;
+            cursor: pointer;
+            line-height: 1.5;
+        }
+        .signature-icon {
+            font-size: 1.2em;
+            margin-right: 4px;
+        }
     </style>
 </head>
 <body>
@@ -123,7 +217,7 @@
             <img src="InkWell-Logo.png" alt="InkWell">
         </div>
         
-        <h1>Practitioner Registration</h1>
+        <h1>Coach Registration</h1>
         
         <div id="invitationInfo" class="invitation-info">
             <p><strong>Loading invitation details...</strong></p>
@@ -148,28 +242,15 @@
             </div>
             
             <div class="form-group">
-                <label for="credentials">Professional Credentials</label>
-                <input type="text" id="credentials" placeholder="e.g., LCSW, PhD, MD, LPC, ACC">
-                <small style="color: #666;">Include relevant licenses or certifications</small>
+                <label for="credentials">Coaching Credentials <span class="required">*</span></label>
+                <input type="text" id="credentials" placeholder="e.g., ICF ACC, NBC-HWC, CPC, CLC" required>
+                <p class="help-text">Enter your coaching certification(s)</p>
             </div>
             
             <div class="form-group">
-                <label for="practiceType">Practice Type <span class="required">*</span></label>
-                <select id="practiceType" required>
-                    <option value="">Select practice type...</option>
-                    <option value="clinical_psychologist">Clinical Psychologist</option>
-                    <option value="counselor">Licensed Counselor/Therapist</option>
-                    <option value="psychiatrist">Psychiatrist</option>
-                    <option value="social_worker">Clinical Social Worker</option>
-                    <option value="life_coach">Life Coach</option>
-                    <option value="wellness_coach">Wellness Coach</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="licenseNumber">License Number (if applicable)</label>
-                <input type="text" id="licenseNumber" placeholder="Professional license number">
+                <label for="issuingOrg">Issuing Organization <span class="required">*</span></label>
+                <input type="text" id="issuingOrg" placeholder="e.g., ICF, NBHWC, iPEC, CTI" required>
+                <p class="help-text">Organization that issued your certification</p>
             </div>
             
             <div class="form-group">
@@ -179,26 +260,52 @@
             
             <div class="form-group">
                 <label for="practiceDescription">Brief Practice Description</label>
-                <textarea id="practiceDescription" placeholder="Briefly describe your practice, specialties, or approach..."></textarea>
+                <textarea id="practiceDescription" placeholder="Briefly describe your coaching practice, specialties, or approach..."></textarea>
             </div>
             
-            <!-- HIPAA Waiver Requirement Section -->
-            <div class="form-group" style="background: #fff8e1; border: 2px solid #ffc107; border-radius: 8px; padding: 1.5em; margin-top: 2em;">
-                <div style="display: flex; align-items: flex-start; gap: 10px;">
-                    <input type="checkbox" id="requiresHipaaWaiver" style="width: auto; margin-top: 4px;">
-                    <div style="flex: 1;">
-                        <label for="requiresHipaaWaiver" style="cursor: pointer; margin-bottom: 0.5em; font-weight: 600; color: #856404;">
-                            ⚕️ My practice requires HIPAA compliance
-                        </label>
-                        <p style="margin: 0.5em 0; font-size: 0.9em; color: #856404; line-height: 1.5;">
-                            If checked, all clients who connect with you will be required to sign a HIPAA waiver acknowledging 
-                            that InkWell is not a HIPAA-compliant platform. 
-                            <a href="#" id="previewWaiverLink" style="color: #2A6972; font-weight: 600; text-decoration: underline;">
-                                Click here to preview the waiver text
-                            </a> that your clients will see.
-                        </p>
-                    </div>
+            <div class="form-group">
+                <label>Liability Insurance Certificate <span class="required">*</span></label>
+                <div class="file-upload" id="fileUploadArea">
+                    <input type="file" id="insuranceCert" accept=".pdf,.jpg,.jpeg,.png" required>
+                    <div class="file-upload-icon">📄</div>
+                    <p>Click or drag to upload your current insurance certificate</p>
+                    <p class="help-text">PDF, JPG, or PNG (max 10MB)</p>
+                    <p class="file-name" id="fileName" style="display: none;"></p>
                 </div>
+                <p class="help-text">Professional liability insurance is required for all coaches on InkWell.</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="insuranceExpiration">Insurance Expiration Date <span class="required">*</span></label>
+                <input type="date" id="insuranceExpiration" required>
+                <p class="help-text">Policy must be valid for at least 60 days from today.</p>
+                <p id="expirationError" class="help-text" style="color: #dc3545; display: none;"></p>
+            </div>
+            
+            <!-- Coach/Practitioner Terms -->
+            <div class="form-group">
+                <label>Coach/Practitioner Terms <span class="required">*</span></label>
+                <div class="terms-section">
+                    <h3>📋 COACH/PRACTITIONER TERMS</h3>
+                    <p style="margin-bottom: 1em; font-size: 0.9em;">By registering as a Coach on InkWell, you acknowledge and agree to the following:</p>
+                    <ol>
+                        <li><strong>Independent Contractor Status:</strong> You are an independent contractor, not an employee, agent, or partner of Pegasus Realm. You are solely responsible for your own taxes, insurance, and compliance with applicable laws.</li>
+                        <li><strong>Revenue Sharing:</strong> Coaches earn 60% of Connect subscription revenue from clients connected to them. Pegasus Realm retains 30%, with ~10% allocated to payment processing. Payouts occur monthly via Stripe Connect/PayPal for balances exceeding $25.</li>
+                        <li><strong>No Professional Advice:</strong> Coaches provide reflective support and guidance, NOT mental health treatment, therapy, or medical advice. Coaches are solely responsible for the content and quality of their responses to clients.</li>
+                        <li><strong>Liability:</strong> Pegasus Realm is not liable for any harm, injury, or damages arising from coach-client interactions. Coaches must maintain their own professional liability insurance.</li>
+                        <li><strong>Termination:</strong> Pegasus Realm reserves the right to terminate coach accounts at any time for violations of these Terms, including inappropriate conduct, fraudulent credentials, or failure to respond to clients.</li>
+                        <li><strong>Client Ownership:</strong> Client relationships formed through InkWell are considered platform relationships. Upon termination, coaches may not solicit InkWell clients to off-platform services for 12 months.</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="agreement-checkbox">
+                <input type="checkbox" id="termsAgreement" required>
+                <label for="termsAgreement">
+                    <span class="signature-icon">✍️</span>
+                    <strong>I agree to the Coach/Practitioner Terms above.</strong><br>
+                    <span style="font-size: 0.9em; color: #666;">By checking this box, I am providing my digital signature and legally binding agreement to these terms.</span>
+                </label>
             </div>
             
             <button type="submit" class="btn" id="submitBtn">
@@ -209,156 +316,79 @@
         </form>
     </div>
 
-    <!-- HIPAA Waiver Preview Modal -->
-    <div id="waiverPreviewModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; overflow-y: auto; padding: 2em;">
-        <div style="max-width: 800px; margin: 0 auto; background: white; border-radius: 12px; padding: 2em; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5em; border-bottom: 2px solid #2A6972; padding-bottom: 1em;">
-                <h2 style="color: #2A6972; margin: 0;">HIPAA Waiver Preview</h2>
-                <button id="closeWaiverPreview" style="background: none; border: none; font-size: 2em; color: #666; cursor: pointer; padding: 0; width: 40px; height: 40px;">&times;</button>
-            </div>
-            
-            <div style="background: #f8f9fa; padding: 1.5em; border-radius: 8px; margin-bottom: 1.5em;">
-                <p style="margin: 0; color: #856404; font-weight: 600;">📋 This is what your clients will see and must agree to before connecting with you.</p>
-            </div>
-            
-            <div id="waiverContent" style="max-height: 500px; overflow-y: auto; border: 1px solid #ddd; padding: 2em; background: white; font-size: 0.95em; line-height: 1.7;">
-                <!-- Waiver content will be inserted here -->
-            </div>
-            
-            <button id="closeWaiverPreviewBtn" class="btn" style="margin-top: 1.5em;">
-                Close Preview
-            </button>
-        </div>
-    </div>
-
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
         import { getFirestore, doc, getDoc, setDoc, serverTimestamp, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
 
-       const firebaseConfig = {
-    apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
-    authDomain: "inkwell-alpha.firebaseapp.com",
-    projectId: "inkwell-alpha",
-    storageBucket: "inkwell-alpha.firebasestorage.app",
-    messagingSenderId: "849610731668",
-    appId: "1:849610731668:web:f06d1a63f0db6391674481",
-    measurementId: "G-KHHZRVB7EJ"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
+            authDomain: "inkwell-alpha.firebaseapp.com",
+            projectId: "inkwell-alpha",
+            storageBucket: "inkwell-alpha.firebasestorage.app",
+            messagingSenderId: "849610731668",
+            appId: "1:849610731668:web:f06d1a63f0db6391674481",
+            measurementId: "G-KHHZRVB7EJ"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
-        // HIPAA Waiver Text (Version 1.0)
-        const HIPAA_WAIVER_TEXT = `
-        <div style="text-align: center; margin-bottom: 2em;">
-            <h2 style="color: #2A6972; margin-bottom: 0.5em;">HIPAA WAIVER AND CONSENT FOR NON-HIPAA COMPLIANT SERVICES</h2>
-            <p style="color: #856404; background: #fff8e1; padding: 1em; border-radius: 8px; font-weight: 600;">
-                ⚠️ Important: This waiver is required because InkWell is NOT a HIPAA-compliant platform.
-            </p>
-        </div>
+        // Store invitation data globally
+        let invitationData = null;
 
-        <div style="margin-bottom: 2em;">
-            <p style="font-weight: 600; color: #333; margin-bottom: 1em;">
-                By signing this waiver, clients acknowledge and accept the following:
-            </p>
-            
-            <h3 style="color: #2A6972; margin-top: 1.5em;">1. SERVICE LIMITATIONS</h3>
-            <p>InkWell is a journaling and wellness platform designed to facilitate communication between clients and practitioners. InkWell is NOT:</p>
-            <ul style="line-height: 1.8;">
-                <li>A medical records system</li>
-                <li>A HIPAA-compliant electronic health record (EHR)</li>
-                <li>A secure messaging platform for protected health information (PHI)</li>
-                <li>A substitute for professional medical advice, diagnosis, or treatment</li>
-            </ul>
+        // File upload handling
+        const fileInput = document.getElementById('insuranceCert');
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const fileNameDisplay = document.getElementById('fileName');
 
-            <h3 style="color: #2A6972; margin-top: 1.5em;">2. DATA HANDLING AND SECURITY</h3>
-            <p>While InkWell employs industry-standard security measures (encryption, secure authentication), it does NOT meet the technical, administrative, and physical safeguards required by HIPAA regulations. Journal entries and communications:</p>
-            <ul style="line-height: 1.8;">
-                <li>Are stored on cloud servers (Firebase/Google Cloud Platform)</li>
-                <li>May be subject to third-party service provider access for platform maintenance</li>
-                <li>Are not covered by HIPAA Business Associate Agreements (BAA)</li>
-                <li>Should NOT contain sensitive medical records, diagnoses, or treatment plans</li>
-            </ul>
-
-            <h3 style="color: #2A6972; margin-top: 1.5em;">3. PRACTITIONER RESPONSIBILITY</h3>
-            <p>Clients understand that their practitioner has informed them about HIPAA compliance requirements and has chosen to use InkWell as a supplementary communication tool. Clients acknowledge that:</p>
-            <ul style="line-height: 1.8;">
-                <li>This platform is for wellness journaling and general practitioner feedback only</li>
-                <li>Clinical records and medical information should remain in the practitioner's HIPAA-compliant systems</li>
-                <li>Any medical advice or treatment plans discussed on InkWell are supplementary to formal treatment</li>
-            </ul>
-
-            <h3 style="color: #2A6972; margin-top: 1.5em;">4. CLIENT RESPONSIBILITIES</h3>
-            <p>Clients agree to:</p>
-            <ul style="line-height: 1.8;">
-                <li>NOT share sensitive medical information, including specific diagnoses, medications, or treatment details they wish to keep private</li>
-                <li>Use InkWell only for general wellness reflections and non-clinical communication</li>
-                <li>Understand that journal entries may be discoverable in legal proceedings</li>
-                <li>Not hold InkWell liable for any unauthorized access or data breaches</li>
-            </ul>
-
-            <h3 style="color: #2A6972; margin-top: 1.5em;">5. LIABILITY LIMITATIONS</h3>
-            <p>Clients acknowledge and agree that:</p>
-            <ul style="line-height: 1.8;">
-                <li>InkWell, its owners, operators, and service providers are NOT liable for any breach of HIPAA regulations related to use of this platform</li>
-                <li>Their practitioner has informed them of the limitations of this platform</li>
-                <li>They voluntarily choose to use InkWell despite its non-HIPAA compliant status</li>
-                <li>They release InkWell from any claims related to privacy breaches, data loss, or unauthorized access</li>
-                <li>They will not sue InkWell or its operators for HIPAA violations</li>
-            </ul>
-
-            <h3 style="color: #2A6972; margin-top: 1.5em;">6. CONSENT AND VOLUNTARY PARTICIPATION</h3>
-            <p>By signing, clients confirm that they:</p>
-            <ul style="line-height: 1.8;">
-                <li>Have read and understand this entire waiver</li>
-                <li>Have had the opportunity to ask questions about InkWell's limitations</li>
-                <li>Voluntarily consent to use InkWell with full knowledge of its non-HIPAA compliant status</li>
-                <li>Understand their practitioner maintains separate, HIPAA-compliant records</li>
-                <li>Can discontinue using InkWell at any time without affecting their care</li>
-            </ul>
-
-            <h3 style="color: #2A6972; margin-top: 1.5em;">7. RECORD KEEPING</h3>
-            <p>A copy of this signed waiver will be:</p>
-            <ul style="line-height: 1.8;">
-                <li>Stored in InkWell's secure database</li>
-                <li>Made available to the client for their records</li>
-                <li>Provided to the practitioner for their files</li>
-            </ul>
-
-            <div style="background: #f8f9fa; padding: 1.5em; border-radius: 8px; margin-top: 2em; border-left: 4px solid #2A6972;">
-                <h3 style="color: #2A6972; margin-top: 0;">ELECTRONIC SIGNATURE ACKNOWLEDGMENT</h3>
-                <p style="margin-bottom: 0;">By typing their full legal name and clicking "I Accept," clients are providing an electronic signature, which has the same legal effect as a handwritten signature.</p>
-            </div>
-
-            <div style="text-align: center; margin-top: 2em; padding-top: 1.5em; border-top: 2px solid #ddd;">
-                <p style="font-size: 0.9em; color: #666; margin: 0;">
-                    <strong>Waiver Version:</strong> 1.0<br>
-                    <strong>Last Updated:</strong> December 14, 2025
-                </p>
-            </div>
-        </div>
-        `;
-
-        // Show waiver preview modal
-        document.getElementById('previewWaiverLink').addEventListener('click', function(e) {
+        fileUploadArea.addEventListener('click', () => fileInput.click());
+        
+        fileUploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
-            document.getElementById('waiverContent').innerHTML = HIPAA_WAIVER_TEXT;
-            document.getElementById('waiverPreviewModal').style.display = 'block';
-            document.body.style.overflow = 'hidden';
+            fileUploadArea.style.borderColor = '#2A6972';
+        });
+        
+        fileUploadArea.addEventListener('dragleave', () => {
+            fileUploadArea.style.borderColor = '#ddd';
+        });
+        
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
         });
 
-        // Close waiver preview modal
-        document.getElementById('closeWaiverPreview').addEventListener('click', function() {
-            document.getElementById('waiverPreviewModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        });
-
-        document.getElementById('closeWaiverPreviewBtn').addEventListener('click', function() {
-            document.getElementById('waiverPreviewModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        });
+        function handleFileSelect(file) {
+            // Validate file size (10MB max)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File is too large. Maximum size is 10MB.');
+                return;
+            }
+            
+            // Validate file type
+            const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+            if (!validTypes.includes(file.type)) {
+                alert('Invalid file type. Please upload a PDF, JPG, or PNG file.');
+                return;
+            }
+            
+            fileUploadArea.classList.add('has-file');
+            fileNameDisplay.textContent = '✅ ' + file.name;
+            fileNameDisplay.style.display = 'block';
+        }
 
         // Get invitation token from URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -371,67 +401,96 @@
             loadInvitation();
         }
 
-async function loadInvitation() {
-    try {
-        console.log("Loading invitation for token:", token);
-        
-        // Use Cloud Function to validate invitation (more secure than direct Firestore read)
-        const response = await fetch('https://us-central1-inkwell-alpha.cloudfunctions.net/validateInvitation', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ token: token })
-        });
-        
-        const result = await response.json();
-        console.log("Validation result:", result);
-        
-        if (!response.ok) {
-            throw new Error(result.error || 'Invitation not found or expired. Please contact support.');
+        async function loadInvitation() {
+            try {
+                console.log("Loading invitation for token:", token);
+                
+                const response = await fetch('https://us-central1-inkwell-alpha.cloudfunctions.net/validateInvitation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ token: token })
+                });
+                
+                const result = await response.json();
+                console.log("Validation result:", result);
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Invitation not found or expired. Please contact support.');
+                }
+                
+                invitationData = result.invitation;
+                
+                // Display invitation info - show the USER's name (who invited), not the coach's name
+                document.getElementById('invitationInfo').innerHTML = `
+                    <div style="background: #e8f5e8; border: 1px solid #4caf50; padding: 1em; border-radius: 8px;">
+                        <p><strong>✅ Valid Invitation Found!</strong></p>
+                        <p><strong>Invitation from:</strong> ${invitationData.fromUserName || 'InkWell User'}</p>
+                        <p>You've been invited to join InkWell as <strong>${invitationData.fromUserName || 'their'}</strong>'s coach.</p>
+                    </div>
+                `;
+                
+                // Pre-fill email and name from the coach's info
+                document.getElementById('email').value = invitationData.practitionerEmail || '';
+                document.getElementById('fullName').value = invitationData.practitionerName || '';
+                
+                // Show form
+                document.getElementById('registrationForm').style.display = 'block';
+                
+            } catch (error) {
+                console.error("Error loading invitation:", error);
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('errorMessage').textContent = `❌ ${error.message}`;
+                document.getElementById('errorMessage').innerHTML += `
+                    <br><br><small style="color: #666;">
+                        If this persists, please contact support.
+                    </small>
+                `;
+            }
         }
-        
-        const inviteData = result.invitation;
-        
-        // Display invitation info
-        document.getElementById('invitationInfo').innerHTML = `
-            <div style="background: #e8f5e8; border: 1px solid #4caf50; padding: 1em; border-radius: 8px;">
-                <p><strong>✅ Valid Invitation Found!</strong></p>
-                <p><strong>Invitation from:</strong> ${inviteData.fromUserName || 'InkWell User'}</p>
-                <p>You've been invited to join InkWell as <strong>${inviteData.practitionerName}</strong>'s practitioner.</p>
-            </div>
-        `;
-        
-        // Pre-fill email and name
-        document.getElementById('email').value = inviteData.practitionerEmail || '';
-        document.getElementById('fullName').value = inviteData.practitionerName || '';
-        
-        // Show form
-        document.getElementById('registrationForm').style.display = 'block';
-        
-    } catch (error) {
-        console.error("Error loading invitation:", error);
-        document.getElementById('errorMessage').style.display = 'block';
-        document.getElementById('errorMessage').textContent = `❌ ${error.message}`;
-        
-        // Add debugging info
-        document.getElementById('errorMessage').innerHTML += `
-            <br><br><small style="color: #666;">
-                If this persists, please contact support.
-            </small>
-        `;
-    }
-}
-
-
-
-
 
         document.getElementById('registrationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const submitBtn = document.getElementById('submitBtn');
             const status = document.getElementById('status');
+            const expirationError = document.getElementById('expirationError');
+            
+            // Validate insurance file is selected
+            const insuranceFile = document.getElementById('insuranceCert').files[0];
+            if (!insuranceFile) {
+                status.innerHTML = '<span style="color: #dc3545;">❌ Please upload your liability insurance certificate.</span>';
+                return;
+            }
+            
+            // Validate insurance expiration date (must be > 60 days from now)
+            const expirationInput = document.getElementById('insuranceExpiration').value;
+            if (!expirationInput) {
+                status.innerHTML = '<span style="color: #dc3545;">❌ Please enter your insurance expiration date.</span>';
+                return;
+            }
+            
+            const expirationDate = new Date(expirationInput);
+            const today = new Date();
+            const sixtyDaysFromNow = new Date();
+            sixtyDaysFromNow.setDate(today.getDate() + 60);
+            
+            if (expirationDate <= sixtyDaysFromNow) {
+                const daysUntilExpiration = Math.ceil((expirationDate - today) / (1000 * 60 * 60 * 24));
+                expirationError.textContent = `❌ Insurance expires in ${daysUntilExpiration} days. Policy must be valid for at least 60 days. Please provide a policy with a later expiration date.`;
+                expirationError.style.display = 'block';
+                status.innerHTML = '<span style="color: #dc3545;">❌ Insurance policy expires too soon. Please provide valid insurance.</span>';
+                return;
+            }
+            expirationError.style.display = 'none';
+            
+            // Validate terms agreement
+            const termsAgreement = document.getElementById('termsAgreement');
+            if (!termsAgreement.checked) {
+                status.innerHTML = '<span style="color: #dc3545;">❌ You must agree to the Coach/Practitioner Terms to continue.</span>';
+                return;
+            }
             
             submitBtn.disabled = true;
             submitBtn.textContent = 'Creating Account...';
@@ -443,31 +502,63 @@ async function loadInvitation() {
                     password: document.getElementById('password').value,
                     fullName: document.getElementById('fullName').value.trim(),
                     credentials: document.getElementById('credentials').value.trim(),
-                    practiceType: document.getElementById('practiceType').value,
-                    licenseNumber: document.getElementById('licenseNumber').value.trim(),
+                    issuingOrg: document.getElementById('issuingOrg').value.trim(),
                     practiceLocation: document.getElementById('practiceLocation').value.trim(),
                     practiceDescription: document.getElementById('practiceDescription').value.trim(),
-                    requiresHipaaWaiver: document.getElementById('requiresHipaaWaiver').checked
+                    insuranceExpiration: expirationDate
                 };
                 
                 // Create Firebase Auth account
+                status.innerHTML = '<span style="color: #2A6972;">Creating account...</span>';
                 const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
                 const user = userCredential.user;
                 
-                // Create practitioner application document (matches approvePractitioner function)
+                // Upload insurance certificate to Firebase Storage
+                status.innerHTML = '<span style="color: #2A6972;">Uploading insurance certificate...</span>';
+                const timestamp = Date.now();
+                const fileExtension = insuranceFile.name.split('.').pop();
+                const storagePath = `coach-insurance/${user.uid}/${timestamp}_insurance.${fileExtension}`;
+                const storageRef = ref(storage, storagePath);
+                
+                await uploadBytes(storageRef, insuranceFile);
+                const insuranceUrl = await getDownloadURL(storageRef);
+                
+                // Create coach application document
+                status.innerHTML = '<span style="color: #2A6972;">Submitting application...</span>';
                 await setDoc(doc(db, 'practitionerApplications', user.uid), {
                     userId: user.uid,
                     invitationToken: token,
                     email: formData.email,
                     name: formData.fullName,
                     credentials: formData.credentials,
-                    specialty: formData.practiceType,
-                    licenseNumber: formData.licenseNumber,
+                    issuingOrganization: formData.issuingOrg,
                     practiceLocation: formData.practiceLocation,
                     practiceDescription: formData.practiceDescription,
-                    requiresHipaaWaiver: formData.requiresHipaaWaiver,
+                    insuranceCertificate: {
+                        url: insuranceUrl,
+                        fileName: insuranceFile.name,
+                        uploadedAt: serverTimestamp(),
+                        storagePath: storagePath,
+                        expirationDate: formData.insuranceExpiration
+                    },
+                    coachTermsAgreed: true,
+                    coachTermsAgreedAt: serverTimestamp(),
+                    coachTermsVersion: '2026-01-21',
                     status: 'pending',
                     createdAt: serverTimestamp()
+                });
+                
+                // Archive insurance document reference
+                await setDoc(doc(db, 'coachInsuranceRecords', `${user.uid}_${timestamp}`), {
+                    coachId: user.uid,
+                    coachEmail: formData.email,
+                    coachName: formData.fullName,
+                    fileName: insuranceFile.name,
+                    fileUrl: insuranceUrl,
+                    storagePath: storagePath,
+                    expirationDate: formData.insuranceExpiration,
+                    uploadedAt: serverTimestamp(),
+                    status: 'current'
                 });
                 
                 // Create basic user document
@@ -476,11 +567,9 @@ async function loadInvitation() {
                     email: formData.email,
                     displayName: formData.fullName,
                     signupUsername: formData.fullName,
-                    accountType: 'standard', // Will be set to 'coach' upon approval
-                    userRole: 'practitioner_pending',
-                    requiresHipaaWaiver: formData.requiresHipaaWaiver,
+                    accountType: 'standard',
+                    userRole: 'coach_pending',
                     agreementAccepted: true,
-                    // Default insight preferences for new practitioners (opt-in by default)
                     insightsPreferences: {
                         weeklyEnabled: true,
                         monthlyEnabled: true,
@@ -496,68 +585,69 @@ async function loadInvitation() {
                     registeredAt: serverTimestamp()
                 });
                 
-status.innerHTML = `
-    <div style="background: linear-gradient(135deg, #e8f5e8 0%, #d4f5d4 100%); border: 1px solid #4caf50; border-left: 6px solid #2A6972; padding: 2em; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-        <div style="text-align: center; margin-bottom: 1.5em;">
-            <div style="font-size: 3em; color: #2A6972; margin-bottom: 0.5em;">�</div>
-            <h2 style="color: #2A6972; margin: 0; font-size: 1.8em; font-weight: 600;">Thank You for Your Application!</h2>
-        </div>
-        
-        <div style="background: rgba(255,255,255,0.7); padding: 1.5em; border-radius: 8px; margin-bottom: 1.5em;">
-            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.3em;">✅ Application Submitted Successfully</h3>
-            <p style="margin: 0.5em 0; color: #333; line-height: 1.6;">
-                Thank you for filling out the application, <strong>${formData.fullName}</strong>! Our team will review your information and you will receive a confirmation email with a link to onboard into our system, typically within <strong>72 hours</strong>.
-            </p>
-            <p style="margin: 1em 0 0 0; color: #666; font-size: 0.95em;">
-                If you have any questions, please reach out to <a href="mailto:support@inkwelljournal.io" style="color: #2A6972; text-decoration: none; font-weight: 600;">support@inkwelljournal.io</a>
-            </p>
-        </div>
-        
-        <div style="background: linear-gradient(135deg, rgba(42,105,114,0.1), rgba(42,105,114,0.05)); padding: 1.5em; border-radius: 8px; border: 2px solid #2A6972; margin-bottom: 1.5em;">
-            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.3em;">🎁 Practitioner Benefit: 25% Discount!</h3>
-            <p style="margin: 0.5em 0; color: #333; line-height: 1.6;">
-                As a mental health professional, you receive a <strong>25% discount</strong> on all InkWell paid subscriptions. Experience the power of journaling firsthand and better support your clients who use our platform.
-            </p>
-            <div style="margin-top: 1.2em;">
-                <a href="https://inkwelljournal.io/app.html" target="_blank" style="display: inline-block; background: #2A6972; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; margin-right: 0.5em; margin-bottom: 0.5em;">
-                    🌐 Launch Web App
-                </a>
-            </div>
-        </div>
+                status.innerHTML = `
+                    <div style="background: linear-gradient(135deg, #e8f5e8 0%, #d4f5d4 100%); border: 1px solid #4caf50; border-left: 6px solid #2A6972; padding: 2em; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <div style="text-align: center; margin-bottom: 1.5em;">
+                            <div style="font-size: 3em; color: #2A6972; margin-bottom: 0.5em;">🎉</div>
+                            <h2 style="color: #2A6972; margin: 0; font-size: 1.8em; font-weight: 600;">Thank You for Your Application!</h2>
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.7); padding: 1.5em; border-radius: 8px; margin-bottom: 1.5em;">
+                            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.3em;">✅ Application Submitted Successfully</h3>
+                            <p style="margin: 0.5em 0; color: #333; line-height: 1.6;">
+                                Thank you for applying, <strong>${formData.fullName}</strong>! Our team will review your credentials and insurance, and you will receive a confirmation email with next steps, typically within <strong>72 hours</strong>.
+                            </p>
+                            <p style="margin: 1em 0 0 0; color: #666; font-size: 0.95em;">
+                                Questions? Reach out to <a href="mailto:support@inkwelljournal.io" style="color: #2A6972; text-decoration: none; font-weight: 600;">support@inkwelljournal.io</a>
+                            </p>
+                        </div>
+                        
+                        <div style="background: linear-gradient(135deg, rgba(42,105,114,0.1), rgba(42,105,114,0.05)); padding: 1.5em; border-radius: 8px; border: 2px solid #2A6972; margin-bottom: 1.5em;">
+                            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.3em;">🎁 Coach Benefit: 25% Discount!</h3>
+                            <p style="margin: 0.5em 0; color: #333; line-height: 1.6;">
+                                As a certified coach, you receive a <strong>25% discount</strong> on all InkWell paid subscriptions. Experience the power of journaling firsthand and better support your clients who use our platform.
+                            </p>
+                            <div style="margin-top: 1.2em;">
+                                <a href="https://inkwelljournal.io/app.html" target="_blank" style="display: inline-block; background: #2A6972; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                                    🌐 Launch Web App
+                                </a>
+                            </div>
+                        </div>
 
-        <div style="background: rgba(255,255,255,0.9); padding: 1.5em; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 1.5em;">
-            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.2em;">📱 Get the Mobile App</h3>
-            <p style="margin: 0.5em 0 1em 0; color: #666;">Download InkWell for iOS and Android (coming soon)</p>
-            <div style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center;">
-                <a href="https://apps.apple.com/app/inkwell" target="_blank" style="display: inline-block;">
-                    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on App Store" style="height: 40px;">
-                </a>
-                <a href="https://play.google.com/store/apps/details?id=com.inkwellmobile" target="_blank" style="display: inline-block;">
-                    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" style="height: 60px;">
-                </a>
-            </div>
-            <p style="margin: 1em 0 0 0; color: #888; font-size: 0.85em; font-style: italic;">
-                Apps are currently in beta testing and will be available in app stores soon.
-            </p>
-        </div>
-        
-        <div style="background: rgba(42,105,114,0.05); padding: 1.5em; border-radius: 8px; border-left: 4px solid #2A6972; margin-bottom: 1.5em;">
-            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.2em;">📋 How InkWell Works</h3>
-            <ul style="margin: 0; padding-left: 1.5em; color: #444; line-height: 1.6;">
-                <li><strong>Client Selection:</strong> Your clients hand-select specific journal entries to share with you</li>
-                <li><strong>Email Notifications:</strong> Receive secure email links when a client shares an entry</li>
-                <li><strong>Review & Respond:</strong> Read entries with full context (mood, tags, audio) and provide support</li>
-                <li><strong>HIPAA Compliance:</strong> All communications are encrypted and secure</li>
-            </ul>
-        </div>
-        
-        <div style="text-align: center; margin-top: 1.5em; padding-top: 1.5em; border-top: 1px solid rgba(42,105,114,0.2);">
-            <p style="margin: 0.5em 0 0 0; color: #888; font-size: 0.95em; font-style: italic;">
-                Thank you for joining the InkWell community of mental health professionals.
-            </p>
-        </div>
-    </div>
-`;
+                        <div style="background: rgba(255,255,255,0.9); padding: 1.5em; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 1.5em;">
+                            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.2em;">📱 Get the Mobile App</h3>
+                            <p style="margin: 0.5em 0 1em 0; color: #666;">Download InkWell for iOS and Android (coming soon)</p>
+                            <div style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center;">
+                                <a href="https://apps.apple.com/app/inkwell" target="_blank" style="display: inline-block;">
+                                    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on App Store" style="height: 40px;">
+                                </a>
+                                <a href="https://play.google.com/store/apps/details?id=com.inkwellmobile" target="_blank" style="display: inline-block;">
+                                    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" style="height: 60px;">
+                                </a>
+                            </div>
+                            <p style="margin: 1em 0 0 0; color: #888; font-size: 0.85em; font-style: italic;">
+                                Apps are currently in beta testing and will be available in app stores soon.
+                            </p>
+                        </div>
+                        
+                        <div style="background: rgba(42,105,114,0.05); padding: 1.5em; border-radius: 8px; border-left: 4px solid #2A6972;">
+                            <h3 style="color: #2A6972; margin-top: 0; font-size: 1.2em;">📋 How InkWell Works for Coaches</h3>
+                            <ul style="margin: 0; padding-left: 1.5em; color: #444; line-height: 1.6;">
+                                <li><strong>Client Selection:</strong> Your clients hand-select specific journal entries to share with you</li>
+                                <li><strong>Email Notifications:</strong> Receive secure email links when a client shares an entry</li>
+                                <li><strong>Review & Respond:</strong> Read entries with full context (mood, tags, audio) and provide support</li>
+                                <li><strong>Secure:</strong> All communications are encrypted end-to-end</li>
+                            </ul>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 1.5em; padding-top: 1.5em; border-top: 1px solid rgba(42,105,114,0.2);">
+                            <p style="margin: 0.5em 0 0 0; color: #888; font-size: 0.95em; font-style: italic;">
+                                Thank you for joining the InkWell community of certified coaches.
+                            </p>
+                        </div>
+                    </div>
+                `;
+                
                 // Hide form
                 document.getElementById('registrationForm').style.display = 'none';
                 

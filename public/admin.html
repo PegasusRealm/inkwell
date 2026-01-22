@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InkWell Admin - Practitioner Approvals</title>
+    <title>InkWell Admin - Coach Approvals</title>
     <style>
         :root {
             --brand-primary: #2A6972;
@@ -118,7 +118,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🩺 Practitioner Approval Dashboard</h1>
+        <h1>🩺 Coach Approval Dashboard</h1>
         
         <div id="loginSection">
             <div class="login-form">
@@ -146,7 +146,7 @@
                 
                 <div style="margin-top: 1.5em; padding-top: 1em; border-top: 1px solid #eee; text-align: center;">
                     <p style="color: #888; font-size: 0.85em; margin: 0;">
-                        🔒 Secure access for practitioner management<br>
+                        🔒 Secure access for coach management<br>
                         Contact <a href="mailto:support@inkwelljournal.io" style="color: var(--brand-primary);">support@inkwelljournal.io</a> for access issues
                     </p>
                 </div>
@@ -312,7 +312,7 @@
                     requestsList.innerHTML = `
                         <div class="empty-state">
                             <h3>✅ No Pending Applications</h3>
-                            <p>All practitioner applications have been processed.</p>
+                            <p>All coach applications have been processed.</p>
                             <p style="font-size: 0.9em; color: #666; margin-top: 1em;">
                                 📧 New applications will appear here automatically
                             </p>
@@ -321,7 +321,7 @@
                     return;
                 }
                 
-                let html = '<h2 style="color: #856404; margin: 1.5em 0 1em 0; padding-bottom: 0.5em; border-bottom: 2px solid #ffc107;">📋 Pending Practitioner Applications</h2>';
+                let html = '<h2 style="color: #856404; margin: 1.5em 0 1em 0; padding-bottom: 0.5em; border-bottom: 2px solid #ffc107;">📋 Pending Coach Applications</h2>';
                 
                 pendingSnapshot.forEach(doc => {
                     const data = doc.data();
@@ -434,7 +434,7 @@
                     
                     <div style="margin-top: 1.5em; text-align: center;">
                         <button onclick="approvePractitionerApplication('${requestId}')" class="btn btn-approve">
-                            ✅ Approve Practitioner
+                            ✅ Approve Coach
                         </button>
                         <button onclick="rejectPractitionerApplication('${requestId}')" class="btn btn-deny">
                             ❌ Reject Application
@@ -446,7 +446,7 @@
 
         // Approve practitioner using Cloud Function
         window.approvePractitionerApplication = async (practitionerId) => {
-            if (!confirm('✅ Are you sure you want to APPROVE this practitioner application?\n\nThis will:\n- Grant them "coach" role (25% discount)\n- Send approval email\n- Enable portal access')) {
+            if (!confirm('✅ Are you sure you want to APPROVE this coach application?\n\nThis will:\n- Grant them "coach" role (25% discount)\n- Send approval email\n- Enable portal access')) {
                 return;
             }
             
