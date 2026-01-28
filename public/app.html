@@ -3801,7 +3801,8 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
 }
 
 /* ============================================
-   SPLASH SCREEN
+   SPLASH SCREEN - Two-Phase Animation
+   Matches mobile app experience
    ============================================ */
 .splash-screen {
   position: fixed;
@@ -3815,44 +3816,118 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
   align-items: center;
   justify-content: center;
   z-index: 99999;
-  transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+  opacity: 1;
+  transition: opacity 0.5s ease-out;
 }
 
 .splash-screen.fade-out {
   opacity: 0;
-  visibility: hidden;
+  pointer-events: none;
 }
 
-.splash-logo {
-  width: 120px;
-  height: auto;
-  margin-bottom: 1.5rem;
-  animation: splash-pulse 2s ease-in-out infinite;
+/* Phase 1: Welcome text + Pegasus Realm */
+.splash-phase-one {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: splash-phase-one 4.5s ease-out forwards;
 }
 
-.splash-title {
+.splash-welcome-title {
   font-family: var(--title-font);
   font-size: 2.5rem;
   font-weight: 700;
   color: #2A6972;
-  margin: 0 0 0.5rem 0;
-  animation: splash-fade-in 0.8s ease-out 0.2s both;
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.splash-welcome-text {
+  font-family: var(--body-font);
+  font-size: 1.25rem;
+  line-height: 1.8;
+  color: #4A5568;
+  text-align: center;
+  margin: 0 0 2.5rem 0;
+  max-width: 400px;
+}
+
+.splash-brought-by {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.splash-brought-text {
+  font-family: var(--body-font);
+  font-size: 0.85rem;
+  color: #718096;
+  font-style: italic;
+  margin-bottom: 0.25rem;
+}
+
+.splash-pr-name {
+  font-family: var(--title-font);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2A6972;
+  margin-bottom: 0.5rem;
+}
+
+.splash-pr-logo {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+}
+
+/* Phase 2: Large InkWell logo + tagline */
+.splash-phase-two {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: splash-phase-two 3s ease-out 4s forwards;
+}
+
+.splash-large-logo {
+  width: 280px;
+  height: auto;
+  margin-bottom: 1rem;
 }
 
 .splash-tagline {
   font-family: var(--body-font);
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   color: #4A5568;
-  margin: 0;
-  animation: splash-fade-in 0.8s ease-out 0.4s both;
+  font-style: italic;
+  text-align: center;
+  opacity: 0;
+  animation: splash-tagline-in 0.6s ease-out 4.8s forwards;
 }
 
-@keyframes splash-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+/* Animation keyframes */
+@keyframes splash-phase-one {
+  0% { opacity: 0; transform: translateY(20px); }
+  10% { opacity: 1; transform: translateY(0); }
+  75% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
 }
 
-@keyframes splash-fade-in {
+@keyframes splash-phase-two {
+  0% { opacity: 0; transform: scale(0.8); }
+  30% { opacity: 1; transform: scale(1.02); }
+  50% { transform: scale(1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes splash-tagline-in {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
@@ -3969,18 +4044,18 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
 
     // Theme handling is in auth.js
 
-    // Splash screen fade-out
+    // Splash screen fade-out (two-phase animation ~7s total)
     document.addEventListener('DOMContentLoaded', () => {
       const splashScreen = document.getElementById('splashScreen');
       if (splashScreen) {
-        // Keep splash visible for 2 seconds, then fade out
+        // Total animation: Phase 1 (4.5s) + Phase 2 (3s) = 7.5s, then fade out
         setTimeout(() => {
           splashScreen.classList.add('fade-out');
           // Remove from DOM after fade animation completes
           setTimeout(() => {
             splashScreen.remove();
           }, 500);
-        }, 2000);
+        }, 7000);
       }
     });
 
@@ -7959,11 +8034,28 @@ document.head.appendChild(themeStyle);
 
 
 <body>
-<!-- Splash Screen -->
+<!-- Splash Screen - Two Phase Animation -->
 <div class="splash-screen" id="splashScreen">
-  <img src="InkWell-Logo.png" alt="InkWell" class="splash-logo">
-  <h1 class="splash-title">InkWell</h1>
-  <p class="splash-tagline">Your Digital Wellness Journal</p>
+  <!-- Phase 1: Welcome + Pegasus Realm -->
+  <div class="splash-phase-one">
+    <h1 class="splash-welcome-title">Welcome to Your Journey</h1>
+    <p class="splash-welcome-text">
+      Journaling and Manifesting<br>
+      with psychology-trained AI<br>
+      and human support
+    </p>
+    <div class="splash-brought-by">
+      <span class="splash-brought-text">brought to you by</span>
+      <span class="splash-pr-name">Pegasus Realm</span>
+      <img src="PegasusRealm-Logo.png" alt="Pegasus Realm" class="splash-pr-logo">
+    </div>
+  </div>
+  
+  <!-- Phase 2: Large InkWell Logo + Tagline -->
+  <div class="splash-phase-two">
+    <img src="InkWell-Logo.png" alt="InkWell" class="splash-large-logo">
+    <p class="splash-tagline">For the thinkers and the forgetters.</p>
+  </div>
 </div>
 
 <!-- 🔐 Login Modal -->
