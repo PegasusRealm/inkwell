@@ -78,62 +78,6 @@
             opacity: 1;
         }
         
-        /* Splash Screen */
-        .splash-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--mint-white) 0%, var(--pale-teal) 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            opacity: 1;
-            transition: opacity 0.6s ease-out, visibility 0.6s ease-out;
-        }
-        
-        .splash-screen.fade-out {
-            opacity: 0;
-            visibility: hidden;
-        }
-        
-        .splash-logo {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            box-shadow: 0 16px 48px rgba(42, 105, 114, 0.2);
-            animation: splash-pulse 2s ease-in-out infinite;
-            margin-bottom: 1.5rem;
-        }
-        
-        .splash-title {
-            font-family: var(--font-display);
-            font-size: 3rem;
-            font-weight: 600;
-            color: var(--primary-teal);
-            margin-bottom: 0.5rem;
-            animation: splash-fade-in 0.8s ease-out 0.2s both;
-        }
-        
-        .splash-tagline {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            animation: splash-fade-in 0.8s ease-out 0.4s both;
-        }
-        
-        @keyframes splash-pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        @keyframes splash-fade-in {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
         /* Smooth Scroll */
         html {
             scroll-behavior: smooth;
@@ -2731,13 +2675,6 @@
     </style>
 </head>
 <body>
-    <!-- Splash Screen -->
-    <div class="splash-screen" id="splashScreen">
-        <img src="InkWell-Logo.png" alt="InkWell" class="splash-logo">
-        <h1 class="splash-title">InkWell</h1>
-        <p class="splash-tagline">Your Digital Wellness Journal</p>
-    </div>
-
     <!-- Premium Navigation -->
     <nav class="nav" id="navbar">
         <div class="nav-container">
@@ -3363,19 +3300,6 @@
 
     <!-- Premium Interactive JavaScript -->
     <script>
-        // Splash screen fade-out
-        window.addEventListener('load', function() {
-            const splashScreen = document.getElementById('splashScreen');
-            // Keep splash visible for 2 seconds, then fade out
-            setTimeout(function() {
-                splashScreen.classList.add('fade-out');
-                // Remove from DOM after animation completes
-                setTimeout(function() {
-                    splashScreen.style.display = 'none';
-                }, 600);
-            }, 2000);
-        });
-        
         // Smooth scrolling for navigation links
         document.addEventListener('DOMContentLoaded', function() {
             // Navbar scroll effect

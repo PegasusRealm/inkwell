@@ -3800,6 +3800,63 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
   transform: translateY(-1px) !important;
 }
 
+/* ============================================
+   SPLASH SCREEN
+   ============================================ */
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #E6FFFA 0%, #D5F5F0 50%, #C8EFE6 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+}
+
+.splash-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.splash-logo {
+  width: 120px;
+  height: auto;
+  margin-bottom: 1.5rem;
+  animation: splash-pulse 2s ease-in-out infinite;
+}
+
+.splash-title {
+  font-family: var(--title-font);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2A6972;
+  margin: 0 0 0.5rem 0;
+  animation: splash-fade-in 0.8s ease-out 0.2s both;
+}
+
+.splash-tagline {
+  font-family: var(--body-font);
+  font-size: 1.1rem;
+  color: #4A5568;
+  margin: 0;
+  animation: splash-fade-in 0.8s ease-out 0.4s both;
+}
+
+@keyframes splash-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes splash-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 </style>
 
 
@@ -3911,6 +3968,21 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
     }
 
     // Theme handling is in auth.js
+
+    // Splash screen fade-out
+    document.addEventListener('DOMContentLoaded', () => {
+      const splashScreen = document.getElementById('splashScreen');
+      if (splashScreen) {
+        // Keep splash visible for 2 seconds, then fade out
+        setTimeout(() => {
+          splashScreen.classList.add('fade-out');
+          // Remove from DOM after fade animation completes
+          setTimeout(() => {
+            splashScreen.remove();
+          }, 500);
+        }, 2000);
+      }
+    });
 
     // Initialize theme system when DOM is loaded (safe loader)
 // - Waits briefly for auth.js to define window.initThemeSystem()
@@ -7887,6 +7959,13 @@ document.head.appendChild(themeStyle);
 
 
 <body>
+<!-- Splash Screen -->
+<div class="splash-screen" id="splashScreen">
+  <img src="InkWell-Logo.png" alt="InkWell" class="splash-logo">
+  <h1 class="splash-title">InkWell</h1>
+  <p class="splash-tagline">Your Digital Wellness Journal</p>
+</div>
+
 <!-- 🔐 Login Modal -->
 <div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; padding: 1em; box-sizing: border-box; z-index: 9999;">
   <div class="card-block" style="max-width: 400px; width: 100%; background: white; padding: 1.5em; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
