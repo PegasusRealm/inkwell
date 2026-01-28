@@ -12844,27 +12844,27 @@ window.OnboardingManager = {
     shown[user][id] = Date.now();
     localStorage.setItem('onboarding_shown', JSON.stringify(shown));
   },
-// Only mark for authenticated users
+
+  // Mark milestone as completed
+  markMilestone: function(milestone) {
+    // Only mark for authenticated users
     if (!window.auth?.currentUser?.uid) return;
     
     const milestones = JSON.parse(localStorage.getItem('onboarding_milestones') || '{}');
-    const user = window.auth.currentUser.uid
-  markMilestone: function(milestone) {
-    const milestones = JSON.parse(localStorage.getItem('onboarding_milestones') || '{}');
-    const user = window.auth?.currentUser?.uid || 'guest';
+    const user = window.auth.currentUser.uid;
     if (!milestones[user]) milestones[user] = {};
     milestones[user][milestone] = Date.now();
     localStorage.setItem('onboarding_milestones', JSON.stringify(milestones));
     
     console.log(`🎯 Milestone completed: ${milestone}`);
   },
-// Only return progress for authenticated users
-    if (!window.auth?.currentUser?.uid) return {};
-    
-    const user = window.auth.currentUser.uid
+
   // Get user's progress
   getProgress: function() {
-    const user = window.auth?.currentUser?.uid || 'guest';
+    // Only return progress for authenticated users
+    if (!window.auth?.currentUser?.uid) return {};
+    
+    const user = window.auth.currentUser.uid;
     const milestones = JSON.parse(localStorage.getItem('onboarding_milestones') || '{}');
     return milestones[user] || {};
   },
@@ -12928,17 +12928,10 @@ window.OnboardingManager = {
       id: 'journal_tab_intro',
       keepCentered: true,
       icon: '✍️',
-      title: 'Welcome to Your Journal!',
+      title: 'Your Space to Reflect',
       content: `
-        <p>This is your personal space for daily reflection and growth:</p>
-        <ul style="text-align: left; margin: 1em 0;">
-          <li><strong>Daily Entries:</strong> Write freely about your thoughts and experiences</li>
-          <li><strong>Voice Recording:</strong> Record audio entries on mobile devices</li>
-          <li><strong>Photo Attachments:</strong> Add images to capture moments</li>
-          <li><strong>Mood Tracking:</strong> Track your emotional state each day</li>
-          <li><strong>Sophy AI:</strong> Get personalized insights and guidance</li>
-        </ul>
-        <p>Start by writing your first entry or asking Sophy for prompts!</p>
+        <p style="font-size: 1.1em; line-height: 1.6; margin-bottom: 1.2em;">Just start writing—even one sentence counts. There's no right or wrong way to journal.</p>
+        <p style="color: var(--font-muted); font-size: 0.95em;">💡 <strong>Tip:</strong> If you're stuck, tap <strong>Ask Sophy</strong> for a personalized prompt!</p>
       `,
       primaryButton: 'Start Writing',
       primaryAction: 'OnboardingManager.startJournalAction()',
@@ -12968,18 +12961,13 @@ window.OnboardingManager = {
       target: '.wish-section',
       keepCentered: true,
       icon: '🎯',
-      title: 'Welcome to the WISH Framework!',
+      title: 'Turn Wishes Into Plans',
       content: `
-        <p>The WISH framework helps you turn hopeful thinking into actionable plans:</p>
-        <ul style="text-align: left; margin: 1em 0;">
-          <li><strong>Want:</strong> Your specific, meaningful goal</li>
-          <li><strong>Imagine:</strong> Visualize your successful outcome</li>
-          <li><strong>Snags:</strong> Identify potential obstacles</li>
-          <li><strong>How:</strong> Create your if-then action plan</li>
-        </ul>
-        <p>Work through each section, then use Sophy to refine your thoughts!</p>
+        <p style="font-size: 1.1em; line-height: 1.6; margin-bottom: 1.2em;">The WISH framework turns vague goals into actionable plans using proven psychology.</p>
+        <p style="text-align: center; font-size: 1.3em; margin: 0.8em 0;"><strong>W</strong>ant → <strong>I</strong>magine → <strong>S</strong>nags → <strong>H</strong>ow</p>
+        <p style="color: var(--font-muted); font-size: 0.95em;">💡 <strong>Tip:</strong> Fill in each section, then ask Sophy to help refine your plan!</p>
       `,
-      primaryButton: 'Start My WISH',
+      primaryButton: 'Create My WISH',
       primaryAction: 'OnboardingManager.startWishAction()',
       dismissText: 'Got it!',
       pointer: false
@@ -12993,20 +12981,13 @@ window.OnboardingManager = {
     OnboardingOverlay.create({
       id: 'calendar_tab_intro',
       keepCentered: true,
-      icon: '📚',
-      title: 'Welcome to Past Entries!',
+      icon: '📅',
+      title: 'Your Journey So Far',
       content: `
-        <p>Browse and explore your journaling history:</p>
-        <ul style="text-align: left; margin: 1em 0;">
-          <li><strong>Calendar View:</strong> See all days with entries highlighted</li>
-          <li><strong>Search & Filter:</strong> Find entries by content or date</li>
-          <li><strong>View Details:</strong> Tap any entry to see your full reflection</li>
-          <li><strong>Track Progress:</strong> Review your emotional growth over time</li>
-          <li><strong>Export Data:</strong> Download your journal entries anytime</li>
-        </ul>
-        <p>Navigate through months to explore your journey!</p>
+        <p style="font-size: 1.1em; line-height: 1.6; margin-bottom: 1.2em;">Tap any highlighted date to revisit that day's reflections. Watch your growth unfold over time.</p>
+        <p style="color: var(--font-muted); font-size: 0.95em;">📊 As you journal more, you'll unlock weekly insights and patterns!</p>
       `,
-      dismissText: 'Got it!',
+      dismissText: 'Explore',
       pointer: false
     });
   },
