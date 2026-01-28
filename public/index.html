@@ -75,6 +75,63 @@
             color: var(--text-primary);
             overflow-x: hidden;
             background: var(--bg-primary);
+            opacity: 1;
+        }
+        
+        /* Splash Screen */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--mint-white) 0%, var(--pale-teal) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            opacity: 1;
+            transition: opacity 0.6s ease-out, visibility 0.6s ease-out;
+        }
+        
+        .splash-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .splash-logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            box-shadow: 0 16px 48px rgba(42, 105, 114, 0.2);
+            animation: splash-pulse 2s ease-in-out infinite;
+            margin-bottom: 1.5rem;
+        }
+        
+        .splash-title {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            font-weight: 600;
+            color: var(--primary-teal);
+            margin-bottom: 0.5rem;
+            animation: splash-fade-in 0.8s ease-out 0.2s both;
+        }
+        
+        .splash-tagline {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            animation: splash-fade-in 0.8s ease-out 0.4s both;
+        }
+        
+        @keyframes splash-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes splash-fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         /* Smooth Scroll */
@@ -2674,6 +2731,13 @@
     </style>
 </head>
 <body>
+    <!-- Splash Screen -->
+    <div class="splash-screen" id="splashScreen">
+        <img src="InkWell-Logo.png" alt="InkWell" class="splash-logo">
+        <h1 class="splash-title">InkWell</h1>
+        <p class="splash-tagline">Your Digital Wellness Journal</p>
+    </div>
+
     <!-- Premium Navigation -->
     <nav class="nav" id="navbar">
         <div class="nav-container">
@@ -2826,7 +2890,7 @@
                 <h3 class="capabilities-title">How Sophy Transforms Your Journaling</h3>
                 <div class="capabilities-grid">
                     <div class="capability-card">
-                        <div class="capability-icon">�</div>
+                        <div class="capability-icon">💡</div>
                         <h4>Insight Recognition</h4>
                         <p>Identifies patterns in your thoughts and helps you recognize breakthrough moments and growth opportunities.</p>
                     </div>
@@ -2844,9 +2908,6 @@
             </div>
         </div>
     </section>
-    </section>
-
-
 
     <!-- Revolutionary Coaches Section -->
     <section class="practitioners-section" id="coaches">
@@ -3302,6 +3363,19 @@
 
     <!-- Premium Interactive JavaScript -->
     <script>
+        // Splash screen fade-out
+        window.addEventListener('load', function() {
+            const splashScreen = document.getElementById('splashScreen');
+            // Keep splash visible for 2 seconds, then fade out
+            setTimeout(function() {
+                splashScreen.classList.add('fade-out');
+                // Remove from DOM after animation completes
+                setTimeout(function() {
+                    splashScreen.style.display = 'none';
+                }, 600);
+            }, 2000);
+        });
+        
         // Smooth scrolling for navigation links
         document.addEventListener('DOMContentLoaded', function() {
             // Navbar scroll effect
@@ -3407,6 +3481,45 @@
                 });
             });
             
+            // Add dynamic styles
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes particleFade {
+                    0%, 100% { opacity: 0; }
+                    50% { opacity: 0.6; }
+                }
+                
+                /* Additional hover enhancements */
+                .feature-card:hover .feature-icon,
+                .capability-card:hover .capability-icon {
+                    transform: scale(1.1) rotate(5deg);
+                    transition: transform 0.3s ease;
+                }
+                
+                /* Scroll progress indicator */
+                .scroll-progress {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 0;
+                    height: 3px;
+                    background: linear-gradient(90deg, var(--primary-teal), var(--warm-teal));
+                    z-index: 9999;
+                    transition: width 0.1s ease;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Scroll progress bar
+            const progressBar = document.createElement('div');
+            progressBar.className = 'scroll-progress';
+            document.body.appendChild(progressBar);
+            
+            window.addEventListener('scroll', () => {
+                const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+                progressBar.style.width = scrolled + '%';
+            });
+            
             // Loading animation complete
             document.body.style.opacity = '1';
         });
@@ -3414,6 +3527,8 @@
         // Particle system for hero background
         function createParticles() {
             const hero = document.querySelector('.hero');
+            if (!hero) return;
+            
             const particleCount = 20;
             
             for (let i = 0; i < particleCount; i++) {
@@ -3428,71 +3543,31 @@
                     z-index: 1;
                 `;
                 
-                // Random starting position
                 particle.style.left = Math.random() * 100 + '%';
                 particle.style.top = Math.random() * 100 + '%';
                 
-                // Random animation
                 const duration = 15 + Math.random() * 20;
                 const delay = Math.random() * 10;
+                const translateX = Math.random() * 200 - 100;
                 
                 particle.style.animation = `
-                    particleFloat ${duration}s linear ${delay}s infinite,
+                    particleFloat${i} ${duration}s linear ${delay}s infinite,
                     particleFade 4s ease-in-out ${delay}s infinite alternate
                 `;
+                
+                const keyframe = `
+                    @keyframes particleFloat${i} {
+                        0% { transform: translateY(100vh) translateX(0) rotate(0deg); }
+                        100% { transform: translateY(-100px) translateX(${translateX}px) rotate(360deg); }
+                    }
+                `;
+                const styleSheet = document.createElement('style');
+                styleSheet.textContent = keyframe;
+                document.head.appendChild(styleSheet);
                 
                 hero.appendChild(particle);
             }
         }
-        
-        // Add dynamic particle animations
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes particleFloat {
-                0% { transform: translateY(100vh) translateX(0) rotate(0deg); }
-                100% { transform: translateY(-100px) translateX(${Math.random() * 200 - 100}px) rotate(360deg); }
-            }
-            
-            @keyframes particleFade {
-                0%, 100% { opacity: 0; }
-                50% { opacity: 0.6; }
-            }
-            
-            body {
-                opacity: 0;
-                transition: opacity 0.5s ease-in-out;
-            }
-            
-            /* Additional hover enhancements */
-            .feature-card:hover .feature-icon,
-            .capability-card:hover .capability-icon {
-                transform: scale(1.1) rotate(5deg);
-                transition: transform 0.3s ease;
-            }
-            
-            /* Scroll progress indicator */
-            .scroll-progress {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 0;
-                height: 3px;
-                background: linear-gradient(90deg, var(--primary-teal), var(--warm-teal));
-                z-index: 9999;
-                transition: width 0.1s ease;
-            }
-        `;
-        document.head.appendChild(style);
-        
-        // Scroll progress bar
-        const progressBar = document.createElement('div');
-        progressBar.className = 'scroll-progress';
-        document.body.appendChild(progressBar);
-        
-        window.addEventListener('scroll', () => {
-            const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-            progressBar.style.width = scrolled + '%';
-        });
     </script>
 </body>
 </html>
