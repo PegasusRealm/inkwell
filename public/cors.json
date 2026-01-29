@@ -1,9 +1,8 @@
 [
   {
     "origin": [
-      "https://inkwell-alpha.web.app", 
-      "https://inkwell-alpha.firebaseapp.com",
-      "https://inkwelljournal.io"
+      "https://inkwelljournal.io",
+      "https://www.inkwelljournal.io"
     ],
     "responseHeader": [
       "Content-Type",
