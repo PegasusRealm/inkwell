@@ -1670,6 +1670,7 @@
         max-width: 100% !important;
         padding: 0 4px !important;
         box-sizing: border-box !important;
+        min-height: 360px !important;
       }
       
       /* Make calendar month header more visible on mobile */
@@ -1768,10 +1769,19 @@
     .journal-mode-content {
       width: 100%;
       max-width: 600px;
-      min-height: 450px;
+      min-height: 420px;
       margin: 0 auto;
       padding: 0;
       box-sizing: border-box;
+    }
+    /* InkBlot mode - explicit match to Gratitude height */
+    #inkblotMode {
+      min-height: 420px !important;
+      display: flex;
+      flex-direction: column;
+    }
+    #inkblotMode[style*="display: none"] {
+      display: none !important;
     }
     /* Manifest tab wish sections */
     .wish-section { 
@@ -1783,13 +1793,20 @@
     }
     /* Calendar tab - prevent snap on load */
     #calendarTab .tab-inner { 
-      min-height: 500px; 
+      min-height: 600px; 
     }
     #calendarContainer { 
-      min-height: 320px; 
+      min-height: 360px; 
+      height: auto;
       width: 100%;
       max-width: 600px; 
-      margin: 0 auto; 
+      margin: 0 auto;
+      transition: none;
+    }
+    /* Calendar table pre-sizing to prevent snap */
+    #calendarContainer table {
+      width: 100%;
+      table-layout: fixed;
     }
     #calendarControls, #pastEntries { 
       width: 100%;
@@ -9083,7 +9100,8 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   
   <textarea id="inkblotText" placeholder="What's on your mind right now?" maxlength="500" style="
     width: 100%;
-    min-height: 120px;
+    min-height: 180px;
+    flex: 1;
     padding: 1em;
     border-radius: 8px;
     border: 1px solid var(--border-medium);
@@ -9109,6 +9127,8 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   <p style="font-size: 0.85em; color: var(--font-muted); text-align: center; margin-top: 1em;">
     InkBlots are quick journal entries — perfect for busy days.
   </p>
+  <!-- Spacer to maintain consistent height with other modes -->
+  <div style="flex: 1; min-height: 20px;"></div>
 </div>
 
 <!-- ==================== FULL JOURNAL MODE ==================== -->
@@ -9338,7 +9358,20 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       <button class="btn" onclick="changeMonth(-1)">← Previous</button>
       <button class="btn" onclick="changeMonth(1)">Next →</button>
     </div>
-    <div id="calendarContainer"></div>
+    <div id="calendarContainer">
+      <!-- Placeholder skeleton to prevent layout snap -->
+      <div id="calendarPlaceholder" style="
+        width: 100%;
+        min-height: 320px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--font-muted);
+        font-size: 0.9em;
+      ">
+        <span style="opacity: 0.6;">Loading calendar...</span>
+      </div>
+    </div>
     
     <div class="workflow-divider"></div>
 
