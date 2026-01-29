@@ -1749,26 +1749,34 @@
     .tab-content-wrapper { 
       width: 100%; 
       max-width: 650px; 
+      min-width: 320px;
       margin: 0 auto; 
-      min-height: 550px; 
+      min-height: 550px;
+      box-sizing: border-box;
+    }
+    /* Force all tab content to same width */
+    .modern-tab-content {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
     }
     .tab-inner { 
-      width: 100%; 
-      max-width: 600px; 
+      width: 100% !important; 
+      max-width: 100% !important; 
       margin: 0 auto; 
       padding: 0 1em; 
       box-sizing: border-box; 
     }
     #journalModeTabs { 
       width: 100%; 
-      max-width: 600px; 
+      max-width: 100%; 
       margin: 0 auto 1em auto; 
       box-sizing: border-box;
     }
     /* All 3 journal modes - IDENTICAL sizing */
     .journal-mode-content {
-      width: 100%;
-      max-width: 600px;
+      width: 100% !important;
+      max-width: 100% !important;
       min-height: 420px;
       margin: 0 auto;
       padding: 0;
@@ -1786,7 +1794,7 @@
     /* Manifest tab wish sections */
     .wish-section { 
       width: 100%;
-      max-width: 600px; 
+      max-width: 100%; 
       margin-left: auto; 
       margin-right: auto;
       box-sizing: border-box;
@@ -1798,8 +1806,8 @@
     #calendarContainer { 
       min-height: 360px; 
       height: auto;
-      width: 100%;
-      max-width: 600px; 
+      width: 100% !important;
+      max-width: 100% !important; 
       margin: 0 auto;
       transition: none;
     }
@@ -1810,7 +1818,7 @@
     }
     #calendarControls, #pastEntries { 
       width: 100%;
-      max-width: 600px; 
+      max-width: 100%; 
       margin: 0 auto; 
     }
 
@@ -8826,8 +8834,11 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   background: linear-gradient(135deg, #f8fafb 0%, #e9ecef 100%);
   border-radius: 16px;
   padding: 1em;
-  margin: 0.5em;
-  max-width: 100%;
+  margin: 0.5em auto;
+  width: 680px;
+  max-width: calc(100% - 1em);
+  min-width: 320px;
+  box-sizing: border-box;
   box-shadow: 0 8px 32px rgba(0,0,0,0.08);
   border: 1px solid rgba(255,255,255,0.2);
 ">
@@ -8956,13 +8967,15 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 
   <!-- Tab Content Container - Master UI Container (fixed 650px width) -->
   <div class="tab-content-wrapper" style="
-    width: 100%;
-    max-width: 650px;
+    width: 650px;
+    max-width: 100%;
+    min-width: 320px;
     margin: 0 auto;
     background: rgba(255,255,255,0.95);
     border-radius: 12px;
     border: 1px solid rgba(255,255,255,0.5);
     backdrop-filter: blur(5px);
+    box-sizing: border-box;
   ">
 
 <!-- Journal Tab Content -->
@@ -9376,7 +9389,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     <div class="workflow-divider"></div>
 
     <!-- Smart Search Bar UI -->
-    <div style="margin-top: 2em; width: calc(100% - 2em); margin-left: auto; margin-right: auto;">
+    <div style="margin-top: 2em; width: 100%; box-sizing: border-box;">
       <h3 class="section-header" style="text-align:center;margin-bottom:1.5rem;color:var(--font-main);">Smart Search Your Journal</h3>
       <div style="display: flex; flex-direction: column; gap: 1em; width: 100%;">
         <input
@@ -14137,4 +14150,4 @@ html[data-theme='dark'] .onboarding-toast {
 </style>
 
 </body>
-</html>
+</html>/* Cache bust: 1769713876 */
