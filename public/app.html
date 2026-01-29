@@ -4436,6 +4436,302 @@ setTimeout(() => {
   // Removed default Smart Search hint text
 })();
 
+// ================================
+// JOURNAL MODE SYSTEM (Gratitude, InkBlot, Full Journal)
+// ================================
+let activeJournalMode = 'gratitude'; // 'gratitude' | 'inkblot' | 'full'
+let inkblotRecognition = null; // Web Speech API recognition instance
+let isInkblotRecording = false;
+
+// Switch between journal mode sub-tabs
+window.switchJournalMode = function(mode) {
+  activeJournalMode = mode;
+  
+  // Hide all mode content sections
+  document.getElementById('gratitudeMode').style.display = 'none';
+  document.getElementById('inkblotMode').style.display = 'none';
+  document.getElementById('fullJournalMode').style.display = 'none';
+  
+  // Show selected mode
+  const modeElement = {
+    'gratitude': 'gratitudeMode',
+    'inkblot': 'inkblotMode',
+    'full': 'fullJournalMode'
+  }[mode];
+  if (modeElement) {
+    document.getElementById(modeElement).style.display = 'block';
+  }
+  
+  // Update button styles
+  const buttons = ['gratitudeModeBtn', 'inkblotModeBtn', 'fullJournalModeBtn'];
+  buttons.forEach(btnId => {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      const isActive = (
+        (mode === 'gratitude' && btnId === 'gratitudeModeBtn') ||
+        (mode === 'inkblot' && btnId === 'inkblotModeBtn') ||
+        (mode === 'full' && btnId === 'fullJournalModeBtn')
+      );
+      
+      if (isActive) {
+        btn.style.background = 'var(--brand-primary)';
+        btn.style.color = 'white';
+        btn.style.border = 'none';
+      } else {
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--brand-primary)';
+        btn.style.border = '1px solid var(--brand-primary)';
+      }
+    }
+  });
+  
+  console.log('📓 Switched to journal mode:', mode);
+};
+
+// Save Gratitude Entry
+window.saveGratitudeEntry = async function() {
+  const gratitude1 = document.getElementById('gratitude1')?.value?.trim();
+  const gratitude2 = document.getElementById('gratitude2')?.value?.trim();
+  const gratitude3 = document.getElementById('gratitude3')?.value?.trim();
+  
+  const gratitudes = [gratitude1, gratitude2, gratitude3].filter(g => g);
+  
+  if (gratitudes.length === 0) {
+    const statusEl = document.getElementById('gratitudeSaveStatus');
+    if (statusEl) {
+      statusEl.textContent = 'Please enter at least one gratitude.';
+      statusEl.style.color = '#c75050';
+    }
+    return;
+  }
+  
+  // Show saving status
+  const statusEl = document.getElementById('gratitudeSaveStatus');
+  if (statusEl) {
+    statusEl.textContent = 'Saving...';
+    statusEl.style.color = 'var(--font-muted)';
+  }
+  
+  try {
+    const userId = window.currentUserId || window.auth?.currentUser?.uid;
+    if (!userId) {
+      throw new Error('Not logged in');
+    }
+    
+    // Format content for display
+    const content = gratitudes.map((g, i) => `${i + 1}. ${g}`).join('\n\n');
+    const today = new Date().toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    const entryData = {
+      userId: userId,
+      title: `Gratitude - ${today}`,
+      content: content,
+      rawGratitudes: gratitudes,
+      mood: '🙏',
+      tags: ['gratitude'],
+      entryMode: 'gratitude',
+      createdAt: new Date().toISOString(),
+      timestamp: window.serverTimestamp ? window.serverTimestamp() : new Date()
+    };
+    
+    // Save to Firestore
+    const docRef = await window.addDoc(window.collection(window.db, 'journalEntries'), entryData);
+    console.log('🙏 Gratitude entry saved:', docRef.id);
+    
+    // Clear inputs
+    document.getElementById('gratitude1').value = '';
+    document.getElementById('gratitude2').value = '';
+    document.getElementById('gratitude3').value = '';
+    
+    // Show success
+    if (statusEl) {
+      statusEl.textContent = '✓ Gratitude saved!';
+      statusEl.style.color = '#4A8B8B';
+      setTimeout(() => { statusEl.textContent = ''; }, 3000);
+    }
+    
+  } catch (error) {
+    console.error('❌ Error saving gratitude:', error);
+    if (statusEl) {
+      statusEl.textContent = 'Error saving. Please try again.';
+      statusEl.style.color = '#c75050';
+    }
+  }
+};
+
+// Save InkBlot Entry
+window.saveInkblotEntry = async function() {
+  const inkblotText = document.getElementById('inkblotText')?.value?.trim();
+  
+  if (!inkblotText) {
+    const statusEl = document.getElementById('inkblotSaveStatus');
+    if (statusEl) {
+      statusEl.textContent = 'Please enter a thought first.';
+      statusEl.style.color = '#c75050';
+    }
+    return;
+  }
+  
+  // Show saving status
+  const statusEl = document.getElementById('inkblotSaveStatus');
+  if (statusEl) {
+    statusEl.textContent = 'Saving...';
+    statusEl.style.color = 'var(--font-muted)';
+  }
+  
+  try {
+    const userId = window.currentUserId || window.auth?.currentUser?.uid;
+    if (!userId) {
+      throw new Error('Not logged in');
+    }
+    
+    const today = new Date().toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    const time = new Date().toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit' 
+    });
+    
+    const entryData = {
+      userId: userId,
+      title: `InkBlot - ${today} at ${time}`,
+      content: inkblotText,
+      mood: '⚡',
+      tags: ['inkblot', 'quick'],
+      entryMode: 'inkblot',
+      createdAt: new Date().toISOString(),
+      timestamp: window.serverTimestamp ? window.serverTimestamp() : new Date()
+    };
+    
+    // Save to Firestore
+    const docRef = await window.addDoc(window.collection(window.db, 'journalEntries'), entryData);
+    console.log('⚡ InkBlot entry saved:', docRef.id);
+    
+    // Clear input
+    document.getElementById('inkblotText').value = '';
+    document.getElementById('inkblotCharCount').textContent = '0/500 characters';
+    
+    // Show success
+    if (statusEl) {
+      statusEl.textContent = '✓ InkBlot saved!';
+      statusEl.style.color = '#4A8B8B';
+      setTimeout(() => { statusEl.textContent = ''; }, 3000);
+    }
+    
+  } catch (error) {
+    console.error('❌ Error saving inkblot:', error);
+    if (statusEl) {
+      statusEl.textContent = 'Error saving. Please try again.';
+      statusEl.style.color = '#c75050';
+    }
+  }
+};
+
+// InkBlot Voice Input (Web Speech API)
+window.toggleInkblotVoice = function() {
+  const voiceBtn = document.getElementById('inkblotVoiceBtn');
+  const voiceStatus = document.getElementById('inkblotVoiceStatus');
+  
+  // Check for browser support
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    if (voiceStatus) {
+      voiceStatus.textContent = 'Voice input not supported in this browser.';
+      voiceStatus.style.color = '#c75050';
+    }
+    return;
+  }
+  
+  if (isInkblotRecording) {
+    // Stop recording
+    if (inkblotRecognition) {
+      inkblotRecognition.stop();
+    }
+    isInkblotRecording = false;
+    if (voiceBtn) voiceBtn.textContent = '🎙️ Speak Your InkBlot';
+    if (voiceStatus) voiceStatus.textContent = '';
+    return;
+  }
+  
+  // Start recording
+  isInkblotRecording = true;
+  if (voiceBtn) voiceBtn.textContent = '⏹️ Stop Recording';
+  if (voiceStatus) voiceStatus.textContent = '🎤 Listening...';
+  
+  inkblotRecognition = new SpeechRecognition();
+  inkblotRecognition.continuous = true;
+  inkblotRecognition.interimResults = true;
+  inkblotRecognition.lang = 'en-US';
+  
+  let finalTranscript = '';
+  
+  inkblotRecognition.onresult = function(event) {
+    let interimTranscript = '';
+    
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) {
+        finalTranscript += transcript + ' ';
+      } else {
+        interimTranscript += transcript;
+      }
+    }
+    
+    const inkblotTextarea = document.getElementById('inkblotText');
+    if (inkblotTextarea) {
+      inkblotTextarea.value = (finalTranscript + interimTranscript).trim();
+      // Update character count
+      const count = inkblotTextarea.value.length;
+      const countEl = document.getElementById('inkblotCharCount');
+      if (countEl) countEl.textContent = `${count}/500 characters`;
+    }
+  };
+  
+  inkblotRecognition.onerror = function(event) {
+    console.error('Speech recognition error:', event.error);
+    isInkblotRecording = false;
+    if (voiceBtn) voiceBtn.textContent = '🎙️ Speak Your InkBlot';
+    if (voiceStatus) {
+      voiceStatus.textContent = 'Voice error. Please try again.';
+      voiceStatus.style.color = '#c75050';
+      setTimeout(() => { voiceStatus.textContent = ''; voiceStatus.style.color = ''; }, 3000);
+    }
+  };
+  
+  inkblotRecognition.onend = function() {
+    isInkblotRecording = false;
+    if (voiceBtn) voiceBtn.textContent = '🎙️ Speak Your InkBlot';
+    if (voiceStatus) voiceStatus.textContent = '';
+  };
+  
+  inkblotRecognition.start();
+};
+
+// Initialize InkBlot character counter
+document.addEventListener('DOMContentLoaded', function() {
+  const inkblotTextarea = document.getElementById('inkblotText');
+  if (inkblotTextarea) {
+    inkblotTextarea.addEventListener('input', function() {
+      const count = this.value.length;
+      const countEl = document.getElementById('inkblotCharCount');
+      if (countEl) countEl.textContent = `${count}/500 characters`;
+    });
+  }
+});
+
+// ================================
+// END JOURNAL MODE SYSTEM
+// ================================
+
 // ✨ AUTO-RESIZE TEXTAREAS FUNCTIONALITY
 function autoResizeTextarea(textarea) {
   textarea.style.height = 'auto';
@@ -5325,7 +5621,8 @@ window.onload = function () {
         text: finalText,
         createdAt: new Date(),
         userId: currentUserId,
-        tags
+        tags,
+        entryMode: 'full' // Indicates this is a full journal entry (not gratitude or inkblot)
       };
       
       // Auto-include manifest data if any fields are filled
@@ -8605,6 +8902,168 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 <!-- Journal Tab Content -->
 <div id="journalTab" class="modern-tab-content" style="display: block; padding: 1em;">
 <div class="tab-inner" style="width: 100%; box-sizing: border-box; padding: 0 0.5em;">
+
+<!-- Journal Mode Sub-Tabs -->
+<div id="journalModeTabs" style="
+  display: flex;
+  justify-content: center;
+  gap: 0.5em;
+  margin-bottom: 1.5em;
+  padding: 0.5em;
+  background: var(--bg-muted);
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+">
+  <button id="gratitudeModeBtn" class="journal-mode-btn active" onclick="switchJournalMode('gratitude')" style="
+    flex: 1;
+    max-width: 150px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--brand-primary);
+    color: white;
+  ">🙏 Gratitude</button>
+  
+  <button id="inkblotModeBtn" class="journal-mode-btn" onclick="switchJournalMode('inkblot')" style="
+    flex: 1;
+    max-width: 150px;
+    padding: 10px 16px;
+    border: 1px solid var(--brand-primary);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: transparent;
+    color: var(--brand-primary);
+  ">⚡ InkBlot</button>
+  
+  <button id="fullJournalModeBtn" class="journal-mode-btn" onclick="switchJournalMode('full')" style="
+    flex: 1;
+    max-width: 150px;
+    padding: 10px 16px;
+    border: 1px solid var(--brand-primary);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: transparent;
+    color: var(--brand-primary);
+  ">✍️ Full Journal</button>
+</div>
+
+<!-- ==================== GRATITUDE MODE ==================== -->
+<div id="gratitudeMode" class="journal-mode-content" style="display: block;">
+  <h2 class="journal-heading" style="text-align:center;margin-bottom:0.5rem;color:var(--font-main);">
+    What are you grateful for today?
+  </h2>
+  <p class="subtext-muted" style="text-align:center;margin-bottom:1.5em;">
+    Research shows listing 3+ gratitudes improves well-being, sleep, and relationships.
+  </p>
+  
+  <div style="margin-bottom: 1em;">
+    <div style="display: flex; align-items: flex-start; margin-bottom: 0.75em;">
+      <span style="font-size: 1.5em; font-weight: bold; color: var(--brand-primary); width: 30px; margin-top: 8px;">1.</span>
+      <textarea id="gratitude1" placeholder="I'm grateful for..." style="
+        flex: 1;
+        min-height: 60px;
+        padding: 0.75em;
+        border-radius: 8px;
+        border: 1px solid var(--border-medium);
+        font-size: 1em;
+        resize: vertical;
+        background: var(--bg-card);
+        color: var(--font-main);
+      "></textarea>
+    </div>
+    
+    <div style="display: flex; align-items: flex-start; margin-bottom: 0.75em;">
+      <span style="font-size: 1.5em; font-weight: bold; color: var(--brand-primary); width: 30px; margin-top: 8px;">2.</span>
+      <textarea id="gratitude2" placeholder="I'm grateful for..." style="
+        flex: 1;
+        min-height: 60px;
+        padding: 0.75em;
+        border-radius: 8px;
+        border: 1px solid var(--border-medium);
+        font-size: 1em;
+        resize: vertical;
+        background: var(--bg-card);
+        color: var(--font-main);
+      "></textarea>
+    </div>
+    
+    <div style="display: flex; align-items: flex-start; margin-bottom: 0.75em;">
+      <span style="font-size: 1.5em; font-weight: bold; color: var(--brand-primary); width: 30px; margin-top: 8px;">3.</span>
+      <textarea id="gratitude3" placeholder="I'm grateful for..." style="
+        flex: 1;
+        min-height: 60px;
+        padding: 0.75em;
+        border-radius: 8px;
+        border: 1px solid var(--border-medium);
+        font-size: 1em;
+        resize: vertical;
+        background: var(--bg-card);
+        color: var(--font-main);
+      "></textarea>
+    </div>
+  </div>
+  
+  <button class="btn" onclick="saveGratitudeEntry()" style="width: 100%; margin-bottom: 0.5em;">
+    🙏 Save Gratitude Entry
+  </button>
+  <span id="gratitudeSaveStatus" style="font-size: 0.85em; font-style: italic; color: var(--font-muted);"></span>
+  
+  <p style="font-size: 0.85em; color: var(--font-muted); text-align: center; margin-top: 1em;">
+    Your gratitude entries are saved to your journal and visible in Past Entries.
+  </p>
+</div>
+
+<!-- ==================== INKBLOT MODE ==================== -->
+<div id="inkblotMode" class="journal-mode-content" style="display: none;">
+  <h2 class="journal-heading" style="text-align:center;margin-bottom:0.5rem;color:var(--font-main);">
+    Quick thought? Drop an InkBlot.
+  </h2>
+  <p class="subtext-muted" style="text-align:center;margin-bottom:1.5em;">
+    Capture a moment, feeling, or fleeting thought in seconds.
+  </p>
+  
+  <textarea id="inkblotText" placeholder="What's on your mind right now?" maxlength="500" style="
+    width: 100%;
+    min-height: 120px;
+    padding: 1em;
+    border-radius: 8px;
+    border: 1px solid var(--border-medium);
+    font-size: 1em;
+    resize: vertical;
+    margin-bottom: 0.25em;
+    box-sizing: border-box;
+    background: var(--bg-card);
+    color: var(--font-main);
+  "></textarea>
+  <div id="inkblotCharCount" style="font-size: 0.75em; color: var(--font-muted); text-align: right; margin-bottom: 1em;">0/500 characters</div>
+  
+  <button id="inkblotVoiceBtn" class="btn" onclick="toggleInkblotVoice()" style="width: 100%; margin-bottom: 0.5em;">
+    🎙️ Speak Your InkBlot
+  </button>
+  <div id="inkblotVoiceStatus" style="font-size: 0.85em; color: var(--brand-primary); text-align: center; margin-bottom: 1em;"></div>
+  
+  <button class="btn" onclick="saveInkblotEntry()" style="width: 100%; margin-bottom: 0.5em;">
+    ⚡ Save InkBlot
+  </button>
+  <span id="inkblotSaveStatus" style="font-size: 0.85em; font-style: italic; color: var(--font-muted);"></span>
+  
+  <p style="font-size: 0.85em; color: var(--font-muted); text-align: center; margin-top: 1em;">
+    InkBlots are quick journal entries — perfect for busy days.
+  </p>
+</div>
+
+<!-- ==================== FULL JOURNAL MODE ==================== -->
+<div id="fullJournalMode" class="journal-mode-content" style="display: none;">
 <h2 class="journal-heading" 
     onclick="document.getElementById('journalInfoModal').style.display='flex'" 
     style="text-align:center;margin-bottom:2rem;color:var(--font-main);cursor:pointer;transition:color 0.2s ease;" 
