@@ -1505,13 +1505,24 @@
         // Load pending applications
         window.loadPendingApplications = async () => {
             try {
+                // Simple query without orderBy to avoid index requirement
                 const snapshot = await getDocs(query(
                     collection(db, 'practitionerApplications'),
-                    where('status', '==', 'pending'),
-                    orderBy('createdAt', 'desc')
+                    where('status', '==', 'pending')
                 ));
                 
-                if (snapshot.empty) {
+                // Collect and sort client-side by createdAt desc
+                const applications = [];
+                snapshot.forEach(doc => {
+                    applications.push({ id: doc.id, ...doc.data() });
+                });
+                applications.sort((a, b) => {
+                    const aTime = a.createdAt?.toDate?.()?.getTime() || 0;
+                    const bTime = b.createdAt?.toDate?.()?.getTime() || 0;
+                    return bTime - aTime;
+                });
+                
+                if (applications.length === 0) {
                     document.getElementById('pendingApplicationsList').innerHTML = `
                         <div class="empty-state">
                             <div class="empty-state-icon">✅</div>
@@ -1523,8 +1534,7 @@
                 }
                 
                 let html = '';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
+                applications.forEach(data => {
                     const createdAt = data.createdAt?.toDate?.() ? data.createdAt.toDate().toLocaleDateString() : 'Unknown';
                     
                     html += `
@@ -1566,10 +1576,10 @@
                                 </div>
                             ` : ''}
                             <div style="margin-top: 20px; display: flex; gap: 12px; justify-content: center;">
-                                <button onclick="approvePractitioner('${doc.id}')" class="btn btn-success">
+                                <button onclick="approvePractitioner('${data.id}')" class="btn btn-success">
                                     ✅ Approve
                                 </button>
-                                <button onclick="rejectPractitioner('${doc.id}')" class="btn btn-danger">
+                                <button onclick="rejectPractitioner('${data.id}')" class="btn btn-danger">
                                     ❌ Reject
                                 </button>
                             </div>

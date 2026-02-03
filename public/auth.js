@@ -334,6 +334,15 @@ window.addEventListener('offline', () => {
 
 // Enhanced error handler for Firebase operations
 function handleFirebaseError(error, operation = 'operation') {
+  // Check if user is logging out - suppress errors during logout
+  const isLoggingOut = localStorage.getItem('userJustLoggedOut') === 'true';
+  
+  // Suppress permission-denied errors during logout (expected behavior)
+  if (isLoggingOut && error.code === 'permission-denied') {
+    console.log('🔇 Suppressing permission error during logout (expected)');
+    return null;
+  }
+  
   console.error(`Firebase ${operation} error:`, error);
   
   let userMessage = `Something went wrong with ${operation}. `;
@@ -393,6 +402,14 @@ function shouldSuppressError(error) {
 // Global error handler with smart suppression
 window.addEventListener('unhandledrejection', (event) => {
   if (event.reason && event.reason.code) {
+    // Check if user is logging out - suppress all errors during logout
+    const isLoggingOut = localStorage.getItem('userJustLoggedOut') === 'true';
+    if (isLoggingOut && event.reason.code === 'permission-denied') {
+      console.log('🔇 Suppressing permission error during logout');
+      event.preventDefault();
+      return;
+    }
+    
     // Suppress repetitive connection errors
     if (shouldSuppressError(event.reason)) {
       event.preventDefault();
@@ -858,6 +875,12 @@ onAuthStateChanged(auth, async (user) => {
               window.checkWhatsNewBadge();
             }, 1000);
           }
+          
+          // Load user's tag library for tag autocomplete
+          if (typeof window.loadUserTags === 'function') {
+            console.log("📌 Loading user tag library after login...");
+            window.loadUserTags();
+          }
         } catch (initError) {
           console.error("Error during post-auth initialization:", initError);
         }
@@ -970,11 +993,11 @@ function highlightCalendarDatesWithReplies(entries) {
     const calendarCells = document.querySelectorAll('[data-date]');
     calendarCells.forEach(cell => {
       if (cell.dataset.date === dateKey) {
-        // Apply Sophy Coral highlight
-        cell.style.backgroundColor = 'var(--accent, #d49489)';
+        // Apply Connect purple highlight for coach replies
+        cell.style.backgroundColor = 'var(--tier-connect, #805AD5)';
         cell.style.color = '#fff';
         cell.style.fontWeight = 'bold';
-        cell.style.border = '2px solid var(--accent-dark, #723332)';
+        cell.style.border = '2px solid var(--tier-connect, #805AD5)';
         cell.title = 'New coach reply available!';
         
         // Add a visual indicator
@@ -1994,7 +2017,11 @@ async function buildCalendar() {
   
   snapshot.forEach(doc => {
     const data = doc.data();
-    const createdAt = data.createdAt?.toDate?.();
+    // Handle both Firestore Timestamp and ISO string (legacy gratitude/inkblot entries)
+    let createdAt = data.createdAt?.toDate?.();
+    if (!createdAt && typeof data.createdAt === 'string') {
+      createdAt = new Date(data.createdAt);
+    }
     if (createdAt &&
         createdAt.getFullYear() === window.displayedYear &&
         createdAt.getMonth() === window.displayedMonth) {
@@ -2098,20 +2125,20 @@ if (markedDates.has(key)) {
   const globalUnreadReplies = window.globalDatesWithUnreadReplies || new Set();
   
   if (globalUnreadReplies.has(key)) {
-    // Has unread coach replies - use coral
-    td.style.backgroundColor = 'var(--accent, #d49489)';
-    td.style.border = "2px solid var(--accent, #d49489)";
+    // Has unread coach replies - use Connect purple
+    td.style.backgroundColor = 'var(--tier-connect, #805AD5)';
+    td.style.border = "2px solid var(--tier-connect, #805AD5)";
     td.style.color = '#fff';
     td.style.fontWeight = 'bold';
-    td.style.boxShadow = "0 0 4px rgba(212, 148, 137, 0.5)";
+    td.style.boxShadow = "0 0 4px rgba(128, 90, 213, 0.5)";
     td.title = "Journal entry with unread coach reply";
   } else if (datesWithUnreadReplies.has(key)) {
-    // Local check still shows unread - use coral (backup)
-    td.style.backgroundColor = 'var(--accent, #d49489)';
-    td.style.border = "2px solid var(--accent, #d49489)";
+    // Local check still shows unread - use Connect purple (backup)
+    td.style.backgroundColor = 'var(--tier-connect, #805AD5)';
+    td.style.border = "2px solid var(--tier-connect, #805AD5)";
     td.style.color = '#fff';
     td.style.fontWeight = 'bold';
-    td.style.boxShadow = "0 0 4px rgba(212, 148, 137, 0.5)";
+    td.style.boxShadow = "0 0 4px rgba(128, 90, 213, 0.5)";
     td.title = "Journal entry with unread coach reply";
   } else {
     // No unread replies - use teal
@@ -2395,7 +2422,7 @@ if (entry.reflectionUsed) {
 }
 
   const body = document.createElement("div");
-  body.textContent = entry.text;
+  body.textContent = entry.text || entry.content || ''; // Fallback for older gratitude/inkblot entries that used 'content' field
   body.className = 'entry-text';
   body.style.cssText = `
     margin-bottom: 0.75em;
@@ -2483,7 +2510,7 @@ const checkForCoachReplies = async () => {
         position: relative;
         border: 1px solid var(--border-light);
         box-shadow: var(--shadow-md);
-        ${entry.newCoachReply ? 'border-left: 4px solid var(--accent, #d49489);' : ''}
+        ${entry.newCoachReply ? 'border-left: 4px solid var(--tier-connect, #805AD5);' : ''}
       `;
       
       const coachRepliesTitle = document.createElement("h4");

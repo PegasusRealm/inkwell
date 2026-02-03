@@ -123,7 +123,7 @@
 const CONFIG = {
   firebase: {
     apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
-    authDomain: "inkwell-alpha.firebaseapp.com",
+    authDomain: "inkwelljournal.io",
     projectId: "inkwell-alpha",
     storageBucket: "inkwell-alpha.appspot.com"
   },
@@ -432,103 +432,10 @@ const CONFIG = {
         console.log('📝 EntryId found, loading entry:', entryId);
         loadEntry();
       } else {
-        console.log('📋 No entryId, showing coach dashboard');
-        // Show general coach dashboard
-        const entryBox = document.getElementById("entryText");
-        entryBox.innerHTML = `
-          <div style="text-align: center; padding: 2em; color: var(--brand-primary);">
-            <h3>👩‍⚕️ Coach Portal</h3>
-            <p>Welcome to the coach dashboard.</p>
-            <p>When clients tag entries for review, you'll receive email notifications with direct links to view and respond to their journal entries.</p>
-            
-            <!-- Gift Membership Section -->
-            <div id="giftCodeSection" style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border: 2px solid #667eea; border-radius: 12px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
-              <h4 style="color: #667eea; margin-top: 0; display: flex; align-items: center; gap: 0.5rem;">
-                🎁 Gift Connect Membership
-              </h4>
-              <p style="font-size: 0.9rem; color: #666; margin-bottom: 1.5rem;">
-                Create discounted Connect memberships for your clients (50-100% off)
-              </p>
-              
-              <div style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Discount Amount:</label>
-                <select id="giftDiscount" style="width: 100%; padding: 0.75rem; border: 2px solid #667eea; border-radius: 8px; font-size: 1rem;">
-                  <option value="0.50">50% off ($24.99/month)</option>
-                  <option value="0.75">75% off ($12.50/month)</option>
-                  <option value="1.0">100% off (Free)</option>
-                </select>
-              </div>
-              
-              <div style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Client Email (Optional):</label>
-                <input type="email" id="giftRecipientEmail" placeholder="client@example.com" 
-                       style="width: 100%; padding: 0.75rem; border: 2px solid #667eea; border-radius: 8px; font-size: 1rem; box-sizing: border-box;" />
-                <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem; margin-bottom: 0;">
-                  Leave blank to create a shareable code
-                </p>
-              </div>
-              
-              <button onclick="generateGiftCode()" id="generateGiftBtn" 
-                      style="width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; padding: 0.75rem; font-weight: 600; font-size: 1rem; cursor: pointer;">
-                Generate Gift Code
-              </button>
-              
-              <div id="giftCodeResult" style="display: none; margin-top: 1.5rem; padding: 1.5rem; background: white; border-radius: 8px; border: 2px dashed #667eea;">
-                <div style="font-weight: 600; color: #667eea; margin-bottom: 0.5rem;">✅ Gift Code Created!</div>
-                <div style="font-family: monospace; font-size: 1.5rem; font-weight: bold; color: #333; padding: 1rem; background: #f8f9ff; border-radius: 6px; margin: 1rem 0; text-align: center;" id="giftCodeDisplay"></div>
-                <div style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">
-                  Share this code with your client or use the link below:
-                </div>
-                <div style="word-break: break-all; padding: 0.75rem; background: #f8f9ff; border-radius: 6px; font-size: 0.85rem; color: #667eea; margin-bottom: 1rem;" id="giftCodeLink"></div>
-                <button onclick="copyGiftCode()" style="width: 100%; background: white; border: 2px solid #667eea; color: #667eea; border-radius: 6px; padding: 0.5rem; font-weight: 600; cursor: pointer;">
-                  📋 Copy Code
-                </button>
-              </div>
-              
-              <div id="giftCodeError" style="display: none; margin-top: 1rem; padding: 1rem; background: #ffebee; border-radius: 8px; color: #d32f2f; font-size: 0.9rem;"></div>
-            </div>
-            
-            <!-- Insurance Management Section -->
-            <div id="insuranceSection" style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); border: 2px solid #22c55e; border-radius: 12px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
-              <h4 style="color: #16a34a; margin-top: 0; display: flex; align-items: center; gap: 0.5rem;">
-                🛡️ Insurance Certificate
-              </h4>
-              <div id="insuranceStatus" style="margin-bottom: 1.5rem;">
-                <p style="color: #666;">Loading insurance status...</p>
-              </div>
-              
-              <div id="insuranceUploadForm" style="display: none;">
-                <div style="margin-bottom: 1rem;">
-                  <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">New Expiration Date:</label>
-                  <input type="date" id="newInsuranceExpiration" 
-                         style="width: 100%; padding: 0.75rem; border: 2px solid #22c55e; border-radius: 8px; font-size: 1rem; box-sizing: border-box;" />
-                  <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem; margin-bottom: 0;">
-                    Must be at least 60 days from today
-                  </p>
-                </div>
-                
-                <div style="margin-bottom: 1rem;">
-                  <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Insurance Certificate (PDF or image):</label>
-                  <input type="file" id="newInsuranceFile" accept=".pdf,.jpg,.jpeg,.png" 
-                         style="width: 100%; padding: 0.5rem; border: 2px dashed #22c55e; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box; background: #f0fdf4;" />
-                </div>
-                
-                <button onclick="uploadNewInsurance()" id="uploadInsuranceBtn" 
-                        style="width: 100%; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border: none; border-radius: 8px; padding: 0.75rem; font-weight: 600; font-size: 1rem; cursor: pointer;">
-                  📤 Upload Updated Insurance
-                </button>
-              </div>
-              
-              <div id="insuranceUploadResult" style="display: none; margin-top: 1rem; padding: 1rem; background: white; border-radius: 8px; border: 2px solid #22c55e;">
-              </div>
-              
-              <div id="insuranceError" style="display: none; margin-top: 1rem; padding: 1rem; background: #ffebee; border-radius: 8px; color: #d32f2f; font-size: 0.9rem;"></div>
-            </div>
-          </div>
-        `;
-        
-        // Load insurance status after dashboard renders
-        loadInsuranceStatus();
+        // No entryId - redirect to the full practitioner portal
+        console.log('📋 No entryId, redirecting to practitioner portal');
+        window.location.href = '/practitioner-portal.html';
+        return;
       }
     }
     

@@ -12,6 +12,30 @@
             --success-green: #10b981;
             --warning-yellow: #f59e0b;
             --danger-red: #ef4444;
+            --font-main: #374151;
+            --font-secondary: #6b7280;
+            --font-muted: #9ca3af;
+            --bg-primary: #f5f7fa;
+            --bg-card: #ffffff;
+            --bg-muted: #f9fafb;
+            --border-light: #e5e7eb;
+            --border-medium: #d1d5db;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --brand-primary: #4A9BA8;
+                --brand-secondary: #7BB8C4;
+                --brand-light: #9FD3E0;
+                --font-main: #f3f4f6;
+                --font-secondary: #d1d5db;
+                --font-muted: #9ca3af;
+                --bg-primary: #1f2937;
+                --bg-card: #374151;
+                --bg-muted: #4b5563;
+                --border-light: #4b5563;
+                --border-medium: #6b7280;
+            }
         }
         
         * {
@@ -22,8 +46,9 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-muted) 100%);
             min-height: 100vh;
+            color: var(--font-main);
         }
         
         /* Header */
@@ -71,8 +96,8 @@
         
         /* Tabs */
         .tabs {
-            background: white;
-            border-bottom: 2px solid #e5e7eb;
+            background: var(--bg-card);
+            border-bottom: 2px solid var(--border-light);
             padding: 0 2em;
             display: flex;
             gap: 2em;
@@ -83,7 +108,7 @@
             padding: 1em 1.5em;
             cursor: pointer;
             border-bottom: 3px solid transparent;
-            color: #6b7280;
+            color: var(--font-secondary);
             font-weight: 500;
             transition: all 0.2s;
             white-space: nowrap;
@@ -114,7 +139,7 @@
         }
         
         .card {
-            background: white;
+            background: var(--bg-card);
             border-radius: 12px;
             padding: 2em;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -138,7 +163,7 @@
             display: block;
             margin-bottom: 0.5em;
             font-weight: 600;
-            color: #374151;
+            color: var(--font-main);
         }
         
         .form-group input,
@@ -146,10 +171,12 @@
         .form-group textarea {
             width: 100%;
             padding: 0.75em;
-            border: 2px solid #e5e7eb;
+            border: 2px solid var(--border-light);
             border-radius: 8px;
             font-size: 1em;
             transition: border-color 0.2s;
+            background: var(--bg-card);
+            color: var(--font-main);
         }
         
         .form-group input:focus,
@@ -297,16 +324,17 @@
         }
         
         .info-box {
-            background: #eff6ff;
-            border-left: 4px solid #3b82f6;
+            background: var(--bg-primary);
+            border-left: 4px solid var(--brand-primary);
             padding: 1em;
             border-radius: 8px;
             margin-bottom: 1.5em;
+            color: var(--font-main);
         }
         
         .revenue-model {
-            background: #fefce8;
-            border: 2px solid #fde047;
+            background: var(--bg-card);
+            border: 2px solid var(--brand-primary);
             border-radius: 12px;
             padding: 1.5em;
             margin-bottom: 2em;
@@ -627,6 +655,11 @@
                         <label>Practice Location</label>
                         <input type="text" id="profileLocation" placeholder="City, State">
                     </div>
+                    <div class="form-group">
+                        <label>Bio</label>
+                        <textarea id="profileBio" rows="4" placeholder="Tell potential clients about yourself, your approach, and what you specialize in..." style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; resize: vertical;"></textarea>
+                        <small style="color: #6b7280;">This bio will be visible to users when they're choosing a coach.</small>
+                    </div>
                     <button class="btn" onclick="saveProfile()">💾 Save Profile</button>
                     <div id="profileStatus"></div>
                 </div>
@@ -736,18 +769,18 @@
         <div id="tab-revenue" class="tab-content">
             <div class="revenue-model">
                 <h3 style="color: var(--brand-primary); margin-bottom: 1em;">💡 How You Earn Money with InkWell</h3>
-                <p style="margin-bottom: 1em; line-height: 1.6;">
+                <p style="margin-bottom: 1em; line-height: 1.6; color: var(--font-main);">
                     You earn <strong>60% of the Connect subscription fee</strong> ($29.99/month) for each client who maintains an active subscription while connected to you. That's <strong>$18/month per client</strong>.
                 </p>
-                <div style="background: white; padding: 1em; border-radius: 8px; margin-bottom: 1em;">
+                <div style="background: var(--bg-muted); padding: 1em; border-radius: 8px; margin-bottom: 1em;">
                     <strong style="color: var(--brand-primary);">Revenue Split:</strong>
-                    <ul style="margin: 0.5em 0 0 1.5em; line-height: 1.8;">
+                    <ul style="margin: 0.5em 0 0 1.5em; line-height: 1.8; color: var(--font-main);">
                         <li><strong>60%</strong> to you ($18/client/month)</li>
                         <li><strong>30%</strong> to InkWell platform</li>
                         <li><strong>10%</strong> Stripe processing fees</li>
                     </ul>
                 </div>
-                <p style="margin: 0; font-size: 0.9em; color: #6b7280;">
+                <p style="margin: 0; font-size: 0.9em; color: var(--font-secondary);">
                     Payments are processed monthly via Stripe and deposited directly to your linked bank account.
                 </p>
             </div>
@@ -786,21 +819,42 @@
             <div class="card">
                 <h2 class="card-title">🎁 Gift Subscription Codes</h2>
                 <div class="info-box">
-                    <strong>Give the gift of wellness!</strong> Generate discount codes for your clients to use when subscribing to InkWell Connect. You can offer 50% or 100% discounts.
+                    <strong>Help your clients get started!</strong> Generate discount codes to share with clients when they subscribe to InkWell Connect.
+                </div>
+                
+                <div style="background: var(--bg-primary); padding: 1.5em; border-radius: 8px; margin-bottom: 1.5em; border: 1px solid var(--border-light);">
+                    <h4 style="color: var(--brand-primary); margin: 0 0 1em 0;">📋 How It Works</h4>
+                    <ol style="margin: 0; padding-left: 1.5em; line-height: 1.8; color: var(--font-main);">
+                        <li><strong>Generate a code</strong> below with your chosen discount</li>
+                        <li><strong>Share it</strong> with your client via email (use the form below) or copy it to send however you like</li>
+                        <li><strong>Client enters the code</strong> when subscribing to InkWell Connect</li>
+                        <li><strong>They get the discounted rate</strong> for 3 months while paired with you</li>
+                    </ol>
+                    
+                    <div style="margin-top: 1em; padding: 1em; background: var(--bg-card); border-radius: 6px; border-left: 4px solid var(--warning-yellow);">
+                        <strong style="color: var(--font-main);">💡 Important:</strong>
+                        <ul style="margin: 0.5em 0 0 1em; padding: 0; list-style: disc; color: var(--font-secondary); font-size: 0.95em;">
+                            <li><strong>100% Off</strong> = Free for <strong>1 month</strong>, then converts to regular rate</li>
+                            <li><strong>50% Off</strong> = Half price for <strong>3 months</strong>, then regular rate</li>
+                            <li>Each client can only use <strong>one free month code ever</strong> — additional 100% codes are automatically converted to 50% off</li>
+                            <li>Discount applies only while client remains connected to you</li>
+                        </ul>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label>Discount Amount</label>
                     <select id="giftDiscount">
-                        <option value="50">50% Off ($24.99/month)</option>
-                        <option value="100">100% Off (Free)</option>
+                        <option value="50">50% Off ($14.99/month for 3 months)</option>
+                        <option value="100">100% Off (Free for 1 month — one per client)</option>
                     </select>
+                    <small style="color: var(--font-muted);">100% codes give clients a free trial month. 50% codes give 3 months at half price.</small>
                 </div>
                 
                 <div class="form-group">
                     <label>Recipient Email (Optional)</label>
                     <input type="email" id="giftRecipientEmail" placeholder="client@example.com">
-                    <small style="color: #6b7280;">If provided, we'll send them an email with the code automatically.</small>
+                    <small style="color: var(--font-muted);">If provided, we'll send them an email with the code and instructions.</small>
                 </div>
                 
                 <button class="btn" onclick="generateGiftCode()">🎁 Generate Gift Code</button>
@@ -843,19 +897,25 @@
         
         <!-- Settings Tab -->
         <div id="tab-settings" class="tab-content">
-            <div class="card">
-                <h2 class="card-title">⚙️ Practice Settings</h2>
+            <!-- Public Profile Opt-In Card (Prominent) -->
+            <div class="card" style="border: 3px solid var(--brand-primary); background: linear-gradient(135deg, #f0f9fa 0%, #e8f4f8 100%);">
+                <h2 class="card-title" style="font-size: 1.6em;">🌟 Grow Your Practice with InkWell</h2>
+                <p style="font-size: 1.1em; color: #374151; margin-bottom: 1.5em; line-height: 1.6;">
+                    By default, you're only visible to clients you directly invite. <strong>Opt in below</strong> to appear in our public coach directory and let any InkWell user discover and connect with you!
+                </p>
                 
-                <div class="checkbox-group" style="margin-top: 1em;">
-                    <input type="checkbox" id="freeAgentOptIn">
-                    <div>
-                        <label for="freeAgentOptIn" style="font-weight: 600;">
-                            🌟 Become an InkWell Free Agent
-                        </label>
-                        <p style="margin: 0.5em 0 0 0; color: #6b7280; font-size: 0.9em;">
-                            Allow any InkWell user to select you as their coach. You'll appear in the coach directory and can grow your practice through the platform.
-                        </p>
-                    </div>
+                <div style="background: white; border-radius: 12px; padding: 1.5em; box-shadow: 0 2px 8px rgba(42, 105, 114, 0.15);">
+                    <label for="freeAgentOptIn" style="display: flex; align-items: flex-start; gap: 1em; cursor: pointer;">
+                        <input type="checkbox" id="freeAgentOptIn" style="width: 24px; height: 24px; margin-top: 2px; accent-color: var(--brand-primary);">
+                        <div>
+                            <span style="font-size: 1.2em; font-weight: 700; color: var(--brand-primary);">
+                                ✨ Yes! I'd like to be available to any InkWell user
+                            </span>
+                            <p style="margin: 0.5em 0 0 0; color: #6b7280; font-size: 0.95em;">
+                                You'll appear in the in-app coach directory. New clients can browse your profile and select you as their coach. Grow your practice organically!
+                            </p>
+                        </div>
+                    </label>
                 </div>
                 
                 <div id="freeAgentProfile" style="display: none; margin-top: 1.5em; padding: 1.5em; background: #f9fafb; border-radius: 8px;">
@@ -892,7 +952,7 @@
 
         const firebaseConfig = {
             apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
-            authDomain: "inkwell-alpha.firebaseapp.com",
+            authDomain: "inkwelljournal.io",
             projectId: "inkwell-alpha",
             storageBucket: "inkwell-alpha.appspot.com"
         };
@@ -1055,6 +1115,7 @@
             loadProfileData();
             loadTaxInfo();
             loadSettings();
+            loadGiftCodesList(); // Load issued gift codes
             checkConnectStatusOnLoad(); // Check Stripe Connect status
         }
 
@@ -1065,7 +1126,17 @@
                 document.getElementById('stat-revenue').textContent = '$0';
                 document.getElementById('stat-gifts').textContent = '0';
                 
-                document.getElementById('recentActivity').innerHTML = '<p style="color: #9ca3af;">No recent activity</p>';
+                document.getElementById('recentActivity').innerHTML = '<p style="color: var(--font-muted);">No recent activity yet. When clients connect with you, their activity will appear here.</p>';
+                
+                // Revenue Stats - show empty state
+                document.getElementById('revenueStats').innerHTML = `
+                    <div style="text-align: center; padding: 2em; color: var(--font-secondary);">
+                        <p style="font-size: 1.1em; margin-bottom: 0.5em;">✨ Your revenue journey starts here</p>
+                        <p style="color: var(--font-muted); font-size: 0.95em;">When clients subscribe through your gift codes or connect with you, your earnings will appear here.</p>
+                    </div>
+                `;
+                
+                // Gift codes list is loaded separately by loadGiftCodesList()
             } catch (error) {
                 console.error('Error loading dashboard stats:', error);
             }
@@ -1077,6 +1148,7 @@
                 document.getElementById('profileEmail').value = practitionerData.email || '';
                 document.getElementById('profileCredentials').value = practitionerData.credentials || '';
                 document.getElementById('profileLocation').value = practitionerData.practiceLocation || '';
+                document.getElementById('profileBio').value = practitionerData.bio || '';
             } catch (error) {
                 console.error('Error loading profile data:', error);
             }
@@ -1133,6 +1205,7 @@
                     displayName: document.getElementById('profileName').value,
                     credentials: document.getElementById('profileCredentials').value,
                     practiceLocation: document.getElementById('profileLocation').value,
+                    bio: document.getElementById('profileBio').value,
                     updatedAt: serverTimestamp()
                 });
                 
@@ -1244,26 +1317,172 @@
             }
         };
 
-        // Gift code functions (placeholders)
-        window.generateGiftCode = function() {
-            document.getElementById('giftCodeResult').style.display = 'block';
-            document.getElementById('giftCodeDisplay').textContent = 'INKWELL-' + Math.random().toString(36).substr(2, 8).toUpperCase();
-            document.getElementById('giftLinkDisplay').value = `https://inkwellapp.com/redeem?code=${document.getElementById('giftCodeDisplay').textContent}`;
+        // Gift code functions - Real Implementation
+        window.generateGiftCode = async function() {
+            const btn = event.target;
+            const statusDiv = document.getElementById('giftStatus');
+            const resultDiv = document.getElementById('giftCodeResult');
+            
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ Generating...';
+                statusDiv.innerHTML = '';
+                
+                const discountSelect = document.getElementById('giftDiscount');
+                const recipientEmail = document.getElementById('giftRecipientEmail').value.trim();
+                
+                // Convert 50/100 to 0.5/1.0
+                const discountPercent = parseInt(discountSelect.value) / 100;
+                
+                const createGiftMembership = httpsCallable(functions, 'createGiftMembership');
+                const result = await createGiftMembership({
+                    discountPercent: discountPercent,
+                    maxUses: 1,
+                    recipientEmail: recipientEmail || null
+                });
+                
+                const data = result.data;
+                
+                // Show result
+                resultDiv.style.display = 'block';
+                document.getElementById('giftCodeDisplay').textContent = data.giftCode;
+                document.getElementById('giftLinkDisplay').value = `https://inkwelljournal.io/redeem?code=${data.giftCode}`;
+                
+                statusDiv.innerHTML = `
+                    <div class="alert alert-success" style="margin-top: 1em;">
+                        ✅ Gift code created! Valid for 3 months from redemption.
+                        ${recipientEmail ? `<br>📧 Email will be sent to ${recipientEmail}` : ''}
+                    </div>
+                `;
+                
+                // Refresh gift codes list
+                loadGiftCodesList();
+                
+            } catch (error) {
+                console.error('Error generating gift code:', error);
+                statusDiv.innerHTML = `<div class="alert alert-error">❌ Error: ${error.message}</div>`;
+                resultDiv.style.display = 'none';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🎁 Generate Gift Code';
+            }
         };
+        
+        // Load list of issued gift codes
+        async function loadGiftCodesList() {
+            const listDiv = document.getElementById('giftCodesList');
+            
+            try {
+                const giftCodesQuery = query(
+                    collection(db, 'giftMemberships'),
+                    where('createdBy', '==', currentUser.uid),
+                    orderBy('createdAt', 'desc'),
+                    limit(20)
+                );
+                
+                const snapshot = await getDocs(giftCodesQuery);
+                
+                if (snapshot.empty) {
+                    listDiv.innerHTML = `
+                        <div style="text-align: center; padding: 2em; color: var(--font-secondary);">
+                            <p style="font-size: 1.1em; margin-bottom: 0.5em;">🎁 No gift codes issued yet</p>
+                            <p style="color: var(--font-muted); font-size: 0.95em;">Generate your first gift code above to share with clients and grow your practice.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '<div style="display: flex; flex-direction: column; gap: 1em;">';
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const createdAt = data.createdAt?.toDate();
+                    const expiresAt = data.expiresAt?.toDate();
+                    const isExpired = expiresAt && expiresAt < new Date();
+                    const isRedeemed = data.redeemedBy && data.redeemedBy.length > 0;
+                    
+                    let statusBadge = '';
+                    if (isRedeemed) {
+                        statusBadge = '<span style="background: var(--success-green); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em;">Redeemed</span>';
+                    } else if (isExpired) {
+                        statusBadge = '<span style="background: var(--danger-red); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em;">Expired</span>';
+                    } else {
+                        statusBadge = '<span style="background: var(--brand-primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em;">Active</span>';
+                    }
+                    
+                    html += `
+                        <div style="background: var(--bg-muted); padding: 1em; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5em;">
+                            <div>
+                                <strong style="font-family: monospace; font-size: 1.1em; color: var(--brand-primary);">${data.code}</strong>
+                                <br><span style="font-size: 0.85em; color: var(--font-secondary);">${Math.round(data.discountPercent * 100)}% off • Created ${createdAt ? createdAt.toLocaleDateString() : 'Unknown'}</span>
+                                ${data.recipientEmail ? `<br><span style="font-size: 0.85em; color: var(--font-muted);">For: ${data.recipientEmail}</span>` : ''}
+                            </div>
+                            <div>${statusBadge}</div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                listDiv.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading gift codes:', error);
+                listDiv.innerHTML = `
+                    <div style="text-align: center; padding: 2em; color: var(--font-secondary);">
+                        <p style="font-size: 1.1em; margin-bottom: 0.5em;">🎁 No gift codes issued yet</p>
+                        <p style="color: var(--font-muted); font-size: 0.95em;">Generate your first gift code above to share with clients and grow your practice.</p>
+                    </div>
+                `;
+            }
+        }
 
         window.copyGiftCode = function() {
             navigator.clipboard.writeText(document.getElementById('giftCodeDisplay').textContent);
-            alert('Code copied to clipboard!');
+            showToast('Code copied to clipboard!');
         };
 
         window.copyGiftLink = function() {
             navigator.clipboard.writeText(document.getElementById('giftLinkDisplay').value);
-            alert('Link copied to clipboard!');
+            showToast('Link copied to clipboard!');
         };
 
-        window.sendGiftEmail = function() {
-            alert('Email sent! (Feature coming soon)');
+        window.sendGiftEmail = async function() {
+            const email = document.getElementById('giftSendEmail').value.trim();
+            const code = document.getElementById('giftCodeDisplay').textContent;
+            
+            if (!email) {
+                showToast('Please enter an email address', 'error');
+                return;
+            }
+            
+            try {
+                // TODO: Implement email sending via Cloud Function
+                showToast('📧 Email feature coming soon! For now, copy the code and send it manually.', 'info');
+            } catch (error) {
+                showToast('Error sending email: ' + error.message, 'error');
+            }
         };
+        
+        // Simple toast function
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${type === 'error' ? 'var(--danger-red)' : type === 'info' ? 'var(--brand-primary)' : 'var(--success-green)'};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                z-index: 10000;
+                font-weight: 500;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
 
         // Stripe Connect - Real Implementation
         window.setupStripeConnect = async function() {

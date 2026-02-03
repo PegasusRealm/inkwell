@@ -31,6 +31,7 @@ const SUBSCRIPTION_CONFIG = {
         smsNotifications: false,
         practitionerConnection: false,
         dataExport: false,
+        periodInsights: false,
       }
     },
     PLUS: {
@@ -46,6 +47,7 @@ const SUBSCRIPTION_CONFIG = {
         smsNotifications: true,
         practitionerConnection: false,
         dataExport: true,
+        periodInsights: true,
       }
     },
     CONNECT: {
@@ -61,6 +63,7 @@ const SUBSCRIPTION_CONFIG = {
         smsNotifications: true,
         practitionerConnection: true,
         dataExport: true,
+        periodInsights: true,
         interactionsPerMonth: 4,
         maxExtraInteractions: 3, // Can purchase up to 3 extra (7 total)
       }

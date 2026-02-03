@@ -61,6 +61,8 @@
       --accent-sophy: #D49489;
       --accent-sophy-light: #E6A497;
       --accent-sophy-hover: #C2867D;
+      --tier-connect: #805AD5;
+      --tier-connect-light: #9F7AEA;
       --btn-danger: #dc3545;
       --btn-danger-hover: #c82333;
       --btn-warning: #ff9800;
@@ -112,6 +114,8 @@
       --accent-sophy: #E6A497;
       --accent-sophy-light: #F0B5A7;
       --accent-sophy-hover: #D49489;
+      --tier-connect: #9F7AEA;
+      --tier-connect-light: #B794F4;
       --btn-danger: #e74c3c;
       --btn-danger-hover: #c0392b;
       --btn-warning: #ffa726;
@@ -2550,8 +2554,8 @@ html[data-theme='dark'] .entry-card[style] .fixed-dark-date {
 
 /* Style for entries with new coach replies */
 .entry-card.journal-entry[style*="border-left: 5px solid"] {
-  border-left: 5px solid var(--accent, #d49489);
-  box-shadow: 0 0 10px rgba(212, 148, 137, 0.3), var(--shadow-md);
+  border-left: 5px solid var(--tier-connect, #805AD5);
+  box-shadow: 0 0 10px rgba(128, 90, 213, 0.3), var(--shadow-md);
 }
 
 /* Add divider lines between sections */
@@ -3678,22 +3682,366 @@ html[data-theme='dark'] .ai-input:focus {
 /* Simple, clean dropdown styling */
 #approvedPractitionerSelect {
   transition: border-color 0.2s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232A6972' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
 }
 
 #approvedPractitionerSelect:focus {
   outline: none;
-  border-color: #2A6972;
+  border-color: var(--brand-primary);
   box-shadow: 0 0 0 2px rgba(42, 105, 114, 0.2);
 }
 
 #approvedPractitionerSelect option {
   padding: 8px 12px;
-  background-color: white;
-  color: #333;
+  background-color: var(--bg-card);
+  color: var(--font-main);
 }
 
+#approvedPractitionerSelect option:checked,
 #approvedPractitionerSelect option:hover {
-  background-color: #f0f8ff;
+  background-color: var(--brand-primary);
+  color: white;
+}
+
+/* Dark mode dropdown */
+html[data-theme='dark'] #approvedPractitionerSelect {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234A9BA8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+}
+
+html[data-theme='dark'] #approvedPractitionerSelect option {
+  background-color: #1A202C;
+  color: #F7FAFC;
+}
+
+html[data-theme='dark'] #approvedPractitionerSelect option:checked,
+html[data-theme='dark'] #approvedPractitionerSelect option:hover {
+  background-color: #4A9BA8;
+  color: white;
+}
+
+/* Weekly Activity Dots */
+.activity-dot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.activity-dot .dot-label {
+  font-size: 9px;
+  color: var(--font-sub);
+  font-weight: 500;
+}
+
+.activity-dot::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.activity-dot.empty::after {
+  background: var(--bg-muted);
+  border: 1.5px solid var(--border-light);
+}
+
+.activity-dot.filled::after {
+  background: var(--brand-primary);
+  border: 1.5px solid var(--brand-primary);
+}
+
+.activity-dot.today::after {
+  box-shadow: 0 0 0 2px var(--bg-muted), 0 0 0 3px var(--brand-primary);
+}
+
+/* Dark theme activity dots */
+html[data-theme='dark'] .activity-dot.empty::after {
+  background: rgba(42, 105, 114, 0.2);
+  border-color: rgba(42, 105, 114, 0.4);
+}
+
+html[data-theme='dark'] .activity-dot.filled::after {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+}
+
+/* Tag Input Styles */
+.tag-input-container {
+  margin-top: 1em;
+  padding: 0.75em;
+  background: var(--bg-muted);
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+}
+
+.tag-input-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 0.25em 0;
+}
+
+.tag-input-header span {
+  font-size: 0.9em;
+  color: var(--font-sub);
+  font-weight: 500;
+}
+
+.tag-input-header .toggle-icon {
+  font-size: 0.8em;
+  color: var(--font-sub);
+  transition: transform 0.2s ease;
+}
+
+.tag-input-header.expanded .toggle-icon {
+  transform: rotate(180deg);
+}
+
+.tag-input-body {
+  display: none;
+  margin-top: 0.75em;
+}
+
+.tag-input-body.visible {
+  display: block;
+}
+
+.tag-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  margin-bottom: 0.75em;
+  min-height: 24px;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.25em 0.6em;
+  background: var(--brand-primary);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+.tag-chip .remove-tag {
+  cursor: pointer;
+  opacity: 0.8;
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.tag-chip .remove-tag:hover {
+  opacity: 1;
+}
+
+.tag-autocomplete-wrapper {
+  position: relative;
+}
+
+.tag-input-field {
+  width: 100%;
+  padding: 0.5em 0.75em;
+  border: 1px solid var(--border-medium);
+  border-radius: 6px;
+  font-size: 0.9em;
+  background: var(--bg-card);
+  color: var(--font-main);
+}
+
+.tag-input-field::placeholder {
+  color: var(--font-muted);
+}
+
+.tag-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-medium);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+}
+
+.tag-suggestions.visible {
+  display: block;
+}
+
+.tag-suggestion-item {
+  padding: 0.5em 0.75em;
+  cursor: pointer;
+  font-size: 0.85em;
+  color: var(--font-main);
+}
+
+.tag-suggestion-item:hover,
+.tag-suggestion-item.highlighted {
+  background: var(--brand-primary);
+  color: white;
+}
+
+/* Tag Management in Past Entries */
+.tag-management-section {
+  margin: 1.5em 0;
+  padding: 1em;
+  background: var(--bg-muted);
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+}
+
+.tag-management-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75em;
+}
+
+.tag-management-header h3 {
+  font-size: 1em;
+  color: var(--font-main);
+  margin: 0;
+}
+
+.tag-management-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+}
+
+.tag-management-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.4em 0.75em;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tag-management-item:hover {
+  border-color: var(--brand-primary);
+}
+
+.tag-management-item.selected {
+  background: var(--brand-primary);
+  color: white;
+  border-color: var(--brand-primary);
+}
+
+.tag-management-item .tag-count {
+  font-size: 0.75em;
+  opacity: 0.7;
+}
+
+.tag-management-item .delete-tag {
+  opacity: 0.6;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.tag-management-item .delete-tag:hover {
+  opacity: 1;
+  color: #e74c3c;
+}
+
+/* Tag Library Chips in Past Entries */
+.tag-library-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.5em 0.8em;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.tag-library-chip:hover {
+  border-color: var(--brand-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(42, 105, 114, 0.15);
+}
+
+.tag-library-chip.active {
+  background: var(--brand-primary);
+  color: white;
+  border-color: var(--brand-primary);
+}
+
+.tag-library-chip .tag-name {
+  color: inherit;
+}
+
+.tag-library-chip .tag-count {
+  font-size: 0.75em;
+  opacity: 0.7;
+  color: inherit;
+}
+
+.tag-library-chip .tag-actions {
+  display: none;
+  gap: 0.3em;
+  margin-left: 0.3em;
+}
+
+.tag-library-chip:hover .tag-actions {
+  display: inline-flex;
+}
+
+.tag-library-chip .tag-action {
+  font-size: 0.9em;
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.tag-library-chip .tag-action:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.tag-library-chip .tag-action.delete:hover {
+  color: #e74c3c;
+}
+
+/* Tag Management Body Toggle */
+.tag-management-body {
+  display: none;
+  padding-top: 1em;
+}
+
+.tag-management-body.visible {
+  display: block;
+}
+
+.tag-management-header {
+  cursor: pointer;
+  padding: 0.5em 0;
+}
+
+.tag-management-header:hover {
+  color: var(--brand-primary);
 }
 
 /* Info Modal Styles */
@@ -4094,7 +4442,6 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
     opacity: 1; 
     transform: translateY(0); 
   }
-}
 }
 
 </style>
@@ -4514,6 +4861,69 @@ let activeJournalMode = 'gratitude'; // 'gratitude' | 'inkblot' | 'full'
 let inkblotRecognition = null; // Web Speech API recognition instance
 let isInkblotRecording = false;
 
+// Update weekly activity dots based on journal entries
+async function updateWeeklyActivityDots() {
+  const currentUser = window.auth?.currentUser;
+  if (!currentUser) return;
+  
+  try {
+    // Get start of current week (Sunday)
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = Sunday
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - dayOfWeek);
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    // Query entries from this week
+    const entriesRef = collection(db, 'journalEntries');
+    const q = query(
+      entriesRef,
+      where('userId', '==', currentUser.uid),
+      where('createdAt', '>=', startOfWeek),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const snapshot = await getDocs(q);
+    
+    // Track which days have entries
+    const daysWithEntries = new Set();
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const entryDate = data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+      const entryDay = entryDate.getDay(); // 0 = Sunday
+      daysWithEntries.add(entryDay);
+    });
+    
+    // Update dot states
+    const dotIds = ['activityDotsSun', 'activityDotsMon', 'activityDotsTue', 'activityDotsWed', 'activityDotsThu', 'activityDotsFri', 'activityDotsSat'];
+    const today = now.getDay();
+    
+    dotIds.forEach((dotId, index) => {
+      const dot = document.getElementById(dotId);
+      if (dot) {
+        // Remove existing state classes
+        dot.classList.remove('filled', 'empty', 'today');
+        
+        // Add filled or empty
+        if (daysWithEntries.has(index)) {
+          dot.classList.add('filled');
+        } else {
+          dot.classList.add('empty');
+        }
+        
+        // Mark today
+        if (index === today) {
+          dot.classList.add('today');
+        }
+      }
+    });
+    
+    console.log('📅 Weekly activity dots updated:', daysWithEntries.size, 'days with entries');
+  } catch (error) {
+    console.warn('Could not update activity dots:', error);
+  }
+}
+
 // Switch between journal mode sub-tabs
 window.switchJournalMode = function(mode) {
   activeJournalMode = mode;
@@ -4600,14 +5010,14 @@ window.saveGratitudeEntry = async function() {
     
     const entryData = {
       userId: userId,
+      text: `🙏 Today I'm grateful for:\n\n${content}`,
       title: `Gratitude - ${today}`,
-      content: content,
       rawGratitudes: gratitudes,
       mood: '🙏',
       tags: ['gratitude'],
       entryMode: 'gratitude',
-      createdAt: new Date().toISOString(),
-      timestamp: window.serverTimestamp ? window.serverTimestamp() : new Date()
+      createdAt: window.serverTimestamp ? window.serverTimestamp() : new Date(),
+      updatedAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
     };
     
     // Save to Firestore
@@ -4618,6 +5028,7 @@ window.saveGratitudeEntry = async function() {
     document.getElementById('gratitude1').value = '';
     document.getElementById('gratitude2').value = '';
     document.getElementById('gratitude3').value = '';
+    document.getElementById('gratitude3').value = '';
     
     // Show success
     if (statusEl) {
@@ -4625,6 +5036,22 @@ window.saveGratitudeEntry = async function() {
       statusEl.style.color = '#4A8B8B';
       setTimeout(() => { statusEl.textContent = ''; }, 3000);
     }
+    
+    // Update weekly activity dots
+    updateWeeklyActivityDots();
+    
+    // Refresh calendar to show new entry date highlight
+    if (typeof window.buildCalendar === "function") {
+      try { 
+        window.buildCalendar(); 
+        console.log("📅 Calendar refreshed after gratitude entry save");
+      } catch (e) { 
+        console.warn("buildCalendar refresh failed:", e); 
+      }
+    }
+    
+    // Show success toast
+    window.showToast("🙏 Gratitude saved!", "success", 3000);
     
   } catch (error) {
     console.error('❌ Error saving gratitude:', error);
@@ -4674,13 +5101,13 @@ window.saveInkblotEntry = async function() {
     
     const entryData = {
       userId: userId,
+      text: `⚡ ${inkblotText}`,
       title: `InkBlot - ${today} at ${time}`,
-      content: inkblotText,
       mood: '⚡',
       tags: ['inkblot', 'quick'],
       entryMode: 'inkblot',
-      createdAt: new Date().toISOString(),
-      timestamp: window.serverTimestamp ? window.serverTimestamp() : new Date()
+      createdAt: window.serverTimestamp ? window.serverTimestamp() : new Date(),
+      updatedAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
     };
     
     // Save to Firestore
@@ -4697,6 +5124,22 @@ window.saveInkblotEntry = async function() {
       statusEl.style.color = '#4A8B8B';
       setTimeout(() => { statusEl.textContent = ''; }, 3000);
     }
+    
+    // Update weekly activity dots
+    updateWeeklyActivityDots();
+    
+    // Refresh calendar to show new entry date highlight
+    if (typeof window.buildCalendar === "function") {
+      try { 
+        window.buildCalendar(); 
+        console.log("📅 Calendar refreshed after inkblot entry save");
+      } catch (e) { 
+        console.warn("buildCalendar refresh failed:", e); 
+      }
+    }
+    
+    // Show success toast
+    window.showToast("⚡ InkBlot saved!", "success", 3000);
     
   } catch (error) {
     console.error('❌ Error saving inkblot:', error);
@@ -4911,6 +5354,8 @@ window.showTab = function(tabId) {
     if (TabIntroManager) {
       TabIntroManager.scheduleIntro('journalTab', 3000);
     }
+    // Update weekly activity dots
+    updateWeeklyActivityDots();
   }
   
   // Schedule intro for Calendar/Past Entries tab on first access
@@ -5164,43 +5609,7 @@ window.SwipeNavigation = {
 };
 
 
-// Handle embedded agreement button logic
-window.acceptEmbeddedAgreement = async function () {
-  const embeddedCheckbox = document.getElementById("embeddedAgreementCheckbox");
-  const acceptEmbeddedBtn = document.getElementById("acceptEmbeddedAgreementButton");
-
-  if (!embeddedCheckbox.checked || !window.currentUserId) return;
-
-  try {
-    localStorage.setItem("alphaAgreementAccepted", "true");
-
-    await setDoc(doc(db, "users", window.currentUserId), {
-      agreementAccepted: true
-    }, { merge: true });
-
-    {
-      const el = document.getElementById("embeddedAgreementNotice");
-      if (el) el.style.display = "none";
-    }
-
-    document.getElementById("journalTab").style.display = "block";
-    document.getElementById("tabButtons").style.display = "flex";
-    document.querySelector("main").style.display = "block";
-  } catch (err) {
-    showToast("Error saving agreement: " + err.message, "error");
-    console.error("Detailed agreement save error:", err);
-  }
-};
-
-
-// Enable the Accept button only when checkbox is checked
 document.addEventListener("DOMContentLoaded", () => {
-  const embeddedCheckbox = document.getElementById("embeddedAgreementCheckbox");
-  const acceptEmbeddedBtn = document.getElementById("acceptEmbeddedAgreementButton");
-
-  embeddedCheckbox?.addEventListener("change", () => {
-    acceptEmbeddedBtn.disabled = !embeddedCheckbox.checked;
-  });
 
   // Disable search button by default (safer inside DOMContentLoaded)
   const searchBtn = document.getElementById("searchBtn");
@@ -5554,6 +5963,443 @@ window.onload = function () {
       }
     };
   }
+
+// ==================== TAG MANAGEMENT ====================
+// User's current tag library (loaded from Firestore)
+let userTagLibrary = [];
+// Tags selected for current entry
+let currentEntryTags = [];
+// Currently highlighted suggestion index
+let highlightedSuggestionIndex = -1;
+
+// Load user's tag library from Firestore
+window.loadUserTags = async function() {
+  const userId = window.currentUserId || window.auth?.currentUser?.uid;
+  if (!userId) return;
+  try {
+    const userDoc = await getDoc(doc(db, 'users', userId));
+    if (userDoc.exists() && userDoc.data().userTags) {
+      userTagLibrary = userDoc.data().userTags;
+      console.log('📌 Loaded user tags:', userTagLibrary);
+    } else {
+      userTagLibrary = [];
+    }
+  } catch (error) {
+    console.warn('Could not load user tags:', error);
+    userTagLibrary = [];
+  }
+};
+
+// Save user's tag library to Firestore
+async function saveUserTagLibrary() {
+  const userId = window.currentUserId || window.auth?.currentUser?.uid;
+  if (!userId) return;
+  try {
+    await updateDoc(doc(db, 'users', userId), {
+      userTags: userTagLibrary
+    });
+    console.log('📌 Saved user tags:', userTagLibrary);
+  } catch (error) {
+    console.warn('Could not save user tags:', error);
+  }
+}
+
+// Toggle tag input visibility
+window.toggleTagInput = function() {
+  const body = document.getElementById('tagInputBody');
+  const header = document.querySelector('.tag-input-header');
+  if (body && header) {
+    body.classList.toggle('visible');
+    header.classList.toggle('expanded');
+  }
+};
+
+// Normalize tag (lowercase, trimmed, no special chars except hyphen)
+function normalizeTag(tag) {
+  return tag.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
+}
+
+// Add tag to current entry
+window.addTagToEntry = function(tagText) {
+  const normalized = normalizeTag(tagText);
+  if (!normalized || normalized.length < 2) return;
+  
+  // Don't add duplicates
+  if (currentEntryTags.includes(normalized)) {
+    document.getElementById('tagInputField').value = '';
+    hideTagSuggestions();
+    return;
+  }
+  
+  currentEntryTags.push(normalized);
+  
+  // Add to user's library if new
+  if (!userTagLibrary.includes(normalized)) {
+    userTagLibrary.push(normalized);
+    userTagLibrary.sort();
+    saveUserTagLibrary();
+  }
+  
+  // Render chips
+  renderEntryTags();
+  
+  // Clear input
+  document.getElementById('tagInputField').value = '';
+  hideTagSuggestions();
+};
+
+// Remove tag from current entry
+window.removeTagFromEntry = function(tag) {
+  currentEntryTags = currentEntryTags.filter(t => t !== tag);
+  renderEntryTags();
+};
+
+// Render tag chips for current entry
+function renderEntryTags() {
+  const container = document.getElementById('entryTagsContainer');
+  if (!container) return;
+  
+  container.innerHTML = currentEntryTags.map(tag => `
+    <span class="tag-chip">
+      ${tag}
+      <span class="remove-tag" onclick="removeTagFromEntry('${tag}')">×</span>
+    </span>
+  `).join('');
+}
+
+// Show tag suggestions based on input
+window.showTagSuggestions = function() {
+  const input = document.getElementById('tagInputField');
+  const suggestionsDiv = document.getElementById('tagSuggestions');
+  if (!input || !suggestionsDiv) return;
+  
+  const value = input.value.toLowerCase().trim();
+  
+  // Filter existing tags that match and aren't already selected
+  let matches = userTagLibrary.filter(tag => 
+    tag.includes(value) && !currentEntryTags.includes(tag)
+  );
+  
+  // If user is typing something new, offer to create it
+  const normalized = normalizeTag(value);
+  if (normalized && normalized.length >= 2 && !userTagLibrary.includes(normalized) && !currentEntryTags.includes(normalized)) {
+    matches.unshift(`+ Create "${normalized}"`);
+  }
+  
+  if (matches.length === 0 || !value) {
+    suggestionsDiv.innerHTML = '';
+    suggestionsDiv.classList.remove('visible');
+    highlightedSuggestionIndex = -1;
+    return;
+  }
+  
+  suggestionsDiv.innerHTML = matches.slice(0, 8).map((tag, index) => `
+    <div class="tag-suggestion-item ${index === highlightedSuggestionIndex ? 'highlighted' : ''}" 
+         onclick="selectTagSuggestion('${tag.startsWith('+ Create') ? normalized : tag}')"
+         onmouseenter="highlightSuggestion(${index})">
+      ${tag}
+    </div>
+  `).join('');
+  
+  suggestionsDiv.classList.add('visible');
+};
+
+window.highlightSuggestion = function(index) {
+  highlightedSuggestionIndex = index;
+  const items = document.querySelectorAll('.tag-suggestion-item');
+  items.forEach((item, i) => {
+    item.classList.toggle('highlighted', i === index);
+  });
+};
+
+window.selectTagSuggestion = function(tag) {
+  addTagToEntry(tag);
+};
+
+window.hideTagSuggestions = function() {
+  const suggestionsDiv = document.getElementById('tagSuggestions');
+  if (suggestionsDiv) {
+    suggestionsDiv.classList.remove('visible');
+    suggestionsDiv.innerHTML = '';
+  }
+  highlightedSuggestionIndex = -1;
+};
+
+window.handleTagKeydown = function(event) {
+  const suggestionsDiv = document.getElementById('tagSuggestions');
+  const items = suggestionsDiv?.querySelectorAll('.tag-suggestion-item') || [];
+  
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    highlightedSuggestionIndex = Math.min(highlightedSuggestionIndex + 1, items.length - 1);
+    highlightSuggestion(highlightedSuggestionIndex);
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    highlightedSuggestionIndex = Math.max(highlightedSuggestionIndex - 1, 0);
+    highlightSuggestion(highlightedSuggestionIndex);
+  } else if (event.key === 'Enter') {
+    event.preventDefault();
+    if (highlightedSuggestionIndex >= 0 && items[highlightedSuggestionIndex]) {
+      items[highlightedSuggestionIndex].click();
+    } else {
+      // Add whatever is typed
+      const value = document.getElementById('tagInputField').value;
+      if (value.trim()) {
+        addTagToEntry(value);
+      }
+    }
+  } else if (event.key === 'Escape') {
+    hideTagSuggestions();
+  }
+};
+
+// Clear entry tags (call after save)
+function clearEntryTags() {
+  currentEntryTags = [];
+  renderEntryTags();
+  const input = document.getElementById('tagInputField');
+  if (input) input.value = '';
+  hideTagSuggestions();
+}
+
+// Get current entry tags (for saving)
+function getEntryTags() {
+  return [...currentEntryTags];
+}
+
+// Close suggestions when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.tag-autocomplete-wrapper')) {
+    hideTagSuggestions();
+  }
+});
+
+// ==================== TAG MANAGEMENT (Past Entries) ====================
+
+// Currently active tag filter (null = no filter)
+let activeTagFilter = null;
+
+// Toggle tag management section visibility
+window.toggleTagManagement = function() {
+  const body = document.getElementById('tagManagementBody');
+  const toggle = document.getElementById('tagManagementToggle');
+  if (body && toggle) {
+    const isVisible = body.classList.toggle('visible');
+    toggle.textContent = isVisible ? '▲' : '▼';
+    
+    // Refresh tag library display when opening
+    if (isVisible) {
+      renderTagLibrary();
+    }
+  }
+};
+
+// Render the user's tag library in Past Entries
+window.renderTagLibrary = async function() {
+  const container = document.getElementById('userTagsLibrary');
+  const summary = document.getElementById('tagCountSummary');
+  if (!container) return;
+  
+  // Ensure tags are loaded
+  if (userTagLibrary.length === 0) {
+    await window.loadUserTags();
+  }
+  
+  if (userTagLibrary.length === 0) {
+    container.innerHTML = '<span style="color: var(--font-muted); font-style: italic;">No tags yet. Add tags when saving entries!</span>';
+    if (summary) summary.textContent = '';
+    return;
+  }
+  
+  // Get tag counts from entries (async)
+  const tagCounts = await getTagCounts();
+  
+  container.innerHTML = userTagLibrary.map(tag => {
+    const count = tagCounts[tag] || 0;
+    const isActive = activeTagFilter === tag;
+    return `
+      <div class="tag-library-chip ${isActive ? 'active' : ''}" onclick="filterByTag('${tag}')">
+        <span class="tag-name">${tag}</span>
+        <span class="tag-count">(${count})</span>
+        <span class="tag-actions">
+          <span class="tag-action rename" onclick="event.stopPropagation(); renameTag('${tag}')" title="Rename">✏️</span>
+          <span class="tag-action delete" onclick="event.stopPropagation(); deleteTag('${tag}')" title="Delete">🗑️</span>
+        </span>
+      </div>
+    `;
+  }).join('');
+  
+  if (summary) {
+    summary.textContent = `${userTagLibrary.length} tag${userTagLibrary.length === 1 ? '' : 's'} in your library`;
+  }
+};
+
+// Get tag counts from journal entries
+async function getTagCounts() {
+  const userId = window.currentUserId || window.auth?.currentUser?.uid;
+  if (!userId) return {};
+  
+  try {
+    const entriesRef = collection(db, 'journalEntries');
+    const q = query(entriesRef, where('userId', '==', userId));
+    const snapshot = await getDocs(q);
+    
+    const counts = {};
+    snapshot.forEach(doc => {
+      const tags = doc.data().tags || [];
+      tags.forEach(tag => {
+        const normalized = tag.toLowerCase().trim();
+        counts[normalized] = (counts[normalized] || 0) + 1;
+      });
+    });
+    
+    return counts;
+  } catch (error) {
+    console.warn('Could not get tag counts:', error);
+    return {};
+  }
+}
+
+// Filter entries by tag
+window.filterByTag = function(tag) {
+  activeTagFilter = activeTagFilter === tag ? null : tag;
+  
+  // Update active filter display
+  const filterDiv = document.getElementById('activeTagFilter');
+  const tagNameSpan = document.getElementById('activeTagName');
+  
+  if (activeTagFilter) {
+    filterDiv.style.display = 'block';
+    tagNameSpan.textContent = activeTagFilter;
+  } else {
+    filterDiv.style.display = 'none';
+  }
+  
+  // Re-render tag library to show active state
+  renderTagLibrary();
+  
+  // Reload past entries with filter
+  if (typeof window.loadPastEntries === 'function') {
+    window.loadPastEntries();
+  }
+};
+
+// Clear tag filter
+window.clearTagFilter = function() {
+  activeTagFilter = null;
+  document.getElementById('activeTagFilter').style.display = 'none';
+  renderTagLibrary();
+  if (typeof window.loadPastEntries === 'function') {
+    window.loadPastEntries();
+  }
+};
+
+// Get active tag filter (for use in loadPastEntries)
+window.getActiveTagFilter = function() {
+  return activeTagFilter;
+};
+
+// Delete a tag from the library and all entries
+window.deleteTag = async function(tag) {
+  const confirmed = confirm(`Delete the tag "${tag}" from your library and all entries?\n\nThis cannot be undone.`);
+  if (!confirmed) return;
+  
+  const userId = window.currentUserId || window.auth?.currentUser?.uid;
+  if (!userId) return;
+  
+  try {
+    // Remove from user's tag library
+    userTagLibrary = userTagLibrary.filter(t => t !== tag);
+    await saveUserTagLibrary();
+    
+    // Remove from all entries
+    const entriesRef = collection(db, 'journalEntries');
+    const q = query(entriesRef, where('userId', '==', userId));
+    const snapshot = await getDocs(q);
+    
+    const updates = [];
+    snapshot.forEach(docSnap => {
+      const tags = docSnap.data().tags || [];
+      if (tags.includes(tag)) {
+        const newTags = tags.filter(t => t !== tag);
+        updates.push(updateDoc(doc(db, 'journalEntries', docSnap.id), { tags: newTags }));
+      }
+    });
+    
+    await Promise.all(updates);
+    
+    // Clear filter if this tag was active
+    if (activeTagFilter === tag) {
+      clearTagFilter();
+    }
+    
+    renderTagLibrary();
+    window.showToast(`Tag "${tag}" deleted`, 'success', 3000);
+    
+  } catch (error) {
+    console.error('Error deleting tag:', error);
+    window.showToast('Failed to delete tag', 'error', 3000);
+  }
+};
+
+// Rename a tag in the library and all entries
+window.renameTag = async function(oldTag) {
+  const newTag = prompt(`Rename tag "${oldTag}" to:`, oldTag);
+  if (!newTag || newTag.trim() === oldTag) return;
+  
+  const normalized = newTag.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
+  if (!normalized || normalized.length < 2) {
+    window.showToast('Invalid tag name', 'error', 3000);
+    return;
+  }
+  
+  if (userTagLibrary.includes(normalized) && normalized !== oldTag) {
+    window.showToast(`Tag "${normalized}" already exists`, 'error', 3000);
+    return;
+  }
+  
+  const userId = window.currentUserId || window.auth?.currentUser?.uid;
+  if (!userId) return;
+  
+  try {
+    // Update user's tag library
+    userTagLibrary = userTagLibrary.map(t => t === oldTag ? normalized : t);
+    userTagLibrary.sort();
+    await saveUserTagLibrary();
+    
+    // Update all entries
+    const entriesRef = collection(db, 'journalEntries');
+    const q = query(entriesRef, where('userId', '==', userId));
+    const snapshot = await getDocs(q);
+    
+    const updates = [];
+    snapshot.forEach(docSnap => {
+      const tags = docSnap.data().tags || [];
+      if (tags.includes(oldTag)) {
+        const newTags = tags.map(t => t === oldTag ? normalized : t);
+        updates.push(updateDoc(doc(db, 'journalEntries', docSnap.id), { tags: newTags }));
+      }
+    });
+    
+    await Promise.all(updates);
+    
+    // Update filter if this tag was active
+    if (activeTagFilter === oldTag) {
+      activeTagFilter = normalized;
+      document.getElementById('activeTagName').textContent = normalized;
+    }
+    
+    renderTagLibrary();
+    window.showToast(`Tag renamed to "${normalized}"`, 'success', 3000);
+    
+  } catch (error) {
+    console.error('Error renaming tag:', error);
+    window.showToast('Failed to rename tag', 'error', 3000);
+  }
+};
+
+// ==================== END TAG MANAGEMENT ====================
+
   window.saveJournalEntry = async function () {
     const textarea = document.getElementById("journal");
     const text = textarea.value.trim();
@@ -5677,6 +6523,14 @@ window.onload = function () {
 
       const tagsInput = document.getElementById("tags")?.value.trim?.() || "";
       const tags = tagsInput ? tagsInput.split(",").map(tag => tag.trim()) : [];
+      
+      // Add user-selected entry tags (from the new tag system)
+      const userSelectedTags = getEntryTags();
+      userSelectedTags.forEach(tag => {
+        if (!tags.includes(tag)) {
+          tags.push(tag);
+        }
+      });
 
       // Check for manifest data in the manifest tab fields and auto-include if present
       const wishText = document.getElementById("wishInput")?.value.trim() || "";
@@ -5908,6 +6762,10 @@ if (generatedPrompt) {
         ? "✨ Journal entry saved with manifest data!" 
         : "✨ Journal entry saved successfully!";
       window.showToast(toastMessage, "success", 4000);
+      
+      // Clear the tag input after successful save
+      clearEntryTags();
+      
       // Add inline status message (like Save My WISH style)
       const saveStatus = document.getElementById("saveStatus");
       if (saveStatus) {
@@ -5981,6 +6839,9 @@ if (generatedPrompt) {
       if (coachReviewCheckbox) {
         coachReviewCheckbox.checked = false;
       }
+      
+      // Update weekly activity dots
+      updateWeeklyActivityDots();
     } catch (e) {
       console.error("Error saving entry: ", e);
       const saveStatus = document.getElementById("saveStatus");
@@ -6052,33 +6913,82 @@ window.replaceJournalWithReflection = function() {
   }
 };
 
-// Load saved manifest data for the current user
-window.loadManifestData = function() {
+// Load saved manifest data for the current user (checks localStorage first, then Firestore)
+window.loadManifestData = async function() {
   const currentUserId = window.currentUserId || window.auth?.currentUser?.uid;
   if (!currentUserId) {
     console.log("No user authenticated, skipping manifest data load");
-    return;
+    return false;
   }
   
   try {
-    const savedManifest = localStorage.getItem(`manifest_${currentUserId}`);
-    if (savedManifest) {
-      const manifestData = JSON.parse(savedManifest);
-      
+    // First check localStorage (fast)
+    let savedManifest = localStorage.getItem(`manifest_${currentUserId}`);
+    let manifestData = savedManifest ? JSON.parse(savedManifest) : null;
+    let loadedFromFirestore = false;
+    
+    // If no localStorage data, try to load from Firestore (syncs across devices)
+    if (!manifestData) {
+      console.log("📡 No localStorage data, checking Firestore for manifest...");
+      try {
+        const manifestDoc = await getDoc(doc(db, "manifests", currentUserId));
+        if (manifestDoc.exists()) {
+          const firestoreData = manifestDoc.data();
+          manifestData = {
+            statement: firestoreData.statement || '',
+            wish: firestoreData.wish || '',
+            outcome: firestoreData.outcome || '',
+            opposition: firestoreData.opposition || '',
+            plan: firestoreData.plan || '',
+            timelineDays: firestoreData.timelineDays || 60,
+            wishStartDate: firestoreData.wishStartDate || null
+          };
+          
+          // Sync to localStorage for faster future loads
+          localStorage.setItem(`manifest_${currentUserId}`, JSON.stringify(manifestData));
+          
+          // Also sync the wishStartDate to localStorage
+          if (manifestData.wishStartDate) {
+            localStorage.setItem(`wishStart_${currentUserId}`, manifestData.wishStartDate);
+            console.log("📅 Synced wishStartDate from Firestore:", manifestData.wishStartDate);
+          }
+          
+          // Sync timeline days
+          if (manifestData.timelineDays) {
+            localStorage.setItem(`wishTimeline_${currentUserId}`, manifestData.timelineDays.toString());
+          }
+          
+          loadedFromFirestore = true;
+          console.log("✅ Loaded and synced manifest data from Firestore");
+        } else {
+          console.log("ℹ️ No manifest data in Firestore for user:", currentUserId);
+          return false;
+        }
+      } catch (firestoreError) {
+        console.error("Error loading from Firestore:", firestoreError);
+        return false;
+      }
+    }
+    
+    if (manifestData) {
       // Populate the manifest fields
       const manifestInput = document.getElementById("manifestInput"); // Legacy field
       const wishInput = document.getElementById("wishInput");
       const outcomeInput = document.getElementById("outcomeInput");
       const oppositionInput = document.getElementById("oppositionInput");
       const planInput = document.getElementById("planInput");
+      const wishTimelineSelect = document.getElementById("wishTimelineSelect");
       
       if (manifestInput && manifestData.statement) manifestInput.value = manifestData.statement;
       if (wishInput && manifestData.wish) wishInput.value = manifestData.wish;
       if (outcomeInput && manifestData.outcome) outcomeInput.value = manifestData.outcome;
       if (oppositionInput && manifestData.opposition) oppositionInput.value = manifestData.opposition;
       if (planInput && manifestData.plan) planInput.value = manifestData.plan;
+      if (wishTimelineSelect && manifestData.timelineDays) {
+        wishTimelineSelect.value = manifestData.timelineDays.toString();
+      }
       
-      console.log("✅ Loaded saved manifest data from localStorage for user:", currentUserId);
+      console.log("✅ Loaded manifest data for user:", currentUserId, loadedFromFirestore ? "(from Firestore)" : "(from localStorage)");
       
       // Ensure start date is set if manifest data exists with meaningful content
       const wishStartKey = `wishStart_${currentUserId}`;
@@ -6097,7 +7007,7 @@ window.loadManifestData = function() {
       // Show a subtle indicator that data was loaded
       const manifestSaveStatus = document.getElementById("manifestSaveStatus");
       if (manifestSaveStatus) {
-        manifestSaveStatus.innerHTML = "📋 Loaded saved manifest";
+        manifestSaveStatus.innerHTML = loadedFromFirestore ? "📡 Synced from cloud" : "📋 Loaded saved WISH";
         manifestSaveStatus.style.color = "#4A8B8B";
         manifestSaveStatus.style.fontStyle = "italic";
         setTimeout(() => {
@@ -6115,23 +7025,33 @@ window.loadManifestData = function() {
         }
       }, 100);
       
-      return true; // Indicate that data was loaded from localStorage
-    } else {
-      console.log("ℹ️ No manifest data in localStorage for user:", currentUserId);
-      return false; // Indicate that no data was found in localStorage
+      return true;
     }
+    
+    return false;
   } catch (error) {
-    console.error("Error loading manifest data from localStorage:", error);
+    console.error("Error loading manifest data:", error);
     return false;
   }
 };
 
-// Clear manifest data for current user
-window.clearManifestData = function() {
+// Clear manifest data for current user (clears both localStorage and Firestore)
+window.clearManifestData = async function() {
   const currentUserId = window.currentUserId || window.auth?.currentUser?.uid;
   if (!currentUserId) return;
   
+  // Clear localStorage
   localStorage.removeItem(`manifest_${currentUserId}`);
+  localStorage.removeItem(`wishStart_${currentUserId}`);
+  localStorage.removeItem(`wishTimeline_${currentUserId}`);
+  
+  // Clear from Firestore (delete the document)
+  try {
+    await deleteDoc(doc(db, "manifests", currentUserId));
+    console.log("✅ Cleared manifest from Firestore for user:", currentUserId);
+  } catch (error) {
+    console.error("Error clearing manifest from Firestore:", error);
+  }
   
   // Clear the form fields
   const manifestInput = document.getElementById("manifestInput"); // Legacy field
@@ -6160,14 +7080,16 @@ if (oppositionSuggestion) oppositionSuggestion.textContent = "";
 if (planSuggestion) planSuggestion.textContent = "";
 
   console.log("✅ Cleared manifest data for user:", currentUserId);
-  // Also clear progress tracking
-  const wishStartKey = `wishStart_${currentUserId}`;
-  localStorage.removeItem(wishStartKey);
 
-  // Hide progress bar
+  // Hide progress bar and mini progress bar
   const progressBar = document.getElementById("wishProgressBar");
   if (progressBar) {
     progressBar.style.display = "none";
+  }
+  
+  // Hide mini wish progress bar
+  if (typeof hideMiniWishProgress === 'function') {
+    hideMiniWishProgress();
   }
 
   // Show the timeline container so user can select days for new WISH
@@ -6561,12 +7483,25 @@ if (planSuggestion) planSuggestion.textContent = "";
       const entriesHtml = [];
       let hasNewCoachReplies = false; // Track if there are new practitioner replies
       
+      // Get active tag filter
+      const tagFilter = typeof window.getActiveTagFilter === 'function' ? window.getActiveTagFilter() : null;
+      console.log("🏷️ Active tag filter:", tagFilter);
+      
       console.log("🔍 DEBUGGING: Starting to process", snapshot.docs.length, "entries for practitioner replies");
       
       for (const doc of snapshot.docs) {
         const entry = doc.data();
         entry.id = doc.id; // Ensure entry has its ID
-        entry.createdAt = entry.createdAt?.toDate(); // Convert timestamp to date
+        // Handle both Firestore Timestamp and ISO string (legacy gratitude/inkblot entries)
+        entry.createdAt = entry.createdAt?.toDate?.() || (typeof entry.createdAt === 'string' ? new Date(entry.createdAt) : null);
+        
+        // Apply tag filter if active
+        if (tagFilter) {
+          const entryTags = (entry.tags || []).map(t => t.toLowerCase().trim());
+          if (!entryTags.includes(tagFilter)) {
+            continue; // Skip entries that don't have the filtered tag
+          }
+        }
         
         console.log("📄 PROCESSING ENTRY:", doc.id);
         console.log("Entry in Past Entries render:", entry);
@@ -6676,7 +7611,7 @@ container.style.cssText = `
           </div>
           
           <div style="margin-top: 2em; padding-top: 1em; border-top: 1px solid var(--border); font-style: italic; color: var(--info-muted);">
-            <p style="margin: 0; text-align: center;">Entry created: ${entryData.createdAt?.toDate ? entryData.createdAt.toDate().toLocaleDateString() : 'Unknown date'}</p>
+            <p style="margin: 0; text-align: center;">Entry created: ${entryData.createdAt?.toDate ? entryData.createdAt.toDate().toLocaleDateString() : (typeof entryData.createdAt === 'string' ? new Date(entryData.createdAt).toLocaleDateString() : 'Unknown date')}</p>
           </div>
         `;
         
@@ -6728,7 +7663,7 @@ container.style.cssText = `
           </div>
           
           <div style="margin-top: 2em; padding-top: 1em; border-top: 1px solid var(--border); font-style: italic; color: var(--info-muted);">
-            <p style="margin: 0; text-align: center;">Entry created: ${entryData.createdAt?.toDate ? entryData.createdAt.toDate().toLocaleDateString() : 'Unknown date'}</p>
+            <p style="margin: 0; text-align: center;">Entry created: ${entryData.createdAt?.toDate ? entryData.createdAt.toDate().toLocaleDateString() : (typeof entryData.createdAt === 'string' ? new Date(entryData.createdAt).toLocaleDateString() : 'Unknown date')}</p>
           </div>
         `;
         
@@ -6744,6 +7679,94 @@ container.style.cssText = `
 
     window.closeReflectionModal = function() {
       const modal = document.getElementById('reflectionDataModal');
+      modal.style.display = 'none';
+    };
+
+    // Period Insights (7-day / 30-day pattern analysis)
+    window.requestPeriodInsights = async function(period) {
+      const user = auth.currentUser;
+      if (!user) {
+        showToast("Please log in to use this feature.", "error");
+        return;
+      }
+
+      // Check subscription tier
+      const access = checkFeatureAccess('periodInsights');
+      if (!access.hasAccess && access.tier === 'free') {
+        showUpgradePrompt('periodInsights', 'Unlock pattern insights with InkWell Plus');
+        return;
+      }
+
+      // Show modal with loading state
+      const modal = document.getElementById('periodInsightsModal');
+      const title = document.getElementById('periodInsightsTitle');
+      const content = document.getElementById('periodInsightsContent');
+      const errorDiv = document.getElementById('periodInsightsError');
+      const loading = document.getElementById('periodInsightsLoading');
+      const meta = document.getElementById('periodInsightsMeta');
+      const entryCount = document.getElementById('periodInsightsEntryCount');
+
+      title.textContent = period === 'monthly' ? '📈 Your 30-Day Insights' : '📊 Your 7-Day Insights';
+      content.style.display = 'none';
+      errorDiv.style.display = 'none';
+      loading.style.display = 'block';
+      meta.style.display = 'none';
+      modal.style.display = 'block';
+
+      try {
+        const idToken = await user.getIdToken();
+        const baseUrl = window.location.hostname === 'localhost' 
+          ? 'http://localhost:5001/inkwell-alpha/us-central1'
+          : 'https://us-central1-inkwell-alpha.cloudfunctions.net';
+
+        const response = await fetch(`${baseUrl}/generatePeriodInsights`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
+          },
+          body: JSON.stringify({ period })
+        });
+
+        const data = await response.json();
+
+        // Handle upgrade required (returned as 200 to avoid CORS issues)
+        if (data.upgradeRequired) {
+          closePeriodInsightsModal();
+          showUpgradePrompt('periodInsights', 'Unlock pattern insights with InkWell Plus');
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to generate insights');
+        }
+
+        // Handle insufficient entries (centered)
+        if (data.insufficientEntries) {
+          loading.style.display = 'none';
+          errorDiv.textContent = data.message;
+          errorDiv.style.display = 'block';
+          return;
+        }
+
+        // Display the insight (left-justified for readability)
+        loading.style.display = 'none';
+        content.textContent = data.insight;
+        content.style.display = 'block';
+        entryCount.textContent = data.entryCount;
+        meta.style.display = 'block';
+
+      } catch (error) {
+        console.error('Period insights error:', error);
+        loading.style.display = 'none';
+        errorDiv.textContent = 'Something went wrong. Please try again in a moment.';
+        errorDiv.style.display = 'block';
+        showToast(error.message || 'Failed to generate insights', 'error');
+      }
+    };
+
+    window.closePeriodInsightsModal = function() {
+      const modal = document.getElementById('periodInsightsModal');
       modal.style.display = 'none';
     };
 
@@ -6922,12 +7945,13 @@ function updateCalendarCellsDirectly() {
   console.log("Found", calendarCells.length, "calendar cells");
   
   calendarCells.forEach(cell => {
-    // Check if this cell has coral/red styling (indicating practitioner reply)
+    // Check if this cell has purple styling (indicating practitioner reply) - or legacy coral
     const bgColor = cell.style.backgroundColor;
     const borderColor = cell.style.border;
     
-    if (bgColor.includes('#d49489') || bgColor.includes('rgb(212, 148, 137)') || 
-        borderColor.includes('#d49489') || borderColor.includes('rgb(212, 148, 137)')) {
+    if (bgColor.includes('#805AD5') || bgColor.includes('rgb(128, 90, 213)') || 
+        bgColor.includes('#d49489') || bgColor.includes('rgb(212, 148, 137)') || 
+        borderColor.includes('#805AD5') || borderColor.includes('#d49489')) {
       
       // Change to teal
       cell.style.backgroundColor = '#7BB8C4';
@@ -6993,13 +8017,13 @@ async function updateCalendarHighlighting() {
       const dateKey = dateElement.getAttribute('data-date');
       
       if (datesWithUnreadReplies.has(dateKey)) {
-        // Keep coral highlighting - still has unread replies
-        dateElement.style.border = '2px solid var(--accent, #d49489)';
-        dateElement.style.backgroundColor = 'var(--accent, #d49489)';
+        // Connect purple highlighting - has unread coach replies
+        dateElement.style.border = '2px solid var(--tier-connect, #805AD5)';
+        dateElement.style.backgroundColor = 'var(--tier-connect, #805AD5)';
         dateElement.style.color = '#fff';
         dateElement.style.fontWeight = 'bold';
         dateElement.title = 'New practitioner reply available!';
-        dateElement.style.boxShadow = '0 0 4px rgba(212, 148, 137, 0.5)';
+        dateElement.style.boxShadow = '0 0 4px rgba(128, 90, 213, 0.5)';
       } else if (datesWithEntries.has(dateKey)) {
         // Revert to teal highlighting - has entries but no unread replies
         const tealColor = getComputedStyle(document.documentElement).getPropertyValue('--brand-secondary').trim() || '#7BB8C4';
@@ -7470,6 +8494,18 @@ async function askSophyAboutEntry() {
         const wishTimelineSelect = document.getElementById("wishTimelineSelect");
         const timelineDays = wishTimelineSelect ? parseInt(wishTimelineSelect.value) : 90;
         
+        // Set start date for progress tracking (check both localStorage and existing Firestore data)
+        const wishStartKey = `wishStart_${user.uid}`;
+        let wishStartDate = localStorage.getItem(wishStartKey);
+        const isNewWish = !wishStartDate;
+        
+        // If no local start date, this is a new WISH - set it now
+        if (isNewWish) {
+          wishStartDate = new Date().toISOString();
+          localStorage.setItem(wishStartKey, wishStartDate);
+          console.log("🎯 Set initial timeline start date for new WISH");
+        }
+        
         // Always use user's UID as doc ID for manifests, now saving all sections
         const manifestData = {
           statement: manifestText, // Keep original for backward compatibility
@@ -7477,11 +8513,17 @@ async function askSophyAboutEntry() {
           outcome: outcomeText,
           opposition: oppositionText,
           plan: planText,
-          timelineDays: timelineDays, // NEW: Save timeline selection to Firestore
+          timelineDays: timelineDays, // Save timeline selection to Firestore
+          wishStartDate: wishStartDate, // Save start date to Firestore for cross-device sync
           timestamp: serverTimestamp(),
-          userId: user.uid,
-          milestonesSent: {} // Track which milestone SMS have been sent (quarter, half, three-quarters, complete)
+          userId: user.uid
         };
+        
+        // If this is a new WISH, reset milestone tracking for scheduled notifications
+        if (isNewWish) {
+          manifestData.milestonesSent = []; // Array of milestone keys: 'quarter', 'half', 'three-quarters', 'complete'
+          manifestData.lastMilestoneSentAt = null;
+        }
 
         await setDoc(doc(db, "manifests", user.uid), manifestData, { merge: true });
 
@@ -7491,22 +8533,17 @@ async function askSophyAboutEntry() {
           wish: wishText,
           outcome: outcomeText,
           opposition: oppositionText,
-          plan: planText
+          plan: planText,
+          timelineDays: timelineDays,
+          wishStartDate: wishStartDate
         };
         localStorage.setItem(`manifest_${user.uid}`, JSON.stringify(localStorageData));
-        console.log("✅ Manifest also saved to localStorage for user:", user.uid);
-
-        // Set start date for progress tracking (must happen before updateWishProgress)
-        const wishStartKey = `wishStart_${user.uid}`;
-        if (!localStorage.getItem(wishStartKey)) {
-          localStorage.setItem(wishStartKey, new Date().toISOString());
-          console.log("🎯 Set initial timeline start date for new WISH");
-        }
+        console.log("✅ Manifest saved to Firestore and localStorage for user:", user.uid);
 
         // Show success message
         status.innerHTML = "✅ Vision saved. You're building something meaningful.";
         status.style.color = "#2A6D6D";
-        window.showToast("🎯 Your WISH vision has been saved!", "success", 4000);
+        window.showToast("🎯 Your manifest has been saved!", "success", 4000);
 
         // Show onboarding celebration for first WISH creation
         if (OnboardingManager) {
@@ -8125,6 +9162,7 @@ window.updateWishProgress = function() {
     // No saved WISH or no start date - hide progress bar and show timeline input
     console.log("❌ No manifest data or start date - showing static timeline");
     progressBar.style.display = "none";
+    hideMiniWishProgress();
     if (staticTimeline) staticTimeline.style.display = "block";
     const timelineInputGroup = document.querySelector(".wish-timeline-input-group");
     if (timelineInputGroup) {
@@ -8139,6 +9177,7 @@ window.updateWishProgress = function() {
   } catch (error) {
     console.error("❌ Error parsing manifest data:", error);
     progressBar.style.display = "none";
+    hideMiniWishProgress();
     if (staticTimeline) staticTimeline.style.display = "block";
     return;
   }
@@ -8156,6 +9195,7 @@ window.updateWishProgress = function() {
     // No meaningful WISH content - hide progress bar and show timeline input
     console.log("❌ No WISH content found - showing static timeline");
     progressBar.style.display = "none";
+    hideMiniWishProgress();
     if (staticTimeline) staticTimeline.style.display = "block";
     const timelineInputGroup = document.querySelector(".wish-timeline-input-group");
     if (timelineInputGroup) {
@@ -8172,9 +9212,11 @@ window.updateWishProgress = function() {
   const timelineSelect = document.getElementById("wishTimelineSelect");
   const totalDays = timelineSelect ? parseInt(timelineSelect.value) : 60;
   
-  const progressPercent = Math.min((daysElapsed / totalDays) * 100, 100);
+  // Calculate actual progress, but ensure a minimum visual fill of 5% so bar never looks empty
+  const actualProgress = Math.min((daysElapsed / totalDays) * 100, 100);
+  const progressPercent = Math.max(actualProgress, 5); // Always show at least 5% fill
   
-  console.log(`🎯 Progress calculation: ${daysElapsed}/${totalDays} days (${progressPercent.toFixed(1)}%)`);
+  console.log(`🎯 Progress calculation: ${daysElapsed}/${totalDays} days (${actualProgress.toFixed(1)}% actual, ${progressPercent.toFixed(1)}% visual)`);
   
   // Check for milestone achievements and send SMS if needed
   checkAndSendMilestoneSMS(progressPercent, daysElapsed, totalDays, currentUserId);
@@ -8223,7 +9265,40 @@ window.updateWishProgress = function() {
       progressMessage.innerHTML = `<strong>Timeline reached - Time for New WISH!</strong> <button onclick="resetWishTimeline()" class="btn" style="margin-left: 10px; padding: 4px 8px; font-size: 0.9em;">Reset Timeline</button>`;
     }
   }
+  
+  // Update mini wish progress bar (always visible when there's an active wish)
+  updateMiniWishProgress(progressPercent);
 };
+
+// Update the mini wish progress bar shown below tabs
+function updateMiniWishProgress(progressPercent) {
+  const miniProgress = document.getElementById("miniWishProgress");
+  const miniFill = document.getElementById("miniWishProgressFill");
+  
+  if (miniProgress && miniFill) {
+    miniProgress.style.display = "block";
+    miniFill.style.width = `${progressPercent}%`;
+    
+    // Match color progression with main bar
+    if (progressPercent <= 25) {
+      miniFill.style.background = "linear-gradient(90deg, rgba(42,105,114,0.4), rgba(42,105,114,0.6))";
+    } else if (progressPercent <= 50) {
+      miniFill.style.background = "linear-gradient(90deg, rgba(42,105,114,0.6), rgba(74,139,139,0.6))";
+    } else if (progressPercent <= 75) {
+      miniFill.style.background = "linear-gradient(90deg, rgba(74,139,139,0.6), rgba(74,139,139,0.8))";
+    } else {
+      miniFill.style.background = "linear-gradient(90deg, rgba(74,139,139,0.8), rgba(42,105,114,0.9))";
+    }
+  }
+}
+
+// Hide mini wish progress when no active wish
+function hideMiniWishProgress() {
+  const miniProgress = document.getElementById("miniWishProgress");
+  if (miniProgress) {
+    miniProgress.style.display = "none";
+  }
+}
 
 // --- NEW: Reset WISH Timeline Function ---
 window.resetWishTimeline = function() {
@@ -8246,7 +9321,7 @@ window.resetWishTimeline = function() {
   
   // Show feedback
   if (window.showToast && typeof window.showToast === 'function') {
-    window.showToast("Timeline reset! Your WISH journey starts fresh today.", "success", 3000);
+    window.showToast("Timeline reset! Your manifesting journey starts fresh today.", "success", 3000);
   }
 };
 
@@ -8550,7 +9625,7 @@ document.head.appendChild(themeStyle);
       
       <button type="button" onclick="signInWithApple()" class="btn"
         style="width: 90%; padding: 0.6em; background-color: black; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 0 auto 1em auto; display: flex; align-items: center; justify-content: center; gap: 0.5em; transition: all 0.3s;">
-        <svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor"><path d="M15.5 13.9c-.3.8-.8 1.7-1.4 2.4-.6.8-1.1 1.4-1.5 1.8-.6.6-1.3.9-2 .9-.5 0-1.1-.1-1.8-.4-.7-.3-1.3-.4-2-.4s-1.4.1-2.1.4c-.7.3-1.3.4-1.8.4-.7.1-1.4-.2-2.1-.9-.4-.4-.9-1-1.5-1.8-.7-.9-1.2-1.9-1.6-3-.4-1.2-.6-2.3-.6-3.4 0-1.3.3-2.4.9-3.3.5-.7 1.1-1.2 1.9-1.6.8-.4 1.6-.6 2.5-.6.5 0 1.2.2 2 .5.8.3 1.3.5 1.6.5.2 0 .9-.2 1.9-.6.9-.4 1.7-.5 2.3-.5 1.7.1 3 .8 3.9 2.1-1.6.9-2.3 2.2-2.3 3.9 0 1.3.5 2.4 1.4 3.2.4.4.9.7 1.5.9-.1.3-.2.6-.4.9zM11.8 0c0 1-.4 1.9-1.1 2.7-.8.9-1.8 1.5-2.9 1.4-.1-.2-.1-.3-.1-.5 0-.9.4-1.9 1.2-2.7.4-.4.9-.8 1.5-1s1.2-.4 1.7-.4c0 .2.1.3.1.5z"/></svg>
+        <svg width="20" height="20" viewBox="0 0 16 18" fill="currentColor"><path d="M15.5 13.9c-.3.8-.8 1.7-1.4 2.4-.6.8-1.1 1.4-1.5 1.8-.6.6-1.3.9-2 .9-.5 0-1.1-.1-1.8-.4-.7-.3-1.3-.4-2-.4s-1.4.1-2.1.4c-.7.3-1.3.4-1.8.4-.7.1-1.4-.2-2.1-.9-.4-.4-.9-1-1.5-1.8-.7-.9-1.2-1.9-1.6-3-.4-1.2-.6-2.3-.6-3.4 0-1.3.3-2.4.9-3.3.5-.7 1.1-1.2 1.9-1.6.8-.4 1.6-.6 2.5-.6.5 0 1.2.2 2 .5.8.3 1.3.5 1.6.5.2 0 .9-.2 1.9-.6.9-.4 1.7-.5 2.3-.5 1.7.1 3 .8 3.9 2.1-1.6.9-2.3 2.2-2.3 3.9 0 1.3.5 2.4 1.4 3.2.4.4.9.7 1.5.9-.1.3-.2.6-.4.9zM11.8 0c0 1-.4 1.9-1.1 2.7-.8.9-1.8 1.5-2.9 1.4-.1-.2-.1-.3-.1-.5 0-.9.4-1.9 1.2-2.7.4-.4.9-.8 1.5-1s1.2-.4 1.7-.4c0 .2.1.3.1.5z"/></svg>
         Continue with Apple
       </button>
       <style>
@@ -8696,7 +9771,7 @@ document.head.appendChild(themeStyle);
       
       <button type="button" onclick="signInWithApple()" class="btn"
         style="width: 90%; padding: 0.6em; background-color: black; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 0 auto 1.5em auto; display: flex; align-items: center; justify-content: center; gap: 0.5em; transition: all 0.3s;">
-        <svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor"><path d="M15.5 13.9c-.3.8-.8 1.7-1.4 2.4-.6.8-1.1 1.4-1.5 1.8-.6.6-1.3.9-2 .9-.5 0-1.1-.1-1.8-.4-.7-.3-1.3-.4-2-.4s-1.4.1-2.1.4c-.7.3-1.3.4-1.8.4-.7.1-1.4-.2-2.1-.9-.4-.4-.9-1-1.5-1.8-.7-.9-1.2-1.9-1.6-3-.4-1.2-.6-2.3-.6-3.4 0-1.3.3-2.4.9-3.3.5-.7 1.1-1.2 1.9-1.6.8-.4 1.6-.6 2.5-.6.5 0 1.2.2 2 .5.8.3 1.3.5 1.6.5.2 0 .9-.2 1.9-.6.9-.4 1.7-.5 2.3-.5 1.7.1 3 .8 3.9 2.1-1.6.9-2.3 2.2-2.3 3.9 0 1.3.5 2.4 1.4 3.2.4.4.9.7 1.5.9-.1.3-.2.6-.4.9zM11.8 0c0 1-.4 1.9-1.1 2.7-.8.9-1.8 1.5-2.9 1.4-.1-.2-.1-.3-.1-.5 0-.9.4-1.9 1.2-2.7.4-.4.9-.8 1.5-1s1.2-.4 1.7-.4c0 .2.1.3.1.5z"/></svg>
+        <svg width="20" height="20" viewBox="0 0 16 18" fill="currentColor"><path d="M15.5 13.9c-.3.8-.8 1.7-1.4 2.4-.6.8-1.1 1.4-1.5 1.8-.6.6-1.3.9-2 .9-.5 0-1.1-.1-1.8-.4-.7-.3-1.3-.4-2-.4s-1.4.1-2.1.4c-.7.3-1.3.4-1.8.4-.7.1-1.4-.2-2.1-.9-.4-.4-.9-1-1.5-1.8-.7-.9-1.2-1.9-1.6-3-.4-1.2-.6-2.3-.6-3.4 0-1.3.3-2.4.9-3.3.5-.7 1.1-1.2 1.9-1.6.8-.4 1.6-.6 2.5-.6.5 0 1.2.2 2 .5.8.3 1.3.5 1.6.5.2 0 .9-.2 1.9-.6.9-.4 1.7-.5 2.3-.5 1.7.1 3 .8 3.9 2.1-1.6.9-2.3 2.2-2.3 3.9 0 1.3.5 2.4 1.4 3.2.4.4.9.7 1.5.9-.1.3-.2.6-.4.9zM11.8 0c0 1-.4 1.9-1.1 2.7-.8.9-1.8 1.5-2.9 1.4-.1-.2-.1-.3-.1-.5 0-.9.4-1.9 1.2-2.7.4-.4.9-.8 1.5-1s1.2-.4 1.7-.4c0 .2.1.3.1.5z"/></svg>
         Continue with Apple
       </button>
       
@@ -8978,6 +10053,16 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     box-sizing: border-box;
   ">
 
+<!-- Mini Wish Progress Bar (always visible when active wish exists) -->
+<div id="miniWishProgress" style="display: none; padding: 0.6em 1em; background: linear-gradient(135deg, rgba(42, 105, 114, 0.06) 0%, rgba(74, 155, 168, 0.03) 100%); border-bottom: 1px solid rgba(42, 105, 114, 0.1); cursor: pointer;" onclick="showTab('manifestTab')">
+  <div style="display: flex; align-items: center; gap: 0.6em;">
+    <span style="font-size: 0.85em; color: var(--brand-primary); white-space: nowrap;">✨ Manifesting:</span>
+    <div style="flex: 1; height: 8px; background: rgba(42, 105, 114, 0.1); border-radius: 4px; overflow: hidden; min-width: 100px;">
+      <div id="miniWishProgressFill" style="height: 100%; width: 0%; background: linear-gradient(90deg, rgba(42,105,114,0.5), rgba(74,139,139,0.7)); border-radius: 4px; transition: width 0.8s ease;"></div>
+    </div>
+  </div>
+</div>
+
 <!-- Journal Tab Content -->
 <div id="journalTab" class="modern-tab-content" style="display: block; padding: 1em;">
 <div class="tab-inner">
@@ -8985,60 +10070,98 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 <!-- Journal Mode Sub-Tabs -->
 <div id="journalModeTabs" style="
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   gap: 0.5em;
   margin-bottom: 1.5em;
-  padding: 0.5em;
+  padding: 0.75em;
   background: var(--bg-muted);
   border-radius: 12px;
   border: 1px solid var(--border-light);
 ">
-  <button id="gratitudeModeBtn" class="journal-mode-btn active" onclick="switchJournalMode('gratitude')" style="
-    flex: 1;
-    max-width: 150px;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: var(--brand-primary);
-    color: white;
-  ">🙏 Gratitude</button>
+  <div style="display: flex; justify-content: center; gap: 0.5em; width: 100%;">
+    <button id="gratitudeModeBtn" class="journal-mode-btn active" onclick="switchJournalMode('gratitude')" style="
+      flex: 1;
+      max-width: 150px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--brand-primary);
+      color: white;
+    ">🙏 Gratitude</button>
+    
+    <button id="inkblotModeBtn" class="journal-mode-btn" onclick="switchJournalMode('inkblot')" style="
+      flex: 1;
+      max-width: 150px;
+      padding: 10px 16px;
+      border: 1px solid var(--brand-primary);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: transparent;
+      color: var(--brand-primary);
+    ">⚡ InkBlot</button>
+    
+    <button id="fullJournalModeBtn" class="journal-mode-btn" onclick="switchJournalMode('full')" style="
+      flex: 1;
+      max-width: 150px;
+      padding: 10px 16px;
+      border: 1px solid var(--brand-primary);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: transparent;
+      color: var(--brand-primary);
+    ">✍️ Full Journal</button>
+  </div>
   
-  <button id="inkblotModeBtn" class="journal-mode-btn" onclick="switchJournalMode('inkblot')" style="
-    flex: 1;
-    max-width: 150px;
-    padding: 10px 16px;
-    border: 1px solid var(--brand-primary);
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: transparent;
-    color: var(--brand-primary);
-  ">⚡ InkBlot</button>
-  
-  <button id="fullJournalModeBtn" class="journal-mode-btn" onclick="switchJournalMode('full')" style="
-    flex: 1;
-    max-width: 150px;
-    padding: 10px 16px;
-    border: 1px solid var(--brand-primary);
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: transparent;
-    color: var(--brand-primary);
-  ">✍️ Full Journal</button>
+  <!-- Weekly Activity Dots (inside container) -->
+  <div id="weeklyActivityDots" style="
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75em;
+    padding-top: 0.25em;
+  ">
+    <div id="activityDotsSun" class="activity-dot empty" title="Sunday">
+      <span class="dot-label">S</span>
+    </div>
+    <div id="activityDotsMon" class="activity-dot empty" title="Monday">
+      <span class="dot-label">M</span>
+    </div>
+    <div id="activityDotsTue" class="activity-dot empty" title="Tuesday">
+      <span class="dot-label">T</span>
+    </div>
+    <div id="activityDotsWed" class="activity-dot empty" title="Wednesday">
+      <span class="dot-label">W</span>
+    </div>
+    <div id="activityDotsThu" class="activity-dot empty" title="Thursday">
+      <span class="dot-label">T</span>
+    </div>
+    <div id="activityDotsFri" class="activity-dot empty" title="Friday">
+      <span class="dot-label">F</span>
+    </div>
+    <div id="activityDotsSat" class="activity-dot empty" title="Saturday">
+      <span class="dot-label">S</span>
+    </div>
+  </div>
 </div>
 
 <!-- ==================== GRATITUDE MODE ==================== -->
 <div id="gratitudeMode" class="journal-mode-content" style="display: block;">
-  <h2 class="journal-heading" style="text-align:center;margin-bottom:0.5rem;color:var(--font-main);">
+  <h2 class="journal-heading" 
+      onclick="document.getElementById('gratitudeInfoModal').style.display='flex'"
+      style="text-align:center;margin-bottom:0.5rem;color:var(--font-main);cursor:pointer;transition:color 0.2s ease;"
+      onmouseover="this.style.color='#4A9BA8'" 
+      onmouseout="this.style.color='var(--font-main)'">
     What are you grateful for today?
   </h2>
   <p class="subtext-muted" style="text-align:center;margin-bottom:1.5em;">
@@ -9104,7 +10227,11 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 
 <!-- ==================== INKBLOT MODE ==================== -->
 <div id="inkblotMode" class="journal-mode-content" style="display: none;">
-  <h2 class="journal-heading" style="text-align:center;margin-bottom:0.5rem;color:var(--font-main);">
+  <h2 class="journal-heading" 
+      onclick="document.getElementById('inkblotInfoModal').style.display='flex'"
+      style="text-align:center;margin-bottom:0.5rem;color:var(--font-main);cursor:pointer;transition:color 0.2s ease;"
+      onmouseover="this.style.color='#4A9BA8'" 
+      onmouseout="this.style.color='var(--font-main)'">
     Quick thought? Drop an InkBlot.
   </h2>
   <p class="subtext-muted" style="text-align:center;margin-bottom:1.5em;">
@@ -9199,6 +10326,34 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 
     <div class="workflow-divider"></div>
 
+    <!-- Tag Input Section (Collapsible) -->
+    <div class="tag-input-container" id="tagInputContainer">
+      <div class="tag-input-header" onclick="toggleTagInput()">
+        <span>🏷️ Add Tags</span>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="tag-input-body" id="tagInputBody">
+        <div class="tag-chips-container" id="entryTagsContainer">
+          <!-- Selected tags appear here as chips -->
+        </div>
+        <div class="tag-autocomplete-wrapper">
+          <input 
+            type="text" 
+            class="tag-input-field" 
+            id="tagInputField" 
+            placeholder="Type to add a tag..."
+            autocomplete="off"
+            onkeydown="handleTagKeydown(event)"
+            oninput="showTagSuggestions()"
+            onfocus="showTagSuggestions()"
+          />
+          <div class="tag-suggestions" id="tagSuggestions">
+            <!-- Suggestions appear here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Coach tag + Save belong to Journal tab -->
     <div class="coach-tag-toggle">
       <input type="checkbox" id="coachReviewCheckbox" />
@@ -9219,12 +10374,13 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     style="text-align:center;margin-bottom:2rem;color:var(--font-main);cursor:pointer;transition:color 0.2s ease;" 
     onmouseover="this.style.color='#4A9BA8'" 
     onmouseout="this.style.color='var(--font-main)'">
-  Your WISH
+  Your Manifest
 </h2>
+<p style="text-align:center;margin-top:-1.5rem;margin-bottom:1.5rem;color:var(--font-muted);font-size:0.9em;font-style:italic;">using the WISH method</p>
 
   
   <div class="wish-timeline-input-group">
-    <label for="wishTimelineSelect" class="wish-timeline-label">How many days to achieve this WISH?</label>
+    <label for="wishTimelineSelect" class="wish-timeline-label">How many days to manifest this?</label>
     <select id="wishTimelineSelect" onchange="updateWishTimeline()" class="wish-timeline-select">
       <option value="30">30 days</option>
       <option value="60" selected>60 days</option>
@@ -9234,7 +10390,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 
   <!-- Static Timeline (shows before saving) -->
   <div id="staticTimeline" style="text-align: center;">
-    <p style="margin: 0 0 1em 0; color: #2A6972; font-weight: 500; font-size: 0.9em;">Your WISH Growth Journey</p>
+    <p style="margin: 0 0 1em 0; color: #2A6972; font-weight: 500; font-size: 0.9em;">Your Manifesting Journey</p>
     <div id="growthStages" style="
       display: flex; 
       justify-content: space-between; 
@@ -9260,7 +10416,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   
   <!-- Dynamic Progress Bar (shows after saving) -->
   <div id="wishProgressBar" style="display: none; margin-top: 1.5em;">
-    <h4 style="text-align: center; color: #2A6972; margin-bottom: 0.8em; font-size: 1em;">Your WISH Growth Journey</h4>
+    <h4 style="text-align: center; color: #2A6972; margin-bottom: 0.8em; font-size: 1em;">Your Manifesting Journey</h4>
     
     <div style="position: relative; height: 25px; background: #f0f0f0; border-radius: 15px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); margin: 0 auto; width: 75%; max-width: 400px;">
       <div id="wishProgressFill" style="position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #4a9ead, #7bb8c4); transition: width 0.8s ease, background 0.5s ease; border-radius: 15px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;">
@@ -9385,7 +10541,46 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         <span style="opacity: 0.6;">Loading calendar...</span>
       </div>
     </div>
+
+    <!-- Period Insights Buttons (below calendar) -->
+    <div id="periodInsightsSection" style="text-align: center; margin: 1.5em 0; padding: 1em; background: linear-gradient(135deg, rgba(42, 105, 114, 0.08) 0%, rgba(74, 155, 168, 0.05) 100%); border-radius: 12px; border: 1px solid rgba(42, 105, 114, 0.15);">
+      <p style="margin: 0 0 0.8em 0; color: var(--font-secondary); font-size: 0.9em;">
+        ✨ Let Sophy find patterns in your journey
+      </p>
+      <div style="display: flex; gap: 1em; justify-content: center; flex-wrap: wrap;">
+        <button class="btn" onclick="requestPeriodInsights('weekly')" style="display: inline-flex; align-items: center; gap: 0.5em;">
+          <span>📊</span> 7-Day Insights
+        </button>
+        <button class="btn" onclick="requestPeriodInsights('monthly')" style="display: inline-flex; align-items: center; gap: 0.5em;">
+          <span>📈</span> 30-Day Insights
+        </button>
+      </div>
+    </div>
     
+    <!-- Tag Management Section -->
+    <div class="tag-management-section" id="tagManagementSection">
+      <div class="tag-management-header" onclick="toggleTagManagement()">
+        <span>🏷️ Filter & Manage Tags</span>
+        <span class="toggle-icon" id="tagManagementToggle">▼</span>
+      </div>
+      <div class="tag-management-body" id="tagManagementBody">
+        <!-- Active tag filter indicator -->
+        <div id="activeTagFilter" style="display: none; margin-bottom: 1em; padding: 0.8em; background: rgba(42, 105, 114, 0.1); border-radius: 8px; text-align: center;">
+          <span style="color: var(--font-secondary);">Showing entries tagged: </span>
+          <span class="tag-chip" id="activeTagName" style="margin-left: 0.5em;"></span>
+          <button onclick="clearTagFilter()" style="margin-left: 1em; padding: 0.3em 0.8em; background: transparent; border: 1px solid var(--font-muted); border-radius: 4px; cursor: pointer; color: var(--font-secondary); font-size: 0.85em;">Clear Filter</button>
+        </div>
+        
+        <!-- Your tags library -->
+        <div id="userTagsLibrary" style="display: flex; flex-wrap: wrap; gap: 0.5em; justify-content: center;">
+          <span style="color: var(--font-muted); font-style: italic;">No tags yet. Add tags when saving entries!</span>
+        </div>
+        
+        <!-- Tag count summary -->
+        <div id="tagCountSummary" style="text-align: center; margin-top: 1em; color: var(--font-muted); font-size: 0.85em;"></div>
+      </div>
+    </div>
+
     <div class="workflow-divider"></div>
 
     <!-- Smart Search Bar UI -->
@@ -9676,9 +10871,9 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 <div id="wishInfoModal" class="info-modal-overlay">
   <div class="info-modal-wrapper">
     <div class="info-modal-content">
-      <h2>🎯 Welcome to Your WISH</h2>
+      <h2>🎯 The WISH Method</h2>
       <p class="info-modal-subtitle">
-        <em>Your science-backed roadmap to meaningful achievement.</em>
+        <em>A science-backed framework for manifesting what matters.</em>
       </p>
     
       <h3>What is the WISH Method?</h3>
@@ -9860,6 +11055,144 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   </div>
 </div>
 
+<!-- Gratitude Mode Info Modal -->
+<div id="gratitudeInfoModal" class="info-modal-overlay">
+  <div class="info-modal-wrapper">
+    <div class="info-modal-content">
+      <h2>🙏 The Science of Gratitude</h2>
+      <p class="info-modal-subtitle">
+        <em>A daily practice that rewires your brain for well-being.</em>
+      </p>
+    
+      <h3>Why Gratitude Works</h3>
+      <p>
+        Decades of research from positive psychology shows that regularly noting what you're grateful for isn't just "thinking happy thoughts"—it physically changes your brain. Studies from UC Davis, UC Berkeley, and leading psychology labs have found consistent benefits.
+      </p>
+      
+      <hr class="info-modal-divider"/>
+      
+      <h3>What the Research Shows</h3>
+      
+      <div class="info-modal-highlight-box">
+        <h4>🧠 Neural Rewiring</h4>
+        <p>
+          Practicing gratitude activates the hypothalamus and dopamine pathways. Over time, your brain becomes better at noticing positive experiences—a phenomenon called "neural plasticity."
+        </p>
+      </div>
+      
+      <div class="info-modal-highlight-box">
+        <h4>😴 Better Sleep</h4>
+        <p>
+          Studies show that writing down three gratitudes before bed helps people fall asleep faster and sleep longer. The mind shifts from rumination to appreciation.
+        </p>
+      </div>
+      
+      <div class="info-modal-highlight-box">
+        <h4>💪 Improved Resilience</h4>
+        <p>
+          People who practice gratitude regularly cope better with stress and adversity. They don't ignore problems—they develop a more balanced perspective.
+        </p>
+      </div>
+      
+      <div class="info-modal-highlight-box">
+        <h4>❤️ Stronger Relationships</h4>
+        <p>
+          Expressing appreciation strengthens social bonds. Grateful people report more satisfying relationships and feel more connected to others.
+        </p>
+      </div>
+      
+      <hr class="info-modal-divider"/>
+      
+      <h3>Why Three Gratitudes?</h3>
+      <p>
+        Research by Dr. Robert Emmons found that listing <strong>three specific things</strong> you're grateful for is the sweet spot—enough to create impact without becoming a chore. Specificity matters: "I'm grateful my friend texted to check on me" works better than "I'm grateful for friends."
+      </p>
+      
+      <h3>Making It Work</h3>
+      <p>
+        Consistency beats intensity. A few minutes each day creates more lasting change than occasional deep dives. That's why we made Gratitude its own quick-entry mode—easy to build into your routine.
+      </p>
+      
+      <hr class="info-modal-divider"/>
+      
+      <p class="info-modal-footer">
+        <strong>Notice. Appreciate. Grow.</strong>
+      </p>
+    
+      <button class="btn" onclick="document.getElementById('gratitudeInfoModal').style.display='none'">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- InkBlot Mode Info Modal -->
+<div id="inkblotInfoModal" class="info-modal-overlay">
+  <div class="info-modal-wrapper">
+    <div class="info-modal-content">
+      <h2>⚡ InkBlot: Quick Capture</h2>
+      <p class="info-modal-subtitle">
+        <em>Get it out of your head before it disappears.</em>
+      </p>
+    
+      <h3>The Power of Quick Capture</h3>
+      <p>
+        Not every thought needs a polished journal entry. InkBlot is for those fleeting ideas, sudden realizations, or quick emotional check-ins that deserve to be saved but don't require ceremony.
+      </p>
+      
+      <hr class="info-modal-divider"/>
+      
+      <h3>Why Quick Capture Matters</h3>
+      
+      <div class="info-modal-highlight-box">
+        <h4>🧠 Reduce Cognitive Load</h4>
+        <p>
+          Psychologist David Allen calls this "closing open loops." When you capture a thought externally, your brain can stop holding onto it—freeing mental space for other things.
+        </p>
+      </div>
+      
+      <div class="info-modal-highlight-box">
+        <h4>💡 Catch Insights</h4>
+        <p>
+          Research shows we forget up to 40% of new information within 20 minutes. Those shower thoughts, midnight realizations, and random connections? Gone unless you capture them quickly.
+        </p>
+      </div>
+      
+      <div class="info-modal-highlight-box">
+        <h4>🌊 Process Emotions</h4>
+        <p>
+          Sometimes you just need to name what you're feeling—even if it's just "feeling weird today" or "surprisingly hopeful right now." Brief emotional check-ins create self-awareness over time.
+        </p>
+      </div>
+      
+      <div class="info-modal-highlight-box">
+        <h4>✨ Build Momentum</h4>
+        <p>
+          A 30-second InkBlot entry is infinitely more valuable than the perfect journal entry you never write. Small consistent actions beat sporadic perfection.
+        </p>
+      </div>
+      
+      <hr class="info-modal-divider"/>
+      
+      <h3>How to Use InkBlot</h3>
+      <ul>
+        <li><strong>Type or speak</strong> whatever's on your mind (up to 500 characters)</li>
+        <li><strong>Don't overthink it</strong>—messy is fine, incomplete is fine</li>
+        <li><strong>Save and move on</strong>—you can always revisit in Past Entries</li>
+      </ul>
+      <p>
+        Think of InkBlot entries as seeds. Some will grow into bigger reflections later. Others simply needed to be planted and acknowledged.
+      </p>
+      
+      <hr class="info-modal-divider"/>
+      
+      <p class="info-modal-footer">
+        <strong>Think it. Capture it. Free yourself.</strong>
+      </p>
+    
+      <button class="btn" onclick="document.getElementById('inkblotInfoModal').style.display='none'">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- What's New Modal -->
 <div id="whatsNewModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(21,54,58,0.86); z-index:10000; overflow-y:auto;">
   <div style="display:flex; align-items:center; justify-content:center; min-height:100%; padding:20px;">
@@ -9968,6 +11301,36 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   </div>
 </div>
 
+<!-- Period Insights Modal -->
+<div id="periodInsightsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto;">
+  <div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 20px;">
+    <div style="background: var(--bg-card); color: var(--font-main); padding: 2em; border-radius: 12px; max-width: 650px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+      <h2 id="periodInsightsTitle" style="margin-top: 0; text-align: center; color: var(--brand-primary);">✨ Your 7-Day Insights</h2>
+      
+      <div id="periodInsightsContent" style="line-height: 1.8; font-size: 1.05em; white-space: pre-wrap; text-align: left;">
+        <!-- Content will be populated by JavaScript -->
+      </div>
+      
+      <div id="periodInsightsLoading" style="display: none; text-align: center; padding: 2em;">
+        <div style="display: inline-block; width: 40px; height: 40px; border: 3px solid rgba(42, 105, 114, 0.3); border-radius: 50%; border-top-color: var(--brand-primary); animation: spin 1s linear infinite;"></div>
+        <p style="margin-top: 1em; color: var(--font-secondary);">Sophy is reviewing your entries...</p>
+      </div>
+      
+      <div id="periodInsightsError" style="display: none; text-align: center; padding: 1.5em; color: var(--font-secondary);">
+        <!-- Error/status messages will be populated here (centered) -->
+      </div>
+      
+      <div id="periodInsightsMeta" style="margin-top: 1.5em; padding-top: 1em; border-top: 1px solid rgba(42, 105, 114, 0.2); text-align: center; font-size: 0.85em; color: var(--font-secondary); display: none;">
+        <span id="periodInsightsEntryCount"></span> entries analyzed
+      </div>
+      
+      <div style="text-align: center; margin-top: 1.5em;">
+        <button class="btn" onclick="closePeriodInsightsModal()" style="background-color: var(--btn-bg); color: var(--btn-font);">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Manifest Data Modal -->
 <div id="manifestDataModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto;">
   <div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 20px;">
@@ -10041,8 +11404,8 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     </div>
     
     <!-- Subscription Section -->
-    <div style="background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border: 2px solid #667eea; border-radius: 12px; padding: 1.5em; margin-bottom: 1.5em; text-align: left;">
-      <h3 style="color: #667eea; margin-top: 0; margin-bottom: 1em; font-size: 1.2em; display: flex; align-items: center; gap: 0.5em;">
+    <div style="background: linear-gradient(135deg, var(--info-bg) 0%, var(--bg-card) 100%); border: 2px solid var(--brand-primary); border-radius: 12px; padding: 1.5em; margin-bottom: 1.5em; text-align: left;">
+      <h3 style="color: var(--brand-primary); margin-top: 0; margin-bottom: 1em; font-size: 1.2em; display: flex; align-items: center; gap: 0.5em;">
         ✨ Subscription
       </h3>
       
@@ -10064,15 +11427,15 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         <!-- Subscription details will be populated here -->
       </div>
       
-      <div id="interactionTracker" style="display: none; padding: 1em; background: white; border-radius: 8px; margin-top: 1em; border-left: 4px solid #667eea;">
-        <div style="font-weight: 600; margin-bottom: 0.5em; color: #667eea;">Practitioner Interactions This Month</div>
+      <div id="interactionTracker" style="display: none; padding: 1em; background: var(--bg-card); border-radius: 8px; margin-top: 1em; border-left: 4px solid var(--brand-primary);">
+        <div style="font-weight: 600; margin-bottom: 0.5em; color: var(--brand-primary);">Practitioner Interactions This Month</div>
         <div style="display: flex; align-items: center; gap: 1em; margin-bottom: 0.5em;">
-          <div style="flex: 1; background: #e9ecef; height: 8px; border-radius: 4px; overflow: hidden;">
-            <div id="interactionProgress" style="height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); width: 0%; transition: width 0.3s;"></div>
+          <div style="flex: 1; background: var(--border-light); height: 8px; border-radius: 4px; overflow: hidden;">
+            <div id="interactionProgress" style="height: 100%; background: linear-gradient(90deg, var(--brand-primary) 0%, var(--brand-secondary) 100%); width: 0%; transition: width 0.3s;"></div>
           </div>
-          <span id="interactionCount" style="font-weight: 600; color: #667eea; min-width: 60px; text-align: right;">0 / 4</span>
+          <span id="interactionCount" style="font-weight: 600; color: var(--brand-primary); min-width: 60px; text-align: right;">0 / 4</span>
         </div>
-        <div style="font-size: 0.85em; color: #666; margin-bottom: 1em;">
+        <div style="font-size: 0.85em; color: var(--font-muted); margin-bottom: 1em;">
           <span id="interactionRemaining">4 interactions remaining</span>
         </div>
       </div>
@@ -10082,25 +11445,59 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     <div class="sms-section">
       <h3>
         📱 SMS Notifications
-        <span id="smsUpgradeBadge" style="display: none; margin-left: 0.5rem; padding: 0.25rem 0.75rem; background: #667eea; color: white; border-radius: 12px; font-size: 0.7em; font-weight: 600;">PLUS</span>
+        <span id="smsUpgradeBadge" style="display: none; margin-left: 0.5rem; padding: 0.25rem 0.75rem; background: var(--brand-primary); color: white; border-radius: 12px; font-size: 0.7em; font-weight: 600;">PLUS</span>
       </h3>
       
-      <div id="smsUpgradePrompt" style="display: none; background: #f8f9ff; border-left: 4px solid #667eea; padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
-        <div style="font-weight: 600; color: #667eea; margin-bottom: 0.5rem;">🚀 Upgrade to Plus for SMS Notifications</div>
-        <div style="font-size: 0.9em; color: #666; margin-bottom: 0.75rem;">
+      <div id="smsUpgradePrompt" style="display: none; background: var(--info-bg); border-left: 4px solid var(--brand-primary); padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
+        <div style="font-weight: 600; color: var(--brand-primary); margin-bottom: 0.5rem;">🚀 Upgrade to Plus for SMS Notifications</div>
+        <div style="font-size: 0.9em; color: var(--font-secondary); margin-bottom: 0.75rem;">
           Stay connected with daily prompts, gratitude messages, and milestone celebrations delivered right to your phone.
         </div>
         <button onclick="showUpgradePrompt('smsNotifications', 'Get daily wellness reminders via SMS')" class="btn"
-                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-weight: 600;">
+                style="background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%); color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-weight: 600;">
           Upgrade to Plus - $6.99/month
         </button>
       </div>
       
       <div class="sms-input-group">
         <label for="settingsPhone">Phone Number:</label>
-        <input type="tel" id="settingsPhone" placeholder="+1 (555) 123-4567" />
+        <div style="display: flex; gap: 8px; align-items: stretch;">
+          <select id="settingsCountryCode" style="width: 140px; padding: 0.75em; background: white; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95em;">
+            <option value="+1">🇺🇸 +1</option>
+            <option value="+44">🇬🇧 +44</option>
+            <option value="+61">🇦🇺 +61</option>
+            <option value="+64">🇳🇿 +64</option>
+            <option value="+353">🇮🇪 +353</option>
+            <option value="+49">🇩🇪 +49</option>
+            <option value="+33">🇫🇷 +33</option>
+            <option value="+34">🇪🇸 +34</option>
+            <option value="+39">🇮🇹 +39</option>
+            <option value="+31">🇳🇱 +31</option>
+            <option value="+32">🇧🇪 +32</option>
+            <option value="+41">🇨🇭 +41</option>
+            <option value="+43">🇦🇹 +43</option>
+            <option value="+46">🇸🇪 +46</option>
+            <option value="+47">🇳🇴 +47</option>
+            <option value="+45">🇩🇰 +45</option>
+            <option value="+358">🇫🇮 +358</option>
+            <option value="+48">🇵🇱 +48</option>
+            <option value="+81">🇯🇵 +81</option>
+            <option value="+82">🇰🇷 +82</option>
+            <option value="+65">🇸🇬 +65</option>
+            <option value="+852">🇭🇰 +852</option>
+            <option value="+91">🇮🇳 +91</option>
+            <option value="+971">🇦🇪 +971</option>
+            <option value="+972">🇮🇱 +972</option>
+            <option value="+27">🇿🇦 +27</option>
+            <option value="+52">🇲🇽 +52</option>
+            <option value="+55">🇧🇷 +55</option>
+            <option value="+54">🇦🇷 +54</option>
+            <option value="+56">🇨🇱 +56</option>
+          </select>
+          <input type="tel" id="settingsPhone" placeholder="555 123 4567" style="flex: 1; padding: 0.75em; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95em;" />
+        </div>
         <p class="sms-help-text">
-          Format: +15551234567 (include country code with +)
+          Select your country code, then enter your phone number
         </p>
         <div id="settingsPhoneError" class="sms-error"></div>
       </div>
@@ -10108,21 +11505,47 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       <div class="sms-input-group">
         <label for="settingsTimezone">Your Timezone:</label>
         <select id="settingsTimezone" style="width: 100%; padding: 0.75em; background: white; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95em;">
-          <option value="Pacific/Honolulu">Hawaii (Pacific/Honolulu)</option>
-          <option value="America/Anchorage">Alaska (America/Anchorage)</option>
-          <option value="America/Los_Angeles">Pacific Time (America/Los_Angeles)</option>
-          <option value="America/Denver">Mountain Time (America/Denver)</option>
-          <option value="America/Phoenix">Arizona (America/Phoenix)</option>
-          <option value="America/Chicago">Central Time (America/Chicago)</option>
-          <option value="America/New_York" selected>Eastern Time (America/New_York)</option>
-          <option value="America/Puerto_Rico">Puerto Rico (America/Puerto_Rico)</option>
-          <option value="Europe/London">London (Europe/London)</option>
-          <option value="Europe/Paris">Paris (Europe/Paris)</option>
-          <option value="Europe/Berlin">Berlin (Europe/Berlin)</option>
-          <option value="Asia/Tokyo">Tokyo (Asia/Tokyo)</option>
-          <option value="Asia/Shanghai">Shanghai (Asia/Shanghai)</option>
-          <option value="Asia/Dubai">Dubai (Asia/Dubai)</option>
-          <option value="Australia/Sydney">Sydney (Australia/Sydney)</option>
+          <!-- Americas -->
+          <optgroup label="Americas">
+            <option value="Pacific/Honolulu">🇺🇸 Hawaii (HST)</option>
+            <option value="America/Anchorage">🇺🇸 Alaska (AKST)</option>
+            <option value="America/Los_Angeles">🇺🇸 Pacific Time (PST)</option>
+            <option value="America/Denver">🇺🇸 Mountain Time (MST)</option>
+            <option value="America/Phoenix">🇺🇸 Arizona (MST)</option>
+            <option value="America/Chicago">🇺🇸 Central Time (CST)</option>
+            <option value="America/New_York" selected>🇺🇸 Eastern Time (EST)</option>
+            <option value="America/Toronto">🇨🇦 Toronto (EST)</option>
+            <option value="America/Mexico_City">🇲🇽 Mexico City (CST)</option>
+            <option value="America/Sao_Paulo">🇧🇷 São Paulo (BRT)</option>
+            <option value="America/Argentina/Buenos_Aires">🇦🇷 Buenos Aires (ART)</option>
+          </optgroup>
+          <!-- Europe -->
+          <optgroup label="Europe">
+            <option value="Europe/London">🇬🇧 London (GMT)</option>
+            <option value="Europe/Dublin">🇮🇪 Dublin (GMT)</option>
+            <option value="Europe/Paris">🇫🇷 Paris (CET)</option>
+            <option value="Europe/Berlin">🇩🇪 Berlin (CET)</option>
+            <option value="Europe/Amsterdam">🇳🇱 Amsterdam (CET)</option>
+            <option value="Europe/Rome">🇮🇹 Rome (CET)</option>
+            <option value="Europe/Madrid">🇪🇸 Madrid (CET)</option>
+            <option value="Europe/Stockholm">🇸🇪 Stockholm (CET)</option>
+          </optgroup>
+          <!-- Asia & Middle East -->
+          <optgroup label="Asia & Middle East">
+            <option value="Asia/Dubai">🇦🇪 Dubai (GST)</option>
+            <option value="Asia/Kolkata">🇮🇳 India (IST)</option>
+            <option value="Asia/Singapore">🇸🇬 Singapore (SGT)</option>
+            <option value="Asia/Hong_Kong">🇭🇰 Hong Kong (HKT)</option>
+            <option value="Asia/Tokyo">🇯🇵 Tokyo (JST)</option>
+            <option value="Asia/Seoul">🇰🇷 Seoul (KST)</option>
+          </optgroup>
+          <!-- Pacific -->
+          <optgroup label="Pacific">
+            <option value="Australia/Sydney">🇦🇺 Sydney (AEDT)</option>
+            <option value="Australia/Melbourne">🇦🇺 Melbourne (AEDT)</option>
+            <option value="Australia/Perth">🇦🇺 Perth (AWST)</option>
+            <option value="Pacific/Auckland">🇳🇿 Auckland (NZDT)</option>
+          </optgroup>
         </select>
         <p class="sms-help-text">
           SMS prompts will be sent during your local daytime hours
@@ -10810,6 +12233,24 @@ window.exportUserData = async function() {
   }
 };
 
+// Helper: safely convert date field (handles both Firestore Timestamp and ISO string)
+function safeToDate(dateField) {
+  if (!dateField) return null;
+  // If it's a Firestore Timestamp, call toDate()
+  if (typeof dateField.toDate === 'function') {
+    return dateField.toDate();
+  }
+  // If it's already a string, parse it
+  if (typeof dateField === 'string') {
+    return new Date(dateField);
+  }
+  // If it's already a Date
+  if (dateField instanceof Date) {
+    return dateField;
+  }
+  return null;
+}
+
 // Collect all user data from Firestore
 async function collectAllUserData() {
   const user = window.auth.currentUser;
@@ -10837,7 +12278,7 @@ async function collectAllUserData() {
   try {
     // 1. Collect Journal Entries
     console.log('📝 Collecting journal entries...');
-    const entriesRef = collection(window.db, 'entries');
+    const entriesRef = collection(window.db, 'journalEntries');
     const entriesQuery = query(
       entriesRef, 
       where('userId', '==', userId),
@@ -10847,48 +12288,44 @@ async function collectAllUserData() {
     const entriesSnapshot = await getDocs(entriesQuery);
     exportData.journalEntries = entriesSnapshot.docs.map(doc => {
       const data = doc.data();
+      const createdDate = safeToDate(data.createdAt);
+      const updatedDate = safeToDate(data.updatedAt);
       return {
         id: doc.id,
-        text: data.text || '',
-        createdAt: data.createdAt?.toDate()?.toISOString() || null,
-        createdDate: data.createdAt ? formatReadableDate(data.createdAt.toDate()) : 'Unknown',
+        text: data.text || data.content || '', // Fallback for older gratitude/inkblot entries
+        createdAt: createdDate?.toISOString() || null,
+        createdDate: createdDate ? formatReadableDate(createdDate) : 'Unknown',
         emotionalAnalysis: data.emotionalAnalysis || null,
         voiceTranscription: data.voiceTranscription || null,
         linkedManifestId: data.manifestId || null,
         coachReplies: data.coachReplies || [],
         tags: data.tags || [],
         mood: data.mood || null,
-        lastModified: data.updatedAt?.toDate()?.toISOString() || data.createdAt?.toDate()?.toISOString()
+        lastModified: updatedDate?.toISOString() || createdDate?.toISOString() || null
       };
     });
 
-    // 2. Collect WISH Manifests
-    console.log('🎯 Collecting WISH manifests...');
-    const manifestsRef = collection(window.db, 'manifests');
-    const manifestsQuery = query(
-      manifestsRef,
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
-    );
+    // 2. Collect WISH Manifest (single document per user)
+    console.log('🎯 Collecting WISH manifest...');
+    const manifestDocRef = doc(window.db, 'manifests', userId);
+    const manifestDoc = await getDoc(manifestDocRef);
     
-    const manifestsSnapshot = await getDocs(manifestsQuery);
-    exportData.wishManifests = manifestsSnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        title: data.title || '',
+    if (manifestDoc.exists()) {
+      const data = manifestDoc.data();
+      const createdDate = safeToDate(data.createdAt);
+      const updatedDate = safeToDate(data.updatedAt);
+      exportData.wishManifests = [{
+        id: manifestDoc.id,
         want: data.want || '',
-        intention: data.intention || '',
-        struggle: data.struggle || '',
-        hope: data.hope || '',
-        createdAt: data.createdAt?.toDate()?.toISOString() || null,
-        createdDate: data.createdAt ? formatReadableDate(data.createdAt.toDate()) : 'Unknown',
-        status: data.status || 'active',
+        imagine: data.imagine || '',
+        snags: data.snags || '',
+        howTo: data.howTo || '',
         progress: data.progress || 0,
-        linkedEntryIds: data.linkedEntryIds || [],
-        lastModified: data.updatedAt?.toDate()?.toISOString() || data.createdAt?.toDate()?.toISOString()
-      };
-    });
+        createdAt: createdDate?.toISOString() || null,
+        createdDate: createdDate ? formatReadableDate(createdDate) : 'Unknown',
+        lastModified: updatedDate?.toISOString() || createdDate?.toISOString() || null
+      }];
+    }
 
     // 3. Collect User Profile Data
     console.log('👤 Collecting user profile...');
@@ -10897,12 +12334,13 @@ async function collectAllUserData() {
     
     if (userDoc.exists()) {
       const userData = userDoc.data();
+      const joinDate = safeToDate(userData.createdAt);
       exportData.userProfile = {
         displayName: userData.displayName || '',
         email: user.email,
         avatar: userData.avatar || '',
-        joinDate: userData.createdAt?.toDate()?.toISOString() || null,
-        joinedDate: userData.createdAt ? formatReadableDate(userData.createdAt.toDate()) : 'Unknown',
+        joinDate: joinDate?.toISOString() || null,
+        joinedDate: joinDate ? formatReadableDate(joinDate) : 'Unknown',
         insightsPreferences: userData.insightsPreferences || {},
         onboardingState: userData.onboardingState || {},
         themePreference: localStorage.getItem('inkwell-theme-mode') || 'default',
@@ -11317,9 +12755,11 @@ function formatReadableDate(date) {
   // Test SMS function
   async function testSMS() {
     const statusDiv = document.getElementById("testSMSStatus");
-    const phone = document.getElementById("settingsPhone").value.trim();
+    const countryCode = document.getElementById("settingsCountryCode").value;
+    const localPhone = document.getElementById("settingsPhone").value.trim().replace(/[\s\-\(\)]/g, '');
+    const phone = localPhone ? countryCode + localPhone : '';
     
-    if (!phone) {
+    if (!localPhone) {
       if (statusDiv) {
         statusDiv.innerHTML = "⚠️ Please enter a phone number first";
         statusDiv.style.color = "#d32f2f";
@@ -11327,11 +12767,10 @@ function formatReadableDate(date) {
       return;
     }
     
-    // Validate phone
-    const phoneValidation = window.validatePhoneNumber(phone);
-    if (!phoneValidation.valid) {
+    // Validate phone (at least 6 digits)
+    if (localPhone.length < 6) {
       if (statusDiv) {
-        statusDiv.innerHTML = "⚠️ " + phoneValidation.error;
+        statusDiv.innerHTML = "⚠️ Please enter a valid phone number (at least 6 digits)";
         statusDiv.style.color = "#d32f2f";
       }
       return;
@@ -11345,7 +12784,7 @@ function formatReadableDate(date) {
       
       const sendTestSMS = window.functions ? window.httpsCallable(window.functions, 'sendTestSMS') : firebase.functions().httpsCallable('sendTestSMS');
       
-      await sendTestSMS({ phoneNumber: phoneValidation.formatted });
+      await sendTestSMS({ phoneNumber: phone });
       
       if (statusDiv) {
         statusDiv.innerHTML = "✅ Test SMS sent successfully! Check your phone.";
@@ -11392,7 +12831,7 @@ async function loadSubscriptionUI() {
     const badge = document.getElementById('subscriptionBadge');
     if (badge) {
       const tierNames = { free: 'Free', plus: 'Plus', connect: 'Connect' };
-      const tierColors = { free: '#6c757d', plus: '#667eea', connect: '#764ba2' };
+      const tierColors = { free: '#6c757d', plus: '#2A6972', connect: '#805AD5' };
       badge.textContent = tierNames[tier] || 'Free';
       badge.style.background = tierColors[tier] || '#6c757d';
     }
@@ -11629,7 +13068,27 @@ window.showPricingComparison = showPricingComparison;
             
             // Load phone number and SMS preferences
             if (phoneField) {
-              phoneField.value = userData.phoneNumber || "";
+              const fullPhone = userData.phoneNumber || "";
+              // Parse country code from stored phone number
+              const countryCodeField = document.getElementById("settingsCountryCode");
+              if (fullPhone && countryCodeField) {
+                // Find matching country code (check longer codes first)
+                const countryCodes = ['+1', '+44', '+61', '+64', '+353', '+49', '+33', '+34', '+39', '+31', '+32', '+41', '+43', '+46', '+47', '+45', '+358', '+48', '+81', '+82', '+65', '+852', '+91', '+971', '+972', '+27', '+52', '+55', '+54', '+56'];
+                const sortedCodes = countryCodes.sort((a, b) => b.length - a.length);
+                let matchedCode = '+1'; // default
+                let localNumber = fullPhone;
+                for (const code of sortedCodes) {
+                  if (fullPhone.startsWith(code)) {
+                    matchedCode = code;
+                    localNumber = fullPhone.slice(code.length);
+                    break;
+                  }
+                }
+                countryCodeField.value = matchedCode;
+                phoneField.value = localNumber;
+              } else {
+                phoneField.value = fullPhone;
+              }
             }
             const timezoneField = document.getElementById("settingsTimezone");
             if (timezoneField) {
@@ -11749,8 +13208,10 @@ function startPractitionerStatusRefresh() {
       const avatar = document.getElementById("settingsAvatar").value.trim();
       const theme = document.getElementById("settingsThemeSelect").value;
       
-      // Get phone number, SMS preferences, and timezone
-      const phone = document.getElementById("settingsPhone").value.trim();
+      // Get phone number (combine country code + local number), SMS preferences, and timezone
+      const countryCode = document.getElementById("settingsCountryCode").value;
+      const localPhone = document.getElementById("settingsPhone").value.trim().replace(/[\s\-\(\)]/g, '');
+      const phone = localPhone ? countryCode + localPhone : '';
       const timezone = document.getElementById("settingsTimezone").value;
       const smsOptIn = document.getElementById("smsOptInSettings").checked;
       const smsWishMilestones = document.getElementById("smsWishMilestones").checked;
@@ -11758,23 +13219,20 @@ function startPractitionerStatusRefresh() {
       const smsCoachReplies = document.getElementById("smsCoachReplies").checked;
       const smsWeeklyInsights = document.getElementById("smsWeeklyInsights").checked;
       
-      // Validate phone number if provided
-      if (phone) {
-        const phoneValidation = window.validatePhoneNumber(phone);
-        if (!phoneValidation.valid) {
-          const errorDiv = document.getElementById("settingsPhoneError");
-          if (errorDiv) {
-            errorDiv.textContent = phoneValidation.error;
-            errorDiv.style.display = "block";
-          }
-          alert(phoneValidation.error);
-          return;
-        }
-        // Hide error if validation passes
+      // Validate phone number if provided (at least 6 digits)
+      if (localPhone && localPhone.length < 6) {
         const errorDiv = document.getElementById("settingsPhoneError");
         if (errorDiv) {
-          errorDiv.style.display = "none";
+          errorDiv.textContent = "Please enter a valid phone number (at least 6 digits)";
+          errorDiv.style.display = "block";
         }
+        alert("Please enter a valid phone number (at least 6 digits)");
+        return;
+      }
+      // Hide error if validation passes
+      const errorDiv = document.getElementById("settingsPhoneError");
+      if (errorDiv) {
+        errorDiv.style.display = "none";
       }
       
       // Get insights preferences
@@ -12856,24 +14314,33 @@ window.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-// Load approved coaches from Firestore
+// Load approved coaches from Firestore - query users with freeAgentOptIn: true
 async function loadApprovedCoaches() {
   try {
     if (!window.db) return [];
     
-    const approvedCoachesRef = window.collection(window.db, "approvedPractitioners");
-    const snapshot = await window.getDocs(approvedCoachesRef);
+    // Query users collection for coaches, then filter client-side for opt-in
+    // This avoids compound index issues
+    const usersRef = window.collection(window.db, "users");
+    const q = window.query(usersRef, window.where("userRole", "==", "coach"));
+    const snapshot = await window.getDocs(q);
     
     const coaches = [];
     snapshot.forEach((doc) => {
       const data = doc.data();
-      coaches.push({
-        id: doc.id,
-        name: data.name,
-        email: data.email,
-        specialties: data.specialties || [],
-        verified: data.verified || false
-      });
+      // Only include coaches who have opted in to be public
+      if (data.freeAgentOptIn === true) {
+        coaches.push({
+          id: doc.id,
+          name: data.displayName || data.signupUsername || 'Coach',
+          email: data.email,
+          bio: data.bio || '',
+          credentials: data.credentials || '',
+          practiceLocation: data.practiceLocation || '',
+          specialties: data.specialties || [],
+          acceptingClients: data.acceptingClients || 'yes'
+        });
+      }
     });
     
     console.log("Loaded approved coaches:", coaches);
@@ -12975,7 +14442,9 @@ async function loadPractitionerStatus() {
         <div style="margin-bottom: 1em;">
           <label style="display: block; margin-bottom: 0.5em; font-weight: 500; color: ${labelColor}; font-size: 0.9em;">Choose from approved coaches:</label>
 <select id="approvedPractitionerSelect" 
-       style="width: 100%; padding: 0.6em; border: 1px solid ${selectBorder}; border-radius: 5px; background-color: ${selectBg}; color: ${selectColor}; font-size: 0.9em; box-sizing: border-box; cursor: pointer;">
+       style="width: 100%; padding: 0.6em; border: 2px solid ${selectBorder}; border-radius: 5px; background-color: ${selectBg}; color: ${selectColor}; font-size: 0.9em; box-sizing: border-box; cursor: pointer; outline: none; transition: border-color 0.2s;" 
+       onfocus="this.style.borderColor='var(--brand-primary)'" 
+       onblur="this.style.borderColor='${selectBorder}'">
   ${practitionerOptions}
 </select>
        <button id="connectToPractitionerBtn" class="btn" onclick="window.connectToApprovedPractitioner()" style="width: 100%; margin-top: 0.5em;">
