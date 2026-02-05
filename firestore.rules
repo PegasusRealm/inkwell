@@ -37,11 +37,18 @@ service cloud.firestore {
       // Allow admins to list/read ALL user docs for admin dashboard
       allow read: if request.auth != null && isAdmin(request.auth.uid);
       
+      // Allow authenticated users to read coach profiles who opted into free agent directory
+      allow read: if request.auth != null && 
+                    resource.data.userRole == "coach" && 
+                    resource.data.freeAgentOptIn == true;
+      
       // Allow individual reads for coaches and self
       allow read: if request.auth != null && (
         request.auth.uid == userId ||  // allow self
         isCoach() ||                   // allow coaches to read user profiles (custom claim)
-        isCoachByRole(request.auth.uid) // fallback for role-based coaches
+        isCoachByRole(request.auth.uid) || // fallback for role-based coaches
+        resource.data.connectedPractitioner.practitionerId == request.auth.uid || // allow coaches to read their connected clients
+        resource.data.connectedPractitioner.email == request.auth.token.email // match by email
       );
       // Allow users to write/update all their own data (including phone, smsPreferences, timezone, etc.)
       allow write: if request.auth != null && request.auth.uid == userId;
@@ -130,7 +137,9 @@ service cloud.firestore {
           (
             resource.data.coachReview == true &&
             (isCoach() || isCoachByRole(request.auth.uid))
-          )
+          ) ||
+          // Allow coaches to read entries sent to them specifically
+          resource.data.coachId == request.auth.uid
         );
 
       allow delete: if
@@ -277,6 +286,18 @@ service cloud.firestore {
       
       // Allow admins to read all practitioners
       allow read: if request.auth != null && isAdmin(request.auth.uid);
+    }
+    
+    // Gift Memberships collection (for gift codes)
+    match /giftMemberships/{giftId} {
+      // Allow authenticated users to create gift memberships
+      allow create: if request.auth != null;
+      
+      // Allow creators to read their own gift codes
+      allow read: if request.auth != null && resource.data.createdBy == request.auth.uid;
+      
+      // Allow admins to read/write all gift memberships
+      allow read, write: if request.auth != null && isAdmin(request.auth.uid);
     }
   }
 }

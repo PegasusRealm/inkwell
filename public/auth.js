@@ -881,6 +881,12 @@ onAuthStateChanged(auth, async (user) => {
             console.log("📌 Loading user tag library after login...");
             window.loadUserTags();
           }
+          
+          // Update weekly activity dots on login
+          if (typeof window.updateWeeklyActivityDots === 'function') {
+            console.log("📅 Loading weekly activity dots after login...");
+            window.updateWeeklyActivityDots();
+          }
         } catch (initError) {
           console.error("Error during post-auth initialization:", initError);
         }
@@ -2655,21 +2661,21 @@ if (entry.newCoachReply) {
     position: absolute;
     top: 10px;
     right: 10px;
-    background: var(--accent, #d49489);
+    background: var(--tier-connect, #805AD5);
     color: white;
     padding: 4px 8px;
     border-radius: 12px;
     font-size: 0.75em;
     font-weight: bold;
     z-index: 10;
-    box-shadow: 0 2px 4px rgba(212, 148, 137, 0.3);
+    box-shadow: 0 2px 4px rgba(128, 90, 213, 0.3);
   `;
   card.style.position = "relative";
   card.appendChild(newReplyBadge);
   
   // Update card styling for new coach reply - keep original background, just add border
-  card.style.borderLeft = "5px solid var(--accent, #d49489)";
-  card.style.boxShadow = "0 0 10px rgba(212, 148, 137, 0.2)";
+  card.style.borderLeft = "5px solid var(--tier-connect, #805AD5)";
+  card.style.boxShadow = "0 0 10px rgba(128, 90, 213, 0.2)";
 }
 
 const actions = document.createElement("div");

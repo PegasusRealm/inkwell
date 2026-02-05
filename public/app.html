@@ -4862,7 +4862,7 @@ let inkblotRecognition = null; // Web Speech API recognition instance
 let isInkblotRecording = false;
 
 // Update weekly activity dots based on journal entries
-async function updateWeeklyActivityDots() {
+window.updateWeeklyActivityDots = async function updateWeeklyActivityDots() {
   const currentUser = window.auth?.currentUser;
   if (!currentUser) return;
   
@@ -11783,8 +11783,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         <strong>Warning:</strong> Account deletion is permanent and cannot be undone. All your journal entries, WISH manifests, progress data, and settings will be permanently removed.
       </p>
       
-      <button onclick="showDeleteAccountModal()" id="deleteAccountBtn" class="btn" 
-        style="width: 100%; padding: 0.7em 0.8em; background: #d32f2f; color: white; border: none; border-radius: 5px; font-size: 0.9em; cursor: pointer; font-weight: 500;">
+      <button onclick="showDeleteAccountModal()" id="deleteAccountBtn" class="btn-danger" style="width: 100%;">
         🗑️ Delete My Account
       </button>
       
@@ -14371,7 +14370,7 @@ async function loadPractitionerStatus() {
     // Load approved coaches for dropdown
     const approvedCoaches = await loadApprovedCoaches();
     
-    if (userData.connectedCoach) {
+    if (userData.connectedCoach || userData.connectedPractitioner) {
       // User has connected coach - HIDE invite form to prevent spam
       if (inviteCoachSection) inviteCoachSection.style.display = "none";
       
@@ -14421,7 +14420,7 @@ async function loadPractitionerStatus() {
       
       let practitionerOptions = '<option value="">Select a coach...</option>';
       approvedCoaches.forEach(practitioner => {
-        practitionerOptions += `<option value="${practitioner.email}" data-name="${practitioner.name}">${practitioner.name}</option>`;
+        practitionerOptions += `<option value="${practitioner.email}" data-name="${practitioner.name}" data-id="${practitioner.id}">${practitioner.name}</option>`;
       });
       
       const noPractitionerBg = isDarkTheme ? 'rgba(42, 105, 114, 0.1)' : '#f8f9fa';
@@ -14549,6 +14548,7 @@ window.connectToApprovedPractitioner = async function() {
   const selectedEmail = select.value;
   const selectedOption = select.options[select.selectedIndex];
   const selectedName = selectedOption ? selectedOption.dataset.name : "";
+  const selectedId = selectedOption ? selectedOption.dataset.id : "";
   
  // Find the button to show feedback
 const connectButton = document.getElementById('connectToPractitionerBtn');
@@ -14598,6 +14598,7 @@ const connectButton = document.getElementById('connectToPractitionerBtn');
     // Connect immediately to approved practitioner
     await window.setDoc(window.doc(window.db, "users", auth.currentUser.uid), {
       connectedPractitioner: {
+        practitionerId: selectedId,
         email: selectedEmail,
         name: selectedName,
         connectedAt: window.serverTimestamp(),
@@ -14684,7 +14685,7 @@ async function invitePractitioner() {
       const userDoc = await window.getDoc(window.doc(window.db, "users", auth.currentUser.uid));
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        if (userData.connectedCoach || userData.connectedPractitioner) {
+        if (userData.connectedPractitioner) {
           statusDiv.innerHTML = '<span style="color: #dc3545;">⚠️ You already have a coach connected. Disconnect first to invite a new one.</span>';
           return;
         }
