@@ -37,10 +37,15 @@ service cloud.firestore {
       // Allow admins to list/read ALL user docs for admin dashboard
       allow read: if request.auth != null && isAdmin(request.auth.uid);
       
-      // Allow authenticated users to read coach profiles who opted into free agent directory
-      allow read: if request.auth != null && 
+      // Allow authenticated users to LIST coaches (for coach selection dropdown)
+      // This allows the query: where("userRole", "==", "coach")
+      allow list: if request.auth != null;
+      
+      // Allow authenticated users to read coach profiles (for coach selection)
+      // Coaches are readable if they haven't explicitly opted out
+      allow get: if request.auth != null && 
                     resource.data.userRole == "coach" && 
-                    resource.data.freeAgentOptIn == true;
+                    (resource.data.freeAgentOptIn == true || !('freeAgentOptIn' in resource.data));
       
       // Allow individual reads for coaches and self
       allow read: if request.auth != null && (

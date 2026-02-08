@@ -384,12 +384,31 @@ function hideLoadingOverlay() {
 /**
  * Check for successful upgrade on page load
  */
-function checkUpgradeSuccess() {
+async function checkUpgradeSuccess() {
   const urlParams = new URLSearchParams(window.location.search);
   
   if (urlParams.get('upgrade_success') === 'true') {
-    setTimeout(() => {
-      alert('🎉 Welcome to InkWell Plus! Your subscription is now active.');
+    setTimeout(async () => {
+      // Check which tier the user is now on
+      let tier = 'plus';
+      try {
+        const currentUserId = window.currentUserId || window.auth?.currentUser?.uid;
+        if (currentUserId && window.db) {
+          const userDoc = await window.getDoc(window.doc(window.db, "users", currentUserId));
+          if (userDoc.exists()) {
+            tier = userDoc.data().subscriptionTier || 'plus';
+          }
+        }
+      } catch (e) {
+        console.error('Error fetching tier for welcome message:', e);
+      }
+      
+      if (tier === 'connect') {
+        alert('🎉 Welcome to InkWell Connect! Your subscription is now active.\n\n💡 Tip: Go to Settings → My Coach to select your coach. Check out their bios to learn about their specialties and find the right fit for you!');
+      } else {
+        alert('🎉 Welcome to InkWell Plus! Your subscription is now active.\n\n💡 Tip: Go to Settings to enable SMS gratitude reminders and Sophy\'s weekly email insights!');
+      }
+      
       window.history.replaceState({}, document.title, '/app.html');
       location.reload();
     }, 1000);
@@ -435,7 +454,7 @@ function createSubscriptionSelectionModal() {
           <div style="position: absolute; bottom: -40px; right: -40px; width: 150px; height: 150px; background: rgba(255,255,255,0.08); border-radius: 50%;"></div>
           <div style="position: absolute; top: 50%; right: 15%; width: 60px; height: 60px; background: rgba(255,255,255,0.06); border-radius: 50%;"></div>
           
-          <button onclick="document.getElementById('subscriptionSelectionModal').style.display='none'" style="position: absolute; top: 1.25rem; right: 1.25rem; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 1.5rem; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; backdrop-filter: blur(4px); box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">&times;</button>
+          <button onclick="document.getElementById('subscriptionSelectionModal').style.display='none'" style="position: absolute; top: 1.25rem; right: 1.25rem; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 1.5rem; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; backdrop-filter: blur(4px); box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 10;" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">&times;</button>
           
           <div style="position: relative; z-index: 1;">
             <!-- Logo - 180px (3x original) -->
@@ -538,6 +557,11 @@ function createSubscriptionSelectionModal() {
   
   document.body.insertAdjacentHTML('beforeend', modalHTML);
 }
+
+// Expose functions globally
+window.openSubscriptionModal = openSubscriptionModal;
+window.showSubscriptionModal = openSubscriptionModal;
+window.startUpgradeFlow = startUpgradeFlow;
 
 // Initialize on auth state change
 if (window.auth) {
