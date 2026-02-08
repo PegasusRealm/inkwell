@@ -998,6 +998,56 @@
       cursor: pointer;
     }
 
+    /* SMS Tier Gating Styles */
+    .sms-tier-gated {
+      position: relative;
+    }
+    
+    .sms-tier-gated input:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    
+    .sms-tier-gated span:first-of-type {
+      opacity: 0.6;
+    }
+    
+    .sms-tier-badge {
+      font-size: 0.7em;
+      padding: 0.2em 0.5em;
+      border-radius: 4px;
+      margin-left: auto;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .sms-tier-badge:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .sms-tier-plus {
+      background: rgba(255, 255, 255, 0.85);
+      color: #666;
+      border: 1px solid rgba(0,0,0,0.1);
+      backdrop-filter: blur(2px);
+    }
+    
+    /* When user has the tier, hide the badge and enable the checkbox */
+    .sms-tier-gated.unlocked input:disabled {
+      opacity: 1;
+      cursor: pointer;
+    }
+    
+    .sms-tier-gated.unlocked span:first-of-type {
+      opacity: 1;
+    }
+    
+    .sms-tier-gated.unlocked .sms-tier-badge {
+      display: none;
+    }
+
     .sms-test-button {
       width: 100%;
       margin-top: 0.5em;
@@ -4523,6 +4573,230 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
       return response.json();
     }
 
+    // ============================================================================
+    // 🔒 PAYWALL GATING SYSTEM
+    // ============================================================================
+    
+    // Cache the user's tier to avoid repeated Firestore reads
+    let cachedUserTier = null;
+    let cachedTierExpiry = 0;
+    
+    /**
+     * Get user's current subscription tier (with caching)
+     */
+    async function getUserTier() {
+      const now = Date.now();
+      // Use cache if fresh (30 seconds)
+      if (cachedUserTier && now < cachedTierExpiry) {
+        return cachedUserTier;
+      }
+      
+      try {
+        const currentUserId = window.currentUserId || window.auth?.currentUser?.uid;
+        if (!currentUserId) return 'free';
+        
+        const userDoc = await getDoc(doc(db, "users", currentUserId));
+        if (userDoc.exists()) {
+          cachedUserTier = userDoc.data().subscriptionTier || 'free';
+          cachedTierExpiry = now + 30000; // Cache for 30 seconds
+          return cachedUserTier;
+        }
+      } catch (error) {
+        console.error("Could not fetch user tier:", error);
+      }
+      return 'free';
+    }
+    
+    /**
+     * Check if user has access to a feature and show upgrade prompt if not
+     * Returns true if access granted, false if blocked
+     * 
+     * Feature tiers:
+     * - FREE: journaling, gratitude, WISH goal setting, basic calendar
+     * - PLUS: AI (Sophy), file uploads, data export, insights, SMS
+     * - CONNECT: Coach connection, send to coach
+     */
+    async function checkPaywallAccess(feature, options = {}) {
+      // Check if paywall is enabled
+      if (typeof SUBSCRIPTION_CONFIG !== 'undefined' && !SUBSCRIPTION_CONFIG.PAYWALL_ENABLED) {
+        return true; // Paywall disabled, allow all
+      }
+      
+      const tier = await getUserTier();
+      const tierLevel = { free: 0, plus: 1, connect: 2 };
+      const userLevel = tierLevel[tier] || 0;
+      
+      // Define required tier for each feature
+      const featureRequirements = {
+        // PLUS features (level 1)
+        'ai': 1,               // Sophy AI prompts/reflections
+        'aiPrompt': 1,         // Ask Sophy for prompt
+        'aiReflection': 1,     // Ask Sophy for reflection
+        'aiRefine': 1,         // Sophy WISH refinement
+        'fileUpload': 1,       // Photo/file attachments
+        'dataExport': 1,       // Export journal data
+        'insights': 1,         // Weekly/monthly insights
+        'sms': 1,              // SMS notifications
+        'inkOut': 1,           // Voice-to-text transcription
+        
+        // CONNECT features (level 2)
+        'coach': 2,            // Coach connection
+        'sendToCoach': 2,      // Send entries to coach
+        'coachInvite': 2,      // Invite a coach
+      };
+      
+      const requiredLevel = featureRequirements[feature] || 0;
+      
+      if (userLevel >= requiredLevel) {
+        return true; // User has access
+      }
+      
+      // User doesn't have access - show upgrade prompt
+      const requiredTier = requiredLevel === 2 ? 'connect' : 'plus';
+      
+      const featureNames = {
+        'ai': 'AI-Powered Features',
+        'aiPrompt': 'AI Journal Prompts',
+        'aiReflection': 'AI Reflections',
+        'aiRefine': 'AI Goal Refinement',
+        'fileUpload': 'File Attachments',
+        'dataExport': 'Data Export',
+        'insights': 'Personalized Insights',
+        'sms': 'SMS Notifications',
+        'inkOut': 'Voice-to-Text',
+        'coach': 'Coach Connection',
+        'sendToCoach': 'Share with Coach',
+        'coachInvite': 'Invite a Coach',
+      };
+      
+      const featureName = featureNames[feature] || feature;
+      
+      // Show upgrade modal
+      if (typeof showSubscriptionModal === 'function') {
+        showSubscriptionModal();
+      } else if (typeof window.showSubscriptionModal === 'function') {
+        window.showSubscriptionModal();
+      } else {
+        // Fallback toast
+        const tierName = requiredTier === 'connect' ? 'Connect' : 'Plus';
+        if (typeof showToast === 'function') {
+          showToast(`${featureName} requires ${tierName}. Tap to upgrade!`, 'info', 4000);
+        } else {
+          alert(`${featureName} requires the ${tierName} plan. Please upgrade to access this feature.`);
+        }
+      }
+      
+      return false;
+    }
+    
+    // Make globally available
+    window.checkPaywallAccess = checkPaywallAccess;
+    window.getUserTier = getUserTier;
+    
+    // Clear cache on auth state change
+    if (typeof auth !== 'undefined') {
+      auth.onAuthStateChanged(() => {
+        cachedUserTier = null;
+        cachedTierExpiry = 0;
+      });
+    }
+    
+    // ============================================================================
+    // 🤖 SOPHY DAILY LIMIT SYSTEM (Free tier: 3 uses per day)
+    // ============================================================================
+    
+    const SOPHY_DAILY_LIMIT = 3;
+    
+    /**
+     * Get today's date string for localStorage key
+     */
+    function getSophyDateKey() {
+      return new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    }
+    
+    /**
+     * Get current Sophy usage count for today
+     */
+    function getSophyUsageCount() {
+      const currentUserId = window.currentUserId || window.auth?.currentUser?.uid;
+      if (!currentUserId) return 0;
+      
+      const key = `sophy_usage_${currentUserId}_${getSophyDateKey()}`;
+      return parseInt(localStorage.getItem(key) || '0', 10);
+    }
+    
+    /**
+     * Increment Sophy usage count
+     */
+    function incrementSophyUsage() {
+      const currentUserId = window.currentUserId || window.auth?.currentUser?.uid;
+      if (!currentUserId) return;
+      
+      const key = `sophy_usage_${currentUserId}_${getSophyDateKey()}`;
+      const current = getSophyUsageCount();
+      localStorage.setItem(key, (current + 1).toString());
+    }
+    
+    /**
+     * Check if user can use Sophy (respects tier and daily limit)
+     * Shows appropriate toast messages
+     * Returns true if allowed, false if blocked
+     */
+    async function checkSophyAccess() {
+      const tier = await getUserTier();
+      
+      // Plus and Connect users have unlimited Sophy
+      if (tier === 'plus' || tier === 'connect') {
+        return true;
+      }
+      
+      // Free tier: check daily limit
+      const usageCount = getSophyUsageCount();
+      
+      // Check if limit reached (already used 3)
+      if (usageCount >= SOPHY_DAILY_LIMIT) {
+        showToast(`🔒 Daily Sophy limit reached. Upgrade to Plus for unlimited!`, 'warning', 5000);
+        if (typeof showSubscriptionModal === 'function') {
+          setTimeout(() => showSubscriptionModal(), 1000);
+        }
+        return false;
+      }
+      
+      // Toast timing:
+      // 1st use (count=0): Welcome message
+      // 2nd use (count=1): "1 left"
+      // 3rd use (count=2): "Last one!"
+      if (usageCount === 0) {
+        showToast(`✨ Free tier includes 3 Sophy questions daily. Upgrade to Plus for unlimited!`, 'info', 4000);
+      } else if (usageCount === 1) {
+        showToast(`💡 1 Sophy question left today`, 'info', 3000);
+      } else if (usageCount === 2) {
+        showToast(`⚡ Last Sophy question for today!`, 'info', 3000);
+      }
+      
+      return true;
+    }
+    
+    /**
+     * Record a successful Sophy use and show feedback
+     */
+    function recordSophyUse() {
+      incrementSophyUsage();
+      const remaining = SOPHY_DAILY_LIMIT - getSophyUsageCount();
+      
+      // Only show for free users
+      getUserTier().then(tier => {
+        if (tier === 'free' && remaining > 0) {
+          // Already shown remaining in checkSophyAccess, no need to double-toast
+        }
+      });
+    }
+    
+    // Make globally available
+    window.checkSophyAccess = checkSophyAccess;
+    window.recordSophyUse = recordSophyUse;
+    window.getSophyUsageCount = getSophyUsageCount;
+
     // Helper: Get current user's name for Sophy personalization
     async function getCurrentUserName() {
       try {
@@ -5805,27 +6079,31 @@ window.onload = function () {
         }
         
         if (voiceStatus) {
-          voiceStatus.textContent = "📱 Voice entry saved offline. Analysis will happen when you reconnect.";
+          voiceStatus.textContent = "📱 Voice entry saved offline.";
+        }
+        return;
+      }
+      
+      // Check subscription tier - AI cleanup requires Plus
+      const tier = await getUserTier();
+      const hasPlusAccess = tier === 'plus' || tier === 'connect';
+      
+      if (!hasPlusAccess) {
+        // Free users: Add raw transcript directly (no AI processing)
+        if (journalEntry) {
+          journalEntry.value += (journalEntry.value ? " " : "") + transcript;
         }
         
-        // Show onboarding celebration for first voice entry (even offline)
-        if (OnboardingManager) {
-          const progress = OnboardingManager.getProgress();
-          if (!progress.first_voice_entry) {
-            OnboardingManager.showVoiceEntrySuccess();
-          }
-        }
+        if (voiceStatus) voiceStatus.textContent = "🎙️ Voice added!";
         
-        // Store offline voice entry with metadata for later processing
-        window.storeOfflineVoiceEntry = {
-          transcript: transcript,
-          audioBlob: audioBlob,
-          timestamp: new Date().toISOString(),
-          needsProcessing: true
-        };
+        // Show upgrade toast
+        showToast("Voice added! Upgrade to Plus for AI grammar cleanup and emotional insights.", "info", 5000);
         
         return;
       }
+      
+      // Plus/Connect users: Full AI processing
+      if (voiceStatus) voiceStatus.textContent = "🧠 AI cleanup & emotional analysis...";
 
       const idToken = await user.getIdToken();
       
@@ -6428,6 +6706,18 @@ window.renameTag = async function(oldTag) {
       // Multiple file upload support
       const fileInput = document.getElementById("attachment");
       const files = Array.from(fileInput.files || []);
+      
+      // 🔒 PAYWALL CHECK - File uploads require Plus
+      if (files.length > 0) {
+        if (!await checkPaywallAccess('fileUpload')) {
+          // Clear the file input
+          fileInput.value = '';
+          const saveStatus = document.getElementById("saveStatus");
+          saveStatus.innerHTML = "";
+          return; // User doesn't have access
+        }
+      }
+      
       const maxFileSizeMB = 10;
       const previewDiv = document.getElementById("attachmentPreview");
       previewDiv.innerHTML = ""; // Clear previous preview
@@ -6617,7 +6907,15 @@ if (generatedPrompt) {
         entryData.reflectionUsed = reflectionText;
       }
 
+      // 🔒 PAYWALL CHECK - Send to coach requires Connect
       if (document.getElementById("coachReviewCheckbox")?.checked) {
+        if (!await checkPaywallAccess('sendToCoach')) {
+          // Uncheck the box since they don't have access
+          document.getElementById("coachReviewCheckbox").checked = false;
+          const saveStatus = document.getElementById("saveStatus");
+          saveStatus.innerHTML = "";
+          return; // User doesn't have access
+        }
         entryData.coachReview = true;
       }
       if (document.getElementById("postSaveActions")?.checked) {
@@ -7124,6 +7422,11 @@ if (planSuggestion) planSuggestion.textContent = "";
 
 
     async function generatePrompt() {
+      // Check Sophy daily limit for free users
+      if (!await checkSophyAccess()) {
+        return; // Limit reached
+      }
+      
       // Get elements with null checking
       const topicInputElement = document.getElementById("promptTopic");
       const manifestInputElement = document.getElementById("manifestInput");
@@ -7173,6 +7476,9 @@ if (planSuggestion) planSuggestion.textContent = "";
         }
         const autoInsertCheckbox = document.getElementById("autoInsertPrompt");
         if (autoInsertCheckbox) autoInsertCheckbox.checked = true;
+        
+        // Record successful Sophy use for daily limit tracking
+        recordSophyUse();
       } catch (e) {
         console.error("Generate prompt error:", e);
         if (promptElement) {
@@ -7690,11 +7996,10 @@ container.style.cssText = `
         return;
       }
 
-      // Check subscription tier
-      const access = checkFeatureAccess('periodInsights');
-      if (!access.hasAccess && access.tier === 'free') {
-        showUpgradePrompt('periodInsights', 'Unlock pattern insights with InkWell Plus');
-        return;
+      // Check subscription tier - insights require Plus
+      const hasAccess = await checkPaywallAccess('insights');
+      if (!hasAccess) {
+        return; // checkPaywallAccess shows the upgrade modal
       }
 
       // Show modal with loading state
@@ -8613,6 +8918,11 @@ async function askSophyAboutEntry() {
 
 // --- New: askSophyToRefineManifest using getSophyResponse and new UI logic ---
 window.askSophyToRefineManifest = async function () {
+  // Check Sophy daily limit for free users
+  if (!await checkSophyAccess()) {
+    return; // Limit reached
+  }
+  
   const input = document.getElementById("manifestInput")?.value.trim();
   const suggestionBox = document.getElementById("manifestSuggestion");
   const label = document.getElementById("manifestSuggestionLabel");
@@ -8692,6 +9002,8 @@ if (cleanResponse && cleanResponse !== "Something went wrong.") {
 
 suggestionBox.textContent = cleanResponse;
 
+    // Record successful Sophy use
+    recordSophyUse();
     
   } catch (err) {
     console.error("Error refining manifest:", err);
@@ -8701,6 +9013,11 @@ suggestionBox.textContent = cleanResponse;
 
 // --- New: General askSophyToRefine function for all four sections ---
 window.askSophyToRefine = async function (section) {
+  // Check Sophy daily limit for free users
+  if (!await checkSophyAccess()) {
+    return; // Limit reached
+  }
+  
   const inputId = section + "Input";
   const suggestionId = section + "Suggestion";
   const labelId = section + "SuggestionLabel";
@@ -8857,6 +9174,9 @@ IMPORTANT: Provide coaching guidance and advice only. Do not rewrite their plan 
     }
     
     suggestionBox.textContent = cleanedResponse;
+    
+    // Record successful Sophy use
+    recordSophyUse();
     
     // Show onboarding celebration for first Sophy interaction
     if (OnboardingManager) {
@@ -9625,7 +9945,7 @@ document.head.appendChild(themeStyle);
       
       <button type="button" onclick="signInWithApple()" class="btn"
         style="width: 90%; padding: 0.6em; background-color: black; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 0 auto 1em auto; display: flex; align-items: center; justify-content: center; gap: 0.5em; transition: all 0.3s;">
-        <svg width="20" height="20" viewBox="0 0 16 18" fill="currentColor"><path d="M15.5 13.9c-.3.8-.8 1.7-1.4 2.4-.6.8-1.1 1.4-1.5 1.8-.6.6-1.3.9-2 .9-.5 0-1.1-.1-1.8-.4-.7-.3-1.3-.4-2-.4s-1.4.1-2.1.4c-.7.3-1.3.4-1.8.4-.7.1-1.4-.2-2.1-.9-.4-.4-.9-1-1.5-1.8-.7-.9-1.2-1.9-1.6-3-.4-1.2-.6-2.3-.6-3.4 0-1.3.3-2.4.9-3.3.5-.7 1.1-1.2 1.9-1.6.8-.4 1.6-.6 2.5-.6.5 0 1.2.2 2 .5.8.3 1.3.5 1.6.5.2 0 .9-.2 1.9-.6.9-.4 1.7-.5 2.3-.5 1.7.1 3 .8 3.9 2.1-1.6.9-2.3 2.2-2.3 3.9 0 1.3.5 2.4 1.4 3.2.4.4.9.7 1.5.9-.1.3-.2.6-.4.9zM11.8 0c0 1-.4 1.9-1.1 2.7-.8.9-1.8 1.5-2.9 1.4-.1-.2-.1-.3-.1-.5 0-.9.4-1.9 1.2-2.7.4-.4.9-.8 1.5-1s1.2-.4 1.7-.4c0 .2.1.3.1.5z"/></svg>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11.182.008C11.148-.03 9.923.023 8.857 1.18c-1.066 1.156-.902 2.482-.878 2.516.024.034 1.52.087 2.475-1.258.955-1.345.762-2.391.728-2.43zm3.314 11.733c-.048-.096-2.325-1.234-2.113-3.422.212-2.189 1.675-2.789 1.698-2.854.023-.065-.597-.79-1.254-1.157a3.692 3.692 0 0 0-1.563-.434c-.108-.003-.483-.095-1.254.116-.508.139-1.653.589-1.968.607-.316.018-1.256-.522-2.267-.665-.647-.125-1.333.131-1.824.328-.49.196-1.422.754-2.074 2.237-.652 1.482-.311 3.83-.067 4.56.244.729.625 1.924 1.273 2.796.576.984 1.34 1.667 1.659 1.899.319.232 1.219.386 1.843.067.502-.308 1.408-.485 1.766-.472.357.013 1.061.154 1.782.539.571.197 1.111.115 1.652-.105.541-.221 1.324-1.059 2.238-2.758.347-.79.505-1.217.473-1.282z"/></svg>
         Continue with Apple
       </button>
       <style>
@@ -9771,7 +10091,7 @@ document.head.appendChild(themeStyle);
       
       <button type="button" onclick="signInWithApple()" class="btn"
         style="width: 90%; padding: 0.6em; background-color: black; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 0 auto 1.5em auto; display: flex; align-items: center; justify-content: center; gap: 0.5em; transition: all 0.3s;">
-        <svg width="20" height="20" viewBox="0 0 16 18" fill="currentColor"><path d="M15.5 13.9c-.3.8-.8 1.7-1.4 2.4-.6.8-1.1 1.4-1.5 1.8-.6.6-1.3.9-2 .9-.5 0-1.1-.1-1.8-.4-.7-.3-1.3-.4-2-.4s-1.4.1-2.1.4c-.7.3-1.3.4-1.8.4-.7.1-1.4-.2-2.1-.9-.4-.4-.9-1-1.5-1.8-.7-.9-1.2-1.9-1.6-3-.4-1.2-.6-2.3-.6-3.4 0-1.3.3-2.4.9-3.3.5-.7 1.1-1.2 1.9-1.6.8-.4 1.6-.6 2.5-.6.5 0 1.2.2 2 .5.8.3 1.3.5 1.6.5.2 0 .9-.2 1.9-.6.9-.4 1.7-.5 2.3-.5 1.7.1 3 .8 3.9 2.1-1.6.9-2.3 2.2-2.3 3.9 0 1.3.5 2.4 1.4 3.2.4.4.9.7 1.5.9-.1.3-.2.6-.4.9zM11.8 0c0 1-.4 1.9-1.1 2.7-.8.9-1.8 1.5-2.9 1.4-.1-.2-.1-.3-.1-.5 0-.9.4-1.9 1.2-2.7.4-.4.9-.8 1.5-1s1.2-.4 1.7-.4c0 .2.1.3.1.5z"/></svg>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11.182.008C11.148-.03 9.923.023 8.857 1.18c-1.066 1.156-.902 2.482-.878 2.516.024.034 1.52.087 2.475-1.258.955-1.345.762-2.391.728-2.43zm3.314 11.733c-.048-.096-2.325-1.234-2.113-3.422.212-2.189 1.675-2.789 1.698-2.854.023-.065-.597-.79-1.254-1.157a3.692 3.692 0 0 0-1.563-.434c-.108-.003-.483-.095-1.254.116-.508.139-1.653.589-1.968.607-.316.018-1.256-.522-2.267-.665-.647-.125-1.333.131-1.824.328-.49.196-1.422.754-2.074 2.237-.652 1.482-.311 3.83-.067 4.56.244.729.625 1.924 1.273 2.796.576.984 1.34 1.667 1.659 1.899.319.232 1.219.386 1.843.067.502-.308 1.408-.485 1.766-.472.357.013 1.061.154 1.782.539.571.197 1.111.115 1.652-.105.541-.221 1.324-1.059 2.238-2.758.347-.79.505-1.217.473-1.282z"/></svg>
         Continue with Apple
       </button>
       
@@ -10290,7 +10610,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       class="ai-input"
       placeholder="e.g., burnout last week, goals, feeling stuck"
     />
-    <button class="btn btn-sophy" onclick="generatePrompt()" style="color:#ffffff;">Ask Sophy for a Prompt</button>
+    <button class="btn btn-sophy" id="askSophyPromptBtn" onclick="generatePrompt()" style="color:#ffffff;">Ask Sophy for a Prompt</button>
     <p id="generatedPrompt" class="sophy-info" style="color:#FDF7F1 !important;"></p>
 
     <label style="font-size:0.85em;display:block;margin-top:0.5em;margin-bottom:0.5em;">
@@ -10620,7 +10940,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   ">
     <!-- Copyright -->
     <div style="margin-bottom: 1em; color: var(--font-secondary); font-weight: 500;">
-      © 2025 Pegasus Realm LLC.
+      © 2026 Pegasus Realm LLC.
     </div>
     
     <!-- Description Text -->
@@ -11413,13 +11733,12 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         <div>
           <div style="font-size: 0.9em; color: #666; margin-bottom: 0.5em;">Current Plan:</div>
           <div style="display: flex; align-items: center; gap: 0.5em;">
-            <span id="subscriptionBadge" style="padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; color: white; background: #6c757d; font-size: 1em;">Free</span>
+            <span id="subscriptionBadge" style="padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; color: white; background: #2A6972; font-size: 1em;">Free</span>
           </div>
         </div>
-        <button id="upgradeButton" class="btn" disabled
-                style="background: var(--btn-secondary); color: var(--font-muted); border: 1px solid var(--border-medium); border-radius: 8px; padding: 0.6rem 1.5rem; font-weight: 500; display: none; cursor: not-allowed; opacity: 0.7;">
-          <span style="display: block; font-size: 0.9rem;">Free During Beta</span>
-          <span style="display: block; font-size: 0.75rem; font-weight: 400; margin-top: 0.2rem;">Paid plans coming soon</span>
+        <button id="upgradeButton" class="btn" onclick="openSubscriptionModal()"
+                style="background: linear-gradient(135deg, #D49489, #C2867D); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.5rem; font-weight: 500; display: none; cursor: pointer;">
+          <span style="display: block; font-size: 0.9rem;">Upgrade Plan</span>
         </button>
       </div>
       
@@ -11445,19 +11764,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     <div class="sms-section">
       <h3>
         📱 SMS Notifications
-        <span id="smsUpgradeBadge" style="display: none; margin-left: 0.5rem; padding: 0.25rem 0.75rem; background: var(--brand-primary); color: white; border-radius: 12px; font-size: 0.7em; font-weight: 600;">PLUS</span>
       </h3>
-      
-      <div id="smsUpgradePrompt" style="display: none; background: var(--info-bg); border-left: 4px solid var(--brand-primary); padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
-        <div style="font-weight: 600; color: var(--brand-primary); margin-bottom: 0.5rem;">🚀 Upgrade to Plus for SMS Notifications</div>
-        <div style="font-size: 0.9em; color: var(--font-secondary); margin-bottom: 0.75rem;">
-          Stay connected with daily prompts, gratitude messages, and milestone celebrations delivered right to your phone.
-        </div>
-        <button onclick="showUpgradePrompt('smsNotifications', 'Get daily wellness reminders via SMS')" class="btn"
-                style="background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%); color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-weight: 600;">
-          Upgrade to Plus - $6.99/month
-        </button>
-      </div>
       
       <div class="sms-input-group">
         <label for="settingsPhone">Phone Number:</label>
@@ -11562,6 +11869,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         </p>
         
         <div id="smsPreferences" class="sms-preference-list">
+          <!-- FREE TIER - Available to all -->
           <label class="sms-preference-item">
             <input type="checkbox" id="smsWishMilestones" checked />
             <span>🌱 WISH milestone reminders</span>
@@ -11570,17 +11878,22 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
             <input type="checkbox" id="smsDailyPrompts" />
             <span>✍️ Daily journal prompts</span>
           </label>
-          <label class="sms-preference-item">
-            <input type="checkbox" id="smsGratitudePrompts" checked />
+          
+          <!-- PLUS TIER - Locked for Free users with subtle overlay -->
+          <label class="sms-preference-item sms-tier-gated" id="smsGratitudeRow" data-required-tier="plus">
+            <input type="checkbox" id="smsGratitudePrompts" disabled />
             <span>🙏 Daily gratitude from Sophy</span>
+            <span class="sms-tier-badge sms-tier-plus" onclick="openUpgradeModal('plus')">🔒 Plus</span>
           </label>
-          <label class="sms-preference-item">
-            <input type="checkbox" id="smsCoachReplies" checked />
-            <span>💬 Coach replies</span>
-          </label>
-          <label class="sms-preference-item">
-            <input type="checkbox" id="smsWeeklyInsights" />
+          <label class="sms-preference-item sms-tier-gated" id="smsWeeklyInsightsRow" data-required-tier="plus">
+            <input type="checkbox" id="smsWeeklyInsights" disabled />
             <span>📊 Weekly insights</span>
+            <span class="sms-tier-badge sms-tier-plus" onclick="openUpgradeModal('plus')">🔒 Plus</span>
+          </label>
+          <label class="sms-preference-item sms-tier-gated" id="smsCoachRepliesRow" data-required-tier="plus">
+            <input type="checkbox" id="smsCoachReplies" disabled />
+            <span>💬 Coach replies</span>
+            <span class="sms-tier-badge sms-tier-plus" onclick="openUpgradeModal('plus')">🔒 Plus</span>
           </label>
         </div>
       </div>
@@ -11801,10 +12114,10 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
         🌟 About & Help
       </h3>
-      <div style="display: flex; gap: 0.8em; flex-wrap: wrap;">
+      <div style="display: flex; gap: 0.8em; flex-wrap: wrap; margin-bottom: 1em;">
         <button onclick="showWhatsNewModal(); closeUserSettingsModal();" class="btn" 
           style="flex: 1; min-width: 140px; padding: 0.5em 0.8em; background: #2A6972; color: white; border: none; border-radius: 5px; font-size: 0.85em; cursor: pointer; position: relative;">
-          � What's New
+          💎 What's New
           <span id="whatsNewBadge" style="display: none; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; background: var(--brand-primary, #2A6972); border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
         </button>
         <button onclick="document.getElementById('aboutInkwellModal').style.display='flex'; closeUserSettingsModal();" class="btn" 
@@ -11812,8 +12125,33 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
           ❓ What is InkWell?
         </button>
       </div>
+      
+      <!-- Crisis Resources Button (inside About & Help) -->
+      <button onclick="toggleCrisisResources()" id="crisisResourcesToggle"
+        style="width: 100%; padding: 0.7em; background: none; border: 1px solid #dc3545; border-radius: 6px; color: #dc3545; font-size: 0.85em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5em; font-weight: 500;">
+        <span>❤️‍🩹</span> Mental Health Crisis Resources
+        <span id="crisisToggleIcon" style="transition: transform 0.2s;">▼</span>
+      </button>
+      
+      <div id="crisisResourcesContent" style="display: none; margin-top: 1em; padding: 1em; background: #fff5f5; border-radius: 6px; border-left: 4px solid #dc3545;">
+        <h4 style="color: #dc3545; margin: 0 0 1em 0; font-size: 1em;">🇺🇸 United States Crisis Resources</h4>
+        <p style="font-size: 0.9em; color: #333; margin: 0 0 0.8em 0; line-height: 1.5;">
+          If you're experiencing a mental health crisis:
+        </p>
+        <ul style="margin: 0 0 1em 0; padding-left: 1.2em; color: #333; font-size: 0.9em; line-height: 1.8;">
+          <li><strong>Call or text 988</strong> — Suicide & Crisis Lifeline</li>
+          <li><strong>Text HOME to 741741</strong> — Crisis Text Line</li>
+          <li><strong>Call 1-800-273-8255</strong> — Veterans Crisis Line</li>
+        </ul>
+        <p style="font-size: 0.85em; color: #666; margin: 0; line-height: 1.5; padding-top: 0.8em; border-top: 1px solid #eee;">
+          🌍 <em>Outside the US?</em> Please reach out to your local emergency services or mental health resources.
+        </p>
+        <p style="font-size: 0.8em; color: #888; margin: 0.8em 0 0 0; line-height: 1.4; font-style: italic;">
+          InkWell, Sophy, and all coaches are wellness tools — not emergency services or replacements for professional mental health care.
+        </p>
+      </div>
     </div>
-    
+
     <!-- Action Buttons -->
     <div style="display: flex; gap: 0.5em; justify-content: center;">
       <button class="btn" onclick="saveUserSettings()" 
@@ -12169,6 +12507,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Main data export function
 window.exportUserData = async function() {
+  // 🔒 PAYWALL CHECK - Data export requires Plus
+  if (!await checkPaywallAccess('dataExport')) {
+    return; // User doesn't have access
+  }
+  
   const exportBtn = document.getElementById('exportDataBtn');
   const statusDiv = document.getElementById('exportStatus');
   const formatSelect = document.getElementById('exportFormat');
@@ -12751,6 +13094,21 @@ function formatReadableDate(date) {
     }
   }
 
+  // Toggle Crisis Resources visibility
+  function toggleCrisisResources() {
+    const content = document.getElementById("crisisResourcesContent");
+    const icon = document.getElementById("crisisToggleIcon");
+    if (content && icon) {
+      if (content.style.display === "none" || !content.style.display) {
+        content.style.display = "block";
+        icon.style.transform = "rotate(180deg)";
+      } else {
+        content.style.display = "none";
+        icon.style.transform = "rotate(0deg)";
+      }
+    }
+  }
+
   // Test SMS function
   async function testSMS() {
     const statusDiv = document.getElementById("testSMSStatus");
@@ -12804,6 +13162,81 @@ function formatReadableDate(date) {
   // Make testSMS globally available
   window.testSMS = testSMS;
 
+/**
+ * Update SMS feature gating based on user's subscription tier
+ * FREE: WISH milestones, Daily prompts
+ * PLUS: + Daily gratitude from Sophy, Weekly insights  
+ * CONNECT: + Coach replies
+ */
+function updateSmsTierGating(tier) {
+  const tierLevel = { free: 0, plus: 1, connect: 2 };
+  const currentLevel = tierLevel[tier] || 0;
+  
+  // Plus features: Gratitude from Sophy, Weekly insights
+  const plusFeatures = ['smsGratitudeRow', 'smsWeeklyInsightsRow'];
+  plusFeatures.forEach(rowId => {
+    const row = document.getElementById(rowId);
+    if (row) {
+      const checkbox = row.querySelector('input[type="checkbox"]');
+      if (currentLevel >= 1) {
+        // User has Plus or Connect - unlock
+        row.classList.add('unlocked');
+        if (checkbox) checkbox.disabled = false;
+      } else {
+        // Free user - keep locked
+        row.classList.remove('unlocked');
+        if (checkbox) {
+          checkbox.disabled = true;
+          checkbox.checked = false;
+        }
+      }
+    }
+  });
+  
+  // Coach replies is also Plus-gated (not Connect)
+  const coachRepliesRow = document.getElementById('smsCoachRepliesRow');
+  if (coachRepliesRow) {
+    const checkbox = coachRepliesRow.querySelector('input[type="checkbox"]');
+    if (currentLevel >= 1) {
+      // User has Plus or Connect - unlock
+      coachRepliesRow.classList.add('unlocked');
+      if (checkbox) checkbox.disabled = false;
+    } else {
+      // Free user - keep locked
+      coachRepliesRow.classList.remove('unlocked');
+      if (checkbox) {
+        checkbox.disabled = true;
+        checkbox.checked = false;
+      }
+    }
+  }
+}
+
+/**
+ * Open upgrade modal for a specific tier
+ */
+function openUpgradeModal(targetTier) {
+  console.log('Opening upgrade modal for tier:', targetTier);
+  // Try various ways to open the upgrade/paywall modal
+  if (typeof window.showSubscriptionModal === 'function') {
+    window.showSubscriptionModal();
+  } else if (typeof showSubscriptionModal === 'function') {
+    showSubscriptionModal();
+  } else {
+    // Fallback: click the upgrade button if it exists
+    const upgradeBtn = document.getElementById('upgradeButton');
+    if (upgradeBtn) {
+      upgradeBtn.click();
+    } else {
+      showToast(`Upgrade to ${targetTier === 'plus' ? 'Plus' : 'Connect'} to unlock this feature!`, 'info');
+    }
+  }
+}
+
+// Make functions globally available
+window.updateSmsTierGating = updateSmsTierGating;
+window.openUpgradeModal = openUpgradeModal;
+
 // ============================================================================
 // SUBSCRIPTION UI FUNCTIONS
 // ============================================================================
@@ -12830,9 +13263,9 @@ async function loadSubscriptionUI() {
     const badge = document.getElementById('subscriptionBadge');
     if (badge) {
       const tierNames = { free: 'Free', plus: 'Plus', connect: 'Connect' };
-      const tierColors = { free: '#6c757d', plus: '#2A6972', connect: '#805AD5' };
+      const tierColors = { free: '#2A6972', plus: '#D49489', connect: '#805AD5' };
       badge.textContent = tierNames[tier] || 'Free';
-      badge.style.background = tierColors[tier] || '#6c757d';
+      badge.style.background = tierColors[tier] || '#2A6972';
     }
     
     // Show/hide upgrade button
@@ -12875,41 +13308,197 @@ async function loadSubscriptionUI() {
       }
     }
     
-    // Handle SMS section gating
-    const smsUpgradeBadge = document.getElementById('smsUpgradeBadge');
-    const smsUpgradePrompt = document.getElementById('smsUpgradePrompt');
+    // Handle SMS section - Phone/timezone always available, FREE tier gets WISH + Daily prompts
+    // Plus-tier options are gated by updateSmsTierGating below
     const smsPreferences = document.getElementById('smsPreferences');
     const smsTestButton = document.querySelector('.sms-test-button');
     
-    if (SUBSCRIPTION_CONFIG.PAYWALL_ENABLED && SUBSCRIPTION_CONFIG.FEATURES.RESTRICT_SMS) {
-      const hasSMSAccess = tier === 'plus' || tier === 'connect';
-      
-      if (!hasSMSAccess) {
-        // Show upgrade prompt and hide SMS controls
-        if (smsUpgradeBadge) smsUpgradeBadge.style.display = 'inline';
-        if (smsUpgradePrompt) smsUpgradePrompt.style.display = 'block';
-        if (smsPreferences) smsPreferences.style.opacity = '0.5';
-        if (smsTestButton) smsTestButton.disabled = true;
-        
-        // Disable all SMS checkboxes
-        const smsCheckboxes = ['smsOptInSettings', 'smsWishMilestones', 'smsDailyPrompts', 'smsGratitudePrompts', 'smsCoachReplies', 'smsWeeklyInsights'];
-        smsCheckboxes.forEach(id => {
-          const checkbox = document.getElementById(id);
-          if (checkbox) checkbox.disabled = true;
-        });
-      } else {
-        // Hide upgrade prompt and enable controls
-        if (smsUpgradeBadge) smsUpgradeBadge.style.display = 'none';
-        if (smsUpgradePrompt) smsUpgradePrompt.style.display = 'none';
-        if (smsPreferences) smsPreferences.style.opacity = '1';
-        if (smsTestButton) smsTestButton.disabled = false;
-      }
-    }
+    // SMS preferences area is always visible and enabled
+    // Individual option gating is handled by updateSmsTierGating
+    if (smsPreferences) smsPreferences.style.opacity = '1';
+    if (smsTestButton) smsTestButton.disabled = false;
+    
+    // Apply SMS tier-based gating
+    updateSmsTierGating(tier);
+    
+    // Apply visual gating to feature sections based on tier
+    applyFeatureGating(tier);
     
   } catch (error) {
     console.error('Failed to load subscription UI:', error);
   }
 }
+
+/**
+ * Apply visual gating overlays to feature sections based on subscription tier
+ */
+function applyFeatureGating(tier) {
+  const tierLevel = { free: 0, plus: 1, connect: 2 };
+  const userLevel = tierLevel[tier] || 0;
+  
+  // Only apply gating if paywall is enabled
+  if (typeof SUBSCRIPTION_CONFIG !== 'undefined' && !SUBSCRIPTION_CONFIG.PAYWALL_ENABLED) {
+    return;
+  }
+  
+  // === COACH SECTION (Connect required) ===
+  // Coach section gating is now handled in loadPractitionerStatus() for cleaner UI
+  // Just refresh the coach status to apply proper tier-based UI
+  if (typeof loadPractitionerStatus === 'function') {
+    loadPractitionerStatus();
+  }
+  
+  // === DATA EXPORT (Plus required) ===
+  const exportBtn = document.getElementById('exportDataBtn');
+  const exportHeader = Array.from(document.querySelectorAll('h3')).find(h => h.textContent.includes('Data Export'));
+  
+  // Remove existing badge first
+  const existingExportBadge = document.getElementById('exportPlusBadge');
+  if (existingExportBadge) existingExportBadge.remove();
+  
+  if (userLevel < 1 && exportBtn) {
+    exportBtn.disabled = true;
+    exportBtn.style.opacity = '0.5';
+    // Add subtle Plus badge to header
+    if (exportHeader && !document.getElementById('exportPlusBadge')) {
+      const badge = document.createElement('span');
+      badge.id = 'exportPlusBadge';
+      badge.style.cssText = 'margin-left: auto; padding: 0.2em 0.6em; background: #D49489; border-radius: 4px; cursor: pointer; font-size: 0.7em; color: white;';
+      badge.textContent = '🔒 Plus';
+      badge.onclick = function() { window.showSubscriptionModal(); };
+      exportHeader.appendChild(badge);
+    }
+  } else if (exportBtn) {
+    exportBtn.disabled = false;
+    exportBtn.style.opacity = '1';
+  }
+  
+  // === INSIGHTS SECTION (Plus required) ===
+  const insightsCheckboxes = document.querySelectorAll('#weeklyInsightsEnabled, #monthlyInsightsEnabled');
+  const insightsSectionHeader = Array.from(document.querySelectorAll('h3')).find(h => h.textContent.includes("Sophy's Insights"));
+  const insightsSection = insightsSectionHeader?.closest('div[style*="background"]');
+  
+  // Remove existing badge first
+  const existingInsightsBadge = document.getElementById('insightsPlusBadge');
+  if (existingInsightsBadge) existingInsightsBadge.remove();
+  const existingInsightsLock = document.getElementById('insightsLock');
+  if (existingInsightsLock) existingInsightsLock.remove();
+  
+  if (userLevel < 1) {
+    insightsCheckboxes.forEach(cb => {
+      if (cb) {
+        cb.disabled = true;
+        cb.checked = false;
+      }
+    });
+    // Add subtle Plus badge to header instead of big banner
+    if (insightsSectionHeader && !document.getElementById('insightsPlusBadge')) {
+      const badge = document.createElement('span');
+      badge.id = 'insightsPlusBadge';
+      badge.style.cssText = 'margin-left: auto; padding: 0.2em 0.6em; background: #D49489; border-radius: 4px; cursor: pointer; font-size: 0.7em; color: white;';
+      badge.textContent = '🔒 Plus';
+      badge.onclick = function() { window.showSubscriptionModal(); };
+      insightsSectionHeader.appendChild(badge);
+    }
+    // No opacity change - just disable checkboxes like other sections
+  } else {
+    insightsCheckboxes.forEach(cb => {
+      if (cb) cb.disabled = false;
+    });
+    const insightsLock = document.getElementById('insightsLock');
+    if (insightsLock) insightsLock.remove();
+    if (insightsSection) insightsSection.style.opacity = '1';
+  }
+  
+  // === FILE UPLOAD (Plus required) ===
+  const fileInput = document.getElementById('attachment');
+  const fileLabel = document.querySelector('label[for="attachment"]');
+  // Always remove old lock first to ensure fresh onclick binding
+  const existingFileLock = document.getElementById('fileLock');
+  if (existingFileLock) existingFileLock.remove();
+  
+  if (userLevel < 1 && fileInput) {
+    fileInput.disabled = true;
+    fileInput.style.opacity = '0.5';
+    // Add small Plus badge after the label
+    if (fileLabel) {
+      const fileLock = document.createElement('span');
+      fileLock.id = 'fileLock';
+      fileLock.style.cssText = 'margin-left: 0.5em; padding: 0.2em 0.6em; background: #D49489; border-radius: 4px; cursor: pointer; font-size: 0.8em; color: white; vertical-align: middle;';
+      fileLock.textContent = '🔒 Plus';
+      fileLock.onclick = function() { window.showSubscriptionModal(); };
+      fileLabel.appendChild(fileLock);
+    }
+  } else if (fileInput) {
+    fileInput.disabled = false;
+    fileInput.style.opacity = '1';
+  }
+  
+  // === SEND TO COACH CHECKBOX (Connect required) ===
+  // Keep the original UI, just add a subtle notice for free/plus users
+  const coachCheckbox = document.getElementById('coachReviewCheckbox');
+  const coachLabel = document.querySelector('label[for="coachReviewCheckbox"]');
+  const coachContainer = coachCheckbox?.closest('.coach-tag-toggle');
+  
+  if (userLevel < 2 && coachCheckbox) {
+    coachCheckbox.disabled = true;
+    coachCheckbox.checked = false;
+    // Keep checkbox and label visible but greyed out
+    if (coachLabel) {
+      coachLabel.style.opacity = '0.5';
+      coachLabel.style.cursor = 'default';
+    }
+    
+    // Add small subtle notice after the label
+    let coachNotice = document.getElementById('coachNotice');
+    if (!coachNotice && coachContainer) {
+      coachNotice = document.createElement('span');
+      coachNotice.id = 'coachNotice';
+      coachNotice.style.cssText = 'margin-left: 0.5em; padding: 0.2em 0.6em; background: #805AD5; border-radius: 4px; cursor: pointer; font-size: 0.8em; color: white; vertical-align: middle;';
+      coachNotice.textContent = '🔒 Connect';
+      coachNotice.onclick = function() { window.showSubscriptionModal(); };
+      coachContainer.appendChild(coachNotice);
+    }
+  } else if (coachCheckbox) {
+    coachCheckbox.disabled = false;
+    if (coachLabel) {
+      coachLabel.style.opacity = '1';
+      coachLabel.style.cursor = 'pointer';
+    }
+    const coachNotice = document.getElementById('coachNotice');
+    if (coachNotice) coachNotice.remove();
+  }
+  
+  // === PERIOD INSIGHTS BUTTONS (Plus required) ===
+  const periodInsightsSection = document.getElementById('periodInsightsSection');
+  const insightButtons = periodInsightsSection?.querySelectorAll('button');
+  
+  // Remove existing badges first
+  const existingBadges = periodInsightsSection?.querySelectorAll('.insights-plus-badge');
+  existingBadges?.forEach(badge => badge.remove());
+  
+  if (userLevel < 1 && insightButtons) {
+    insightButtons.forEach(btn => {
+      // Add Plus badge inside each button
+      const badge = document.createElement('span');
+      badge.className = 'insights-plus-badge';
+      badge.style.cssText = 'margin-left: 0.5em; padding: 0.15em 0.5em; background: #D49489; border-radius: 4px; font-size: 0.75em; color: white;';
+      badge.textContent = '🔒 Plus';
+      btn.appendChild(badge);
+    });
+  }
+  
+  // === SOPHY AI BUTTONS ===
+  // NOTE: Sophy is available to ALL users with 3/day limit for free tier
+  // Daily limit is enforced by backend, not frontend gating
+  // No visual gating needed - buttons always active
+  
+  // === WISH TAB SOPHY BUTTONS ===
+  // NOTE: WISH tab Sophy reflections are FREE for all users
+  // No visual gating needed
+}
+
+window.applyFeatureGating = applyFeatureGating;
 
 /**
  * Show pricing comparison modal
@@ -13111,13 +13700,21 @@ window.showPricingComparison = showPricingComparison;
               if (smsCoachRepliesField) smsCoachRepliesField.checked = userData.smsPreferences.coachReplies !== false;
               if (smsWeeklyInsightsField) smsWeeklyInsightsField.checked = userData.smsPreferences.weeklyInsights || false;
             } else {
-              // Default preferences
+              // Default preferences for free features only
               if (smsWishMilestonesField) smsWishMilestonesField.checked = true;
               if (smsDailyPromptsField) smsDailyPromptsField.checked = false;
-              if (smsGratitudePromptsField) smsGratitudePromptsField.checked = true;
-              if (smsCoachRepliesField) smsCoachRepliesField.checked = true;
+              // Gated features default to unchecked for free users
+              if (smsGratitudePromptsField) smsGratitudePromptsField.checked = false;
+              if (smsCoachRepliesField) smsCoachRepliesField.checked = false;
               if (smsWeeklyInsightsField) smsWeeklyInsightsField.checked = false;
             }
+            
+            // Apply tier-based SMS feature gating
+            const userTier = userData.subscriptionTier || 'free';
+            updateSmsTierGating(userTier);
+            
+            // Apply visual gating to all feature sections
+            applyFeatureGating(userTier);
             
             // Load insights preferences
             const weeklyCheckbox = document.getElementById("weeklyInsightsEnabled");
@@ -14367,7 +14964,32 @@ async function loadPractitionerStatus() {
     // Check if dark theme is active
     const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
     
-    // Load approved coaches for dropdown
+    // Check subscription tier - Coach features require Connect
+    const tier = userData.subscriptionTier || userData.tier || 'free';
+    const hasConnectAccess = tier === 'connect';
+    
+    // If user doesn't have Connect tier, show simple locked message
+    if (!hasConnectAccess && typeof SUBSCRIPTION_CONFIG !== 'undefined' && SUBSCRIPTION_CONFIG.PAYWALL_ENABLED) {
+      if (inviteCoachSection) inviteCoachSection.style.display = "none";
+      if (disconnectSection) disconnectSection.style.display = "none";
+      
+      const lockedBg = isDarkTheme ? 'rgba(128, 90, 213, 0.1)' : 'rgba(128, 90, 213, 0.05)';
+      const lockedBorder = isDarkTheme ? 'rgba(128, 90, 213, 0.3)' : 'rgba(128, 90, 213, 0.2)';
+      
+      statusDiv.innerHTML = `
+        <div style="background: ${lockedBg}; border: 1px solid ${lockedBorder}; padding: 1em; border-radius: 8px; text-align: center;">
+          <p style="margin: 0 0 0.75em 0; color: var(--font-secondary); font-size: 0.9em;">
+            Work with a wellness coach who can see your journal entries and provide personalized guidance.
+          </p>
+          <span onclick="window.showSubscriptionModal()" style="display: inline-block; padding: 0.3em 0.8em; background: #805AD5; border-radius: 4px; cursor: pointer; font-size: 0.85em; color: white;">
+            🔒 Upgrade to Connect
+          </span>
+        </div>
+      `;
+      return;
+    }
+    
+    // Load approved coaches for dropdown (only for Connect users)
     const approvedCoaches = await loadApprovedCoaches();
     
     if (userData.connectedCoach || userData.connectedPractitioner) {
@@ -14673,6 +15295,11 @@ async function clearPendingPractitionerInvite() {
 
 // Invite practitioner function
 async function invitePractitioner() {
+  // 🔒 PAYWALL CHECK - Coach connection requires Connect
+  if (!await checkPaywallAccess('coachInvite')) {
+    return; // User doesn't have access
+  }
+  
   const email = document.getElementById("coachEmail").value.trim();
   const name = document.getElementById("coachName").value.trim();
   const inviteButton = document.getElementById("inviteButtonText");
@@ -15620,4 +16247,4 @@ html[data-theme='dark'] .onboarding-toast {
 </style>
 
 </body>
-</html>/* Cache bust: 1769713876 */
+</html>

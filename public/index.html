@@ -2180,20 +2180,21 @@
         }
         
         .pricing-card.featured {
-            border: 2px solid var(--primary-teal);
+            border: 2px solid #D49489;
             transform: scale(1.05);
-            box-shadow: 0 20px 40px rgba(42, 105, 114, 0.2);
+            box-shadow: 0 20px 40px rgba(212, 148, 137, 0.25);
         }
         
         .pricing-card.featured:hover {
             transform: scale(1.05) translateY(-10px);
+            box-shadow: 0 30px 60px rgba(212, 148, 137, 0.3);
         }
         
         .plan-badge {
             position: absolute;
             top: -1px;
             right: 30px;
-            background: linear-gradient(135deg, var(--primary-teal), var(--warm-teal));
+            background: linear-gradient(135deg, #D49489, #C2867D);
             color: white;
             padding: 8px 20px;
             border-radius: 0 0 12px 12px;
@@ -2312,27 +2313,41 @@
             letter-spacing: 0.5px;
         }
         
-        .basic-cta, .plus-cta {
+        .basic-cta {
             background: transparent;
             border: 2px solid var(--primary-teal);
             color: var(--primary-teal);
         }
         
-        .basic-cta:hover, .plus-cta:hover {
+        .basic-cta:hover {
             background: var(--primary-teal);
             color: white;
             transform: translateY(-2px);
         }
         
+        .plus-cta {
+            background: transparent;
+            border: 2px solid #D49489;
+            color: #D49489;
+        }
+        
+        .plus-cta:hover {
+            background: linear-gradient(135deg, #D49489, #C2867D);
+            color: white;
+            border-color: #D49489;
+            transform: translateY(-2px);
+        }
+        
         .connect-cta, .pro-cta {
             background: transparent;
-            border: 2px solid var(--primary-teal);
-            color: var(--primary-teal);
+            border: 2px solid #805AD5;
+            color: #805AD5;
         }
         
         .connect-cta:hover, .pro-cta:hover {
-            background: var(--primary-teal);
+            background: linear-gradient(135deg, #805AD5, #6B46C1);
             color: white;
+            border-color: #805AD5;
             transform: translateY(-2px);
         }
         
@@ -2688,7 +2703,7 @@
                 <a href="#coaches" class="nav-link">Coaches</a>
                 <a href="#pricing" class="nav-link">Pricing</a>
                 <a href="/practitioner-portal.html" class="nav-link" style="font-weight: 600;">Coach Portal</a>
-                <a href="/app.html" class="nav-cta">Free During BETA Testing</a>
+                <a href="/app.html" class="nav-cta">Get Started Free</a>
             </div>
         </div>
     </nav>
@@ -2705,7 +2720,7 @@
                     </p>
                     <div class="hero-cta-container">
                         <a href="/app.html" class="cta-primary">
-                       Free During BETA Testing
+                       Start Journaling Free
                         </a>
                 
                     </div>
@@ -2951,14 +2966,13 @@
                 <p class="section-subtitle">Start your wellness journey with the plan that fits your needs. Upgrade or downgrade anytime.</p>
             </div>
             
-            <!-- Beta Community Stats -->
+            <!-- Key Stats -->
             <div class="beta-community-stats" style="text-align: center; margin: 3rem 0;">
-                <h3 class="section-title" style="font-size: 2rem; margin-bottom: 2rem;">Join the Beta Community</h3>
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; justify-content: center; max-width: 800px; margin: 0 auto;">
                 
                     <div class="stat">
-                        <div class="stat-number">Free</div>
-                        <div class="stat-label">During Testing Phase</div>
+                        <div class="stat-number">7 Days</div>
+                        <div class="stat-label">Free Plus Trial</div>
                     </div>
                     <div class="stat">
                         <div class="stat-number">24/7</div>
@@ -3009,7 +3023,7 @@
                         <strong>Perfect for:</strong> First-time journalers and those exploring digital wellness tools
                     </div>
                     
-                    <button class="plan-cta basic-cta">Free During Beta</button>
+                    <button class="plan-cta basic-cta" onclick="window.location.href='/app.html'">Get Started Free</button>
                 </div>
                 
                 <!-- Plus Plan -->
@@ -3057,7 +3071,7 @@
                         <strong>Perfect for:</strong> Serious journalers ready to accelerate their personal growth
                     </div>
                     
-                    <button class="plan-cta plus-cta">Free During Beta</button>
+                    <button class="plan-cta plus-cta" onclick="window.location.href='/app.html'">Start Free Trial</button>
                 </div>
                 
                 <!-- Connect Plan -->
@@ -3094,7 +3108,7 @@
                         <strong>Perfect for:</strong> Individuals seeking guided support and accountability in their wellness journey
                     </div>
                     
-                    <button class="plan-cta connect-cta">Free During Beta</button>
+                    <button class="plan-cta connect-cta" onclick="window.location.href='/app.html'">Get Human Support</button>
                 </div>
             </div>
             
@@ -3157,7 +3171,7 @@
             </div>
             
             <div class="pricing-guarantee">
-                <p>All plans include our <strong>7-day money-back guarantee</strong>. No questions asked.</p>
+                <p><strong>Plus subscriptions</strong> include a 7-day free trial. <strong>Connect subscriptions</strong> are for users familiar with InkWell's features who want to upgrade to an InkWell-certified human coach for enhanced guidance and accountability.</p>
                 <p>Have questions about which plan is right for you? <a href="mailto:support@inkwelljournal.io">Contact our team</a> - we're here to help.</p>
             </div>
         </div>

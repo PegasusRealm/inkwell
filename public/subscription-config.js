@@ -5,15 +5,15 @@
 
 const SUBSCRIPTION_CONFIG = {
   // MASTER KILL SWITCH - Set to true to activate paywall globally
-  PAYWALL_ENABLED: false,
+  PAYWALL_ENABLED: true,
   
   // Feature flags for granular control
   FEATURES: {
-    RESTRICT_SMS: false,           // Block SMS for free users
-    RESTRICT_AI: false,            // Limit AI to 20% for free users
-    RESTRICT_PRACTITIONER: false,  // Block practitioner connections for non-Connect
-    SHOW_UPGRADE_PROMPTS: false,   // Show upgrade modals/CTAs
-    REQUIRE_PAYMENT: false,        // Actually charge users (vs mock success)
+    RESTRICT_SMS: true,            // Block SMS for free users
+    RESTRICT_AI: true,             // Limit AI to 20% for free users
+    RESTRICT_PRACTITIONER: true,   // Block practitioner connections for non-Connect
+    SHOW_UPGRADE_PROMPTS: true,    // Show upgrade modals/CTAs
+    REQUIRE_PAYMENT: true,         // Actually charge users (vs mock success)
   },
 
   // Subscription tiers
@@ -38,7 +38,7 @@ const SUBSCRIPTION_CONFIG = {
       id: 'plus',
       name: 'Plus',
       price: 14.99,
-      priceId: 'price_1SeRgCI0M1vXVDeSRRA8iYRh', // InkWell Plus - $6.99/month (UPDATE STRIPE PRICE ID)
+      priceId: 'price_1SeQaJIu1E0bDEgZq6V8lATE', // InkWell Plus - $6.99/month (LIVE)
       features: {
         journaling: true,
         manifestTool: true,
@@ -54,7 +54,7 @@ const SUBSCRIPTION_CONFIG = {
       id: 'connect',
       name: 'Connect',
       price: 49.99,
-      priceId: 'price_1SeRgCI0M1vXVDeStsmhHyOz', // InkWell Connect - $29.99/month (UPDATE STRIPE PRICE ID)
+      priceId: 'price_1SeQcGIu1E0bDEgZQWWqkrjK', // InkWell Connect - $29.99/month (LIVE)
       features: {
         journaling: true,
         manifestTool: true,
@@ -70,10 +70,10 @@ const SUBSCRIPTION_CONFIG = {
     }
   },
 
-  // Extra interaction pricing
+  // Extra interaction pricing (DISCONTINUED)
   EXTRA_INTERACTION: {
-    price: 9.99,
-    priceId: 'price_1SeRgDI0M1vXVDeSKnNcmPOd', // Practitioner Interaction - $9.99 one-time
+    price: 0,
+    priceId: null, // Feature discontinued
   },
 
   // Role-based permanent discounts (InkWell absorbs cost)
@@ -140,7 +140,7 @@ const SUBSCRIPTION_CONFIG = {
 
   // Stripe configuration (set in Cloud Functions environment)
   STRIPE: {
-    PUBLISHABLE_KEY: 'pk_test_51SeQgsI0M1vXVDeSVjEffDrq5M72lzEhhXjv8VBpk1WJNg1IjCxg32qZvuLr2XanvIhRf16q3sbub8FN8gXeq01L000krmiHC6',
+    PUBLISHABLE_KEY: 'pk_live_51MynUqIu1E0bDEgZhYDvoqmNzunCkXjzr30br2tap1BVPuBPAUr1b1DnndlCMAqay9gF7s0ybPw1JCAHoXyWYuCw00DAQ9DKqM',
     // Secret key stored in Cloud Functions config via Firebase secrets
   },
 };

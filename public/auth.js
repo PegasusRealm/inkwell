@@ -193,6 +193,130 @@ function showToast(message, type = "info", duration = 4000) {
   }, duration);
 }
 
+// Welcome modal for new OAuth users (Google/Apple sign-in)
+function showNewUserWelcomeModal() {
+  // Remove existing modal if any
+  const existingModal = document.getElementById('newUserWelcomeModal');
+  if (existingModal) existingModal.remove();
+  
+  const modal = document.createElement('div');
+  modal.id = 'newUserWelcomeModal';
+  modal.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    ">
+      <div style="
+        background: linear-gradient(135deg, #2A6972 0%, #388b97 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      ">
+        <div style="
+          font-size: 3rem;
+          margin-bottom: 1rem;
+        ">🎉</div>
+        <h2 style="
+          color: #ffffff !important;
+          font-size: 1.5rem;
+          margin: 0 0 0.75rem 0;
+          font-weight: 700;
+          text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        ">Welcome to InkWell!</h2>
+        <p style="
+          color: #ffffff !important;
+          font-size: 1rem;
+          line-height: 1.5;
+          margin: 0 0 1.5rem 0;
+          text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        ">
+          Your account is ready! To personalize your experience, 
+          please visit <strong>Settings</strong> to add your name and 
+          phone number for SMS gratitude reminders.
+        </p>
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+          <button id="welcomeModalLaterBtn" style="
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+          ">
+            Maybe Later
+          </button>
+          <button id="welcomeModalSettingsBtn" style="
+            background: white;
+            color: #2A6972;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+          ">
+            Go to Settings →
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Attach event listeners after adding to DOM
+  document.getElementById('welcomeModalLaterBtn').addEventListener('click', closeWelcomeModal);
+  document.getElementById('welcomeModalSettingsBtn').addEventListener('click', goToSettingsFromWelcome);
+}
+
+function closeWelcomeModal() {
+  const modal = document.getElementById('newUserWelcomeModal');
+  if (modal) {
+    modal.style.opacity = '0';
+    setTimeout(() => modal.remove(), 200);
+  }
+}
+
+function goToSettingsFromWelcome() {
+  closeWelcomeModal();
+  // Navigate to settings view - try multiple possible ways
+  setTimeout(() => {
+    // Try opening the user settings modal directly
+    const userSettingsModal = document.getElementById('userSettingsModal');
+    if (userSettingsModal) {
+      userSettingsModal.classList.remove('hidden');
+      userSettingsModal.style.display = 'flex';
+      return;
+    }
+    // Try the settings button
+    const settingsBtn = document.getElementById('settingsBtn');
+    if (settingsBtn) {
+      settingsBtn.click();
+      return;
+    }
+    // Try openSettings function if it exists
+    if (typeof window.openSettings === 'function') {
+      window.openSettings();
+      return;
+    }
+    // Fallback: show toast with instructions
+    showToast('Open the menu (☰) and tap Settings to complete your profile.', 'info', 5000);
+  }, 300);
+}
+
 // Theme Management System
 function initThemeSystem() {
   const themeSelect = document.getElementById('themeModeSelect');
@@ -336,10 +460,12 @@ window.addEventListener('offline', () => {
 function handleFirebaseError(error, operation = 'operation') {
   // Check if user is logging out - suppress errors during logout
   const isLoggingOut = localStorage.getItem('userJustLoggedOut') === 'true';
+  const logoutTimestamp = localStorage.getItem('logoutTimestamp');
+  const recentLogout = logoutTimestamp && (Date.now() - parseInt(logoutTimestamp)) < 5000; // 5 second window
   
-  // Suppress permission-denied errors during logout (expected behavior)
-  if (isLoggingOut && error.code === 'permission-denied') {
-    console.log('🔇 Suppressing permission error during logout (expected)');
+  // Suppress permission-denied and unauthenticated errors during logout (expected behavior)
+  if ((isLoggingOut || recentLogout) && (error.code === 'permission-denied' || error.code === 'unauthenticated')) {
+    console.log('🔇 Suppressing error during logout (expected):', error.code);
     return null;
   }
   
@@ -404,8 +530,11 @@ window.addEventListener('unhandledrejection', (event) => {
   if (event.reason && event.reason.code) {
     // Check if user is logging out - suppress all errors during logout
     const isLoggingOut = localStorage.getItem('userJustLoggedOut') === 'true';
-    if (isLoggingOut && event.reason.code === 'permission-denied') {
-      console.log('🔇 Suppressing permission error during logout');
+    const logoutTimestamp = localStorage.getItem('logoutTimestamp');
+    const recentLogout = logoutTimestamp && (Date.now() - parseInt(logoutTimestamp)) < 5000; // 5 second window
+    
+    if ((isLoggingOut || recentLogout) && (event.reason.code === 'permission-denied' || event.reason.code === 'unauthenticated')) {
+      console.log('🔇 Suppressing error during logout:', event.reason.code);
       event.preventDefault();
       return;
     }
@@ -625,7 +754,11 @@ onAuthStateChanged(auth, async (user) => {
     const justLoggedOut = localStorage.getItem("userJustLoggedOut") === "true";
     if (justLoggedOut && goodbyeModal) {
       goodbyeModal.style.display = "flex";
-      localStorage.removeItem("userJustLoggedOut");
+      // Delay removing the flag to allow error suppression to work
+      setTimeout(() => {
+        localStorage.removeItem("userJustLoggedOut");
+        localStorage.removeItem("logoutTimestamp");
+      }, 3000);
     } else if (loginModal && !document.body.classList.contains("fast-login-active")) {
       loginModal.style.display = "flex";
       setTimeout(() => {
@@ -656,6 +789,7 @@ onAuthStateChanged(auth, async (user) => {
 
     // Clear logout state
     localStorage.removeItem("userJustLoggedOut");
+    localStorage.removeItem("logoutTimestamp");
     document.body.classList.remove("fast-login-active");
     if (loginModal) loginModal.style.display = "none";
     if (signupModal) signupModal.style.display = "none";
@@ -704,8 +838,9 @@ onAuthStateChanged(auth, async (user) => {
           displayName: user.displayName || "",
           signupUsername: user.displayName || user.email?.split('@')[0] || "",
           photoURL: user.photoURL || "",
-          userRole: "user",
+          userRole: "journaler",
           authProvider: authProvider,
+          agreementAccepted: true, // OAuth users accept by signing in
           subscriptionTier: "free",
           subscriptionStatus: "active",
           stripeCustomerId: null,
@@ -715,9 +850,13 @@ onAuthStateChanged(auth, async (user) => {
             monthlyEnabled: true,
             createdAt: serverTimestamp()
           },
+          needsProfileCompletion: true, // Flag for new OAuth users
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
+        
+        // Show welcome modal for new OAuth users created via auth handler
+        showNewUserWelcomeModal();
         
         // Refetch to get the created document
         userDoc = await getDoc(userDocRef);
@@ -886,6 +1025,13 @@ onAuthStateChanged(auth, async (user) => {
           if (typeof window.updateWeeklyActivityDots === 'function') {
             console.log("📅 Loading weekly activity dots after login...");
             window.updateWeeklyActivityDots();
+          }
+          
+          // Apply feature gating based on subscription tier
+          if (typeof window.applyFeatureGating === 'function') {
+            const userTier = userData?.subscriptionTier || 'free';
+            console.log(`🔒 Applying feature gating for tier: ${userTier}`);
+            window.applyFeatureGating(userTier);
           }
         } catch (initError) {
           console.error("Error during post-auth initialization:", initError);
@@ -1422,7 +1568,8 @@ async function signUp() {
         ...phoneData, // Spread phone data if it exists
         userRole: "journaler",
         agreementAccepted: true,
-        special_code: "beta", // Tag all new signups with beta until ended
+        // Beta period ended Feb 2026 - no more auto-tagging
+        // special_code only set manually for loyalty rewards now
         // Default insight preferences for new users (opt-in by default)
         insightsPreferences: {
           weeklyEnabled: true,
@@ -1545,7 +1692,10 @@ async function signInWithGoogle() {
     const userDocRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userDocRef);
     
-    if (!userDoc.exists()) {
+    // Track if this was a new user BEFORE any doc creation
+    const isNewUser = !userDoc.exists();
+    
+    if (isNewUser) {
       console.log("🆕 Creating new user profile for Google sign-in");
       await setDoc(userDocRef, {
         userId: user.uid,
@@ -1553,8 +1703,9 @@ async function signInWithGoogle() {
         displayName: user.displayName || "",
         signupUsername: user.displayName || user.email?.split('@')[0] || "",
         photoURL: user.photoURL || "",
-        userRole: "user",
+        userRole: "journaler",
         authProvider: "google",
+        agreementAccepted: true, // OAuth users accept by signing in
         subscriptionTier: "free",
         subscriptionStatus: "active",
         stripeCustomerId: null,
@@ -1564,9 +1715,13 @@ async function signInWithGoogle() {
           monthlyEnabled: true,
           createdAt: serverTimestamp()
         },
+        needsProfileCompletion: true, // Flag for new OAuth users
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
+      
+      // Show welcome modal for new OAuth users
+      showNewUserWelcomeModal();
     } else {
       // Update last login
       await updateDoc(userDocRef, {
@@ -1580,7 +1735,10 @@ async function signInWithGoogle() {
     if (loginModal) loginModal.style.display = "none";
     if (signupModal) signupModal.style.display = "none";
     
-    showToast(`Welcome back, ${user.displayName || user.email}!`, "success");
+    // Only show welcome back for existing users (use tracked flag, not doc state)
+    if (!isNewUser) {
+      showToast(`Welcome back, ${user.displayName || user.email}!`, "success");
+    }
     
   } catch (error) {
     console.error("❌ Google sign-in error:", error);
@@ -1613,7 +1771,10 @@ async function signInWithApple() {
     const userDocRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userDocRef);
     
-    if (!userDoc.exists()) {
+    // Track if this was a new user BEFORE any doc creation
+    const isNewUser = !userDoc.exists();
+    
+    if (isNewUser) {
       console.log("🆕 Creating new user profile for Apple sign-in");
       
       // Apple may provide full name in additionalUserInfo on first sign-in
@@ -1628,8 +1789,9 @@ async function signInWithApple() {
         displayName: displayName,
         signupUsername: displayName,
         photoURL: user.photoURL || "",
-        userRole: "user",
+        userRole: "journaler",
         authProvider: "apple",
+        agreementAccepted: true, // OAuth users accept by signing in
         subscriptionTier: "free",
         subscriptionStatus: "active",
         stripeCustomerId: null,
@@ -1639,9 +1801,13 @@ async function signInWithApple() {
           monthlyEnabled: true,
           createdAt: serverTimestamp()
         },
+        needsProfileCompletion: true, // Flag for new OAuth users
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
+      
+      // Show welcome modal for new OAuth users
+      showNewUserWelcomeModal();
     } else {
       // Update last login
       await updateDoc(userDocRef, {
@@ -1655,7 +1821,10 @@ async function signInWithApple() {
     if (loginModal) loginModal.style.display = "none";
     if (signupModal) signupModal.style.display = "none";
     
-    showToast(`Welcome back, ${user.displayName || user.email}!`, "success");
+    // Only show welcome back for existing users (use tracked flag, not doc state)
+    if (!isNewUser) {
+      showToast(`Welcome back, ${user.displayName || user.email}!`, "success");
+    }
     
   } catch (error) {
     console.error("❌ Apple sign-in error:", error);
@@ -1823,6 +1992,13 @@ const ensureAvatar = (url) => {
 
 
 async function refineManifestStatement() {
+  // Check Sophy daily limit for free users
+  if (typeof window.checkSophyAccess === 'function') {
+    if (!await window.checkSophyAccess()) {
+      return; // Limit reached
+    }
+  }
+  
   const input = document.getElementById("manifestInput");
   const suggestionBox = document.getElementById("manifestSuggestion");
 
@@ -1879,6 +2055,11 @@ async function refineManifestStatement() {
     }
     
     suggestionBox.innerHTML = `<div id="suggestedManifestText">${refined}</div>`;
+    
+    // Record successful Sophy use
+    if (typeof window.recordSophyUse === 'function') {
+      window.recordSophyUse();
+    }
   } catch (err) {
     console.error("Error refining manifest:", err);
     suggestionBox.innerHTML = "Something went wrong. Please try again.";
@@ -1887,6 +2068,13 @@ async function refineManifestStatement() {
 
 window.askSophyToRefineManifest = refineManifestStatement;
 async function askSophyToReflect() {
+  // Check Sophy daily limit for free users
+  if (typeof window.checkSophyAccess === 'function') {
+    if (!await window.checkSophyAccess()) {
+      return; // Limit reached
+    }
+  }
+  
   const input = document.getElementById("journal");
   const insightBox = document.getElementById("sophyInsight");
 
@@ -1941,6 +2129,11 @@ async function askSophyToReflect() {
     }
     
     insightBox.innerHTML = `<div id="sophyInsightText">${insight}</div>`;
+    
+    // Record successful Sophy use
+    if (typeof window.recordSophyUse === 'function') {
+      window.recordSophyUse();
+    }
     
     // Auto-select the "Save this Reflection in my Journal Entry" checkbox
     const autoInsertReflectionCheckbox = document.getElementById("autoInsertReflection");
@@ -3074,6 +3267,7 @@ function clearInternalWarning() {
 async function safeLogout(reason) {
   if (auth.currentUser) {
     localStorage.setItem("userJustLoggedOut", "true");
+    localStorage.setItem("logoutTimestamp", Date.now().toString());
     await auth.signOut();
 
     const modal = document.getElementById("goodbyeModal");
