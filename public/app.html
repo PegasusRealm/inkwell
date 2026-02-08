@@ -3169,6 +3169,25 @@ html[data-theme='dark'] #userSettingsModal button[style*="background: #f8f9fa"] 
   border: 1px solid rgba(42, 105, 114, 0.4) !important;
 }
 
+/* Sophy's Insights Section - Dark Mode */
+html[data-theme='dark'] #sophyInsightsSection {
+  background: rgba(42, 105, 114, 0.15) !important;
+  border: 1px solid rgba(42, 105, 114, 0.3) !important;
+}
+
+html[data-theme='dark'] #sophyInsightsSection p,
+html[data-theme='dark'] #sophyInsightsSection span {
+  color: #89C9D4 !important;
+}
+
+html[data-theme='dark'] #sophyInsightsSection label {
+  color: #89C9D4 !important;
+}
+
+html[data-theme='dark'] #sophyInsightsSection strong {
+  color: #7BB8C4 !important;
+}
+
 /* Edit Entry Modal Dark Theme */
 html[data-theme='dark'] #editEntryModal .card-block {
   background: rgba(21, 54, 58, 0.95) !important;
@@ -9990,7 +10009,7 @@ document.head.appendChild(themeStyle);
       <a href="#" id="toggleSignup" style="color: #6A1B9A; text-decoration: underline; font-weight: 500;">Sign up</a>
     </div>
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1em;">
-      v4.26036.3
+      v26.039.2
     </div>
   </div>
 </div>
@@ -10042,7 +10061,7 @@ document.head.appendChild(themeStyle);
     </form>
     
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1.5em;">
-      v4.26036.3
+      v26.039.2
     </div>
     </div>
   </div>
@@ -10231,7 +10250,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     </button>
     
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1.5em;">
-      v4.26036.3
+      v26.039.2
     </div>
   </div>
 </div>
@@ -12042,12 +12061,12 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       </h3>
       <div style="font-size: 0.85em; color: #666;">
         <span style="font-weight: 500;">Version:</span>
-        <span id="settingsVersion" style="margin-left: 0.5em; font-family: monospace;">v4.26036.3</span>
+        <span id="settingsVersion" style="margin-left: 0.5em; font-family: monospace;">v26.039.2</span>
       </div>
     </div>
     
     <!-- Sophy Insights Section -->
-    <div style="text-align: left; margin-bottom: 1.5em; padding: 1em; background: #f0f8ff; border-radius: 5px; border: 1px solid #d1ecf1;">
+    <div id="sophyInsightsSection" style="text-align: left; margin-bottom: 1.5em; padding: 1em; background: #f0f8ff; border-radius: 5px; border: 1px solid #d1ecf1;">
       <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
         📊 Sophy's Insights
       </h3>
@@ -12643,7 +12662,7 @@ async function collectAllUserData() {
       userEmail: user.email,
       exportTimestamp: exportTimestamp,
       exportDate: formatReadableDate(new Date()),
-      appVersion: "v4.26036.3",
+      appVersion: "v26.039.2",
       dataFormat: "InkWell Export v1.0"
     },
     journalEntries: [],
@@ -13662,10 +13681,10 @@ window.openBillingPortal = openBillingPortal;
             
             if (userData.smsPreferences) {
               if (smsWishMilestonesField) smsWishMilestonesField.checked = userData.smsPreferences.wishMilestones !== false;
-              if (smsDailyPromptsField) smsDailyPromptsField.checked = userData.smsPreferences.dailyPrompts || false;
-              if (smsGratitudePromptsField) smsGratitudePromptsField.checked = userData.smsPreferences.dailyGratitude !== false;
-              if (smsCoachRepliesField) smsCoachRepliesField.checked = userData.smsPreferences.coachReplies !== false;
-              if (smsWeeklyInsightsField) smsWeeklyInsightsField.checked = userData.smsPreferences.weeklyInsights || false;
+              if (smsDailyPromptsField) smsDailyPromptsField.checked = userData.smsPreferences.dailyPrompts === true;
+              if (smsGratitudePromptsField) smsGratitudePromptsField.checked = userData.smsPreferences.dailyGratitude === true;
+              if (smsCoachRepliesField) smsCoachRepliesField.checked = userData.smsPreferences.coachReplies === true;
+              if (smsWeeklyInsightsField) smsWeeklyInsightsField.checked = userData.smsPreferences.weeklyInsights === true;
             } else {
               // Default preferences for free features only
               if (smsWishMilestonesField) smsWishMilestonesField.checked = true;
