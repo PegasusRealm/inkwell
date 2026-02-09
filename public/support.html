@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InkWell - Support</title>
+    <meta name="description" content="InkWell support and help resources. Contact us, access crisis resources, and learn how to use the app.">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Primary Brand Colors */
+            --primary-teal: #2A6972;
+            --secondary-teal: #89C9D4;
+            
+            /* Color Theory Expansions */
+            --deep-teal: #1E4B52;
+            --soft-teal: #B8E0E8;
+            --pale-teal: #E8F6F9;
+            --warm-teal: #4A9BA8;
+            
+            /* Typography & Text */
+            --text-primary: #1A2B2E;
+            --text-secondary: #4A5B5E;
+            --text-muted: #748B8F;
+            
+            /* Backgrounds */
+            --bg-primary: linear-gradient(135deg, #F0FDFA 0%, var(--pale-teal) 100%);
+            --bg-card: rgba(255, 255, 255, 0.9);
+            
+            /* Shadows & Effects */
+            --shadow-soft: 0 8px 32px rgba(42, 105, 114, 0.08);
+            --shadow-medium: 0 16px 64px rgba(42, 105, 114, 0.12);
+            
+            /* Fonts */
+            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-display: 'Crimson Text', Georgia, serif;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-primary);
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(42, 105, 114, 0.08);
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(42, 105, 114, 0.04);
+        }
+        
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            text-decoration: none;
+            color: var(--primary-teal);
+        }
+        
+        .logo-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            box-shadow: 0 4px 16px rgba(42, 105, 114, 0.15);
+        }
+        
+        .logo-text {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary-teal) 0%, var(--warm-teal) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-teal);
+        }
+        
+        .nav-cta {
+            background: linear-gradient(135deg, var(--primary-teal) 0%, var(--warm-teal) 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: 0 8px 24px rgba(42, 105, 114, 0.2);
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding-top: 120px;
+            padding-bottom: 60px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .page-header h1 {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            font-weight: 600;
+            color: var(--primary-teal);
+            margin-bottom: 1rem;
+        }
+        
+        .page-header p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(42, 105, 114, 0.08);
+        }
+        
+        .card h2 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-teal);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .card ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .card ul li {
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .card ul li::before {
+            content: '•';
+            color: var(--primary-teal);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        
+        /* Crisis Section */
+        .crisis-card {
+            background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
+            border: 2px solid #FC8181;
+        }
+        
+        .crisis-card h2 {
+            color: #C53030;
+        }
+        
+        .crisis-resource {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .crisis-resource:last-child {
+            margin-bottom: 0;
+        }
+        
+        .crisis-resource-info h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .crisis-resource-info p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        
+        .crisis-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #C53030;
+            text-decoration: none;
+        }
+        
+        .crisis-number:hover {
+            text-decoration: underline;
+        }
+        
+        /* Contact Button */
+        .contact-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-teal) 0%, var(--warm-teal) 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(42, 105, 114, 0.2);
+        }
+        
+        .contact-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(42, 105, 114, 0.3);
+        }
+        
+        /* Footer */
+        .footer {
+            background: var(--deep-teal);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+        
+        .footer p {
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+        }
+        
+        .footer a {
+            color: var(--secondary-teal);
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+            
+            .crisis-resource {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <img src="InkWell-Logo.png" alt="InkWell" class="logo-img">
+                <span class="logo-text">InkWell</span>
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/#features" class="nav-link">Features</a>
+                <a href="/#pricing" class="nav-link">Pricing</a>
+                <a href="/app.html" class="nav-cta">Open App</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Support</h1>
+                <p>We're here to help you get the most out of InkWell</p>
+            </div>
+
+            <!-- About InkWell -->
+            <div class="card">
+                <h2>📝 About InkWell</h2>
+                <p>InkWell is a science-backed digital journaling app designed to help you transform thoughts into insights and action. Created for the thinkers and the forgetters.</p>
+                
+                <h3>What InkWell Does</h3>
+                <ul>
+                    <li>Secure, private journaling with cloud sync across devices</li>
+                    <li>AI-powered insights from Sophy, your wellness companion</li>
+                    <li>Mood tracking and pattern recognition</li>
+                    <li>Goal setting and progress tracking</li>
+                    <li>Connect with verified coaches for professional support</li>
+                    <li>Science-based prompts rooted in positive psychology</li>
+                </ul>
+                
+                <h3>Getting Started</h3>
+                <ul>
+                    <li>Create a free account or sign in with Google</li>
+                    <li>Start your first journal entry with guided prompts</li>
+                    <li>Explore Sophy's insights to discover patterns in your writing</li>
+                    <li>Upgrade to unlock unlimited entries and premium features</li>
+                </ul>
+            </div>
+
+            <!-- Crisis Resources -->
+            <div class="card crisis-card">
+                <h2>🆘 Crisis Resources</h2>
+                <p><strong>InkWell is not a substitute for professional mental health care.</strong> If you or someone you know is in crisis, please reach out to these resources immediately:</p>
+                
+                <div class="crisis-resource">
+                    <div class="crisis-resource-info">
+                        <h4>988 Suicide & Crisis Lifeline</h4>
+                        <p>24/7 free, confidential support for people in distress</p>
+                    </div>
+                    <a href="tel:988" class="crisis-number">Call or Text: 988</a>
+                </div>
+                
+                <div class="crisis-resource">
+                    <div class="crisis-resource-info">
+                        <h4>Crisis Text Line</h4>
+                        <p>Text-based crisis counseling available 24/7</p>
+                    </div>
+                    <a href="sms:741741" class="crisis-number">Text HOME to 741741</a>
+                </div>
+                
+                <div class="crisis-resource">
+                    <div class="crisis-resource-info">
+                        <h4>National Alliance on Mental Illness</h4>
+                        <p>Information, support groups, and education</p>
+                    </div>
+                    <a href="tel:1-800-950-6264" class="crisis-number">1-800-950-NAMI</a>
+                </div>
+                
+                <div class="crisis-resource">
+                    <div class="crisis-resource-info">
+                        <h4>International Association for Suicide Prevention</h4>
+                        <p>Crisis centers around the world</p>
+                    </div>
+                    <a href="https://www.iasp.info/resources/Crisis_Centres/" class="crisis-number" target="_blank">Find Help →</a>
+                </div>
+            </div>
+
+            <!-- Contact Support -->
+            <div class="card">
+                <h2>📧 Contact Us</h2>
+                <p>Have questions, feedback, or need help with your account? Our team is here to assist you.</p>
+                <p style="margin-bottom: 1.5rem;">We typically respond within 24-48 hours.</p>
+                <a href="mailto:support@inkwelljournal.io" class="contact-btn">
+                    Email Support
+                </a>
+            </div>
+
+            <!-- Privacy & Terms -->
+            <div class="card">
+                <h2>🔒 Privacy & Data</h2>
+                <p>Your privacy matters to us. Here's what you should know:</p>
+                <ul>
+                    <li>Your journal entries are encrypted and stored securely</li>
+                    <li>We never sell your personal data to third parties</li>
+                    <li>You can export or delete your data at any time</li>
+                    <li>AI features process data to provide insights, but do not retain your entries</li>
+                </ul>
+                <p style="margin-top: 1rem;">
+                    For complete details, see our <a href="https://pegasusrealm.com/privacy-policy/" target="_blank" style="color: var(--primary-teal);">Privacy Policy</a>.
+                </p>
+            </div>
+
+            <!-- App Information -->
+            <div class="card">
+                <h2>📱 App Information</h2>
+                <p><strong>InkWell</strong> by Pegasus Realm</p>
+                <ul>
+                    <li>Available on iOS App Store and Web</li>
+                    <li>Current Version: 26.039.2</li>
+                    <li>Requires iOS 13.0 or later</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 InkWell by <a href="https://pegasusrealm.com">Pegasus Realm</a>. All rights reserved.</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">For the thinkers and the forgetters.</p>
+        </div>
+    </footer>
+</body>
+</html>
