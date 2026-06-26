@@ -14,7 +14,7 @@
     ],
     "rewrites": [
       {
-        "source": "!/@(migrate-users|practitioner-portal|practitioner-register|admin|admin-enhanced|app|coach).html",
+        "source": "!/@(migrate-users|admin|admin-enhanced|app).html",
         "destination": "/index.html"
       }
     ],
