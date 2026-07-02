@@ -470,16 +470,19 @@
     }
 
  .sophy-info {
-  background-color: var(--accent);
-  color: var(--btn-font); /* light text on pink */
-  font-style: italic;
+  background: rgba(212, 148, 137, 0.10);
+  border-left: 3px solid var(--accent-sophy);
+  color: var(--font-main);
   font-size: 0.95em;
   padding: 0.75em 1em;
-  border-radius: 5px;
-  box-shadow: inset 0 0 0 4px var(--accent-dark);
+  border-radius: 0 8px 8px 0;
   margin-top: 0.5em;
   margin-bottom: 0.5em;
   white-space: pre-wrap;
+}
+ /* Sophy blocks stay invisible until Sophy has actually spoken (2026-07-02) */
+ .sophy-info:empty {
+  display: none;
 }
 
     .card-block {
@@ -806,13 +809,13 @@
 
     /* Sophy-themed button: accent color with modern styling */
     .btn-sophy {
-      background: linear-gradient(135deg, var(--accent-sophy) 0%, var(--accent-sophy-light) 100%);
-      color: white;
+      background: var(--accent-sophy);
+      color: #241512; /* warm ink on coral — readable, crisp (2026-07-02) */
       border: none;
       border-radius: 12px;
       padding: 0.875rem 1.5rem;
-      font-size: 0.875rem;
-      font-weight: 500;
+      font-size: 0.95rem;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s ease;
       box-shadow: var(--shadow-sm);
@@ -833,13 +836,7 @@
     }
 
     /* Theme-specific Sophy button styling */
-    html[data-theme='light'] .btn-sophy {
-      color: white;
-    }
-
-    html[data-theme='dark'] .btn-sophy {
-      color: white;
-    }
+    /* white-text overrides removed 2026-07-02 — ink-on-coral in both themes */
 
     /* Sign In/Sign Up button styles for login modal */
     .login-btn-signin {
@@ -2020,13 +2017,13 @@
     }
     
     .btn-sophy {
-      background: linear-gradient(135deg, var(--accent-sophy) 0%, var(--accent-sophy-hover) 100%) !important;
-      box-shadow: 0 3px 12px rgba(217,125,123,0.3) !important;
+      background: var(--accent-sophy) !important;
+      box-shadow: var(--shadow-sm) !important;
     }
-    
+
     .btn-sophy:hover {
-      background: linear-gradient(135deg, var(--accent-sophy-hover) 0%, var(--accent-sophy) 100%) !important;
-      box-shadow: 0 6px 20px rgba(217,125,123,0.4) !important;
+      background: var(--accent-sophy-light) !important;
+      box-shadow: var(--shadow-md) !important;
     }
     
     .btn-gray {
@@ -2206,10 +2203,7 @@
   
     
     /* Fix divider text */
-    html[data-theme='dark'] .workflow-divider::after {
-      background: var(--bg-muted) !important;
-      color: #4fb3d9 !important;
-    }
+    /* dark divider star override removed 2026-07-02 */
     
     /* Fix calendar and search area text */
     html[data-theme='dark'] #calendarContainer,
@@ -2280,14 +2274,14 @@
     }
     
     html[data-theme='dark'] .btn-sophy {
-      background: linear-gradient(135deg, var(--accent-sophy-light) 0%, var(--accent-sophy) 100%) !important;
-      box-shadow: 0 3px 12px rgba(227,148,161,0.4) !important;
-      color: white !important;
+      background: var(--accent-sophy) !important;
+      box-shadow: var(--shadow-sm) !important;
+      color: #241512 !important; /* ink on coral, both themes */
     }
-    
+
     html[data-theme='dark'] .btn-sophy:hover {
-      background: linear-gradient(135deg, var(--accent-sophy) 0%, var(--accent-sophy-light) 100%) !important;
-      box-shadow: 0 6px 20px rgba(227,148,161,0.5) !important;
+      background: var(--accent-sophy-light) !important;
+      box-shadow: var(--shadow-md) !important;
     }
     
     /* Fix checkbox and form element text */
@@ -2443,17 +2437,7 @@
       position: relative;
     }
     
-    .workflow-divider::after {
-      content: '✦';
-      position: absolute;
-      left: 50%;
-      top: -8px;
-      transform: translateX(-50%);
-      background: var(--bg-card, #fff);
-      color: #2A6972;
-      padding: 0 10px;
-      font-size: 12px;
-    }
+    /* divider star removed 2026-07-02 — clean hairline only */
     
     /* Enhanced Sophy suggestion areas */
     .sophy-info {
@@ -10774,7 +10758,7 @@ document.head.appendChild(themeStyle);
   For the <em style="font-style: italic; color: var(--brand-primary);">Thinkers</em> and the <em style="font-style: italic; color: var(--brand-primary);">Forgetters</em>.
 </h1>
 <p style="margin: 0 auto 2.5em; max-width: 52ch; font-family: var(--body-font); font-size: 1.02em; line-height: 1.6; color: var(--font-muted); text-align: center; position: relative; z-index: 1;">
-  Life is messy. InkWell&trade; holds your ideas, plans, and dreams so you can come back to them anytime.
+  Life is messy. InkWell&trade; keeps your thinking, and gives it back smarter.
 </p>
 
 
@@ -12208,7 +12192,7 @@ document.head.appendChild(themeStyle);
     
     <div style="font-size: 0.95em; line-height: 1.6; color: var(--font-main, #333);">
       <p style="margin-bottom: 1.2em;">
-        Life is messy—<strong>InkWell™</strong> holds your ideas, plans, and dreams so you can come back to them anytime. A digital sanctuary designed for reflection and growth.
+        Life is messy. <strong>InkWell™</strong> keeps your thinking, and gives it back smarter. A journal that remembers, reflects, and grows with you.
       </p>
       
       <h3 style="color: var(--brand-primary, #2A6972); font-size: 1.1em; margin: 1.3em 0 0.7em 0;">What You Can Do in InkWell:</h3>
@@ -12370,9 +12354,9 @@ document.head.appendChild(themeStyle);
     </h2>
     
    <!-- Profile Section -->
-    <div style="background: #f8f9fa; border: 1px solid #e0e6ed; border-radius: 8px; padding: 1.5em; margin-bottom: 1.5em; text-align: left;">
+    <div class="settings-card">
       <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
-        👤 Profile
+        Profile
       </h3>
       
       <div style="margin-bottom: 1em;">
@@ -12397,9 +12381,9 @@ document.head.appendChild(themeStyle);
     </div>
     
     <!-- Subscription Section -->
-    <div style="background: linear-gradient(135deg, var(--info-bg) 0%, var(--bg-card) 100%); border: 2px solid var(--brand-primary); border-radius: 12px; padding: 1.5em; margin-bottom: 1.5em; text-align: left;">
+    <div class="settings-card">
       <h3 style="color: var(--brand-primary); margin-top: 0; margin-bottom: 1em; font-size: 1.2em; display: flex; align-items: center; gap: 0.5em;">
-        ✨ Subscription
+        Subscription
       </h3>
       
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1em; flex-wrap: wrap; gap: 0.5em;">
@@ -12431,7 +12415,7 @@ document.head.appendChild(themeStyle);
     <!-- SMS Notifications Section -->
     <div class="sms-section">
       <h3>
-        📱 SMS Notifications
+        SMS Notifications
       </h3>
       
       <div class="sms-input-group">
@@ -12568,9 +12552,9 @@ document.head.appendChild(themeStyle);
     </div>
     
     <!-- Password Section -->
-    <div style="background: #fff9f0; border: 1px solid #f0d5a8; border-radius: 8px; padding: 1.5em; margin-bottom: 1.5em; text-align: left;">
+    <div class="settings-card">
       <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
-        🔐 Password
+        Password
       </h3>
       
       <div style="margin-bottom: 1em;">
@@ -12604,9 +12588,9 @@ document.head.appendChild(themeStyle);
    <!-- My Coach section removed 2026-07-01 — Connect retired, coach layer dead -->
 
    <!-- Appearance Section -->
-    <div style="background: #fff5f5; border: 1px solid #f0c5c5; border-radius: 8px; padding: 1.5em; margin-bottom: 1.5em; text-align: left;">
+    <div class="settings-card">
       <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
-        🎨 Appearance
+        Appearance
       </h3>
       
       <div style="margin-bottom: 0.5em;">
@@ -12620,9 +12604,9 @@ document.head.appendChild(themeStyle);
     </div>
     
     <!-- App Info Section -->
-    <div style="text-align: left; margin-bottom: 2em; padding: 1em; background: #f8f9fa; border-radius: 5px; border: 1px solid #e9ecef;">
+    <div class="settings-card">
       <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 0.5em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
-        ℹ️ App Info
+        App Info
       </h3>
       <div style="font-size: 0.85em; color: #666;">
         <span style="font-weight: 500;">Version:</span>
@@ -12631,9 +12615,9 @@ document.head.appendChild(themeStyle);
     </div>
     
     <!-- Sophy Insights Section -->
-    <div id="sophyInsightsSection" style="text-align: left; margin-bottom: 1.5em; padding: 1em; background: #f0f8ff; border-radius: 5px; border: 1px solid #d1ecf1;">
+    <div id="sophyInsightsSection" class="settings-card sophy">
       <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
-        📊 Sophy's Insights
+        Sophy's Insights
       </h3>
       <p style="font-size: 0.85em; color: #555; margin-bottom: 1em; line-height: 1.4;">
         Let Sophy analyze your journal entries and manifesting progress to send you personalized insights about your mood patterns, growth themes, and positive psychology observations.
@@ -12674,9 +12658,9 @@ document.head.appendChild(themeStyle);
     </div>
 
     <!-- Data Export Section -->
-    <div style="text-align: left; margin-bottom: 1.5em; padding: 1em; background: #f0f8ff; border-radius: 5px; border: 1px solid #d0e8f2;">
+    <div class="settings-card">
       <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
-        💾 Data Export
+        Data Export
       </h3>
       <p style="font-size: 0.85em; color: #555; margin-bottom: 1em; line-height: 1.4;">
         Download all your InkWell data. Choose the format that works best for you.
@@ -12708,9 +12692,9 @@ document.head.appendChild(themeStyle);
     </div>
 
     <!-- Account Deletion Section -->
-    <div style="text-align: left; margin-bottom: 1.5em; padding: 1em; background: #fff5f5; border-radius: 5px; border: 2px solid #ffcdd2;">
+    <div class="settings-card danger">
       <h3 style="color: #d32f2f; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
-        ⚠️ Danger Zone
+        Danger Zone
       </h3>
       <p style="font-size: 0.85em; color: #555; margin-bottom: 1em; line-height: 1.4;">
         <strong>Warning:</strong> Account deletion is permanent and cannot be undone. All your journal entries, WISH manifests, progress data, and settings will be permanently removed.
@@ -12729,9 +12713,9 @@ document.head.appendChild(themeStyle);
     </div>
 
     <!-- About & Help Section -->
-    <div style="text-align: left; margin-bottom: 1.5em; padding: 1em; background: #fff9f0; border-radius: 5px; border: 1px solid #f0e6d2;">
+    <div class="settings-card">
       <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
-        🌟 About & Help
+        About & Help
       </h3>
       <div style="display: flex; gap: 0.8em; flex-wrap: wrap; margin-bottom: 1em;">
         <button onclick="showWhatsNewModal(); closeUserSettingsModal();" class="btn" 
