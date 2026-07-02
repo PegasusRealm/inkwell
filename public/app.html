@@ -2244,7 +2244,7 @@
     html[data-theme='dark'] #calendarContainer *,
     html[data-theme='dark'] #searchResults,
     html[data-theme='dark'] #searchResults * {
-      color: #89C9D4 !important;
+      color: var(--font-main) !important;
     }
     
     /* Fix calendar table cells and numbers specifically */
@@ -2269,10 +2269,11 @@
     
     /* Fix modern tab content text in dark mode */
     html[data-theme='dark'] .modern-tab-content,
-    html[data-theme='dark'] .modern-tab-content *,
-    html[data-theme='dark'] .tab-inner,
-    html[data-theme='dark'] .tab-inner * {
-      color: #89C9D4 !important;
+    /* teal-everything wildcard KILLED AT SOURCE 2026-07-02 — was painting every
+       element in dark teal; components own their colors now */
+    html[data-theme='dark'] .modern-tab-content,
+    html[data-theme='dark'] .tab-inner {
+      color: var(--font-main);
     }
     
     /* Ensure headings still have the right color */
@@ -2632,7 +2633,7 @@ html[data-theme='dark'] [class*="modern-tab-content"] div.entry-card[style] {
 
 /* Override any nested content that may have inline styles */
 html[data-theme='dark'] .entry-card[style] * {
-  color: #89C9D4 !important;
+  color: var(--font-main) !important;
 }
 
 html[data-theme='dark'] .entry-card[style] .entry-date,
@@ -3480,12 +3481,12 @@ html[data-theme='dark'] .logo-hero {
 html[data-theme='dark'] input#promptTopic,
 html[data-theme='dark'] input#searchQuery,
 html[data-theme='dark'] .ai-input {
-  color: #89C9D4 !important;
-  background: linear-gradient(135deg, rgba(42, 54, 58, 0.9) 0%, rgba(30, 42, 48, 0.95) 100%) !important;
-  border: 2px solid rgba(137, 201, 212, 0.3) !important;
-  box-shadow: 0 0 15px rgba(137, 201, 212, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  caret-color: #89C9D4 !important;
-  -webkit-text-fill-color: #89C9D4 !important;
+  color: var(--font-main) !important;
+  background: var(--bg-card) !important;
+  border: 1.5px solid var(--border-medium) !important;
+  box-shadow: none !important;
+  caret-color: var(--font-main) !important;
+  -webkit-text-fill-color: var(--font-main) !important;
   padding: 0.75em 1em !important;
   border-radius: 10px !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;

@@ -176,59 +176,19 @@ html[data-theme='dark'] .grat-pill.active {
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   COMPONENT: SOPHY ROW — exact mockup port. Gradient tint that
-   blends yet stays distinct, hairline coral border, glowing orb,
-   serif italic line, ghost action inside the row's language.
+   COMPONENT: SOPHY — VERBATIM PORT of mockup-a-ink-and-light.html
+   (Adam-approved reference). Do not re-derive; edit the mockup, then
+   re-port. Orb at 28px per Adam's sizing call.
    ───────────────────────────────────────────────────────────────── */
-.sophy-row {
-  display: flex !important;
-  align-items: center !important;
-  gap: 1em !important;
-  background: linear-gradient(90deg, rgba(212, 148, 137, 0.14), rgba(212, 148, 137, 0.03) 70%, transparent) !important;
-  border: 1px solid rgba(212, 148, 137, 0.28) !important;
-  border-radius: 14px !important;
-  padding: 1em 1.25em !important;
-  margin: 0.75em 0 1em !important;
-}
-.sophy-orb {
-  width: 30px !important;
-  height: 30px !important;
-  border-radius: 50% !important;
-  flex-shrink: 0;
-  background: radial-gradient(circle at 35% 30%, var(--accent-sophy-light), var(--accent-sophy) 60%, #B27568) !important;
-  animation: sophyPresence 3.2s ease-in-out infinite alternate !important;
-}
-@keyframes sophyPresence {
-  from { box-shadow: 0 0 6px 0 rgba(212, 148, 137, 0.14); }
-  to   { box-shadow: 0 0 18px 3px rgba(212, 148, 137, 0.4); }
-}
-.sophy-row-txt { flex: 1; text-align: left; }
-.sophy-row-who {
-  color: var(--accent-sophy) !important;
-  font-family: var(--body-font) !important;
-  font-size: 0.72rem !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.16em !important;
-  text-transform: uppercase !important;
-}
-html[data-theme='dark'] .sophy-row-who { color: var(--accent-sophy-light) !important; }
-.sophy-row-line {
-  font-family: var(--serif-font) !important;
-  font-style: italic !important;
-  font-size: 1.02rem !important;
-  color: var(--font-main) !important;
-  line-height: 1.5;
-}
-
-/* THE SOPHY BLOCK — one container for one function: orb, words, controls,
-   output, options. Everything inside inherits her language. */
+.sophy-row,
 .sophy-block {
-  background: linear-gradient(135deg, rgba(212, 148, 137, 0.13), rgba(212, 148, 137, 0.04) 65%, transparent) !important;
-  border: 1px solid rgba(212, 148, 137, 0.28) !important;
+  background: linear-gradient(90deg, rgba(212, 148, 137, 0.14), transparent 70%) !important;
+  border: 1px solid rgba(212, 148, 137, 0.25) !important;
   border-radius: 14px !important;
-  padding: 1.1em 1.25em !important;
-  margin: 0.75em 0 1.25em !important;
+  padding: 1rem 1.75rem !important;
 }
+.sophy-row { display: flex !important; align-items: center !important; gap: 1rem !important; margin: 0.75em 0 1em !important; }
+.sophy-block { margin: 0.75em 0 1.25em !important; }
 .sophy-block .sophy-row {
   background: none !important;
   border: none !important;
@@ -236,75 +196,77 @@ html[data-theme='dark'] .sophy-row-who { color: var(--accent-sophy-light) !impor
   padding: 0 !important;
   margin: 0 0 0.9em !important;
 }
-.sophy-block .ai-input {
-  border: 1.5px solid rgba(212, 148, 137, 0.4) !important;
-  border-radius: 10px !important;
-  background: var(--bg-card) !important;
+.sophy-orb {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  flex-shrink: 0;
+  background: radial-gradient(circle at 35% 30%, #E6A497, #D49489 60%, #B27568) !important;
+  animation: sophyPresence 3.2s ease-in-out infinite alternate !important;
+}
+@keyframes sophyPresence {
+  from { box-shadow: 0 0 6px 0 rgba(212, 148, 137, 0.14); }
+  to   { box-shadow: 0 0 22px 4px rgba(212, 148, 137, 0.45); }
+}
+.sophy-row-txt { flex: 1; text-align: left; }
+/* Mockup .who — coral label, exact */
+.sophy-row-who,
+html[data-theme='dark'] body .sophy-block .sophy-row-who {
+  color: #D49489 !important;
+  font-family: var(--body-font) !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+}
+/* Mockup .line — BONE serif italic, never teal. Max-specificity pin. */
+.sophy-row-line,
+html body .sophy-block .sophy-row-line,
+html[data-theme='dark'] body .sophy-block .sophy-row-line {
   color: var(--font-main) !important;
+  font-family: var(--serif-font) !important;
+  font-style: italic !important;
+  font-size: 1.02rem !important;
+  line-height: 1.5;
 }
-.sophy-block .ai-input:focus {
-  border-color: var(--accent-sophy) !important;
-  outline: none !important;
-  box-shadow: 0 0 0 3px rgba(212, 148, 137, 0.15) !important;
-}
-.sophy-block .sophy-info {
-  border: none !important;
-  border-left: 3px solid var(--accent-sophy) !important;
-  background: rgba(212, 148, 137, 0.10) !important;
-  margin-top: 0.75em !important;
-}
-.sophy-check {
-  display: block;
-  font-size: 0.85em !important;
-  color: var(--font-secondary) !important;
-  margin-top: 0.75em !important;
-}
-.sophy-check input { accent-color: var(--accent-sophy); }
-
-/* SOPHY LAW: no teal inside her blocks — either theme, any element.
-   Dark-scoped clauses outrank the legacy dark input/glow strata. */
-.sophy-block input,
-.sophy-block textarea,
-html[data-theme='dark'] .sophy-block input,
-html[data-theme='dark'] .sophy-block textarea,
-html[data-theme='dark'] .sophy-block .ai-input {
-  border: 1.5px solid rgba(212, 148, 137, 0.45) !important;
+/* Inputs inside her block: neutral card field, coral only on focus (mockup had
+   no teal anywhere near her) */
+html body .sophy-block .ai-input,
+html[data-theme='dark'] body .sophy-block .ai-input,
+html[data-theme='dark'] body .sophy-block input#promptTopic {
   background: var(--bg-card) !important;
+  border: 1.5px solid var(--border-medium) !important;
   color: var(--font-main) !important;
+  -webkit-text-fill-color: var(--font-main) !important;
+  caret-color: var(--font-main) !important;
   box-shadow: none !important;
+  border-radius: 10px !important;
 }
-.sophy-block input:focus,
-.sophy-block textarea:focus,
-html[data-theme='dark'] .sophy-block input:focus,
-html[data-theme='dark'] .sophy-block textarea:focus,
-html[data-theme='dark'] .sophy-block .ai-input:focus {
-  border-color: var(--accent-sophy) !important;
+html body .sophy-block .ai-input:focus,
+html[data-theme='dark'] body .sophy-block .ai-input:focus,
+html[data-theme='dark'] body .sophy-block input#promptTopic:focus {
+  border-color: #D49489 !important;
   outline: none !important;
   box-shadow: 0 0 0 3px rgba(212, 148, 137, 0.18) !important;
 }
-.sophy-block input::placeholder,
-.sophy-block textarea::placeholder,
-html[data-theme='dark'] .sophy-block input::placeholder {
+html body .sophy-block input::placeholder,
+html[data-theme='dark'] body .sophy-block input::placeholder {
   color: var(--font-muted) !important;
+  -webkit-text-fill-color: var(--font-muted) !important;
 }
-.sophy-block label,
-html[data-theme='dark'] .sophy-block label {
-  color: var(--font-secondary) !important;
-}
-/* dark block keeps her gradient visible on ink */
-html[data-theme='dark'] .sophy-block {
-  background: linear-gradient(135deg, rgba(212, 148, 137, 0.16), rgba(212, 148, 137, 0.05) 65%, transparent) !important;
-  border-color: rgba(212, 148, 137, 0.32) !important;
-}
-
-/* Sophy's output blocks share her tint language */
-.sophy-info {
-  background: linear-gradient(90deg, rgba(212, 148, 137, 0.12), rgba(212, 148, 137, 0.04)) !important;
-  border: 1px solid rgba(212, 148, 137, 0.22) !important;
-  border-left: 3px solid var(--accent-sophy) !important;
+html body .sophy-block label,
+html[data-theme='dark'] body .sophy-block label { color: var(--font-secondary) !important; }
+.sophy-check input { accent-color: #D49489; }
+/* Her outputs share the tint */
+.sophy-info,
+.sophy-block .sophy-info {
+  background: rgba(212, 148, 137, 0.10) !important;
+  border: none !important;
+  border-left: 3px solid #D49489 !important;
   border-radius: 0 10px 10px 0 !important;
   color: var(--font-main) !important;
   box-shadow: none !important;
+  margin-top: 0.75em !important;
 }
 .sophy-info:empty { display: none !important; }
 
