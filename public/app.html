@@ -2174,20 +2174,21 @@
       color: #e0e7eb !important;
     }
     
+    /* dark input skin → tokens, no gradient slabs, no teal fog (source-killed 2026-07-02) */
     html[data-theme='dark'] .ai-input,
     html[data-theme='dark'] textarea,
     html[data-theme='dark'] input[type="text"] {
-      background: linear-gradient(135deg, rgba(40,40,40,0.9) 0%, rgba(50,50,50,0.95) 100%) !important;
-      border: 2px solid rgba(42,105,114,0.3) !important;
-      color: #e0e7eb !important;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+      background: var(--bg-card) !important;
+      border: 1.5px solid var(--border-medium) !important;
+      color: var(--font-main) !important;
+      box-shadow: none !important;
     }
-    
+
     html[data-theme='dark'] .ai-input:focus,
     html[data-theme='dark'] textarea:focus,
     html[data-theme='dark'] input[type="text"]:focus {
       border-color: var(--brand-primary) !important;
-      box-shadow: 0 4px 16px rgba(42,105,114,0.3), 0 0 0 3px rgba(42,105,114,0.1) !important;
+      box-shadow: 0 0 0 3px rgba(95, 179, 191, 0.15) !important;
     }
     
     html[data-theme='dark'] .journal-heading,
@@ -3080,12 +3081,13 @@ html[data-theme='dark'] .entry-card a:hover {
       color: var(--brand-secondary) !important;
     }
     
+    /* checkbox labels: neutral text, neutral hover (teal source-killed 2026-07-02) */
     html[data-theme='dark'] label:has(input[type="checkbox"]) {
-      color: var(--brand-light) !important;
+      color: var(--font-secondary) !important;
     }
 
     html[data-theme='dark'] label:has(input[type="checkbox"]):hover {
-      color: var(--brand-alt) !important;
+      color: var(--font-main) !important;
     }
 
     /* File attachment text styling for dark theme */
