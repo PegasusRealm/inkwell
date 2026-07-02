@@ -10009,7 +10009,7 @@ document.head.appendChild(themeStyle);
       <a href="#" id="toggleSignup" style="color: #6A1B9A; text-decoration: underline; font-weight: 500;">Sign up</a>
     </div>
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1em;">
-      v26.039.2
+      v26.182.1
     </div>
   </div>
 </div>
@@ -10061,7 +10061,7 @@ document.head.appendChild(themeStyle);
     </form>
     
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1.5em;">
-      v26.039.2
+      v26.182.1
     </div>
     </div>
   </div>
@@ -10099,7 +10099,7 @@ document.head.appendChild(themeStyle);
           📱 I agree to receive SMS notifications from InkWell.
         </label>
         <p style="font-size: 0.75em; color: #666; margin: 0.3em 0 0 1.8em; line-height: 1.3;">
-          Receive wellness reminders, journal prompts, and coach replies via text message from InkWell's AI companion, Sophy. Standard messaging rates may apply. You can opt-out anytime and manage preferences in Settings or text STOP to unsubscribe.
+          Receive wellness reminders and journal prompts via text message from InkWell's AI companion, Sophy. Standard messaging rates may apply. You can opt-out anytime and manage preferences in Settings or text STOP to unsubscribe.
         </p>
         
         <label style="display: block; margin: 1em 0 0.5em 0; font-size: 0.9em; color: #2A6972;">
@@ -10250,7 +10250,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     </button>
     
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1.5em;">
-      v26.039.2
+      v26.182.1
     </div>
   </div>
 </div>
@@ -10724,10 +10724,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     </div>
 
     <!-- Coach tag + Save belong to Journal tab -->
-    <div class="coach-tag-toggle">
-      <input type="checkbox" id="coachReviewCheckbox" />
-      <label for="coachReviewCheckbox">📬 Send this entry to my coach</label>
-    </div>
+    <!-- Send-to-coach checkbox removed 2026-07-01 — Connect retired -->
 
     <button class="btn" onclick="saveJournalEntry()" style="margin-top:0.5em;">Save Journal Entry</button>
     <span id="saveStatus" style="margin-left:10px;font-style:italic;"></span>
@@ -11220,11 +11217,6 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         Attach photos, PDFs, or any files that enrich your story. A meaningful photo from your day, a screenshot of an inspiring quote, or a document you want to remember—it all lives here with your words.
       </p>
       
-      <h4>📬 Connect With Your Coach (Optional)</h4>
-      <p>
-        If you're working with a practitioner, you can choose to share specific entries with them. Just check the box, and they'll receive your reflections for discussion in your sessions.
-      </p>
-      
       <hr class="info-modal-divider"/>
       
       <p class="info-modal-footer">
@@ -11355,10 +11347,6 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         <li>Jump to specific dates quickly</li>
         <li>Track your consistency over time</li>
       </ul>
-      <p>
-        <strong>New coach replies</strong> are marked with special indicators—you'll never miss feedback from your practitioner.
-      </p>
-      
       <hr class="info-modal-divider"/>
       
       <h3>📝 Full Entry Management</h3>
@@ -11595,7 +11583,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         <ul style="margin: 0.3em 0 0 1.2em; padding: 0;">
           <li>Personalized prompts to spark meaningful reflection</li>
           <li>AI-powered insights that recognize patterns and growth opportunities</li>
-          <li>SMS notifications - stay connected with text messages including WISH milestones, gratitude prompts, and coach replies</li>
+          <li>SMS notifications - stay connected with text messages including WISH milestones and gratitude prompts</li>
           <li>Weekly email insights analyzing your mood patterns and growth themes</li>
           <li>Evidence-based coaching grounded in positive psychology principles</li>
           <li>24/7 availability - Sophy never sleeps, so your growth never has to pause</li>
@@ -11605,8 +11593,6 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       <div style="margin-bottom: 1.2em;">
         <h4 style="color: var(--brand-secondary, #4A8B8B); font-size: 1em; margin: 0.8em 0 0.4em 0;">🤝 Professional Support</h4>
         <ul style="margin: 0.3em 0 0 1.2em; padding: 0;">
-          <li>Connect with coaches - licensed therapists, counselors, and coaches</li>
-          <li>Secure coach portal for professional guidance integration</li>
           <li>Coach communication directly within your journaling space</li>
         </ul>
       </div>
@@ -11633,7 +11619,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       <div style="background: var(--info-bg, rgba(42,105,114,0.1)); padding: 1em; border-radius: 8px; margin: 1.2em 0; border-left: 4px solid var(--brand-primary, #2A6972);">
         <h4 style="color: var(--brand-primary, #2A6972); font-size: 1em; margin: 0 0 0.5em 0;">🎯 What's New:</h4>
         <ul style="margin: 0.3em 0 0 1.2em; padding: 0;">
-          <li><strong>📱 SMS Notifications</strong> - Stay connected with personalized text messages from Sophy including WISH milestones, daily gratitude prompts, coach replies, and weekly insights</li>
+          <li><strong>📱 SMS Notifications</strong> - Stay connected with personalized text messages from Sophy including WISH milestones, daily gratitude prompts, and weekly insights</li>
           <li><strong>🙏 Gratitude via SMS</strong> - Reply to Sophy's gratitude prompts and build your personal gratitude collection right from your phone</li>
           <li>Enhanced voice journaling with emotional insights</li>
           <li>Behavioral pattern recognition for personalized coaching</li>
@@ -11993,50 +11979,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     </div>
     
 <!-- Coach Section -->
-<div style="background: #f0f8ff; border: 1px solid #c5d7f0; border-radius: 8px; padding: 1.5em; margin-bottom: 1.5em; text-align: left;">
-  <h3 style="color: #2A6972; margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em; justify-content: space-between;">
-    🔹 My Coach
-    <button onclick="loadPractitionerStatus()" class="btn-gray" style="padding: 0.2em 0.5em; font-size: 0.8em;">🔄 Refresh</button>
-  </h3>
-  
-  <!-- Current Connection Status -->
-  <div id="coachStatus" style="margin-bottom: 1em;">
-    <!-- Will be populated by JavaScript -->
-  </div>
-  
-  <!-- Invite New Coach (hidden when connected or pending) -->
-  <div id="inviteCoachSection">
-    <div style="margin-bottom: 1em;">
-      <label for="coachEmail" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Coach's Email Address:</label>
-      <input type="email" id="coachEmail" 
-             placeholder="coach@example.com" 
-             style="width: 100%; padding: 0.6em; border: 1px solid #ccc; border-radius: 5px; background-color: white; color: #0D3F45; font-size: 0.9em; box-sizing: border-box;" />
-    </div>
-    
-    <div style="margin-bottom: 1.5em;">
-      <label for="coachName" style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333; font-size: 0.9em;">Coach's Name:</label>
-      <input type="text" id="coachName" 
-             placeholder="Jane Smith" 
-             style="width: 100%; padding: 0.6em; border: 1px solid #ccc; border-radius: 5px; background-color: white; color: #0D3F45; font-size: 0.9em; box-sizing: border-box;" />
-    </div>
-    
-    <button onclick="inviteCoach()" class="btn" style="width: 100%; margin-bottom: 1em;">
-      <span id="inviteButtonText">Send InkWell Invitation</span>
-    </button>
-    
-    <div id="inviteStatus" style="margin-bottom: 1em; text-align: center;"></div>
-  </div>
-  
-  <!-- Disconnect Section (initially hidden) -->
-  <div id="disconnectSection" style="display: none; border-top: 1px solid #ddd; padding-top: 1em; margin-top: 1em;">
-    <button onclick="disconnectCoach()" class="btn-danger" style="width: 100%;">
-      🚫 Disconnect from coach
-    </button>
-    <p style="font-size: 0.8em; color: #666; text-align: center; margin: 0.5em 0 0 0;">
-      This will remove your coach connection. They will no longer receive your journal entries.
-    </p>
-  </div>
-</div>
+   <!-- My Coach section removed 2026-07-01 — Connect retired, coach layer dead -->
 
    <!-- Appearance Section -->
     <div style="background: #fff5f5; border: 1px solid #f0c5c5; border-radius: 8px; padding: 1.5em; margin-bottom: 1.5em; text-align: left;">
@@ -12061,7 +12004,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       </h3>
       <div style="font-size: 0.85em; color: #666;">
         <span style="font-weight: 500;">Version:</span>
-        <span id="settingsVersion" style="margin-left: 0.5em; font-family: monospace;">v26.039.2</span>
+        <span id="settingsVersion" style="margin-left: 0.5em; font-family: monospace;">v26.182.1</span>
       </div>
     </div>
     
@@ -12159,7 +12102,6 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         This action will:<br>
         • Delete all journal entries and manifests<br>
         • Remove all personal data from our servers<br>
-        • Cancel any coach connections<br>
         • Send you a confirmation email
       </p>
     </div>
@@ -12241,7 +12183,6 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         <li>All WISH manifests and progress tracking</li>
         <li>Your profile, settings, and preferences</li>
         <li>All behavioral analytics and insights</li>
-        <li>Any coach connections and shared data</li>
       </ul>
       <div style="margin-top: 1em; padding: 1em; background: #ffebee; border-left: 4px solid #d32f2f; color: #c62828; font-weight: 500;">
         ⚠️ This cannot be undone. Your data will be gone forever.
@@ -12662,7 +12603,7 @@ async function collectAllUserData() {
       userEmail: user.email,
       exportTimestamp: exportTimestamp,
       exportDate: formatReadableDate(new Date()),
-      appVersion: "v26.039.2",
+      appVersion: "v26.182.1",
       dataFormat: "InkWell Export v1.0"
     },
     journalEntries: [],
@@ -15003,6 +14944,7 @@ async function loadApprovedCoaches() {
 
 // Load coach status with approved coaches list
 async function loadPractitionerStatus() {
+  return; // ⚠️ Connect retired 2026-07-01 — coach layer dead, UI removed. Full sweep later.
   try {
     const auth = window.auth;
     if (!auth?.currentUser || !window.db) return;

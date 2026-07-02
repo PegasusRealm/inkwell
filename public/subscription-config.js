@@ -37,8 +37,10 @@ const SUBSCRIPTION_CONFIG = {
     PLUS: {
       id: 'plus',
       name: 'Plus',
-      price: 14.99,
+      price: 6.99,
       priceId: 'price_1SeQaJIu1E0bDEgZq6V8lATE', // InkWell Plus - $6.99/month (LIVE)
+      annualPrice: 49.99,
+      annualPriceId: 'price_1ToXwuIu1E0bDEgZRe1elpOv', // InkWell Plus - $49.99/year (LIVE, 2026-07-01)
       features: {
         journaling: true,
         manifestTool: true,
@@ -50,10 +52,13 @@ const SUBSCRIPTION_CONFIG = {
         periodInsights: true,
       }
     },
+    // ⚠️ RETIRED 2026-07-01 — coach layer dead. Kept for back-compat only (code still
+    // references TIERS.CONNECT). Never surface in UI. Remove in the full Connect sweep.
     CONNECT: {
       id: 'connect',
       name: 'Connect',
-      price: 49.99,
+      discontinued: true,
+      price: 29.99,
       priceId: 'price_1SeQcGIu1E0bDEgZQWWqkrjK', // InkWell Connect - $29.99/month (LIVE)
       features: {
         journaling: true,
@@ -79,12 +84,12 @@ const SUBSCRIPTION_CONFIG = {
   // Role-based permanent discounts (InkWell absorbs cost)
   ROLE_DISCOUNTS: {
     alpha: {
-      plus: 1.0,      // 100% off Plus tier (free)
-      connect: 0.25,  // 25% off Connect tier ($37.49/mo)
+      plus: 1.0,      // 100% off Plus tier — FREE FOR LIFE (founding cohort, locked 2026-07-01)
+      connect: 0.25,  // dead — Connect retired 2026-07-01
     },
     beta: {
-      plus: 0.80,     // 80% off Plus tier ($2.99/mo)
-      connect: 0.25,  // 25% off Connect tier ($37.49/mo)
+      plus: 0.50,     // 50% off Plus tier for life ($3.49/mo) — locked 2026-07-01
+      connect: 0.25,  // dead — Connect retired 2026-07-01
     },
     coach: {
       plus: 0.25,     // 25% off Plus tier

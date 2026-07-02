@@ -246,8 +246,8 @@ async function startUpgradeFlow(tier = null) {
     // Map tiers to price IDs (LIVE MODE)
     const PRICE_IDS = {
       plus: 'price_1SeQaJIu1E0bDEgZq6V8lATE',           // $6.99/month
-      plus_annual: 'price_1SyMozIu1E0bDEgZNZ8zoJt2',    // $69.99/year
-      connect: 'price_1SeQcGIu1E0bDEgZQWWqkrjK',        // $29.99/month
+      plus_annual: 'price_1ToXwuIu1E0bDEgZRe1elpOv',    // $49.99/year (2026-07-01)
+      // connect retired 2026-07-01 — coach layer dead
     };
 
     const targetTier = tier || 'plus';
@@ -403,11 +403,7 @@ async function checkUpgradeSuccess() {
         console.error('Error fetching tier for welcome message:', e);
       }
       
-      if (tier === 'connect') {
-        alert('🎉 Welcome to InkWell Connect! Your subscription is now active.\n\n💡 Tip: Go to Settings → My Coach to select your coach. Check out their bios to learn about their specialties and find the right fit for you!');
-      } else {
-        alert('🎉 Welcome to InkWell Plus! Your subscription is now active.\n\n💡 Tip: Go to Settings to enable SMS gratitude reminders and Sophy\'s weekly email insights!');
-      }
+      alert('🎉 Welcome to InkWell Plus! Your subscription is now active.\n\n💡 Tip: Go to Settings to enable SMS gratitude reminders and Sophy\'s weekly email insights!');
       
       window.history.replaceState({}, document.title, '/app.html');
       location.reload();
@@ -468,7 +464,7 @@ function createSubscriptionSelectionModal() {
         </div>
         
         <!-- Plans Grid -->
-        <div style="padding: 2rem 1.5rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem;">
+        <div style="padding: 2rem 1.5rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem;">
           
           <!-- Plus Monthly - Sophy Coral -->
           <div style="border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; background: white; transition: all 0.3s; position: relative;" onmouseover="this.style.borderColor='#D49489'; this.style.boxShadow='0 8px 30px rgba(212,148,137,0.2)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
@@ -499,16 +495,16 @@ function createSubscriptionSelectionModal() {
             <div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #D49489 0%, #C2867D 100%); color: white; padding: 0.4rem 1.25rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 12px rgba(212,148,137,0.3);">✨ Best Value</div>
             <div style="text-align: center; margin-bottom: 1.25rem; margin-top: 0.5rem;">
               <h3 style="margin: 0 0 0.25rem; color: #1e293b; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.35rem; font-weight: 600;">Plus Annual</h3>
-              <p style="margin: 0; color: #D49489; font-size: 0.85rem; font-weight: 600;">Save $14 per year!</p>
+              <p style="margin: 0; color: #D49489; font-size: 0.85rem; font-weight: 600;">Save $34 a year</p>
             </div>
             <div style="text-align: center; margin: 1.25rem 0; padding: 1rem 0; border-top: 1px solid #fbe9e6; border-bottom: 1px solid #fbe9e6;">
-              <span style="font-size: 2.5rem; font-weight: 700; color: #D49489; font-family: 'Cormorant Garamond', Georgia, serif;">$69.99</span>
+              <span style="font-size: 2.5rem; font-weight: 700; color: #D49489; font-family: 'Cormorant Garamond', Georgia, serif;">$49.99</span>
               <span style="color: #64748b; font-size: 0.95rem;">/year</span>
-              <div style="margin-top: 0.25rem; font-size: 0.8rem; color: #C2867D;">Just $5.83/month</div>
+              <div style="margin-top: 0.25rem; font-size: 0.8rem; color: #C2867D;">Just $4.17/month</div>
             </div>
             <ul style="list-style: none; padding: 0; margin: 0 0 1.25rem; font-size: 0.875rem; color: #475569;">
               <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #D49489; font-weight: 600;">✓</span> Everything in Monthly</li>
-              <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #D49489; font-weight: 600;">✓</span> 2 months FREE</li>
+              <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #D49489; font-weight: 600;">✓</span> 40% off the monthly rate</li>
               <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #D49489; font-weight: 600;">✓</span> Lock in your rate</li>
               <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #D49489; font-weight: 600;">✓</span> Priority support</li>
             </ul>
@@ -517,30 +513,6 @@ function createSubscriptionSelectionModal() {
             </div>
             <button onclick="startUpgradeFlow('plus_annual')" style="width: 100%; padding: 0.875rem; background: linear-gradient(135deg, #D49489 0%, #C2867D 100%); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: all 0.2s; box-shadow: 0 4px 14px rgba(212,148,137,0.4);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(212,148,137,0.5)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 14px rgba(212,148,137,0.4)';">
               Start Free Trial
-            </button>
-          </div>
-          
-          <!-- Connect - Purple -->
-          <div style="border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; background: white; transition: all 0.3s;" onmouseover="this.style.borderColor='#805AD5'; this.style.boxShadow='0 8px 30px rgba(128,90,213,0.15)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
-            <div style="text-align: center; margin-bottom: 1.25rem;">
-              <h3 style="margin: 0 0 0.25rem; color: #1e293b; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.35rem; font-weight: 600;">Connect</h3>
-              <p style="margin: 0; color: #64748b; font-size: 0.85rem;">Expert human coaching</p>
-            </div>
-            <div style="text-align: center; margin: 1.25rem 0; padding: 1rem 0; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9;">
-              <span style="font-size: 2.5rem; font-weight: 700; color: #805AD5; font-family: 'Cormorant Garamond', Georgia, serif;">$29.99</span>
-              <span style="color: #64748b; font-size: 0.95rem;">/month</span>
-            </div>
-            <ul style="list-style: none; padding: 0; margin: 0 0 1.25rem; font-size: 0.875rem; color: #475569;">
-              <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #805AD5; font-weight: 600;">✓</span> Everything in Plus</li>
-              <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #805AD5; font-weight: 600;">✓</span> Certified coach access</li>
-              <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #805AD5; font-weight: 600;">✓</span> 10 interactions/month</li>
-              <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #805AD5; font-weight: 600;">✓</span> Professional matching</li>
-            </ul>
-            <div style="background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); padding: 0.6rem; border-radius: 8px; margin-bottom: 1rem; text-align: center;">
-              <span style="font-size: 0.8rem; color: #7c3aed; font-weight: 500;">👤 Real human guidance</span>
-            </div>
-            <button onclick="startUpgradeFlow('connect')" style="width: 100%; padding: 0.875rem; background: #805AD5; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: all 0.2s; box-shadow: 0 4px 14px rgba(128,90,213,0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(128,90,213,0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 14px rgba(128,90,213,0.3)';">
-              Get Human Support
             </button>
           </div>
           
