@@ -908,11 +908,29 @@
       font-size: 0.875rem;
     }
 
-    /* SMS Notifications Section Styles */
+    /* ═══ Settings cards (2026-07-02): ONE card system, no per-section pastels.
+       White card + hairline + colored left rail carrying meaning:
+       teal = structure, coral = Sophy, red = destructive. ═══ */
+    .settings-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-left: 4px solid var(--brand-primary);
+      border-radius: 10px;
+      padding: 1.5em;
+      margin-bottom: 1.5em;
+      text-align: left;
+      box-shadow: var(--shadow-sm);
+    }
+    .settings-card.sophy { border-left-color: var(--accent-sophy); }
+    .settings-card.danger { border-left-color: var(--btn-danger); }
+
+    /* SMS Notifications Section Styles (joined the card system 2026-07-02) */
     .sms-section {
-      background: #f0fff4;
-      border: 1px solid #c6f6d5;
-      border-radius: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-left: 4px solid var(--brand-primary);
+      box-shadow: var(--shadow-sm);
+      border-radius: 10px;
       padding: 1.5em;
       margin-bottom: 1.5em;
       text-align: left;
@@ -1138,19 +1156,18 @@
     /* Enhanced Dark theme for WISH Timeline - Match Calendar Theme */
     html[data-theme='dark'] .wish-timeline-container {
       background: linear-gradient(135deg, rgba(42, 105, 114, 0.15) 0%, rgba(30, 80, 85, 0.20) 100%) !important;
-      border: 1px solid rgba(137, 201, 212, 0.25) !important;
+      border: 1px solid var(--border-medium) !important;
       color: #89C9D4 !important;
-      box-shadow: 0 0 20px rgba(137, 201, 212, 0.15), 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+      box-shadow: var(--shadow-md) !important;
       backdrop-filter: blur(5px) !important;
     }
 
     html[data-theme='dark'] .wish-timeline-title {
-      color: #89C9D4 !important;
-      text-shadow: 0 0 10px rgba(137, 201, 212, 0.3) !important;
+      color: var(--font-main) !important; /* crisp bone, glow stripped 2026-07-02 */
     }
 
     html[data-theme='dark'] .wish-timeline-label {
-      color: rgba(137, 201, 212, 0.9) !important;
+      color: var(--font-muted) !important;
     }
 
     html[data-theme='dark'] .wish-timeline-select {
@@ -1180,7 +1197,7 @@
     }
 
     html[data-theme='dark'] #wishProgressMessage {
-      color: rgba(137, 201, 212, 0.9) !important;
+      color: var(--font-muted) !important;
     }
 
     /* Enhanced Growth Stages for Dark Mode */
@@ -1305,7 +1322,7 @@
     }
 
     html[data-theme='dark'] #goodbyeModal p {
-      color: rgba(137, 201, 212, 0.9) !important;
+      color: var(--font-muted) !important;
     }
 
     html[data-theme='dark'] #goodbyeModal .btn {
@@ -1326,7 +1343,7 @@
     }
 
     html[data-theme='dark'] #signupModal p {
-      color: rgba(137, 201, 212, 0.9) !important;
+      color: var(--font-muted) !important;
     }
 
     html[data-theme='dark'] #signupModal input {
@@ -1382,7 +1399,7 @@
     }
 
     html[data-theme='dark'] #loginModal p {
-      color: rgba(137, 201, 212, 0.9) !important;
+      color: var(--font-muted) !important;
     }
 
     html[data-theme='dark'] #loginModal input {
@@ -1443,7 +1460,7 @@
 
     html[data-theme='dark'] #aboutInkwellModal p,
     html[data-theme='dark'] #aboutInkwellModal div {
-      color: rgba(137, 201, 212, 0.9) !important;
+      color: var(--font-muted) !important;
     }
 
     html[data-theme='dark'] #aboutInkwellModal strong {
@@ -1451,7 +1468,7 @@
     }
 
     html[data-theme='dark'] #aboutInkwellModal span {
-      color: rgba(137, 201, 212, 0.8) !important;
+      color: var(--font-muted) !important;
     }
 
     html[data-theme='dark'] #aboutInkwellModal em {
@@ -2146,8 +2163,7 @@
     html[data-theme='dark'] .manifest-heading,
     html[data-theme='dark'] h2,
     html[data-theme='dark'] h3 {
-      color: #89C9D4 !important;
-      text-shadow: 0 0 10px rgba(137, 201, 212, 0.3) !important;
+      color: var(--font-main) !important; /* crisp bone, glow stripped 2026-07-02 */
     }
     
     html[data-theme='dark'] .wish-section {
@@ -2213,7 +2229,7 @@
     /* Calendar dates with entries (highlighted) */
     html[data-theme='dark'] #calendarContainer td[style*="background-color"] {
       color: white !important;
-      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5) !important;
+      /* glow stripped 2026-07-02 */
     }
     
     /* Fix status and italic text */
@@ -2236,19 +2252,18 @@
     html[data-theme='dark'] .modern-tab-content h3,
     html[data-theme='dark'] .tab-inner h2,
     html[data-theme='dark'] .tab-inner h3 {
-      color: #89C9D4 !important;
-      text-shadow: 0 0 10px rgba(137, 201, 212, 0.3) !important;
+      color: var(--font-main) !important; /* crisp bone, glow stripped 2026-07-02 */
     }
     
     /* Fix button text colors and styles */
     html[data-theme='dark'] .btn {
-      background: var(--brand-primary) !important;
+      background: var(--btn-primary) !important; /* deep teal — white text stays readable */
       box-shadow: var(--shadow-md) !important;
       color: white !important;
     }
     
     html[data-theme='dark'] .btn:hover {
-      background: var(--brand-secondary) !important;
+      background: var(--btn-primary-hover) !important;
       box-shadow: var(--shadow-lg) !important;
     }
     
@@ -2547,19 +2562,19 @@
 /* ========================================= */
 
 html[data-theme='dark'] .entry-card {
-  background: linear-gradient(135deg, rgba(42, 105, 114, 0.15) 0%, rgba(30, 80, 85, 0.20) 100%) !important;
-  color: #89C9D4 !important;
+  background: var(--bg-card) !important;
+  color: var(--font-main) !important;
   border-radius: 12px;
   padding: 1.25em;
   margin-bottom: 1.5em;
-  box-shadow: 0 0 20px rgba(137, 201, 212, 0.15), 0 4px 16px rgba(0, 0, 0, 0.25) !important;
-  border: 1px solid rgba(137, 201, 212, 0.25) !important;
+  box-shadow: var(--shadow-md) !important;
+  border: 1px solid var(--border-medium) !important;
   backdrop-filter: blur(5px) !important;
 }
 
 html[data-theme='dark'] .entry-card.journal-entry {
-  background: linear-gradient(135deg, rgba(42, 105, 114, 0.15) 0%, rgba(30, 80, 85, 0.20) 100%) !important;
-  color: #89C9D4 !important;
+  background: var(--bg-card) !important;
+  color: var(--font-main) !important;
 }
 
 /* Force override inline styles with maximum specificity */
@@ -2567,22 +2582,22 @@ html[data-theme='dark'] #calendarTab .entry-card,
 html[data-theme='dark'] #calendarTab .entry-card.journal-entry,
 html[data-theme='dark'] [id*="calendarTab"] .entry-card,
 html[data-theme='dark'] [class*="modern-tab-content"] .entry-card {
-  background: linear-gradient(135deg, rgba(42, 105, 114, 0.15) 0%, rgba(30, 80, 85, 0.20) 100%) !important;
-  color: #89C9D4 !important;
-  border: 1px solid rgba(137, 201, 212, 0.25) !important;
-  box-shadow: 0 0 20px rgba(137, 201, 212, 0.15), 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+  background: var(--bg-card) !important;
+  color: var(--font-main) !important;
+  border: 1px solid var(--border-medium) !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
 /* Entry text content */
 html[data-theme='dark'] .entry-card .entry-text,
 html[data-theme='dark'] .entry-card p:not(.entry-date) {
-  color: #89C9D4 !important;
+  color: var(--font-main) !important; /* your words in bone, not teal */
 }
 
 /* Entry date styling */
 html[data-theme='dark'] .entry-card .entry-date,
 html[data-theme='dark'] .entry-card .fixed-dark-date {
-  color: rgba(137, 201, 212, 0.8) !important;
+  color: var(--font-muted) !important;
 }
 
 /* Nuclear option: Ultra-high specificity to override inline styles */
@@ -2590,10 +2605,10 @@ html[data-theme='dark'] div.entry-card[style*="background"],
 html[data-theme='dark'] div.entry-card.journal-entry[style*="background"],
 html[data-theme='dark'] [id="calendarTab"] div.entry-card[style],
 html[data-theme='dark'] [class*="modern-tab-content"] div.entry-card[style] {
-  background: linear-gradient(135deg, rgba(42, 105, 114, 0.15) 0%, rgba(30, 80, 85, 0.20) 100%) !important;
-  color: #89C9D4 !important;
-  border: 1px solid rgba(137, 201, 212, 0.25) !important;
-  box-shadow: 0 0 20px rgba(137, 201, 212, 0.15), 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+  background: var(--bg-card) !important;
+  color: var(--font-main) !important;
+  border: 1px solid var(--border-medium) !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
 /* Override any nested content that may have inline styles */
@@ -2603,7 +2618,7 @@ html[data-theme='dark'] .entry-card[style] * {
 
 html[data-theme='dark'] .entry-card[style] .entry-date,
 html[data-theme='dark'] .entry-card[style] .fixed-dark-date {
-  color: rgba(137, 201, 212, 0.8) !important;
+  color: var(--font-muted) !important;
 }
 
 /* Add spacing and subtle elevation between entries */
@@ -2655,7 +2670,7 @@ html[data-theme='dark'] .entry-card[style] .fixed-dark-date {
 html[data-theme='dark'] .entry-card .meta,
 html[data-theme='dark'] .entry-card .tags,
 html[data-theme='dark'] .entry-card .shared-with-coach {
-  color: rgba(137, 201, 212, 0.8) !important;
+  color: var(--font-muted) !important;
   font-size: 0.95em;
   font-style: italic;
 }
@@ -2712,8 +2727,8 @@ html[data-theme='dark'] #calendarContainer {
   border-radius: 16px !important;
   padding: 1.5em !important;
   margin: 1em 0 !important;
-  box-shadow: 0 0 20px rgba(137, 201, 212, 0.15), 0 4px 16px rgba(0, 0, 0, 0.25) !important;
-  border: 1px solid rgba(137, 201, 212, 0.25) !important;
+  box-shadow: var(--shadow-md) !important;
+  border: 1px solid var(--border-medium) !important;
   backdrop-filter: blur(5px) !important;
 }
 
@@ -2768,14 +2783,13 @@ html[data-theme='dark'] #calendarControls .btn:hover {
 /* Enhanced Past Entries Title and Headers for Dark Mode */
 html[data-theme='dark'] #calendarTab .section-header,
 html[data-theme='dark'] #calendarTab .journal-heading {
-  color: #89C9D4 !important;
-  text-shadow: 0 0 10px rgba(137, 201, 212, 0.3) !important;
+  color: var(--font-main) !important; /* crisp bone, glow stripped 2026-07-02 */
 }
 
 /* Enhanced Empty Messages for Dark Mode */
 html[data-theme='dark'] #emptyPastEntriesMessage,
 html[data-theme='dark'] #pastEntries p {
-  color: rgba(137, 201, 212, 0.8) !important;
+  color: var(--font-muted) !important;
   background: linear-gradient(135deg, rgba(42, 105, 114, 0.05) 0%, rgba(30, 80, 85, 0.08) 100%) !important;
   padding: 1em !important;
   border-radius: 10px !important;
@@ -2803,10 +2817,10 @@ html[data-theme='light'] .entry-card .entry-date {
 
 html[data-theme='dark'] .entry-card .entry-date,
 html[data-theme='dark'] .entry-card .fixed-dark-date {
-  color: rgba(137, 201, 212, 0.9) !important;
+  color: var(--font-muted) !important;
   font-size: 0.95em;
   font-style: italic;
-  text-shadow: 0 0 8px rgba(137, 201, 212, 0.3) !important;
+  /* glow stripped 2026-07-02 */
 }
 
 
@@ -2981,12 +2995,12 @@ html[data-theme='dark'] {
     /* Custom colors for dark mode past entries text (not all) */
 html[data-theme='dark'] .entry-card a {
   color: #7BB8C4 !important; /* lighter teal for links */
-  text-shadow: 0 0 5px rgba(123, 184, 196, 0.3) !important;
+  /* glow stripped 2026-07-02 */
 }
 
 html[data-theme='dark'] .entry-card a:hover {
   color: #89C9D4 !important;
-  text-shadow: 0 0 8px rgba(137, 201, 212, 0.5) !important;
+  /* glow stripped 2026-07-02 */
   text-decoration: underline !important;
 }
 
@@ -3069,8 +3083,7 @@ html[data-theme='dark'] .entry-card a:hover {
     }
     
     html[data-theme='dark'] .section-header {
-      color: #89C9D4 !important;
-      text-shadow: 0 0 10px rgba(137, 201, 212, 0.3) !important;
+      color: var(--font-main) !important; /* crisp bone, glow stripped 2026-07-02 */
     }
 
     /* Enhanced Smart Search container styling for dark theme */
@@ -4262,7 +4275,7 @@ html[data-theme='dark'] .info-modal-content h4 {
 
 html[data-theme='dark'] .info-modal-content p,
 html[data-theme='dark'] .info-modal-content div {
-  color: rgba(137, 201, 212, 0.9) !important;
+  color: var(--font-muted) !important;
 }
 
 html[data-theme='dark'] .info-modal-content strong {
@@ -4275,11 +4288,11 @@ html[data-theme='dark'] .info-modal-content em {
 
 html[data-theme='dark'] .info-modal-content ul,
 html[data-theme='dark'] .info-modal-content li {
-  color: rgba(137, 201, 212, 0.9) !important;
+  color: var(--font-muted) !important;
 }
 
 html[data-theme='dark'] .info-modal-subtitle {
-  color: rgba(137, 201, 212, 0.9) !important;
+  color: var(--font-muted) !important;
 }
 
 html[data-theme='dark'] .info-modal-highlight-box {
@@ -4291,7 +4304,7 @@ html[data-theme='dark'] .info-modal-divider {
 }
 
 html[data-theme='dark'] .info-modal-footer {
-  color: rgba(137, 201, 212, 0.9) !important;
+  color: var(--font-muted) !important;
 }
 
 html[data-theme='dark'] .info-modal-content .btn {
@@ -10325,17 +10338,17 @@ window.refreshPastEntriesTheme = function() {
 const themeStyle = document.createElement('style');
 themeStyle.textContent = `
 html[data-theme='dark'] .entry-card.dark-theme-entry {
-  background: linear-gradient(135deg, rgba(42, 105, 114, 0.15) 0%, rgba(30, 80, 85, 0.20) 100%) !important;
-  color: #89C9D4 !important;
-  border: 1px solid rgba(137, 201, 212, 0.25) !important;
-  box-shadow: 0 0 20px rgba(137, 201, 212, 0.15), 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+  background: var(--bg-card) !important;
+  color: var(--font-main) !important;
+  border: 1px solid var(--border-medium) !important;
+  box-shadow: var(--shadow-md) !important;
 }
 html[data-theme='dark'] .entry-card.dark-theme-entry * {
   color: #89C9D4 !important;
 }
 html[data-theme='dark'] .entry-card.dark-theme-entry .entry-date,
 html[data-theme='dark'] .entry-card.dark-theme-entry .fixed-dark-date {
-  color: rgba(137, 201, 212, 0.8) !important;
+  color: var(--font-muted) !important;
 }
 `;
 document.head.appendChild(themeStyle);
@@ -10758,11 +10771,11 @@ document.head.appendChild(themeStyle);
 
 </div>
 
-<p style="margin-top: 3em; margin-bottom: 1em; font-size: 1.79em; color: var(--info-muted); letter-spacing: 0.02em; text-align: center; position: relative; z-index: 1;">
-  For the Thinkers and the Forgetters.
-  </p>
-  <p style="margin-top: 1em; margin-bottom: 1.62em; font-size: 1.13em; color: var(--info-muted); letter-spacing: 0.02em; text-align: center; position: relative; z-index: 1;">
-Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come back to them anytime.
+<h1 style="margin: 1.2em auto 0.4em; max-width: 22ch; font-family: var(--title-font); font-weight: 400; font-size: clamp(2rem, 4.5vw, 3rem); line-height: 1.15; color: var(--font-main); text-align: center; position: relative; z-index: 1;">
+  For the <em style="font-style: italic; color: var(--brand-primary);">Thinkers</em> and the <em style="font-style: italic; color: var(--brand-primary);">Forgetters</em>.
+</h1>
+<p style="margin: 0 auto 2.5em; max-width: 52ch; font-family: var(--body-font); font-size: 1.02em; line-height: 1.6; color: var(--font-muted); text-align: center; position: relative; z-index: 1;">
+  Life is messy. InkWell&trade; holds your ideas, plans, and dreams so you can come back to them anytime.
 </p>
 
 
@@ -11653,7 +11666,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
           placeholder="e.g., burnout last week, goals, feeling stuck"
           style="width: 100%; box-sizing: border-box;"
         />
-        <button class="btn" id="searchBtn" onclick="runSmartSearch()" disabled style="width: 100%;">Search</button>
+        <button class="btn btn-gray" id="searchBtn" onclick="runSmartSearch()" disabled style="width: 100%;">Search</button>
       </div>
 
       <!-- ═══ Unlockable questions — examples only history can answer (v2 Phase 4) ═══ -->
@@ -11681,147 +11694,26 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 
 
 
-<!-- Footer Start -->
-  <footer style="
-    margin-top: 2em; 
-    padding: 2em 1em; 
-    background: linear-gradient(135deg, rgba(42, 105, 114, 0.05) 0%, rgba(42, 105, 114, 0.02) 100%);
-    border-top: 1px solid rgba(42, 105, 114, 0.1);
-    text-align: center;
-  ">
-    <!-- Copyright -->
-    <div style="margin-bottom: 1em; color: var(--font-secondary); font-weight: 500;">
-      © 2026 Pegasus Realm LLC.
+<!-- Footer (consolidated to ONE, 2026-07-02 — was three stacked blocks) -->
+  <footer style="margin-top: 3em; padding: 2.5em 1em 2em; border-top: 1px solid var(--border-light); text-align: center;">
+    <button id="logoutBtn" class="btn btn-gray" style="width: 100%; max-width: 200px; margin-bottom: 2em;">Log Out</button>
+
+    <div style="font-family: var(--body-font); font-size: 0.76em; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--font-muted); margin-bottom: 1em;">
+      InkWell &mdash; For the Thinkers and the Forgetters
     </div>
-    
-    <!-- Description Text -->
-    <div style="
-      max-width: 600px;
-      margin: 0 auto 1.5em auto;
-      padding: 0 1em;
-      color: var(--font-secondary);
-      font-size: 0.9em;
-      line-height: 1.6;
-    ">
-      InkWell is your trusted journaling companion, designed with evidence-based psychology principles to foster well-being, focus, and productivity.
-      <br><br>
-      Especially mindful of neurodivergent needs, with a focus on UI efficiency and clarity.
+
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5em 1.75em; margin-bottom: 1em; font-size: 0.85em;">
+      <a href="https://www.inkwelljournal.io/privacy-policy/" target="_blank" style="color: var(--brand-primary); text-decoration: none;">Privacy Policy</a>
+      <a href="https://www.inkwelljournal.io/terms-conditions/" target="_blank" style="color: var(--brand-primary); text-decoration: none;">Terms &amp; Conditions</a>
+      <a href="https://www.inkwelljournal.io/alpha-beta-testers/" target="_blank" style="color: var(--brand-primary); text-decoration: none;">Tester Agreement</a>
+      <a href="mailto:support@inkwelljournal.io" style="color: var(--brand-primary); text-decoration: none;">Share Feedback</a>
     </div>
-    
-    <!-- Links - Responsive -->
-    <div style="
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.5em 1.5em;
-      margin-bottom: 1.5em;
-      font-size: 0.9em;
-    ">
-      <a href="https://www.inkwelljournal.io/privacy-policy/" target="_blank" 
-         style="color: #2A6972; text-decoration: none; padding: 0.25em; transition: color 0.2s ease;"
-         onmouseover="this.style.color='#4A9BA8'" 
-         onmouseout="this.style.color='#2A6972'">Privacy Policy</a>
-      <span style="color: #ccc;">|</span>
-      <a href="https://www.inkwelljournal.io/terms-conditions/" target="_blank" 
-         style="color: #2A6972; text-decoration: none; padding: 0.25em; transition: color 0.2s ease;"
-         onmouseover="this.style.color='#4A9BA8'" 
-         onmouseout="this.style.color='#2A6972'">Terms and Conditions</a>
-      <span style="color: #ccc;">|</span>
-      <a href="https://www.inkwelljournal.io/alpha-beta-testers/" target="_blank" 
-         style="color: #2A6972; text-decoration: none; padding: 0.25em; transition: color 0.2s ease;"
-         onmouseover="this.style.color='#4A9BA8'" 
-         onmouseout="this.style.color='#2A6972'">Alpha/Beta Tester Agreement</a>
-    </div>
-    
-    <!-- Social Links - Desktop: Side by Side, Mobile: Stacked -->
-    <div style="
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 2em;
-      margin-bottom: 1em;
-    ">
-      <!-- Pegasus Realm -->
-      <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5em;">
-        <img src="/PR Logo WHITE.svg" alt="Pegasus Realm" width="40" height="40" style="opacity: 0.8;"/>
-        <div style="font-size: 0.8em; color: var(--font-muted); margin-bottom: 0.25em;">Pegasus Realm</div>
-        <div style="display: flex; gap: 12px;">
-          <a href="https://www.instagram.com/pegasus.realm/" target="_blank" aria-label="Pegasus Realm Instagram"
-             style="transition: transform 0.2s ease;"
-             onmouseover="this.style.transform='scale(1.2)'" 
-             onmouseout="this.style.transform='scale(1)'">
-            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" style="color: #2A6972;">
-              <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/>
-              <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
-              <circle cx="17" cy="7" r="1.5" fill="currentColor"/>
-            </svg>
-          </a>
-          <a href="https://www.linkedin.com/company/pegasus-realm" target="_blank" aria-label="Pegasus Realm LinkedIn"
-             style="transition: transform 0.2s ease;"
-             onmouseover="this.style.transform='scale(1.2)'" 
-             onmouseout="this.style.transform='scale(1)'">
-            <svg width="20" height="20" fill="#2A6972" viewBox="0 0 24 24">
-              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-            </svg>
-          </a>
-        </div>
-      </div>
-      
-      <!-- Adam Grimm -->
-      <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5em;">
-        <img src="/AG Silhouette.svg" alt="Adam Grimm" width="40" height="40" style="opacity: 0.8;"/>
-        <div style="font-size: 0.8em; color: var(--font-muted); margin-bottom: 0.25em;">Adam Grimm</div>
-        <div style="display: flex; gap: 12px;">
-          <a href="https://www.instagram.com/gestaltinsight/" target="_blank" aria-label="Adam Grimm Instagram"
-             style="transition: transform 0.2s ease;"
-             onmouseover="this.style.transform='scale(1.2)'" 
-             onmouseout="this.style.transform='scale(1)'">
-            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" style="color: #2A6972;">
-              <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/>
-              <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
-              <circle cx="17" cy="7" r="1.5" fill="currentColor"/>
-            </svg>
-          </a>
-          <a href="https://www.linkedin.com/in/adamgrimm808/" target="_blank" aria-label="Adam Grimm LinkedIn"
-             style="transition: transform 0.2s ease;"
-             onmouseover="this.style.transform='scale(1.2)'" 
-             onmouseout="this.style.transform='scale(1)'">
-            <svg width="20" height="20" fill="#2A6972" viewBox="0 0 24 24">
-              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-            </svg>
-          </a>
-        </div>
-      </div>
-    </div>
+
+    <div style="font-size: 0.8em; color: var(--font-muted);">&copy; 2026 Pegasus Realm LLC</div>
   </footer>
   </main>
 
-<!-- Mobile-Optimized Feedback Block -->
-<div class="feedback-section" style="
-  margin-top: 1.5em;
-  margin-bottom: 2em;
-  padding: 1em;
-  text-align: center;
-  border-top: 1px solid rgba(42,105,114,0.2);
-">
-  <button id="logoutBtn" class="btn btn-gray" style="margin-bottom: 1em; width: 100%; max-width: 200px;">
-    Log Out
-  </button>
-  
-  <h4 style="color: var(--font-main); margin: 1em 0 0.5em 0; font-size: 1.1em;">
-    💬 Share Feedback
-  </h4>
-  
-  <p style="margin-bottom: 1em; font-size: 0.9em; color: #666; line-height: 1.4;">
-    Help us improve InkWell with your ideas and suggestions.
-  </p>
-  
-  <button onclick="window.location.href='mailto:support@inkwelljournal.io';" 
-          class="btn" 
-          style="width: 100%; max-width: 250px; font-size: 0.9em;">
-    📧 Contact Team
-  </button>
-</div>
+<!-- feedback block merged into footer 2026-07-02 -->
 
 </div>
 <!-- End mainUI -->
