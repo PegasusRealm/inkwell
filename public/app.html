@@ -11103,17 +11103,25 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     </div>
     <style>
       @keyframes sprintBreathe {
-        from { background-color: rgba(137, 201, 212, 0.06); border-color: var(--border-medium); }
-        to   { background-color: rgba(137, 201, 212, 0.22); border-color: #4A9BA8; }
+        from {
+          background-color: rgba(137, 201, 212, 0.10);
+          border-color: #89C9D4;
+          box-shadow: 0 0 0 0 rgba(74, 155, 168, 0.0);
+        }
+        to {
+          background-color: rgba(137, 201, 212, 0.45);
+          border-color: #4A9BA8;
+          box-shadow: 0 0 0 6px rgba(74, 155, 168, 0.35);
+        }
       }
       #sprintText.sprint-idle {
         animation: sprintBreathe 2.4s ease-in-out infinite alternate;
       }
       #sprintNudge.sprint-idle {
-        color: #4A9BA8;
-        font-size: 1em;
-        font-weight: 600;
-        font-style: normal;
+        color: #4A9BA8 !important;
+        font-size: 1.05em !important;
+        font-weight: 600 !important;
+        font-style: normal !important;
       }
     </style>
     <div id="sprintTimer" style="display:none;text-align:center;font-family:monospace;font-size:2em;color:var(--brand-primary);margin-bottom:0.5em;">15:00</div>
