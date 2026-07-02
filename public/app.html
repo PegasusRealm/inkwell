@@ -5599,6 +5599,196 @@ window.saveGratitudeEntry = async function() {
 };
 
 // Save InkBlot Entry
+// ═══════════════════════════════════════════════════════════════════════════
+// JOURNAL PRACTICES ENGINE (v2 Phase 3, 2026-07-02)
+// InkBlot two-speed: Capture (quick) / Sprint (Pennebaker & Beall 1986;
+// Frattaroli 2006). Full Journal: Free-write / Reframe (perspective practice).
+// Panels toggle by hiding sibling elements (markup here is hand-grown; no
+// structural wrapping = no div-balance risk).
+// ═══════════════════════════════════════════════════════════════════════════
+
+function setSiblingsHidden(containerId, keepIds, hide) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  Array.from(c.children).forEach((el) => {
+    if (keepIds.includes(el.id)) return;
+    if (hide) {
+      if (el.dataset.pdisp === undefined) el.dataset.pdisp = el.style.display || '';
+      el.style.display = 'none';
+    } else if (el.dataset.pdisp !== undefined) {
+      el.style.display = el.dataset.pdisp;
+      delete el.dataset.pdisp;
+    }
+  });
+}
+
+// ── InkBlot: Capture / Sprint ──
+const BLOT_KEEP = ['inkblotHeading', 'inkblotSubtext', 'inkblotPills', 'blotPracticeSprint'];
+
+window.switchBlotPractice = function(p) {
+  const sprint = document.getElementById('blotPracticeSprint');
+  const heading = document.getElementById('inkblotHeading');
+  const subtext = document.getElementById('inkblotSubtext');
+  document.querySelectorAll('#inkblotPills .grat-pill').forEach((b) => b.classList.remove('active'));
+  document.getElementById('blotPill-' + p)?.classList.add('active');
+  if (p === 'sprint') {
+    setSiblingsHidden('inkblotMode', BLOT_KEEP, true);
+    if (sprint) sprint.style.display = 'block';
+    if (heading) heading.textContent = 'Write through it.';
+    if (subtext) subtext.textContent = 'A timed, continuous write about whatever is taking up space.';
+  } else {
+    if (sprint) sprint.style.display = 'none';
+    setSiblingsHidden('inkblotMode', BLOT_KEEP, false);
+    if (heading) heading.textContent = 'Quick thought? Drop an InkBlot.';
+    if (subtext) subtext.textContent = 'Capture a moment, feeling, or fleeting thought in seconds.';
+    stopSprintTimer(false);
+  }
+};
+
+// ── Sprint timer ──
+let sprintMinutes = 15;
+let sprintInterval = null;
+let sprintEndsAt = null;
+let sprintLastKey = 0;
+
+window.setSprintDuration = function(mins) {
+  if (sprintInterval) return; // no switching mid-sprint
+  sprintMinutes = mins;
+  [15, 20].forEach((m) => document.getElementById('sprintDur-' + m)?.classList.toggle('active', m === mins));
+  const t = document.getElementById('sprintTimer');
+  if (t) t.textContent = `${mins}:00`;
+};
+
+function renderSprintTime() {
+  const t = document.getElementById('sprintTimer');
+  if (!t || !sprintEndsAt) return;
+  const left = Math.max(0, Math.round((sprintEndsAt - Date.now()) / 1000));
+  const m = Math.floor(left / 60);
+  const s = String(left % 60).padStart(2, '0');
+  t.textContent = `${m}:${s}`;
+  // Gentle idle nudge after ~20s of stillness
+  const nudge = document.getElementById('sprintNudge');
+  if (nudge) nudge.style.display = (Date.now() - sprintLastKey > 20000) ? 'block' : 'none';
+  if (left === 0) {
+    stopSprintTimer(false);
+    t.textContent = 'Time. Keep going or save — both count.';
+  }
+}
+
+function stopSprintTimer(resetLabel) {
+  if (sprintInterval) { clearInterval(sprintInterval); sprintInterval = null; }
+  sprintEndsAt = null;
+  const btn = document.getElementById('sprintStartBtn');
+  if (btn) btn.textContent = '▶ Start';
+  const nudge = document.getElementById('sprintNudge');
+  if (nudge) nudge.style.display = 'none';
+  if (resetLabel) {
+    const t = document.getElementById('sprintTimer');
+    if (t) { t.style.display = 'none'; t.textContent = `${sprintMinutes}:00`; }
+  }
+}
+
+window.toggleSprint = function() {
+  if (sprintInterval) { stopSprintTimer(true); return; }
+  sprintEndsAt = Date.now() + sprintMinutes * 60000;
+  sprintLastKey = Date.now();
+  const t = document.getElementById('sprintTimer');
+  if (t) t.style.display = 'block';
+  const btn = document.getElementById('sprintStartBtn');
+  if (btn) btn.textContent = '■ Stop';
+  document.getElementById('sprintText')?.focus();
+  sprintInterval = setInterval(renderSprintTime, 1000);
+  renderSprintTime();
+};
+
+window.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('sprintText')?.addEventListener('input', function() {
+    sprintLastKey = Date.now();
+    const nudge = document.getElementById('sprintNudge');
+    if (nudge) nudge.style.display = 'none';
+  });
+});
+
+window.saveSprintEntry = async function() {
+  const text = document.getElementById('sprintText')?.value?.trim();
+  const statusEl = document.getElementById('sprintSaveStatus');
+  const setStatus = (t, c) => { if (statusEl) { statusEl.textContent = t; statusEl.style.color = c; } };
+  if (!text) { setStatus('Write first, save after.', '#c75050'); return; }
+  setStatus('Saving...', 'var(--font-muted)');
+  try {
+    const userId = window.currentUserId || window.auth?.currentUser?.uid;
+    if (!userId) throw new Error('Not logged in');
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const entryData = {
+      userId: userId,
+      text: `⏱️ Writing sprint (${sprintMinutes} min):\n\n${text}`,
+      title: `Writing Sprint - ${today}`,
+      mood: '⏱️',
+      tags: ['sprint'],
+      entryMode: 'journal',
+      sprintMinutes: sprintMinutes,
+      createdAt: window.serverTimestamp ? window.serverTimestamp() : new Date(),
+      updatedAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
+    };
+    await window.addDoc(window.collection(window.db, 'journalEntries'), entryData);
+    document.getElementById('sprintText').value = '';
+    stopSprintTimer(true);
+    setStatus('✓ Sprint saved to your journal.', '#4A8B8B');
+    setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+  } catch (e) {
+    console.error('Sprint save failed:', e);
+    setStatus('Save failed. Your writing is still here — try again.', '#c75050');
+  }
+};
+
+// ── Full Journal: Free-write / Reframe ──
+const JOURNAL_KEEP = ['journalHeading', 'journalPills', 'journalPracticeReframe'];
+
+window.switchJournalPractice = function(p) {
+  const panel = document.getElementById('journalPracticeReframe');
+  document.querySelectorAll('#journalPills .grat-pill').forEach((b) => b.classList.remove('active'));
+  document.getElementById('journalPill-' + p)?.classList.add('active');
+  if (p === 'reframe') {
+    setSiblingsHidden('fullJournalMode', JOURNAL_KEEP, true);
+    if (panel) panel.style.display = 'block';
+  } else {
+    if (panel) panel.style.display = 'none';
+    setSiblingsHidden('fullJournalMode', JOURNAL_KEEP, false);
+  }
+};
+
+window.saveReframeEntry = async function() {
+  const v = (id) => document.getElementById(id)?.value?.trim() || '';
+  const statusEl = document.getElementById('reframeSaveStatus');
+  const setStatus = (t, c) => { if (statusEl) { statusEl.textContent = t; statusEl.style.color = c; } };
+  const steps = [v('reframe1'), v('reframe2'), v('reframe3'), v('reframe4')];
+  if (!steps[0] || !steps[3]) { setStatus('At minimum: what happened (1) and another way to see it (4).', '#c75050'); return; }
+  setStatus('Saving...', 'var(--font-muted)');
+  try {
+    const userId = window.currentUserId || window.auth?.currentUser?.uid;
+    if (!userId) throw new Error('Not logged in');
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const text = `🔄 Perspective practice:\n\nWhat happened:\n${steps[0]}\n\nWhat my mind made it mean:\n${steps[1] || '(skipped)'}\n\nFor and against that read:\n${steps[2] || '(skipped)'}\n\nAnother way to see it:\n${steps[3]}`;
+    const entryData = {
+      userId: userId,
+      text: text,
+      title: `Reframe - ${today}`,
+      mood: '🔄',
+      tags: ['reframe'],
+      entryMode: 'journal',
+      createdAt: window.serverTimestamp ? window.serverTimestamp() : new Date(),
+      updatedAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
+    };
+    await window.addDoc(window.collection(window.db, 'journalEntries'), entryData);
+    ['reframe1', 'reframe2', 'reframe3', 'reframe4'].forEach((id) => { const el = document.getElementById(id); if (el) el.value = ''; });
+    setStatus('✓ Saved to your journal.', '#4A8B8B');
+    setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+  } catch (e) {
+    console.error('Reframe save failed:', e);
+    setStatus('Save failed. Please try again.', '#c75050');
+  }
+};
+
 window.saveInkblotEntry = async function() {
   const inkblotText = document.getElementById('inkblotText')?.value?.trim();
   
@@ -10875,17 +11065,59 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 
 <!-- ==================== INKBLOT MODE ==================== -->
 <div id="inkblotMode" class="journal-mode-content" style="display: none;">
-  <h2 class="journal-heading" 
+  <h2 class="journal-heading" id="inkblotHeading"
       onclick="document.getElementById('inkblotInfoModal').style.display='flex'"
       style="text-align:center;margin-bottom:0.5rem;color:var(--font-main);cursor:pointer;transition:color 0.2s ease;"
-      onmouseover="this.style.color='#4A9BA8'" 
+      onmouseover="this.style.color='#4A9BA8'"
       onmouseout="this.style.color='var(--font-main)'">
     Quick thought? Drop an InkBlot.
   </h2>
-  <p class="subtext-muted" style="text-align:center;margin-bottom:1.5em;">
+  <p class="subtext-muted" id="inkblotSubtext" style="text-align:center;margin-bottom:1em;">
     Capture a moment, feeling, or fleeting thought in seconds.
   </p>
-  
+
+  <!-- ═══ Two-speed InkBlot: Capture / Sprint (v2 Phase 3, 2026-07-02) ═══ -->
+  <div id="inkblotPills" style="display:flex;gap:0.5em;justify-content:center;flex-wrap:wrap;margin-bottom:1.25em;">
+    <button class="grat-pill active" id="blotPill-capture" onclick="switchBlotPractice('capture')">⚡ Capture</button>
+    <button class="grat-pill" id="blotPill-sprint" onclick="switchBlotPractice('sprint')">⏱️ Sprint</button>
+  </div>
+
+  <!-- ═══ Sprint panel (Pennebaker expressive writing; Frattaroli 2006) ═══ -->
+  <div id="blotPracticeSprint" style="display:none;">
+    <p style="font-size:0.9em;color:var(--font-muted);text-align:center;margin-bottom:1em;line-height:1.5;">
+      Writing about hard things can stir them up before it settles them. That's normal, and it's part of how this works. Go at your own depth.
+    </p>
+    <div style="display:flex;gap:0.5em;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:1em;">
+      <button class="grat-pill active" id="sprintDur-15" onclick="setSprintDuration(15)">15 min</button>
+      <button class="grat-pill" id="sprintDur-20" onclick="setSprintDuration(20)">20 min</button>
+      <button class="btn" id="sprintStartBtn" onclick="toggleSprint()" style="padding:0.35em 1.2em;">▶ Start</button>
+    </div>
+    <div id="sprintTimer" style="display:none;text-align:center;font-family:monospace;font-size:2em;color:var(--brand-primary);margin-bottom:0.5em;">15:00</div>
+    <div id="sprintNudge" style="display:none;text-align:center;font-size:0.85em;font-style:italic;color:var(--font-muted);margin-bottom:0.5em;">
+      Keep the pen moving. Grammar and sense don't matter here.
+    </div>
+    <textarea id="sprintText" placeholder="Write continuously about whatever is taking up space. Don't stop to fix anything." style="
+      width: 100%;
+      min-height: 260px;
+      padding: 1em;
+      border-radius: 8px;
+      border: 1px solid var(--border-medium);
+      font-size: 1em;
+      resize: vertical;
+      margin-bottom: 0.75em;
+      box-sizing: border-box;
+      background: var(--bg-card);
+      color: var(--font-main);
+    "></textarea>
+    <button class="btn" onclick="saveSprintEntry()" style="width: 100%; margin-bottom: 0.5em;">
+      ⏱️ Save Sprint
+    </button>
+    <span id="sprintSaveStatus" style="font-size: 0.85em; font-style: italic; color: var(--font-muted);"></span>
+    <p style="font-size: 0.85em; color: var(--font-muted); text-align: center; margin-top: 1em;">
+      The research dose is 3 or 4 sprints on the same topic over a week or two. Save early or write past the timer, both are fine.
+    </p>
+  </div>
+
   <textarea id="inkblotText" placeholder="What's on your mind right now?" maxlength="500" style="
     width: 100%;
     min-height: 180px;
@@ -10921,13 +11153,36 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 
 <!-- ==================== FULL JOURNAL MODE ==================== -->
 <div id="fullJournalMode" class="journal-mode-content" style="display: none;">
-<h2 class="journal-heading" 
-    onclick="document.getElementById('journalInfoModal').style.display='flex'" 
-    style="text-align:center;margin-bottom:2rem;color:var(--font-main);cursor:pointer;transition:color 0.2s ease;" 
-    onmouseover="this.style.color='#4A9BA8'" 
+<h2 class="journal-heading" id="journalHeading"
+    onclick="document.getElementById('journalInfoModal').style.display='flex'"
+    style="text-align:center;margin-bottom:1rem;color:var(--font-main);cursor:pointer;transition:color 0.2s ease;"
+    onmouseover="this.style.color='#4A9BA8'"
     onmouseout="this.style.color='var(--font-main)'">
   Your Journal
 </h2>
+
+<!-- ═══ Journal practices: Free-write / Reframe (v2 Phase 3, 2026-07-02) ═══ -->
+<div id="journalPills" style="display:flex;gap:0.5em;justify-content:center;flex-wrap:wrap;margin-bottom:1.25em;">
+  <button class="grat-pill active" id="journalPill-free" onclick="switchJournalPractice('free')">✍️ Free-write</button>
+  <button class="grat-pill" id="journalPill-reframe" onclick="switchJournalPractice('reframe')">🔄 Reframe</button>
+</div>
+
+<!-- ═══ Reframe panel (perspective practice — wellness-framed, zero clinical language) ═══ -->
+<div id="journalPracticeReframe" style="display:none;">
+  <p style="font-size:0.9em;color:var(--font-muted);text-align:center;margin-bottom:1.25em;">
+    Four short steps to look at one moment from a second angle.
+  </p>
+  <label style="display:block;font-weight:600;color:var(--font-main);margin-bottom:0.35em;">1. What happened? Just the facts.</label>
+  <textarea id="reframe1" class="grat-textarea" style="min-height:80px;margin-bottom:1em;" placeholder="Who, what, where. No interpretation yet."></textarea>
+  <label style="display:block;font-weight:600;color:var(--font-main);margin-bottom:0.35em;">2. What did your mind make it mean?</label>
+  <textarea id="reframe2" class="grat-textarea" style="min-height:80px;margin-bottom:1em;" placeholder="The automatic read. Write it the way it sounded in your head."></textarea>
+  <label style="display:block;font-weight:600;color:var(--font-main);margin-bottom:0.35em;">3. What supports that read, and what doesn't?</label>
+  <textarea id="reframe3" class="grat-textarea" style="min-height:80px;margin-bottom:1em;" placeholder="Evidence both ways. Be a fair judge."></textarea>
+  <label style="display:block;font-weight:600;color:var(--font-main);margin-bottom:0.35em;">4. Another honest way to see it?</label>
+  <textarea id="reframe4" class="grat-textarea" style="min-height:80px;margin-bottom:1em;" placeholder="Not forced positivity. Just a read that fits the facts at least as well."></textarea>
+  <button class="btn" onclick="saveReframeEntry()" style="width:100%;margin-bottom:0.5em;">🔄 Save Reframe</button>
+  <span id="reframeSaveStatus" style="font-size:0.85em;font-style:italic;color:var(--font-muted);"></span>
+</div>
 
 
     <p class="subtext-muted" style="margin-top: 1em;">If you want a topic or some inspiration, <strong>Sophy</strong> can suggest ideas — you can even give her a topic to focus on.</p>
@@ -11130,6 +11385,9 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 - If I encounter [specific snag], then I will [planned response or action].
 - How will I get back on track when things go wrong?" style="width:100%;height:133px;margin-bottom:0.5em;padding:0.5em;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;max-width:100%;"></textarea>
 
+    <p style="font-size:0.85em;color:var(--font-muted);margin-top:0.25em;margin-bottom:0.5em;">
+      Tip: anchor new habits to ones you already have. "After I [pour my coffee], I will [write one line]."
+    </p>
     <p id="planStatus" style="margin-top:0.5em;font-style:italic;"></p>
     <button class="btn btn-sophy" onclick="askSophyToRefine('plan')">Reflect on your How with Sophy</button>
     <div id="planSuggestion" class="sophy-info"></div>
@@ -11487,6 +11745,15 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       <p class="info-modal-footer">
         <strong>Your journal. Your pace. Your growth.</strong>
       </p>
+
+      <hr class="info-modal-divider"/>
+
+      <h3>🔄 Reframe: Perspective Practice</h3>
+      <p>
+        Four short steps to look at one moment from a second angle: what happened, what your mind made it mean, the evidence both ways, and another honest read that fits the facts. Drawn from decades of cognitive-behavioral research on how re-appraising a situation changes how it lands. Not forced positivity—just a fair second look.
+      </p>
+      <p class="info-modal-footer">
+      </p>
     
       <button class="btn" onclick="document.getElementById('journalInfoModal').style.display='none'">Close</button>
     </div>
@@ -11836,6 +12103,18 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       
       <p class="info-modal-footer">
         <strong>Think it. Capture it. Free yourself.</strong>
+      </p>
+
+      <hr class="info-modal-divider"/>
+
+      <h3>⏱️ Sprint: Write Through It</h3>
+      <p>
+        The other speed of InkBlot. A Sprint is 15 or 20 minutes of continuous writing about something that's weighing on you—the most-studied journaling protocol in psychology (Pennebaker &amp; Beall, 1986; Frattaroli's 2006 meta-analysis covers 146 studies). The rules are simple: keep writing, don't fix grammar, don't stop to judge it.
+      </p>
+      <p>
+        Two honest notes from the research: writing about hard things can stir them up before it settles them—that's expected, not a sign it's going wrong. And the studied dose is 3 or 4 sprints on the same topic over a week or two, not one marathon.
+      </p>
+      <p class="info-modal-footer">
       </p>
     
       <button class="btn" onclick="document.getElementById('inkblotInfoModal').style.display='none'">Close</button>
