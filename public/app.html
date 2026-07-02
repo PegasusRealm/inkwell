@@ -2767,13 +2767,12 @@ html[data-theme='dark'] #calendarEntries {
 
 /* Enhanced Search Input for Dark Mode */
 html[data-theme='dark'] #searchQuery.ai-input {
-  background: linear-gradient(135deg, rgba(42, 105, 114, 0.08) 0%, rgba(30, 80, 85, 0.12) 100%) !important;
-  color: #89C9D4 !important;
-  border: 1px solid rgba(137, 201, 212, 0.3) !important;
-  border-radius: 12px !important;
+  background: var(--bg-card) !important;
+  color: var(--font-main) !important;
+  border: 1.5px solid var(--border-medium) !important;
+  border-radius: 10px !important;
   padding: 1em 1.2em !important;
-  box-shadow: 0 0 10px rgba(137, 201, 212, 0.1) !important;
-  backdrop-filter: blur(3px) !important;
+  box-shadow: none !important;
 }
 
 html[data-theme='dark'] #searchQuery.ai-input:focus {
@@ -3758,14 +3757,15 @@ html[data-theme='dark'] .coach-tag-toggle input[type="checkbox"]:checked {
 }
 
 /* AI Input Styling */
+/* .ai-input base → tokens; legacy pink/accent skins source-killed 2026-07-02 */
 .ai-input {
   display: block;
   width: 100%;
   padding: 0.6em 1em;
-  border-radius: 6px;
-  border: 1px solid var(--accent);
-  background-color: #fef9f8;
-    color: #000000;
+  border-radius: 10px;
+  border: 1.5px solid var(--border-medium);
+  background: var(--bg-card);
+  color: var(--font-main);
   font-size: 1em;
   box-sizing: border-box;
   margin-bottom: 0.5em;
@@ -3774,22 +3774,8 @@ html[data-theme='dark'] .coach-tag-toggle input[type="checkbox"]:checked {
 
 .ai-input:focus {
   outline: none;
-  border-color: var(--accent-dark);
-  background-color: #fff;
-  box-shadow: 0 0 0 2px rgba(212, 148, 137, 0.2);
-}
-
-/* Dark theme AI inputs */
-html[data-theme='dark'] .ai-input {
-  color: #000000;
-  color: #f5e6e3;
-  border-color: var(--accent);
-}
-
-html[data-theme='dark'] .ai-input:focus {
-  background-color: #3a2720;
-  border-color: var(--accent-dark);
-  box-shadow: 0 0 0 2px rgba(212, 148, 137, 0.3);
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(42, 105, 114, 0.12);
 }
 
 /* Auto dark mode support */
@@ -11328,7 +11314,7 @@ document.head.appendChild(themeStyle);
           type="text"
           id="promptTopic"
           class="ai-input"
-          placeholder="e.g., burnout last week, goals, feeling stuck"
+          placeholder="a topic, or leave it to Sophy"
           style="flex: 1; min-width: 200px; margin: 0;"
         />
         <button class="btn btn-sophy" id="askSophyPromptBtn" onclick="generatePrompt()">Ask for a prompt</button>
@@ -11638,7 +11624,7 @@ document.head.appendChild(themeStyle);
           type="text"
           id="searchQuery"
           class="ai-input"
-          placeholder="e.g., burnout last week, goals, feeling stuck"
+          placeholder="ask anything about your past entries"
           style="width: 100%; box-sizing: border-box;"
         />
         <button class="btn btn-gray" id="searchBtn" onclick="runSmartSearch()" disabled style="width: 100%;">Search</button>
