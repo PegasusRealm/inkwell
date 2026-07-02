@@ -5263,6 +5263,154 @@ window.switchJournalMode = function(mode) {
 };
 
 // Save Gratitude Entry
+// ═══════════════════════════════════════════════════════════════════════════
+// GRATITUDE PROTOCOL ENGINE (v2 Phase 2a, 2026-07-01)
+// Five evidence-based practices, rotated to prevent habituation
+// (Emmons & McCullough 2003; Seligman et al. 2005; Koo et al. 2008;
+//  Lyubomirsky et al. 2005; Bryant & Veroff 2007)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const GRATITUDE_SUBTEXT = {
+  three: 'Research shows listing 3+ gratitudes improves well-being, sleep, and relationships.',
+  deep: 'Going deep on one good thing beats listing many. (Seligman et al., 2005)',
+  subtraction: 'Imagining life without a good thing renews its power. (Koo et al., 2008)',
+  letter: 'The gratitude letter carries the largest effect in positive psychology. (Seligman et al., 2005)',
+  savor: 'Savoring one moment in detail trains the brain to notice more of them. (Bryant & Veroff, 2007)'
+};
+
+const SUBTRACTION_PROMPTS = [
+  "Think of a person you're glad is in your life. Imagine the day you almost didn't meet them. What would this week have looked like without them?",
+  "Picture a choice you made that turned out well. Imagine you'd chosen differently. What good thing wouldn't exist now?",
+  "Think of your home, or a place you feel safe. Imagine never having found it. Where would you be instead?",
+  "Recall a skill or ability you use every day. Imagine waking up tomorrow without it. What would the day cost you?",
+  "Think of someone who taught you something important. Imagine they'd never crossed your path. What would you not know today?",
+  "Picture a friendship that almost didn't happen. Trace the near-miss. What did luck hand you that day?",
+  "Think of one part of your body that works without complaint. Imagine a week without it. What does it quietly do for you?",
+  "Recall an opportunity you almost turned down. Imagine you had. What chain of good things breaks?",
+  "Think of a tool or object you rely on daily. Imagine it gone for a month. What does it actually carry for you?",
+  "Picture someone who forgave you once. Imagine they hadn't. What would be different between you now?",
+  "Think of a hard season that ended. Imagine it hadn't ended yet. What does its absence give you today?",
+  "Recall a small kindness a stranger showed you. Imagine that moment never happened. What did it change?"
+];
+
+const SAVOR_NUDGES = [
+  'What did it sound like?',
+  'Where in your body did you feel it?',
+  'What would a photo of it have missed?',
+  'What did the air feel like?',
+  'What made it almost too small to notice?',
+  'If the moment had a color, what was it?'
+];
+
+let activeGratitudePractice = 'three';
+
+function suggestedGratitudePractice() {
+  const d = new Date();
+  if (d.getDay() === 6 && d.getDate() <= 7) return 'letter'; // first Saturday of the month
+  return ({ 0: 'savor', 3: 'deep', 5: 'subtraction' })[d.getDay()] || 'three';
+}
+
+window.switchGratitudePractice = function(p) {
+  activeGratitudePractice = p;
+  const panels = { three: 'gratPracticeThree', deep: 'gratPracticeDeep', subtraction: 'gratPracticeSubtraction', letter: 'gratPracticeLetter', savor: 'gratPracticeSavor' };
+  Object.entries(panels).forEach(([k, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = (k === p) ? 'block' : 'none';
+  });
+  document.querySelectorAll('#gratitudePills .grat-pill').forEach(b => b.classList.remove('active'));
+  document.getElementById('gratPill-' + p)?.classList.add('active');
+  const st = document.getElementById('gratitudeSubtext');
+  if (st) st.textContent = GRATITUDE_SUBTEXT[p] || GRATITUDE_SUBTEXT.three;
+  if (p === 'subtraction' && !document.getElementById('gratSubtractionPrompt')?.textContent?.trim()) {
+    window.shuffleSubtractionPrompt();
+  }
+  if (p === 'savor') {
+    const n = document.getElementById('gratSavorNudge');
+    if (n) n.textContent = SAVOR_NUDGES[Math.floor(Math.random() * SAVOR_NUDGES.length)];
+  }
+};
+
+window.shuffleSubtractionPrompt = function() {
+  const el = document.getElementById('gratSubtractionPrompt');
+  if (!el) return;
+  let next = el.textContent;
+  while (next === el.textContent) {
+    next = SUBTRACTION_PROMPTS[Math.floor(Math.random() * SUBTRACTION_PROMPTS.length)];
+  }
+  el.textContent = next;
+};
+
+window.saveGratitudePractice = async function(mode) {
+  const statusEl = document.getElementById('gratitudeSaveStatus');
+  const setStatus = (t, c) => { if (statusEl) { statusEl.textContent = t; statusEl.style.color = c; } };
+  const fields = { deep: 'gratDeepText', subtraction: 'gratSubtractionText', letter: 'gratLetterText', savor: 'gratSavorText' };
+  const text = document.getElementById(fields[mode])?.value?.trim();
+  if (!text) { setStatus('Please write a little first.', '#c75050'); return; }
+  const to = (mode === 'letter') ? (document.getElementById('gratLetterTo')?.value?.trim() || 'someone') : null;
+  setStatus('Saving...', 'var(--font-muted)');
+  try {
+    const userId = window.currentUserId || window.auth?.currentUser?.uid;
+    if (!userId) throw new Error('Not logged in');
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const meta = {
+      deep: { title: `Gratitude, Deeply - ${today}`, text: `🔍 One gratitude, deeply:\n\n${text}`, tag: 'deep' },
+      subtraction: { title: `Mental Subtraction - ${today}`, text: `💭 Imagining life without it:\n\n${document.getElementById('gratSubtractionPrompt')?.textContent || ''}\n\n${text}`, tag: 'subtraction' },
+      letter: { title: `Gratitude Letter to ${to} - ${today}`, text: `💌 Gratitude letter to ${to}:\n\n${text}`, tag: 'letter' },
+      savor: { title: `Savoring - ${today}`, text: `🌅 Savoring the moment:\n\n${text}`, tag: 'savoring' }
+    }[mode];
+    if (!meta) throw new Error('Unknown practice mode');
+    const entryData = {
+      userId: userId,
+      text: meta.text,
+      title: meta.title,
+      mood: '🙏',
+      tags: ['gratitude', meta.tag],
+      entryMode: 'gratitude',
+      gratitudeMode: mode,
+      createdAt: window.serverTimestamp ? window.serverTimestamp() : new Date(),
+      updatedAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
+    };
+    await window.addDoc(window.collection(window.db, 'journalEntries'), entryData);
+    document.getElementById(fields[mode]).value = '';
+    if (mode === 'letter') { const t = document.getElementById('gratLetterTo'); if (t) t.value = ''; }
+    setStatus('✓ Saved to your journal.', '#4A8B8B');
+    setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+  } catch (e) {
+    console.error('Gratitude practice save failed:', e);
+    setStatus('Save failed. Please try again.', '#c75050');
+  }
+};
+
+window.copyGratitudeLetter = function() {
+  const t = document.getElementById('gratLetterText')?.value || '';
+  if (!t) return;
+  navigator.clipboard?.writeText(t).then(() => {
+    const s = document.getElementById('gratitudeSaveStatus');
+    if (s) { s.textContent = '✓ Copied.'; s.style.color = '#4A8B8B'; setTimeout(() => { s.textContent = ''; }, 2000); }
+  });
+};
+
+window.emailGratitudeLetterToSelf = function() {
+  const t = document.getElementById('gratLetterText')?.value || '';
+  if (!t) return;
+  const to = document.getElementById('gratLetterTo')?.value?.trim() || '';
+  const email = window.auth?.currentUser?.email || '';
+  location.href = 'mailto:' + encodeURIComponent(email) +
+    '?subject=' + encodeURIComponent('Gratitude letter' + (to ? ' to ' + to : '')) +
+    '&body=' + encodeURIComponent(t);
+};
+
+window.addEventListener('DOMContentLoaded', function() {
+  const s = suggestedGratitudePractice();
+  const pill = document.getElementById('gratPill-' + s);
+  if (pill && s !== 'three') {
+    const dot = document.createElement('span');
+    dot.className = 'today-dot';
+    dot.title = "Today's suggested practice";
+    pill.appendChild(dot);
+  }
+});
+
 window.saveGratitudeEntry = async function() {
   const gratitude1 = document.getElementById('gratitude1')?.value?.trim();
   const gratitude2 = document.getElementById('gratitude2')?.value?.trim();
@@ -5309,6 +5457,7 @@ window.saveGratitudeEntry = async function() {
       mood: '🙏',
       tags: ['gratitude'],
       entryMode: 'gratitude',
+      gratitudeMode: 'three',
       createdAt: window.serverTimestamp ? window.serverTimestamp() : new Date(),
       updatedAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
     };
@@ -10512,10 +10661,27 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       onmouseout="this.style.color='var(--font-main)'">
     What are you grateful for today?
   </h2>
-  <p class="subtext-muted" style="text-align:center;margin-bottom:1.5em;">
+  <p id="gratitudeSubtext" class="subtext-muted" style="text-align:center;margin-bottom:1em;">
     Research shows listing 3+ gratitudes improves well-being, sleep, and relationships.
   </p>
-  
+
+  <!-- ═══ Gratitude Protocol Engine — practice pills (v2 Phase 2a, 2026-07-01) ═══ -->
+  <style>
+    .grat-pill{padding:0.35em 0.9em;border-radius:999px;border:1px solid var(--border-medium);background:var(--bg-card);color:var(--font-main);cursor:pointer;font-size:0.85em;position:relative;transition:all 0.2s;}
+    .grat-pill:hover{border-color:var(--brand-primary);}
+    .grat-pill.active{background:var(--brand-primary);color:#fff;border-color:var(--brand-primary);}
+    .grat-pill .today-dot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:#D49489;display:inline-block;}
+    .grat-textarea{width:100%;min-height:140px;padding:0.75em;border-radius:8px;border:1px solid var(--border-medium);font-size:1em;resize:vertical;background:var(--bg-card);color:var(--font-main);box-sizing:border-box;}
+  </style>
+  <div id="gratitudePills" style="display:flex;gap:0.5em;justify-content:center;flex-wrap:wrap;margin-bottom:1.25em;">
+    <button class="grat-pill active" id="gratPill-three" onclick="switchGratitudePractice('three')">🙏 Three</button>
+    <button class="grat-pill" id="gratPill-deep" onclick="switchGratitudePractice('deep')">🔍 One, Deeply</button>
+    <button class="grat-pill" id="gratPill-subtraction" onclick="switchGratitudePractice('subtraction')">💭 Without It</button>
+    <button class="grat-pill" id="gratPill-letter" onclick="switchGratitudePractice('letter')">💌 Letter</button>
+    <button class="grat-pill" id="gratPill-savor" onclick="switchGratitudePractice('savor')">🌅 Savor</button>
+  </div>
+
+  <div id="gratPracticeThree">
   <div style="margin-bottom: 1em;">
     <div style="display: flex; align-items: flex-start; margin-bottom: 0.75em;">
       <span style="font-size: 1.5em; font-weight: bold; color: var(--brand-primary); width: 30px; margin-top: 8px;">1.</span>
@@ -10566,6 +10732,42 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   <button class="btn" onclick="saveGratitudeEntry()" style="width: 100%; margin-bottom: 0.5em;">
     🙏 Save Gratitude Entry
   </button>
+  </div><!-- /gratPracticeThree -->
+
+  <!-- ═══ One, Deeply (Seligman et al. 2005 — three good things + why) ═══ -->
+  <div id="gratPracticeDeep" style="display:none;">
+    <p style="text-align:center;color:var(--font-muted);font-size:0.9em;margin-bottom:0.75em;">What happened? &nbsp;·&nbsp; Why did it happen? &nbsp;·&nbsp; What was your part in it?</p>
+    <textarea id="gratDeepText" class="grat-textarea" placeholder="One good thing, in depth..."></textarea>
+    <button class="btn" onclick="saveGratitudePractice('deep')" style="width:100%;margin-top:0.75em;margin-bottom:0.5em;">🔍 Save Reflection</button>
+  </div>
+
+  <!-- ═══ Without It (mental subtraction — Koo et al. 2008) ═══ -->
+  <div id="gratPracticeSubtraction" style="display:none;">
+    <div id="gratSubtractionPrompt" style="background:var(--bg-card);border-left:4px solid var(--brand-primary);padding:1em;border-radius:8px;margin-bottom:0.5em;color:var(--font-main);line-height:1.5;"></div>
+    <button class="btn-gray" onclick="shuffleSubtractionPrompt()" style="margin-bottom:0.75em;padding:0.3em 0.8em;font-size:0.85em;">↻ Try another</button>
+    <textarea id="gratSubtractionText" class="grat-textarea" placeholder="Write what would be missing..."></textarea>
+    <button class="btn" onclick="saveGratitudePractice('subtraction')" style="width:100%;margin-top:0.75em;margin-bottom:0.5em;">💭 Save Reflection</button>
+  </div>
+
+  <!-- ═══ Letter (gratitude visit — Seligman et al. 2005, largest effect size) ═══ -->
+  <div id="gratPracticeLetter" style="display:none;">
+    <input type="text" id="gratLetterTo" placeholder="To (their name)..." style="width:100%;padding:0.6em;border-radius:8px;border:1px solid var(--border-medium);background:var(--bg-card);color:var(--font-main);font-size:1em;margin-bottom:0.75em;box-sizing:border-box;">
+    <textarea id="gratLetterText" class="grat-textarea" style="min-height:180px;" placeholder="Dear ___ — what did they do? What did it cost them? What did it change for you? Be specific. The details carry the gratitude."></textarea>
+    <div style="display:flex;gap:0.5em;margin-top:0.75em;margin-bottom:0.5em;flex-wrap:wrap;">
+      <button class="btn" onclick="saveGratitudePractice('letter')" style="flex:2;min-width:140px;">💌 Save Letter</button>
+      <button class="btn-gray" onclick="copyGratitudeLetter()" style="flex:1;min-width:80px;">Copy</button>
+      <button class="btn-gray" onclick="emailGratitudeLetterToSelf()" style="flex:1;min-width:100px;">Email me</button>
+    </div>
+    <p style="font-size:0.8em;color:var(--font-muted);text-align:center;margin-top:0.25em;">Sending is optional. Writing it is where the effect lives.</p>
+  </div>
+
+  <!-- ═══ Savor (Bryant & Veroff 2007) ═══ -->
+  <div id="gratPracticeSavor" style="display:none;">
+    <p id="gratSavorNudge" style="text-align:center;font-style:italic;color:var(--font-muted);margin-bottom:0.75em;"></p>
+    <textarea id="gratSavorText" class="grat-textarea" placeholder="One good moment from today, in full sensory detail..."></textarea>
+    <button class="btn" onclick="saveGratitudePractice('savor')" style="width:100%;margin-top:0.75em;margin-bottom:0.5em;">🌅 Save Moment</button>
+  </div>
+
   <span id="gratitudeSaveStatus" style="font-size: 0.85em; font-style: italic; color: var(--font-muted);"></span>
   
   <p style="font-size: 0.85em; color: var(--font-muted); text-align: center; margin-top: 1em;">
@@ -11432,7 +11634,43 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       <p class="info-modal-footer">
         <strong>Notice. Appreciate. Grow.</strong>
       </p>
-    
+
+      <hr class="info-modal-divider"/>
+
+      <h3>Five Practices, One Goal</h3>
+      <p>
+        Gratitude journaling has one known weakness: repetition dulls it. Researchers call it habituation—write the same list every day and the effect fades (Lyubomirsky, Sheldon &amp; Schkade, 2005). That's why InkWell rotates five research-backed practices instead of one:
+      </p>
+
+      <div class="info-modal-highlight-box">
+        <h4>🙏 Three</h4>
+        <p>The classic. Listing three specific gratitudes improves well-being and sleep in controlled studies. <em>(Emmons &amp; McCullough, 2003)</em></p>
+      </div>
+
+      <div class="info-modal-highlight-box">
+        <h4>🔍 One, Deeply</h4>
+        <p>Writing about one good thing—what happened, why it happened, and your part in it—outperforms longer lists. Depth beats breadth. <em>(Seligman, Steen, Park &amp; Peterson, 2005)</em></p>
+      </div>
+
+      <div class="info-modal-highlight-box">
+        <h4>💭 Without It</h4>
+        <p>Mental subtraction: imagining that a good thing had never happened produces a stronger emotional response than simply recalling it. Your mind weighs loss about twice as heavily as gain—this practice puts that to work for you. <em>(Koo, Algoe, Wilson &amp; Gilbert, 2008)</em></p>
+      </div>
+
+      <div class="info-modal-highlight-box">
+        <h4>💌 Letter</h4>
+        <p>Writing a gratitude letter to a real person carries the largest measured effect of any positive-psychology exercise. Delivering it is optional—the writing itself does most of the work. <em>(Seligman et al., 2005)</em></p>
+      </div>
+
+      <div class="info-modal-highlight-box">
+        <h4>🌅 Savor</h4>
+        <p>Capturing one positive moment in full sensory detail trains attention toward the good—savoring is a skill, and it strengthens with practice. <em>(Bryant &amp; Veroff, 2007)</em></p>
+      </div>
+
+      <p>
+        The coral dot on a practice is the day's suggestion—variety is the mechanism, so InkWell nudges you to rotate. Any practice, any day, always your choice.
+      </p>
+
       <button class="btn" onclick="document.getElementById('gratitudeInfoModal').style.display='none'">Close</button>
     </div>
   </div>
