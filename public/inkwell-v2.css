@@ -234,6 +234,9 @@ html[data-theme='dark'] body .sophy-block .sophy-row-line {
 html body .sophy-block .ai-input,
 html[data-theme='dark'] body .sophy-block .ai-input,
 html[data-theme='dark'] body .sophy-block input#promptTopic {
+  outline: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
   background: var(--bg-card) !important;
   border: 1.5px solid var(--border-medium) !important;
   color: var(--font-main) !important;
