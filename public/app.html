@@ -5666,9 +5666,16 @@ function renderSprintTime() {
   const m = Math.floor(left / 60);
   const s = String(left % 60).padStart(2, '0');
   t.textContent = `${m}:${s}`;
-  // Gentle idle nudge after ~20s of stillness
+  // Gentle idle nudge after ~20s of stillness — nudge line + breathing teal
+  // wash on the textarea read as one connected cue (Adam, 2026-07-02)
   const nudge = document.getElementById('sprintNudge');
-  if (nudge) nudge.style.display = (Date.now() - sprintLastKey > 20000) ? 'block' : 'none';
+  const ta = document.getElementById('sprintText');
+  const idle = (Date.now() - sprintLastKey > 20000);
+  if (nudge) {
+    nudge.style.display = idle ? 'block' : 'none';
+    nudge.classList.toggle('sprint-idle', idle);
+  }
+  if (ta) ta.classList.toggle('sprint-idle', idle);
   if (left === 0) {
     stopSprintTimer(false);
     t.textContent = 'Time. Keep going or save — both count.';
@@ -5681,7 +5688,8 @@ function stopSprintTimer(resetLabel) {
   const btn = document.getElementById('sprintStartBtn');
   if (btn) btn.textContent = '▶ Start';
   const nudge = document.getElementById('sprintNudge');
-  if (nudge) nudge.style.display = 'none';
+  if (nudge) { nudge.style.display = 'none'; nudge.classList.remove('sprint-idle'); }
+  document.getElementById('sprintText')?.classList.remove('sprint-idle');
   if (resetLabel) {
     const t = document.getElementById('sprintTimer');
     if (t) { t.style.display = 'none'; t.textContent = `${sprintMinutes}:00`; }
@@ -5705,7 +5713,8 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('sprintText')?.addEventListener('input', function() {
     sprintLastKey = Date.now();
     const nudge = document.getElementById('sprintNudge');
-    if (nudge) nudge.style.display = 'none';
+    if (nudge) { nudge.style.display = 'none'; nudge.classList.remove('sprint-idle'); }
+    this.classList.remove('sprint-idle');
   });
 });
 
@@ -11092,8 +11101,23 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       <button class="grat-pill" id="sprintDur-20" onclick="setSprintDuration(20)">20 min</button>
       <button class="btn" id="sprintStartBtn" onclick="toggleSprint()" style="padding:0.35em 1.2em;">▶ Start</button>
     </div>
+    <style>
+      @keyframes sprintBreathe {
+        from { background-color: rgba(137, 201, 212, 0.06); border-color: var(--border-medium); }
+        to   { background-color: rgba(137, 201, 212, 0.22); border-color: #4A9BA8; }
+      }
+      #sprintText.sprint-idle {
+        animation: sprintBreathe 2.4s ease-in-out infinite alternate;
+      }
+      #sprintNudge.sprint-idle {
+        color: #4A9BA8;
+        font-size: 1em;
+        font-weight: 600;
+        font-style: normal;
+      }
+    </style>
     <div id="sprintTimer" style="display:none;text-align:center;font-family:monospace;font-size:2em;color:var(--brand-primary);margin-bottom:0.5em;">15:00</div>
-    <div id="sprintNudge" style="display:none;text-align:center;font-size:0.85em;font-style:italic;color:var(--font-muted);margin-bottom:0.5em;">
+    <div id="sprintNudge" style="display:none;text-align:center;font-size:0.85em;font-style:italic;color:var(--font-muted);margin-bottom:0.5em;transition:all 0.3s;">
       Keep the pen moving. Grammar and sense don't matter here.
     </div>
     <textarea id="sprintText" placeholder="Write continuously about whatever is taking up space. Don't stop to fix anything." style="
