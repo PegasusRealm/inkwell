@@ -8,61 +8,71 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500&family=Crimson+Text:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
+    /* ═══════════════════════════════════════════════════════════════════
+       DESIGN TOKENS v2 (Slice 1, 2026-07-02) — WHITE & CLEAN (default light)
+       Semantic color law: TEAL = structure & action (the app's hand).
+       CORAL = Sophy only (AI presence). INK on WHITE = your words in charge.
+       No zombie pastels: true white, deep ink, saturated accents.
+       Var NAMES unchanged (whole app references them); values re-skinned.
+       ═══════════════════════════════════════════════════════════════════ */
     :root {
-      /* Modern Brand Colors - Calming Teal Palette */
+      /* Brand — teal carries structure */
       --brand-primary: #2A6972;
-      --brand-secondary: #388b97;
+      --brand-secondary: #1E8A99;
       --brand-alt: #4A9BA8;
       --brand-light: #89C9D4;
-      --brand-outline: #4f4f4f;
+      --brand-outline: #3A4644;
       --brand-primary-rgba: rgba(42, 105, 114, 0.3);
-      
-      /* Typography Colors */
-      --font-main: #2D3748;
-      --font-secondary: #4A5568;
-      --font-muted: #718096;
+
+      /* Typography colors — deep ink, crisp secondary */
+      --font-main: #101B19;
+      --font-secondary: #43514E;
+      --font-muted: #6B7876;
       --font-accent: #2A6972;
       --font-white: #ffffff;
-      
-      /* Modern Font Stack */
-      --title-font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --body-font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --serif-font: 'Crimson Text', Georgia, serif;
 
-      /* Calm-inspired Backgrounds */
-      --bg-primary: linear-gradient(135deg, #E6FFFA 0%, #F0FDF4 100%);
-      --bg-card: rgba(255, 255, 255, 0.9);
-      --bg-card-hover: rgba(255, 255, 255, 0.95);
-      --bg-muted: #F7FAFC;
-      --bg-overlay: rgba(255, 255, 255, 0.8);
+      /* Type system — Newsreader writes, Manrope runs the UI */
+      --title-font: 'Newsreader', Georgia, serif;
+      --body-font: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+      --serif-font: 'Newsreader', Georgia, serif;
 
-      /* Gentle Shadows */
-      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
-      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.06);
-      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.04), 0 4px 6px rgba(0, 0, 0, 0.05);
-      --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.06), 0 10px 10px rgba(0, 0, 0, 0.04);
+      /* Surfaces — true white, no haze */
+      --bg-primary: #FFFFFF;
+      --bg-card: #FFFFFF;
+      --bg-card-hover: #FAFBFB;
+      --bg-muted: #F6F8F8;
+      --bg-overlay: rgba(255, 255, 255, 0.92);
 
-      /* Mindful Accent Colors */
+      /* Shadows — crisp, modern */
+      --shadow-sm: 0 1px 2px rgba(16, 27, 25, 0.06);
+      --shadow-md: 0 4px 12px -2px rgba(16, 27, 25, 0.08);
+      --shadow-lg: 0 16px 32px -16px rgba(16, 27, 25, 0.16);
+      --shadow-xl: 0 24px 48px -24px rgba(16, 27, 25, 0.18);
+
+      /* Accent colors — saturated, intentional */
       --accent-wisdom: #D69E2E;
-      --accent-growth: #38A169;
-      --accent-reflection: #805AD5;
+      --accent-growth: #2F9E63;
+      --accent-reflection: #1E8A99; /* was purple — reflection belongs to teal now */
       --accent-warm: #E53E3E;
 
-      /* Interactive States */
+      /* Interactive states */
       --btn-primary: #2A6972;
-      --btn-primary-hover: #1A4B52;
-      --btn-secondary: #E2E8F0;
-      --btn-secondary-hover: #CBD5E0;
-      
-      /* Special Button Colors */
-      --accent-sophy: #D49489;
-      --accent-sophy-light: #E6A497;
-      --accent-sophy-hover: #C2867D;
-      --tier-connect: #805AD5;
-      --tier-connect-light: #9F7AEA;
+      --btn-primary-hover: #1E8A99;
+      --btn-secondary: #F6F8F8;
+      --btn-secondary-hover: #E6E9E9;
+
+      /* Sophy — coral means "AI is present," nowhere else.
+         Deepened on light ground for contrast (brand tone #D49489 keeps the glow role) */
+      --accent-sophy: #C96F5E;
+      --accent-sophy-light: #D49489;
+      --accent-sophy-hover: #B25F4F;
+      /* Connect tier RETIRED 2026-07-02 — purple removed from the system;
+         legacy references resolve into the teal family */
+      --tier-connect: #4A9BA8;
+      --tier-connect-light: #89C9D4;
       --btn-danger: #dc3545;
       --btn-danger-hover: #c82333;
       --btn-warning: #ff9800;
@@ -71,51 +81,57 @@
       --btn-success-hover: #218838;
       --btn-info: #17a2b8;
       --btn-info-hover: #138496;
-      
-      /* Borders */
-      --border-light: #E2E8F0;
-      --border-medium: #CBD5E0;
+
+      /* Borders — hairlines, not fog */
+      --border-light: #E6E9E9;
+      --border-medium: #D5DBDA;
       --border-accent: #4A9BA8;
-      
-      /* Information/Helper Backgrounds */
-      --info-bg: #eaf6fb;
+
+      /* Information/Helper backgrounds */
+      --info-bg: #E9F4F5;
     }
 
+    /* ═══════════════════════════════════════════════════════════════════
+       INK & LIGHT (dark — the design face). Night desk, not a screen:
+       ink surfaces, warm BONE text (never sterile white), teal glow
+       structure, Sophy coral native on dark.
+       ═══════════════════════════════════════════════════════════════════ */
     html[data-theme='dark'] {
-      --bg-primary: linear-gradient(135deg, #0D1B2A 0%, #1B263B 100%);
-      --bg-card: rgba(26, 32, 44, 0.9);
-      --bg-card-hover: rgba(26, 32, 44, 0.95);
-      --bg-muted: #1A202C;
-      --bg-overlay: rgba(26, 32, 44, 0.8);
-      
-      --font-main: #F7FAFC;
-      --font-secondary: #E2E8F0;
-      --font-muted: #A0AEC0;
-      --font-accent: #4A9BA8;
-      
-      --brand-primary: #4A9BA8;
-      --brand-secondary: #7BB8C4;
+      --bg-primary: #111A1C;
+      --bg-card: #172225;
+      --bg-card-hover: #1C2A2E;
+      --bg-muted: #0C1213;
+      --bg-overlay: rgba(12, 18, 19, 0.88);
+
+      --font-main: #EDE7DC;
+      --font-secondary: #C9C4B8;
+      --font-muted: #9BA6A3;
+      --font-accent: #5FB3BF;
+
+      --brand-primary: #5FB3BF;
+      --brand-secondary: #7BC4CE;
       --brand-light: #9FD3E0;
-      
-      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1);
-      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3), 0 4px 6px rgba(0, 0, 0, 0.2);
-      
-      --border-light: #2D3748;
-      --border-medium: #4A5568;
-      --border-accent: #4A9BA8;
-      
-      --btn-primary: #4A9BA8;
-      --btn-primary-hover: #7BB8C4;
-      --btn-secondary: #2D3748;
-      --btn-secondary-hover: #4A5568;
-      
-      /* Special Button Colors - Dark Theme */
-      --accent-sophy: #E6A497;
-      --accent-sophy-light: #F0B5A7;
-      --accent-sophy-hover: #D49489;
-      --tier-connect: #9F7AEA;
-      --tier-connect-light: #B794F4;
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+      --shadow-md: 0 6px 16px -4px rgba(0, 0, 0, 0.5);
+      --shadow-lg: 0 24px 60px -32px rgba(0, 0, 0, 0.8);
+
+      --border-light: #1E2C30;
+      --border-medium: #2A3A3F;
+      --border-accent: #5FB3BF;
+
+      --btn-primary: #2A6972;
+      --btn-primary-hover: #35808B;
+      --btn-secondary: #172225;
+      --btn-secondary-hover: #1E2C30;
+
+      /* Sophy on dark — brand coral reads natively */
+      --accent-sophy: #D49489;
+      --accent-sophy-light: #E6A497;
+      --accent-sophy-hover: #E6A497;
+      /* Connect purple retired — teal family */
+      --tier-connect: #5FB3BF;
+      --tier-connect-light: #9FD3E0;
       --btn-danger: #e74c3c;
       --btn-danger-hover: #c0392b;
       --btn-warning: #ffa726;
@@ -124,37 +140,44 @@
       --btn-success-hover: #27ae60;
       --btn-info: #3498db;
       --btn-info-hover: #2980b9;
-      
-      /* Information/Helper Backgrounds */
-      --info-bg: rgba(42,105,114,0.1);
+
+      /* Information/Helper backgrounds */
+      --info-bg: rgba(95, 179, 191, 0.08);
     }
 
+    /* Explicit light = White & Clean (watercolor bg image retired 2026-07-02) */
     html[data-theme='light'] {
-      --bg-primary: url('watercolor-teal-bg.png'), linear-gradient(135deg, #89C9D4 0%, #7BB8C4 100%);
-      --bg-card: rgba(255, 255, 255, 0.9);
-      --bg-muted: #F7FAFC;
-      --font-main: #2D3748;
-      --font-secondary: #4A5568;
+      --bg-primary: #FFFFFF;
+      --bg-card: #FFFFFF;
+      --bg-muted: #F6F8F8;
+      --font-main: #101B19;
+      --font-secondary: #43514E;
       --brand-primary: #2A6972;
-      --brand-secondary: #388b97;
+      --brand-secondary: #1E8A99;
     }
 
+    /* System preference dark = Ink & Light (mirrors data-theme='dark' essentials) */
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg-primary: linear-gradient(135deg, #0D1B2A 0%, #1B263B 100%);
-        --bg-card: rgba(26, 32, 44, 0.9);
-        --bg-muted: #1A202C;
-        --font-main: #F7FAFC;
-        --font-secondary: #E2E8F0;
-        --font-accent: #4A9BA8;
-        --brand-primary: #4A9BA8;
-        --border-light: #2D3748;
+        --bg-primary: #111A1C;
+        --bg-card: #172225;
+        --bg-muted: #0C1213;
+        --font-main: #EDE7DC;
+        --font-secondary: #C9C4B8;
+        --font-accent: #5FB3BF;
+        --brand-primary: #5FB3BF;
+        --border-light: #1E2C30;
       }
     }
 
     /* Global Reset & Base Styling */
     * {
       box-sizing: border-box;
+    }
+
+    /* Every writing surface writes in serif (Slice 1, 2026-07-02) */
+    textarea {
+      font-family: var(--serif-font);
     }
 
     body {
@@ -2604,7 +2627,7 @@ html[data-theme='dark'] .entry-card[style] .fixed-dark-date {
 
 /* Style for entries with new coach replies */
 .entry-card.journal-entry[style*="border-left: 5px solid"] {
-  border-left: 5px solid var(--tier-connect, #805AD5);
+  border-left: 5px solid var(--tier-connect);
   box-shadow: 0 0 10px rgba(128, 90, 213, 0.3), var(--shadow-md);
 }
 
@@ -4352,7 +4375,7 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
 }
 
 .splash-welcome-title {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: var(--title-font);
   font-size: 4.5rem;
   font-weight: 500;
   color: #FFFFFF;
@@ -4365,7 +4388,7 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
 }
 
 .splash-welcome-text {
-  font-family: 'Crimson Text', Georgia, serif;
+  font-family: var(--serif-font);
   font-size: 1.5rem;
   line-height: 2;
   color: rgba(255, 255, 255, 0.85);
@@ -4389,7 +4412,7 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
 }
 
 .splash-brought-text {
-  font-family: 'Crimson Text', Georgia, serif;
+  font-family: var(--serif-font);
   font-size: 1.1rem;
   color: rgba(255, 255, 255, 0.5);
   font-style: italic;
@@ -4399,7 +4422,7 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
 }
 
 .splash-pr-name {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: var(--title-font);
   font-size: 1.6rem;
   font-weight: 500;
   color: #89C9D4;
@@ -4446,7 +4469,7 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
 }
 
 .splash-tagline {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: var(--title-font);
   font-size: 2rem;
   font-style: italic;
   font-weight: 400;
@@ -8910,8 +8933,8 @@ async function updateCalendarHighlighting() {
       
       if (datesWithUnreadReplies.has(dateKey)) {
         // Connect purple highlighting - has unread coach replies
-        dateElement.style.border = '2px solid var(--tier-connect, #805AD5)';
-        dateElement.style.backgroundColor = 'var(--tier-connect, #805AD5)';
+        dateElement.style.border = '2px solid var(--tier-connect)';
+        dateElement.style.backgroundColor = 'var(--tier-connect)';
         dateElement.style.color = '#fff';
         dateElement.style.fontWeight = 'bold';
         dateElement.title = 'New practitioner reply available!';
@@ -13968,7 +13991,7 @@ async function loadSubscriptionUI() {
     const badge = document.getElementById('subscriptionBadge');
     if (badge) {
       const tierNames = { free: 'Free', plus: 'Plus', connect: 'Connect' };
-      const tierColors = { free: '#2A6972', plus: '#D49489', connect: '#805AD5' };
+      const tierColors = { free: '#2A6972', plus: '#D49489', connect: '#4A9BA8' }; // purple retired 2026-07-02
       badge.textContent = tierNames[tier] || 'Free';
       badge.style.background = tierColors[tier] || '#2A6972';
     }
