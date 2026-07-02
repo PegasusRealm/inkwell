@@ -10519,6 +10519,7 @@ document.head.appendChild(themeStyle);
     };
 
   </script>
+  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.1">
 </head>
 
 
@@ -11122,7 +11123,7 @@ document.head.appendChild(themeStyle);
     <div id="gratSubtractionPrompt" style="background:var(--bg-card);border-left:4px solid var(--brand-primary);padding:1em;border-radius:8px;margin-bottom:0.5em;color:var(--font-main);line-height:1.5;"></div>
     <div style="display:flex;gap:0.5em;margin-bottom:0.75em;flex-wrap:wrap;">
       <button class="btn-gray" onclick="shuffleSubtractionPrompt()" style="padding:0.3em 0.8em;font-size:0.85em;">↻ Try another</button>
-      <button class="btn-gray" id="gratPersonalBtn" onclick="personalSubtractionPrompt()" style="padding:0.3em 0.8em;font-size:0.85em;">From your journal</button>
+      <button class="btn btn-sophy" id="gratPersonalBtn" onclick="personalSubtractionPrompt()" style="padding:0.3em 0.8em;font-size:0.85em;">From your journal</button>
     </div>
     <textarea id="gratSubtractionText" class="grat-textarea" placeholder="Write what would be missing..."></textarea>
     <button class="btn" onclick="saveGratitudePractice('subtraction')" style="width:100%;margin-top:0.75em;margin-bottom:0.5em;">Save Reflection</button>
@@ -11134,7 +11135,7 @@ document.head.appendChild(themeStyle);
     <textarea id="gratLetterText" class="grat-textarea" style="min-height:180px;" placeholder="Dear ___ — what did they do? What did it cost them? What did it change for you? Be specific. The details carry the gratitude."></textarea>
     <div style="display:flex;gap:0.5em;margin-top:0.75em;margin-bottom:0.5em;flex-wrap:wrap;">
       <button class="btn" onclick="saveGratitudePractice('letter')" style="flex:2;min-width:140px;">Save Letter</button>
-      <button class="btn-gray" onclick="sophyLetterAssist()" style="flex:1;min-width:130px;">Ask Sophy for help</button>
+      <button class="btn btn-sophy" onclick="sophyLetterAssist()" style="flex:1;min-width:130px;">Ask Sophy for help</button>
       <button class="btn-gray" onclick="copyGratitudeLetter()" style="flex:1;min-width:80px;">Copy</button>
       <button class="btn-gray" onclick="emailGratitudeLetterToSelf()" style="flex:1;min-width:100px;">Email me</button>
     </div>
@@ -11170,8 +11171,8 @@ document.head.appendChild(themeStyle);
 
   <!-- ═══ Two-speed InkBlot: Capture / Sprint (v2 Phase 3, 2026-07-02) ═══ -->
   <div id="inkblotPills" style="display:flex;gap:0.5em;justify-content:center;flex-wrap:wrap;margin-bottom:1.25em;">
-    <button class="grat-pill active" id="blotPill-capture" onclick="switchBlotPractice('capture')">⚡ Capture</button>
-    <button class="grat-pill" id="blotPill-sprint" onclick="switchBlotPractice('sprint')">⏱️ Sprint</button>
+    <button class="grat-pill active" id="blotPill-capture" onclick="switchBlotPractice('capture')">Capture</button>
+    <button class="grat-pill" id="blotPill-sprint" onclick="switchBlotPractice('sprint')">Sprint</button>
   </div>
 
   <!-- ═══ Sprint panel (Pennebaker expressive writing; Frattaroli 2006) ═══ -->
@@ -11287,8 +11288,8 @@ document.head.appendChild(themeStyle);
 
 <!-- ═══ Journal practices: Free-write / Reframe (v2 Phase 3, 2026-07-02) ═══ -->
 <div id="journalPills" style="display:flex;gap:0.5em;justify-content:center;flex-wrap:wrap;margin-bottom:1.25em;">
-  <button class="grat-pill active" id="journalPill-free" onclick="switchJournalPractice('free')">✍️ Free-write</button>
-  <button class="grat-pill" id="journalPill-reframe" onclick="switchJournalPractice('reframe')">🔄 Reframe</button>
+  <button class="grat-pill active" id="journalPill-free" onclick="switchJournalPractice('free')">Free-write</button>
+  <button class="grat-pill" id="journalPill-reframe" onclick="switchJournalPractice('reframe')">Reframe</button>
 </div>
 
 <!-- ═══ Reframe panel (perspective practice — wellness-framed, zero clinical language) ═══ -->
@@ -11782,7 +11783,7 @@ document.head.appendChild(themeStyle);
 
       <hr class="info-modal-divider"/>
 
-      <h3>🔄 Reframe: Perspective Practice</h3>
+      <h3>Reframe: Perspective Practice</h3>
       <p>
         Four short steps to look at one moment from a second angle: what happened, what your mind made it mean, the evidence both ways, and another honest read that fits the facts. Drawn from decades of cognitive-behavioral research on how re-appraising a situation changes how it lands. Not forced positivity—just a fair second look.
       </p>
@@ -12141,7 +12142,7 @@ document.head.appendChild(themeStyle);
 
       <hr class="info-modal-divider"/>
 
-      <h3>⏱️ Sprint: Write Through It</h3>
+      <h3>Sprint: Write Through It</h3>
       <p>
         The other speed of InkBlot. A Sprint is 15 or 20 minutes of continuous writing about something that's weighing on you—the most-studied journaling protocol in psychology (Pennebaker &amp; Beall, 1986; Frattaroli's 2006 meta-analysis covers 146 studies). The rules are simple: keep writing, don't fix grammar, don't stop to judge it.
       </p>
@@ -13411,7 +13412,7 @@ function generateReadableHTML(data) {
 </head>
 <body>
     <div class="header">
-        <h1>📖 InkWell Personal Data Report</h1>
+        <h1>InkWell Personal Data Report</h1>
         <p><strong>${userProfile.displayName || 'User Report'}</strong><br>
         Generated: ${exportInfo.exportDate}<br>
         Total Entries: ${statistics.totalJournalEntries} | Active Goals: ${statistics.activeManifests}</p>

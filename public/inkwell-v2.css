@@ -1,0 +1,214 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   INKWELL V2 COMPONENT CONTRACTS — canonical, loads LAST, wins every war.
+   Source of truth: builds/ui-pass-2026-07/ mockups (Adam-approved).
+   Rule: one component per section. When a component lives here, ALL older
+   strata definitions for it are dead letters — do not patch them, patch HERE.
+   Created 2026-07-02 after the spot-fix method failed (5 competing strata).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────
+   COMPONENT: BUTTONS — one family, four voices.
+   Primary (teal solid) · Gray (quiet neutral) · Sophy (ghost coral)
+   · Danger (red). Per mockup: radius 10px, Manrope 700, calm motion.
+   ───────────────────────────────────────────────────────────────── */
+.btn,
+button.btn {
+  font-family: var(--body-font) !important;
+  font-weight: 700 !important;
+  font-size: 0.92rem !important;
+  line-height: 1.2 !important;
+  border-radius: 10px !important;
+  padding: 0.7em 1.5em !important;
+  border: 1.5px solid transparent !important;
+  background: var(--btn-primary) !important;
+  color: #ffffff !important;
+  cursor: pointer;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+.btn:hover {
+  background: var(--btn-primary-hover) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm) !important;
+}
+.btn:disabled {
+  opacity: 0.45 !important;
+  transform: none !important;
+  box-shadow: none !important;
+  cursor: default !important;
+}
+
+/* Gray — ONE gray, both themes, always visible against its page */
+.btn.btn-gray,
+.btn-gray {
+  background: var(--btn-secondary) !important;
+  color: var(--font-secondary) !important;
+  border: 1.5px solid var(--border-medium) !important;
+}
+.btn.btn-gray:hover,
+.btn-gray:hover {
+  background: var(--btn-secondary-hover) !important;
+  color: var(--font-main) !important;
+  transform: translateY(-1px);
+}
+
+/* Sophy — the mockup ghost. Coral line + coral text, fills on hover.
+   Never a slab. This is her voice everywhere she acts. */
+.btn.btn-sophy,
+.btn-sophy {
+  background: transparent !important;
+  color: var(--accent-sophy) !important;
+  border: 1.5px solid var(--accent-sophy) !important;
+  box-shadow: none !important;
+}
+.btn.btn-sophy:hover,
+.btn-sophy:hover {
+  background: var(--accent-sophy) !important;
+  color: #241512 !important;
+  border-color: var(--accent-sophy) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm) !important;
+}
+html[data-theme='dark'] .btn-sophy {
+  color: var(--accent-sophy-light) !important;
+  border-color: var(--accent-sophy) !important;
+}
+html[data-theme='dark'] .btn-sophy:hover {
+  color: #241512 !important;
+}
+
+/* Danger stays red, same chassis */
+.btn.btn-danger,
+.btn-danger {
+  background: var(--btn-danger) !important;
+  color: #fff !important;
+}
+.btn.btn-danger:hover,
+.btn-danger:hover { background: var(--btn-danger-hover) !important; }
+
+/* ─────────────────────────────────────────────────────────────────
+   COMPONENT: PILLS — quiet selectors, one voice. Active state must
+   survive dark theme (was washing out: dark override painted all
+   .grat-pill backgrounds; contract pins it).
+   ───────────────────────────────────────────────────────────────── */
+.grat-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.45em;
+  padding: 0.6em 1.25em !important;
+  border-radius: 999px !important;
+  border: 1.5px solid var(--border-medium) !important;
+  background: transparent !important;
+  color: var(--font-secondary) !important;
+  font-family: var(--body-font) !important;
+  font-size: 0.92rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em;
+  line-height: 1 !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.grat-pill:hover {
+  border-color: var(--brand-primary) !important;
+  color: var(--font-main) !important;
+}
+.grat-pill.active {
+  background: var(--brand-primary) !important;
+  border-color: var(--brand-primary) !important;
+  color: #ffffff !important;
+  box-shadow: var(--shadow-sm);
+}
+html[data-theme='dark'] .grat-pill.active {
+  background: var(--btn-primary) !important;   /* deep teal, not washed light */
+  border-color: var(--btn-primary) !important;
+  color: #ffffff !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   COMPONENT: SOPHY ROW — exact mockup port. Gradient tint that
+   blends yet stays distinct, hairline coral border, glowing orb,
+   serif italic line, ghost action inside the row's language.
+   ───────────────────────────────────────────────────────────────── */
+.sophy-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1em !important;
+  background: linear-gradient(90deg, rgba(212, 148, 137, 0.14), rgba(212, 148, 137, 0.03) 70%, transparent) !important;
+  border: 1px solid rgba(212, 148, 137, 0.28) !important;
+  border-radius: 14px !important;
+  padding: 1em 1.25em !important;
+  margin: 0.75em 0 1em !important;
+}
+.sophy-orb {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 50% !important;
+  flex-shrink: 0;
+  background: radial-gradient(circle at 35% 30%, var(--accent-sophy-light), var(--accent-sophy) 60%, #B27568) !important;
+  animation: sophyPresence 3.2s ease-in-out infinite alternate !important;
+}
+@keyframes sophyPresence {
+  from { box-shadow: 0 0 6px 0 rgba(212, 148, 137, 0.14); }
+  to   { box-shadow: 0 0 18px 3px rgba(212, 148, 137, 0.4); }
+}
+.sophy-row-txt { flex: 1; text-align: left; }
+.sophy-row-who {
+  color: var(--accent-sophy) !important;
+  font-family: var(--body-font) !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+}
+html[data-theme='dark'] .sophy-row-who { color: var(--accent-sophy-light) !important; }
+.sophy-row-line {
+  font-family: var(--serif-font) !important;
+  font-style: italic !important;
+  font-size: 1.02rem !important;
+  color: var(--font-main) !important;
+  line-height: 1.5;
+}
+
+/* Sophy's output blocks share her tint language */
+.sophy-info {
+  background: linear-gradient(90deg, rgba(212, 148, 137, 0.12), rgba(212, 148, 137, 0.04)) !important;
+  border: 1px solid rgba(212, 148, 137, 0.22) !important;
+  border-left: 3px solid var(--accent-sophy) !important;
+  border-radius: 0 10px 10px 0 !important;
+  color: var(--font-main) !important;
+  box-shadow: none !important;
+}
+.sophy-info:empty { display: none !important; }
+
+/* ─────────────────────────────────────────────────────────────────
+   COMPONENT: CALENDAR — theme-token colors, both themes.
+   ───────────────────────────────────────────────────────────────── */
+#calendarContainer table { border-collapse: collapse; }
+#calendarContainer th {
+  color: var(--font-muted) !important;
+  font-family: var(--body-font) !important;
+  font-weight: 700 !important;
+}
+#calendarContainer td {
+  color: var(--font-secondary) !important;
+  border: 1px solid var(--border-light) !important;
+  font-family: var(--body-font) !important;
+}
+#calendarContainer td[style*="background-color"] {
+  background-color: var(--brand-primary) !important;
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   SURFACE: dark gets quiet linen so the ink isn't a void.
+   Two ultra-faint crosshatch lines — texture you feel, not see.
+   ───────────────────────────────────────────────────────────────── */
+html[data-theme='dark'] body {
+  background-color: #111A1C !important;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(237, 231, 220, 0.016) 0px, rgba(237, 231, 220, 0.016) 1px, transparent 1px, transparent 3px),
+    repeating-linear-gradient(90deg, rgba(237, 231, 220, 0.012) 0px, rgba(237, 231, 220, 0.012) 1px, transparent 1px, transparent 3px) !important;
+}
