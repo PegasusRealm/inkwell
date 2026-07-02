@@ -39,8 +39,7 @@
       --body-font: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
       --serif-font: 'Newsreader', Georgia, serif;
 
-      /* Surfaces — white-washed watercolor texture over crisp white (Adam, 2026-07-02) */
-      --bg-primary: linear-gradient(rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.94)), url('watercolor-teal-bg.png') center / cover fixed;
+      --bg-primary: linear-gradient(180deg, #FFFFFF 0%, #F4F8F7 100%); /* quiet air, no texture (watercolor retired again 2026-07-02) */
       --bg-card: #FFFFFF;
       --bg-card-hover: #FAFBFB;
       --bg-muted: #F6F8F8;
@@ -147,7 +146,7 @@
 
     /* Explicit light = White & Clean (watercolor bg image retired 2026-07-02) */
     html[data-theme='light'] {
-      --bg-primary: linear-gradient(rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.94)), url('watercolor-teal-bg.png') center / cover fixed;
+      --bg-primary: linear-gradient(180deg, #FFFFFF 0%, #F4F8F7 100%); /* quiet air, no texture (watercolor retired again 2026-07-02) */
       --bg-card: #FFFFFF;
       --bg-muted: #F6F8F8;
       --font-main: #101B19;
@@ -809,12 +808,15 @@
 
     /* Sophy-themed button: accent color with modern styling */
     .btn-sophy {
-      background: var(--accent-sophy);
-      color: #241512; /* warm ink on coral — readable, crisp (2026-07-02) */
-      border: none;
-      border-radius: 12px;
-      padding: 0.875rem 1.5rem;
-      font-size: 0.95rem;
+      /* Mockup foundation (2026-07-02): Sophy speaks in ghost coral — line + text,
+         never a slab. Fill on hover only. Kills the teal/coral vibration. */
+      background: transparent;
+      color: var(--accent-sophy);
+      border: 1.5px solid var(--accent-sophy);
+      border-radius: 10px;
+      padding: 0.75rem 1.4rem;
+      font-family: var(--body-font);
+      font-size: 0.92rem;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -920,6 +922,17 @@
     }
     .settings-card.sophy { border-left-color: var(--accent-sophy); }
     .settings-card.danger { border-left-color: var(--btn-danger); }
+    /* Section headers = mockup label language: small caps, tracked, structural */
+    .settings-card h3 {
+      font-family: var(--body-font) !important;
+      font-size: 0.74rem !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.16em !important;
+      text-transform: uppercase !important;
+      color: var(--brand-primary) !important;
+    }
+    .settings-card.sophy h3 { color: var(--accent-sophy) !important; }
+    .settings-card.danger h3 { color: var(--btn-danger) !important; }
 
     /* SMS Notifications Section Styles (joined the card system 2026-07-02) */
     .sms-section {
@@ -1315,7 +1328,7 @@
     }
 
     html[data-theme='dark'] #goodbyeModal h2 {
-      color: #7BB8C4 !important;
+      color: var(--brand-light) !important;
     }
 
     html[data-theme='dark'] #goodbyeModal p {
@@ -1336,7 +1349,7 @@
     }
 
     html[data-theme='dark'] #signupModal h2 {
-      color: #7BB8C4 !important;
+      color: var(--brand-light) !important;
     }
 
     html[data-theme='dark'] #signupModal p {
@@ -1380,7 +1393,7 @@
     }
 
     html[data-theme='dark'] #signupModal a:hover {
-      color: #7BB8C4 !important;
+      color: var(--brand-light) !important;
     }
 
     /* Enhanced Dark Theme for Login Modal */
@@ -1392,7 +1405,7 @@
     }
 
     html[data-theme='dark'] #loginModal h2 {
-      color: #7BB8C4 !important;
+      color: var(--brand-light) !important;
     }
 
     html[data-theme='dark'] #loginModal p {
@@ -1436,7 +1449,7 @@
     }
 
     html[data-theme='dark'] #loginModal a:hover {
-      color: #7BB8C4 !important;
+      color: var(--brand-light) !important;
     }
 
     /* Enhanced Dark Theme for About InkWell Modal */
@@ -1448,7 +1461,7 @@
     }
 
     html[data-theme='dark'] #aboutInkwellModal h2 {
-      color: #7BB8C4 !important;
+      color: var(--brand-light) !important;
     }
 
     html[data-theme='dark'] #aboutInkwellModal h3 {
@@ -1461,7 +1474,7 @@
     }
 
     html[data-theme='dark'] #aboutInkwellModal strong {
-      color: #7BB8C4 !important;
+      color: var(--brand-light) !important;
     }
 
     html[data-theme='dark'] #aboutInkwellModal span {
@@ -2034,13 +2047,16 @@
     }
     
     .btn-sophy {
-      background: var(--accent-sophy) !important;
-      box-shadow: var(--shadow-sm) !important;
+      background: transparent !important;
+      border: 1.5px solid var(--accent-sophy) !important;
+      color: var(--accent-sophy) !important;
+      box-shadow: none !important;
     }
 
     .btn-sophy:hover {
-      background: var(--accent-sophy-light) !important;
-      box-shadow: var(--shadow-md) !important;
+      background: var(--accent-sophy) !important;
+      color: #241512 !important;
+      box-shadow: var(--shadow-sm) !important;
     }
     
     .btn-gray {
@@ -2148,7 +2164,7 @@
     
     /* Fix text contrast in dark mode instruction sections */
     html[data-theme='dark'] .instruction-section h4 {
-      color: #4fb3d9 !important;
+      color: var(--brand-primary) !important;
     }
     
     html[data-theme='dark'] .instruction-section div,
@@ -2169,8 +2185,8 @@
     html[data-theme='dark'] .ai-input:focus,
     html[data-theme='dark'] textarea:focus,
     html[data-theme='dark'] input[type="text"]:focus {
-      border-color: #4fb3d9 !important;
-      box-shadow: 0 4px 16px rgba(79,179,217,0.3), 0 0 0 3px rgba(79,179,217,0.1) !important;
+      border-color: var(--brand-primary) !important;
+      box-shadow: 0 4px 16px rgba(42,105,114,0.3), 0 0 0 3px rgba(42,105,114,0.1) !important;
     }
     
     html[data-theme='dark'] .journal-heading,
@@ -2186,7 +2202,7 @@
     }
     
     html[data-theme='dark'] .wish-section::before {
-      background: linear-gradient(180deg, #4fb3d9, rgba(79,179,217,0.5)) !important;
+      background: linear-gradient(180deg, var(--brand-primary), rgba(42,105,114,0.5)) !important;
     }
     
     /* ✨ DARK MODE TEXT CONTRAST FIXES */
@@ -2291,14 +2307,15 @@
     }
     
     html[data-theme='dark'] .btn-sophy {
-      background: var(--accent-sophy) !important;
-      box-shadow: var(--shadow-sm) !important;
-      color: #241512 !important; /* ink on coral, both themes */
+      background: transparent !important;
+      border: 1.5px solid var(--accent-sophy) !important;
+      color: var(--accent-sophy-light) !important;
+      box-shadow: none !important;
     }
 
     html[data-theme='dark'] .btn-sophy:hover {
-      background: var(--accent-sophy-light) !important;
-      box-shadow: var(--shadow-md) !important;
+      background: var(--accent-sophy) !important;
+      color: #241512 !important;
     }
     
     /* Fix checkbox and form element text */
@@ -2482,13 +2499,13 @@
     }
     
     html[data-theme='dark'] .subtext-muted {
-      color: rgba(79,179,217,0.7) !important;
+      color: rgba(42,105,114,0.7) !important;
     }
     
     /* Section headers with better visual weight */
     .section-header h2,
     .section-title {
-      background: linear-gradient(135deg, #2A6972 0%, #4fb3d9 100%);
+      background: linear-gradient(135deg, #2A6972 0%, var(--brand-primary) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -2497,7 +2514,7 @@
     
     html[data-theme='dark'] .section-header h2,
     html[data-theme='dark'] .section-title {
-      background: linear-gradient(135deg, #4fb3d9 0%, #7dd3fc 100%);
+      background: linear-gradient(135deg, var(--brand-primary) 0%, #7dd3fc 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -2995,7 +3012,7 @@ html[data-theme='dark'] {
 
     /* Custom colors for dark mode past entries text (not all) */
 html[data-theme='dark'] .entry-card a {
-  color: #7BB8C4 !important; /* lighter teal for links */
+  color: var(--brand-light) !important; /* lighter teal for links */
   /* glow stripped 2026-07-02 */
 }
 
@@ -3222,7 +3239,7 @@ html[data-theme='dark'] #sophyInsightsSection label {
 }
 
 html[data-theme='dark'] #sophyInsightsSection strong {
-  color: #7BB8C4 !important;
+  color: var(--brand-light) !important;
 }
 
 /* Edit Entry Modal Dark Theme */
@@ -3233,7 +3250,7 @@ html[data-theme='dark'] #editEntryModal .card-block {
 }
 
 html[data-theme='dark'] #editEntryModal h2 {
-  color: #7BB8C4 !important;
+  color: var(--brand-light) !important;
 }
 
 html[data-theme='dark'] #editEntryModal label {
@@ -3247,7 +3264,7 @@ html[data-theme='dark'] #editEntryModal textarea {
 }
 
 html[data-theme='dark'] #editEntryModal textarea:focus {
-  border-color: #7BB8C4 !important;
+  border-color: var(--brand-light) !important;
   outline: none !important;
 }
   .coach-tag-label {
@@ -3694,7 +3711,7 @@ html[data-theme='dark'] .coach-tag-toggle {
 }
 
 html[data-theme='dark'] .coach-tag-toggle::before {
-  background: linear-gradient(180deg, #4A9BA8 0%, #7BB8C4 100%);
+  background: linear-gradient(180deg, #4A9BA8 0%, var(--brand-light) 100%);
 }
 
 html[data-theme='dark'] .coach-tag-toggle label {
@@ -3702,7 +3719,7 @@ html[data-theme='dark'] .coach-tag-toggle label {
 }
 
 html[data-theme='dark'] .coach-tag-toggle:hover {
-  border-color: #7BB8C4;
+  border-color: var(--brand-light);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
@@ -4263,7 +4280,7 @@ html[data-theme='dark'] .info-modal-content {
 }
 
 html[data-theme='dark'] .info-modal-content h2 {
-  color: #7BB8C4 !important;
+  color: var(--brand-light) !important;
 }
 
 html[data-theme='dark'] .info-modal-content h3 {
@@ -4280,7 +4297,7 @@ html[data-theme='dark'] .info-modal-content div {
 }
 
 html[data-theme='dark'] .info-modal-content strong {
-  color: #7BB8C4 !important;
+  color: var(--brand-light) !important;
 }
 
 html[data-theme='dark'] .info-modal-content em {
@@ -5856,8 +5873,8 @@ window.loadCompoundingSurfaces = async function() {
       const months = Math.floor((Date.now() - firstDate.getTime()) / (30.44 * 24 * 3600 * 1000));
       const since = firstDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
       el.textContent = months >= 1
-        ? `📖 Your journal holds ${months} month${months === 1 ? '' : 's'} of your thinking (since ${since}). Everything you write compounds.`
-        : `📖 Your journal is just beginning. Everything you write from here compounds.`;
+        ? `Your journal holds ${months} month${months === 1 ? '' : 's'} of your thinking (since ${since}). Everything you write compounds.`
+        : `Your journal is just beginning. Everything you write from here compounds.`;
       el.style.display = 'block';
     }
   } catch (e) { console.warn('Depth indicator skipped:', e.message); }
@@ -5881,7 +5898,7 @@ window.loadCompoundingSurfaces = async function() {
       if (!snap.empty) {
         const e = snap.docs[0].data();
         const d = e.createdAt?.toDate ? e.createdAt.toDate() : new Date(e.createdAt);
-        document.getElementById('anniversaryLabel').textContent = `🕰️ ${w.label}...`;
+        document.getElementById('anniversaryLabel').textContent = `${w.label}...`;
         document.getElementById('anniversaryTitle').textContent =
           `${e.title || 'Journal entry'} — ${d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
         anniversaryFullText = e.text || '';
@@ -8205,7 +8222,7 @@ if (planSuggestion) planSuggestion.textContent = "";
         }
         
         // Show search header in results container
-        resultsContainer.innerHTML = `<h4 style="margin-bottom: 1em; color: var(--brand-primary);">� Found ${entries.length} relevant entries:</h4>`;
+        resultsContainer.innerHTML = `<h4 style="margin-bottom: 1em; color: var(--brand-primary);">Found ${entries.length} relevant entries:</h4>`;
         
         // Clear past entries container
         pastEntriesContainer.innerHTML = "";
@@ -8577,10 +8594,10 @@ container.style.cssText = `
         
         contentDiv.innerHTML = `
           <div style="margin-bottom: 1.5em;">
-            <h3 style="color: #7BB8C4; border-bottom: 2px solid #7BB8C4; padding-bottom: 0.5em; margin-bottom: 1em; display: flex; align-items: center;">
+            <h3 style="color: var(--brand-light); border-bottom: 2px solid var(--brand-light); padding-bottom: 0.5em; margin-bottom: 1em; display: flex; align-items: center;">
               💭 <span style="margin-left: 0.5rem;">Sophy's Reflection</span>
             </h3>
-            <div style="background: var(--bg-muted); padding: 1.5em; border-radius: 8px; margin: 0; white-space: pre-wrap; line-height: 1.6; font-style: italic; border-left: 4px solid #7BB8C4;">${reflectionData}</div>
+            <div style="background: var(--bg-muted); padding: 1.5em; border-radius: 8px; margin: 0; white-space: pre-wrap; line-height: 1.6; font-style: italic; border-left: 4px solid var(--brand-light);">${reflectionData}</div>
           </div>
           
           <div style="margin-top: 2em; padding-top: 1em; border-top: 1px solid var(--border); font-style: italic; color: var(--info-muted);">
@@ -8737,7 +8754,7 @@ container.style.cssText = `
     const entryCard = event.target.closest('.entry-card');
     if (entryCard) {
       // Reset border to teal
-      entryCard.style.borderLeft = '4px solid var(--brand-secondary, #7BB8C4)';
+      entryCard.style.borderLeft = '4px solid var(--brand-secondary, var(--brand-light))';
       entryCard.style.boxShadow = '';
       
       // Reset background to normal theme-appropriate color
@@ -8815,7 +8832,7 @@ container.style.cssText = `
             const calendarCell = document.querySelector(`[data-date="${dateKey}"]`);
             if (calendarCell) {
               // Reset to normal teal journal entry styling
-              const tealColor = getComputedStyle(document.documentElement).getPropertyValue('--brand-secondary').trim() || '#7BB8C4';
+              const tealColor = getComputedStyle(document.documentElement).getPropertyValue('--brand-secondary').trim() || 'var(--brand-light)';
               calendarCell.style.border = '1px solid #ccc';
               calendarCell.style.backgroundColor = tealColor;
               calendarCell.style.color = '#fff';
@@ -8874,7 +8891,7 @@ function updateCalendarCellsDirectly() {
         borderColor.includes('#805AD5') || borderColor.includes('#d49489')) {
       
       // Change to teal
-      cell.style.backgroundColor = '#7BB8C4';
+      cell.style.backgroundColor = 'var(--brand-light)';
       cell.style.border = '1px solid #ccc';
       cell.style.boxShadow = '';
       cell.style.fontWeight = 'normal';
@@ -8946,7 +8963,7 @@ async function updateCalendarHighlighting() {
         dateElement.style.boxShadow = '0 0 4px rgba(128, 90, 213, 0.5)';
       } else if (datesWithEntries.has(dateKey)) {
         // Revert to teal highlighting - has entries but no unread replies
-        const tealColor = getComputedStyle(document.documentElement).getPropertyValue('--brand-secondary').trim() || '#7BB8C4';
+        const tealColor = getComputedStyle(document.documentElement).getPropertyValue('--brand-secondary').trim() || 'var(--brand-light)';
         dateElement.style.border = '1px solid #ccc';
         dateElement.style.backgroundColor = tealColor;
         dateElement.style.color = '#fff';
@@ -10967,15 +10984,9 @@ document.head.appendChild(themeStyle);
   border: 1px solid var(--border-light);
 ">
   <div style="display: flex; justify-content: center; gap: 0.5em; width: 100%;">
-    <button id="gratitudeModeBtn" class="grat-pill active" onclick="switchJournalMode('gratitude')">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 21C7 17 3 13.5 3 9.5A4.5 4.5 0 0112 6a4.5 4.5 0 019 3.5c0 4-4 7.5-9 11.5z"/></svg>
-      Gratitude</button>
-    <button id="inkblotModeBtn" class="grat-pill" onclick="switchJournalMode('inkblot')">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
-      InkBlot</button>
-    <button id="fullJournalModeBtn" class="grat-pill" onclick="switchJournalMode('full')">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      Full Journal</button>
+    <button id="gratitudeModeBtn" class="grat-pill active" onclick="switchJournalMode('gratitude')">Gratitude</button>
+    <button id="inkblotModeBtn" class="grat-pill" onclick="switchJournalMode('inkblot')">InkBlot</button>
+    <button id="fullJournalModeBtn" class="grat-pill" onclick="switchJournalMode('full')">Full Journal</button>
   </div>
   
   <!-- Weekly Activity Dots (inside container) -->
@@ -11025,9 +11036,9 @@ document.head.appendChild(themeStyle);
 
   <!-- ═══ Gratitude Protocol Engine — practice pills (v2 Phase 2a, 2026-07-01) ═══ -->
   <style>
-    .grat-pill{padding:0.35em 0.9em;border-radius:999px;border:1px solid var(--border-medium);background:var(--bg-card);color:var(--font-main);cursor:pointer;font-size:0.85em;position:relative;transition:all 0.2s;}
-    .grat-pill:hover{border-color:var(--brand-primary);}
-    .grat-pill.active{background:var(--brand-primary);color:#fff;border-color:var(--brand-primary);}
+    .grat-pill{display:inline-flex;align-items:center;justify-content:center;gap:0.45em;padding:0.6em 1.25em;border-radius:999px;border:1.5px solid var(--border-medium);background:transparent;color:var(--font-secondary);cursor:pointer;font-family:var(--body-font);font-size:0.92rem;font-weight:600;letter-spacing:0.01em;line-height:1;position:relative;transition:all 0.2s;}
+    .grat-pill:hover{border-color:var(--brand-primary);color:var(--font-main);}
+    .grat-pill.active{background:var(--brand-primary);color:#fff;border-color:var(--brand-primary);box-shadow:var(--shadow-sm);}
     .grat-pill .today-dot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:#D49489;display:inline-block;}
     .grat-textarea{width:100%;min-height:140px;padding:0.75em;border-radius:8px;border:1px solid var(--border-medium);font-size:1em;resize:vertical;background:var(--bg-card);color:var(--font-main);box-sizing:border-box;}
     /* Sophy orb — her permanent mark (Slice 2, 2026-07-02). Glow = presence, the one licensed glow. */
@@ -11039,11 +11050,11 @@ document.head.appendChild(themeStyle);
     .sophy-row-line{font-family:var(--serif-font);font-style:italic;font-size:1rem;color:var(--font-main);}
   </style>
   <div id="gratitudePills" style="display:flex;gap:0.5em;justify-content:center;flex-wrap:wrap;margin-bottom:1.25em;">
-    <button class="grat-pill active" id="gratPill-three" onclick="switchGratitudePractice('three')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg> Three</button>
-    <button class="grat-pill" id="gratPill-deep" onclick="switchGratitudePractice('deep')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg> One, Deeply</button>
-    <button class="grat-pill" id="gratPill-subtraction" onclick="switchGratitudePractice('subtraction')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="9"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"/></svg> Without It</button>
-    <button class="grat-pill" id="gratPill-letter" onclick="switchGratitudePractice('letter')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg> Letter</button>
-    <button class="grat-pill" id="gratPill-savor" onclick="switchGratitudePractice('savor')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg> Savor</button>
+    <button class="grat-pill active" id="gratPill-three" onclick="switchGratitudePractice('three')">Three</button>
+    <button class="grat-pill" id="gratPill-deep" onclick="switchGratitudePractice('deep')">One, Deeply</button>
+    <button class="grat-pill" id="gratPill-subtraction" onclick="switchGratitudePractice('subtraction')">Without It</button>
+    <button class="grat-pill" id="gratPill-letter" onclick="switchGratitudePractice('letter')">Letter</button>
+    <button class="grat-pill" id="gratPill-savor" onclick="switchGratitudePractice('savor')">Savor</button>
   </div>
 
   <div id="gratPracticeThree">
@@ -11354,7 +11365,7 @@ document.head.appendChild(themeStyle);
     <!-- Tag Input Section (Collapsible) -->
     <div class="tag-input-container" id="tagInputContainer">
       <div class="tag-input-header" onclick="toggleTagInput()">
-        <span>🏷️ Add Tags</span>
+        <span>Add Tags</span>
         <span class="toggle-icon">▼</span>
       </div>
       <div class="tag-input-body" id="tagInputBody">
@@ -11441,7 +11452,7 @@ document.head.appendChild(themeStyle);
     <h4 style="text-align: center; color: #2A6972; margin-bottom: 0.8em; font-size: 1em;">Your Manifesting Journey</h4>
     
     <div style="position: relative; height: 25px; background: #f0f0f0; border-radius: 15px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); margin: 0 auto; width: 75%; max-width: 400px;">
-      <div id="wishProgressFill" style="position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #4a9ead, #7bb8c4); transition: width 0.8s ease, background 0.5s ease; border-radius: 15px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;">
+      <div id="wishProgressFill" style="position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #4a9ead, var(--brand-light)); transition: width 0.8s ease, background 0.5s ease; border-radius: 15px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;">
         <span id="wishProgressEmoji" style="font-size: 1.2em; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.15));">🌱</span>
       </div>
     </div>
@@ -11566,14 +11577,14 @@ document.head.appendChild(themeStyle);
     <!-- Period Insights Buttons (below calendar) -->
     <div id="periodInsightsSection" style="text-align: center; margin: 1.5em 0; padding: 1em; background: linear-gradient(135deg, rgba(42, 105, 114, 0.08) 0%, rgba(74, 155, 168, 0.05) 100%); border-radius: 12px; border: 1px solid rgba(42, 105, 114, 0.15);">
       <p style="margin: 0 0 0.8em 0; color: var(--font-secondary); font-size: 0.9em;">
-        ✨ Let Sophy find patterns in your journey
+        Let Sophy find patterns in your journey
       </p>
       <div style="display: flex; gap: 1em; justify-content: center; flex-wrap: wrap;">
         <button class="btn" onclick="requestPeriodInsights('weekly')" style="display: inline-flex; align-items: center; gap: 0.5em;">
-          <span>📊</span> 7-Day Insights
+          7-Day Insights
         </button>
         <button class="btn" onclick="requestPeriodInsights('monthly')" style="display: inline-flex; align-items: center; gap: 0.5em;">
-          <span>📈</span> 30-Day Insights
+          30-Day Insights
         </button>
       </div>
     </div>
@@ -11581,7 +11592,7 @@ document.head.appendChild(themeStyle);
     <!-- Tag Management Section -->
     <div class="tag-management-section" id="tagManagementSection">
       <div class="tag-management-header" onclick="toggleTagManagement()">
-        <span>🏷️ Filter & Manage Tags</span>
+        <span>Filter &amp; Manage Tags</span>
         <span class="toggle-icon" id="tagManagementToggle">▼</span>
       </div>
       <div class="tag-management-body" id="tagManagementBody">
@@ -12295,7 +12306,7 @@ document.head.appendChild(themeStyle);
 <div id="reflectionDataModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto;">
   <div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 20px;">
     <div style="background: var(--bg-card); color: var(--font-main); padding: 2em; border-radius: 10px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
-      <h2 style="margin-top: 0; text-align: center; color: #7BB8C4;">💭 Sophy's Reflection</h2>
+      <h2 style="margin-top: 0; text-align: center; color: var(--brand-light);">💭 Sophy's Reflection</h2>
     
     <div id="reflectionDataContent" style="line-height: 1.6;">
       <!-- Content will be populated by JavaScript -->
@@ -12895,7 +12906,7 @@ async function updateVisualsAfterMarkAsRead(entryId, dateKey, shouldRemoveHighli
               entryContainer.style.borderLeft.includes('coral') ||
               entryContainer.style.borderLeft.includes('5px')) {
             console.log("🎨 Changing border from coral to teal");
-            entryContainer.style.borderLeft = '4px solid #7BB8C4';
+            entryContainer.style.borderLeft = '4px solid var(--brand-light)';
           }
         }
         
@@ -12938,7 +12949,7 @@ async function updateVisualsAfterMarkAsRead(entryId, dateKey, shouldRemoveHighli
         });
         
         if (entryContainer.style.borderLeft && entryContainer.style.borderLeft.includes('d49489')) {
-          entryContainer.style.borderLeft = '4px solid #7BB8C4';
+          entryContainer.style.borderLeft = '4px solid var(--brand-light)';
         }
         
         if (entryContainer.style.background && entryContainer.style.background.includes('fff3cd')) {
@@ -12960,7 +12971,7 @@ async function updateVisualsAfterMarkAsRead(entryId, dateKey, shouldRemoveHighli
     const calendarCells = document.querySelectorAll(`[data-date="${dateKey}"]`);
     calendarCells.forEach(cell => {
       console.log("📅 Found calendar cell with data-date");
-      const tealColor = '#7BB8C4';
+      const tealColor = 'var(--brand-light)';
       cell.style.backgroundColor = tealColor;
       cell.style.border = '1px solid #ccc';
       cell.style.color = '#fff';
@@ -12993,7 +13004,7 @@ async function updateVisualsAfterMarkAsRead(entryId, dateKey, shouldRemoveHighli
               bgColor.includes('212, 148, 137')) {
             
             console.log("✅ Updating calendar cell for day", day);
-            cell.style.backgroundColor = '#7BB8C4';
+            cell.style.backgroundColor = 'var(--brand-light)';
             cell.style.border = '1px solid #ccc';
             cell.style.color = '#fff';
             cell.style.fontWeight = 'normal';
