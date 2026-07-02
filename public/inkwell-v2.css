@@ -171,6 +171,47 @@ html[data-theme='dark'] .sophy-row-who { color: var(--accent-sophy-light) !impor
   line-height: 1.5;
 }
 
+/* THE SOPHY BLOCK — one container for one function: orb, words, controls,
+   output, options. Everything inside inherits her language. */
+.sophy-block {
+  background: linear-gradient(135deg, rgba(212, 148, 137, 0.13), rgba(212, 148, 137, 0.04) 65%, transparent) !important;
+  border: 1px solid rgba(212, 148, 137, 0.28) !important;
+  border-radius: 14px !important;
+  padding: 1.1em 1.25em !important;
+  margin: 0.75em 0 1.25em !important;
+}
+.sophy-block .sophy-row {
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 0 0.9em !important;
+}
+.sophy-block .ai-input {
+  border: 1.5px solid rgba(212, 148, 137, 0.4) !important;
+  border-radius: 10px !important;
+  background: var(--bg-card) !important;
+  color: var(--font-main) !important;
+}
+.sophy-block .ai-input:focus {
+  border-color: var(--accent-sophy) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(212, 148, 137, 0.15) !important;
+}
+.sophy-block .sophy-info {
+  border: none !important;
+  border-left: 3px solid var(--accent-sophy) !important;
+  background: rgba(212, 148, 137, 0.10) !important;
+  margin-top: 0.75em !important;
+}
+.sophy-check {
+  display: block;
+  font-size: 0.85em !important;
+  color: var(--font-secondary) !important;
+  margin-top: 0.75em !important;
+}
+.sophy-check input { accent-color: var(--accent-sophy); }
+
 /* Sophy's output blocks share her tint language */
 .sophy-info {
   background: linear-gradient(90deg, rgba(212, 148, 137, 0.12), rgba(212, 148, 137, 0.04)) !important;

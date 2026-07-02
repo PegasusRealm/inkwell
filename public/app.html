@@ -57,9 +57,10 @@
       --accent-reflection: #1E8A99; /* was purple — reflection belongs to teal now */
       --accent-warm: #E53E3E;
 
-      /* Interactive states */
+      /* Interactive states — hover physics: buttons "come toward you."
+         Light theme: deepen. Dark theme: brighten. One mechanic, per-ground. */
       --btn-primary: #2A6972;
-      --btn-primary-hover: #1E8A99;
+      --btn-primary-hover: #1F565E;
       --btn-secondary: #F6F8F8;
       --btn-secondary-hover: #E6E9E9;
 
@@ -11310,30 +11311,31 @@ document.head.appendChild(themeStyle);
 </div>
 
 
-    <!-- Sophy orb row (Slice 2, 2026-07-02) — the pattern for every Sophy appearance -->
-    <div class="sophy-row">
-      <div class="sophy-orb"></div>
-      <div class="sophy-row-txt">
-        <div class="sophy-row-who">Sophy</div>
-        <div class="sophy-row-line">Want a place to start? Give me a topic, or let me pick a thread.</div>
+    <!-- Sophy block (2026-07-02): everything of hers lives inside her tint — one function, one container -->
+    <div class="sophy-block">
+      <div class="sophy-row">
+        <div class="sophy-orb"></div>
+        <div class="sophy-row-txt">
+          <div class="sophy-row-who">Sophy</div>
+          <div class="sophy-row-line">Want a place to start? Give me a topic, or let me pick a thread.</div>
+        </div>
       </div>
+      <div style="display: flex; gap: 0.5em; flex-wrap: wrap; align-items: stretch;">
+        <input
+          type="text"
+          id="promptTopic"
+          class="ai-input"
+          placeholder="e.g., burnout last week, goals, feeling stuck"
+          style="flex: 1; min-width: 200px; margin: 0;"
+        />
+        <button class="btn btn-sophy" id="askSophyPromptBtn" onclick="generatePrompt()">Ask for a prompt</button>
+      </div>
+      <p id="generatedPrompt" class="sophy-info"></p>
+      <label class="sophy-check">
+        <input type="checkbox" id="autoInsertPrompt" />
+        Save this Prompt in my Journal Entry
+      </label>
     </div>
-    <div style="display: flex; gap: 0.5em; flex-wrap: wrap; align-items: stretch; margin-bottom: 0.5em;">
-      <input
-        type="text"
-        id="promptTopic"
-        class="ai-input"
-        placeholder="e.g., burnout last week, goals, feeling stuck"
-        style="flex: 1; min-width: 200px; margin: 0;"
-      />
-      <button class="btn btn-sophy" id="askSophyPromptBtn" onclick="generatePrompt()">Ask for a prompt</button>
-    </div>
-    <p id="generatedPrompt" class="sophy-info"></p>
-
-    <label style="font-size:0.85em;display:block;margin-top:0.5em;margin-bottom:0.5em;">
-      <input type="checkbox" id="autoInsertPrompt" />
-      Save this Prompt in my Journal Entry
-    </label>
 
     <div class="workflow-divider"></div>
 
@@ -11345,12 +11347,21 @@ document.head.appendChild(themeStyle);
     <div id="journalCharCount" style="font-size:0.75em;color:#93A5A8;text-align:right;margin-top:-0.25em;margin-bottom:0.5em;">0 characters</div>
     <div id="entryStatus" style="font-size:0.85em;margin-top:0.5em;"></div>
 
-<button type="button" class="btn btn-sophy" id="askSophyBtn" style="color:#ffffff;" onclick="askSophyToReflect()">Ask Sophy for Reflection</button>    <div id="sophyInsight" class="sophy-info" style="white-space:pre-wrap;"></div>
-
-    <label style="font-size:0.85em;display:block;margin-top:0.5em;margin-bottom:0.5em;">
-      <input type="checkbox" id="autoInsertReflection" />
-      Save this Reflection in my Journal Entry
-    </label>
+    <div class="sophy-block">
+      <div class="sophy-row">
+        <div class="sophy-orb"></div>
+        <div class="sophy-row-txt">
+          <div class="sophy-row-who">Sophy</div>
+          <div class="sophy-row-line">When you're done writing, I can reflect it back to you.</div>
+        </div>
+        <button type="button" class="btn btn-sophy" id="askSophyBtn" onclick="askSophyToReflect()">Ask for Reflection</button>
+      </div>
+      <div id="sophyInsight" class="sophy-info" style="white-space:pre-wrap;"></div>
+      <label class="sophy-check">
+        <input type="checkbox" id="autoInsertReflection" />
+        Save this Reflection in my Journal Entry
+      </label>
+    </div>
 
     <hr style="margin:2em 0;border:none;border-top:1px solid #3a6b6b;" />
 
