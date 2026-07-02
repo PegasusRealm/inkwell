@@ -358,10 +358,7 @@ function initThemeSystem() {
       window.applyTheme(newTheme);
       // Sync with settings modal
       if (settingsThemeSelect) settingsThemeSelect.value = newTheme;
-      // Refresh past entries to apply theme
-      if (typeof window.loadPastEntries === "function") {
-        setTimeout(() => window.loadPastEntries(), 100);
-      }
+      // (theme-reload hack removed 2026-07-02 — CSS vars re-theme live; reloading here clobbered search results)
       // Force refresh placeholder styles
       setTimeout(refreshPlaceholderStyles, 100);
     });
@@ -375,10 +372,7 @@ function initThemeSystem() {
       window.applyTheme(newTheme);
       // Sync with main selector
       if (themeSelect) themeSelect.value = newTheme;
-      // Refresh past entries to apply theme
-      if (typeof window.loadPastEntries === "function") {
-        setTimeout(() => window.loadPastEntries(), 100);
-      }
+      // (theme-reload hack removed 2026-07-02 — CSS vars re-theme live; reloading here clobbered search results)
       // Force refresh placeholder styles
       setTimeout(refreshPlaceholderStyles, 100);
     });
@@ -2524,7 +2518,7 @@ function createPastEntryCard(entry) {
 
  if (entry.contextManifest || entry.manifestData) {
   const manifestToggle = document.createElement("button");
-  manifestToggle.textContent = "📜 Show Manifest";
+  manifestToggle.textContent = "Show Manifest";
   manifestToggle.className = "toggle-button";
   manifestToggle.style.cssText = `
     background: transparent;
@@ -2561,7 +2555,7 @@ function createPastEntryCard(entry) {
   manifestToggle.onclick = () => {
     const isVisible = manifestContent.style.display === "block";
     manifestContent.style.display = isVisible ? "none" : "block";
-    manifestToggle.textContent = isVisible ? "📜 Show Manifest" : "📜 Hide Manifest";
+    manifestToggle.textContent = isVisible ? "Show Manifest" : "Hide Manifest";
   };
 
   card.appendChild(manifestToggle);
@@ -2609,7 +2603,7 @@ if (entry.promptUsed) {
 
 if (entry.reflectionUsed) {
   const reflectionToggle = document.createElement("button");
-  reflectionToggle.textContent = "💭 Show Reflection";
+  reflectionToggle.textContent = "Show Reflection";
   reflectionToggle.className = "toggle-button";
   reflectionToggle.style.cssText = `
     background: transparent;
@@ -2639,7 +2633,7 @@ if (entry.reflectionUsed) {
   reflectionToggle.onclick = () => {
     const isVisible = reflectionContent.style.display === "block";
     reflectionContent.style.display = isVisible ? "none" : "block";
-    reflectionToggle.textContent = isVisible ? "💭 Show Reflection" : "💭 Hide Reflection";
+    reflectionToggle.textContent = isVisible ? "Show Reflection" : "Hide Reflection";
   };
 
   card.appendChild(reflectionToggle);
@@ -2901,7 +2895,7 @@ const actions = document.createElement("div");
 actions.style.marginTop = "1em";
 
 const editBtn = document.createElement("button");
-editBtn.textContent = "✏️ Edit";
+editBtn.textContent = "Edit";
 editBtn.className = "btn";
 editBtn.onclick = () => {
   // Show edit modal with current entry text
@@ -2959,7 +2953,7 @@ editBtn.onclick = () => {
 actions.appendChild(editBtn);
 
 const deleteBtn = document.createElement("button");
-deleteBtn.textContent = "🗑️ Delete";
+deleteBtn.textContent = "Delete";
 deleteBtn.className = "btn btn-gray";
 deleteBtn.onclick = async (e) => {
   e.preventDefault();
