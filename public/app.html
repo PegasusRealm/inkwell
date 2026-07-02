@@ -4389,28 +4389,28 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
 
 .splash-welcome-title {
   font-family: var(--title-font);
-  font-size: 4.5rem;
-  font-weight: 500;
-  color: #FFFFFF;
-  margin: 0 0 2rem 0;
+  font-size: clamp(2.6rem, 6vw, 4.2rem);
+  font-weight: 400;
+  color: #EDE7DC; /* bone, not stark white */
+  margin: 0 0 1.5rem 0;
   text-align: center;
-  letter-spacing: -0.02em;
-  text-shadow: 0 4px 60px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.01em;
+  line-height: 1.12;
   opacity: 0;
   animation: text-reveal 1.2s ease-out 0.3s forwards;
 }
 
 .splash-welcome-text {
-  font-family: var(--serif-font);
-  font-size: 1.5rem;
-  line-height: 2;
-  color: rgba(255, 255, 255, 0.85);
+  font-family: var(--body-font);
+  font-size: 1.02rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.72);
   text-align: center;
   margin: 0 0 3rem 0;
   max-width: 500px;
-  font-weight: 400;
-  font-style: italic;
-  letter-spacing: 0.03em;
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: 0.06em;
   opacity: 0;
   animation: text-reveal 1s ease-out 0.8s forwards;
 }
@@ -4425,23 +4425,23 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
 }
 
 .splash-brought-text {
-  font-family: var(--serif-font);
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-style: italic;
+  font-family: var(--body-font);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.45);
+  font-style: normal;
   margin-bottom: 0.75rem;
-  letter-spacing: 0.05em;
-  text-transform: lowercase;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
 .splash-pr-name {
   font-family: var(--title-font);
   font-size: 1.6rem;
-  font-weight: 500;
+  font-weight: 400;
   color: #89C9D4;
   margin-bottom: 1rem;
   letter-spacing: 0.02em;
-  text-shadow: 0 2px 20px rgba(137, 201, 212, 0.3);
 }
 
 .splash-pr-logo {
@@ -4486,10 +4486,9 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
   font-size: 2rem;
   font-style: italic;
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.9);
+  color: #EDE7DC;
   text-align: center;
-  letter-spacing: 0.04em;
-  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.02em;
   opacity: 0;
   animation: tagline-reveal 1.2s ease-out 5s forwards;
 }
