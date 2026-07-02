@@ -5390,14 +5390,108 @@ window.copyGratitudeLetter = function() {
   });
 };
 
-window.emailGratitudeLetterToSelf = function() {
-  const t = document.getElementById('gratLetterText')?.value || '';
+// ═══ Phase 2b: server-backed actions (gratitudeEngine) ═══
+
+async function gratEngineFetch(payload) {
+  const user = window.auth?.currentUser;
+  if (!user) throw new Error('Sign in required');
+  const idToken = await user.getIdToken();
+  const response = await fetch('https://us-central1-inkwell-alpha.cloudfunctions.net/gratitudeEngine', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+    body: JSON.stringify(payload)
+  });
+  const data = await response.json().catch(() => ({}));
+  return { ok: response.ok, status: response.status, data };
+}
+
+function gratStatus(t, c) {
+  const s = document.getElementById('gratitudeSaveStatus');
+  if (s) { s.textContent = t; s.style.color = c || 'var(--font-muted)'; }
+}
+
+window.personalSubtractionPrompt = async function() {
+  const btn = document.getElementById('gratPersonalBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '✨ Reading your journal...'; }
+  try {
+    const r = await gratEngineFetch({ action: 'personalSubtraction' });
+    if (r.status === 403 && r.data.code === 'UPGRADE_REQUIRED') {
+      gratStatus('Personalized practice is an InkWell Plus feature.', 'var(--font-muted)');
+      if (typeof window.showSubscriptionModal === 'function') window.showSubscriptionModal();
+      return;
+    }
+    if (r.ok && r.data.code === 'NOT_ENOUGH_HISTORY') {
+      gratStatus(r.data.message, 'var(--font-muted)');
+      return;
+    }
+    if (r.ok && r.data.prompt) {
+      const el = document.getElementById('gratSubtractionPrompt');
+      if (el) el.textContent = '✨ ' + r.data.prompt;
+      gratStatus('From your own journal.', '#4A8B8B');
+      setTimeout(() => gratStatus(''), 3000);
+      return;
+    }
+    gratStatus(r.data.error || 'Could not personalize right now.', '#c75050');
+  } catch (e) {
+    console.error('personalSubtraction failed:', e);
+    gratStatus('Could not personalize right now.', '#c75050');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '✨ From your journal'; }
+  }
+};
+
+window.sophyLetterAssist = async function() {
+  const ta = document.getElementById('gratLetterText');
+  const notes = ta?.value?.trim() || '';
+  if (notes.length < 5) {
+    gratStatus('Jot a few rough notes in the letter box first — who they are, what they did, what it meant.', '#c75050');
+    return;
+  }
+  gratStatus('Sophy is drafting...', 'var(--font-muted)');
+  try {
+    const r = await gratEngineFetch({
+      action: 'letterAssist',
+      notes: notes,
+      recipientName: document.getElementById('gratLetterTo')?.value?.trim() || ''
+    });
+    if (r.status === 403 && r.data.code === 'UPGRADE_REQUIRED') {
+      gratStatus('Sophy letter drafting is an InkWell Plus feature.', 'var(--font-muted)');
+      if (typeof window.showSubscriptionModal === 'function') window.showSubscriptionModal();
+      return;
+    }
+    if (r.ok && r.data.draft) {
+      ta.value = r.data.draft;
+      gratStatus('Draft ready — make it yours before saving.', '#4A8B8B');
+      setTimeout(() => gratStatus(''), 4000);
+      return;
+    }
+    gratStatus(r.data.error || 'Sophy could not draft right now.', '#c75050');
+  } catch (e) {
+    console.error('letterAssist failed:', e);
+    gratStatus('Sophy could not draft right now.', '#c75050');
+  }
+};
+
+window.emailGratitudeLetterToSelf = async function() {
+  const t = document.getElementById('gratLetterText')?.value?.trim() || '';
   if (!t) return;
   const to = document.getElementById('gratLetterTo')?.value?.trim() || '';
-  const email = window.auth?.currentUser?.email || '';
-  location.href = 'mailto:' + encodeURIComponent(email) +
-    '?subject=' + encodeURIComponent('Gratitude letter' + (to ? ' to ' + to : '')) +
-    '&body=' + encodeURIComponent(t);
+  gratStatus('Sending to your email...', 'var(--font-muted)');
+  try {
+    const r = await gratEngineFetch({ action: 'emailLetter', letterText: t, recipientName: to });
+    if (r.ok && r.data.sent) {
+      gratStatus('✓ Sent to your email.', '#4A8B8B');
+      setTimeout(() => gratStatus(''), 3000);
+      return;
+    }
+    throw new Error(r.data.error || 'send failed');
+  } catch (e) {
+    console.warn('emailLetter fell back to mailto:', e.message);
+    const email = window.auth?.currentUser?.email || '';
+    location.href = 'mailto:' + encodeURIComponent(email) +
+      '?subject=' + encodeURIComponent('Gratitude letter' + (to ? ' to ' + to : '')) +
+      '&body=' + encodeURIComponent(t);
+  }
 };
 
 window.addEventListener('DOMContentLoaded', function() {
@@ -10744,7 +10838,10 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
   <!-- ═══ Without It (mental subtraction — Koo et al. 2008) ═══ -->
   <div id="gratPracticeSubtraction" style="display:none;">
     <div id="gratSubtractionPrompt" style="background:var(--bg-card);border-left:4px solid var(--brand-primary);padding:1em;border-radius:8px;margin-bottom:0.5em;color:var(--font-main);line-height:1.5;"></div>
-    <button class="btn-gray" onclick="shuffleSubtractionPrompt()" style="margin-bottom:0.75em;padding:0.3em 0.8em;font-size:0.85em;">↻ Try another</button>
+    <div style="display:flex;gap:0.5em;margin-bottom:0.75em;flex-wrap:wrap;">
+      <button class="btn-gray" onclick="shuffleSubtractionPrompt()" style="padding:0.3em 0.8em;font-size:0.85em;">↻ Try another</button>
+      <button class="btn-gray" id="gratPersonalBtn" onclick="personalSubtractionPrompt()" style="padding:0.3em 0.8em;font-size:0.85em;">✨ From your journal</button>
+    </div>
     <textarea id="gratSubtractionText" class="grat-textarea" placeholder="Write what would be missing..."></textarea>
     <button class="btn" onclick="saveGratitudePractice('subtraction')" style="width:100%;margin-top:0.75em;margin-bottom:0.5em;">💭 Save Reflection</button>
   </div>
@@ -10755,6 +10852,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
     <textarea id="gratLetterText" class="grat-textarea" style="min-height:180px;" placeholder="Dear ___ — what did they do? What did it cost them? What did it change for you? Be specific. The details carry the gratitude."></textarea>
     <div style="display:flex;gap:0.5em;margin-top:0.75em;margin-bottom:0.5em;flex-wrap:wrap;">
       <button class="btn" onclick="saveGratitudePractice('letter')" style="flex:2;min-width:140px;">💌 Save Letter</button>
+      <button class="btn-gray" onclick="sophyLetterAssist()" style="flex:1;min-width:130px;">✨ Ask Sophy for help</button>
       <button class="btn-gray" onclick="copyGratitudeLetter()" style="flex:1;min-width:80px;">Copy</button>
       <button class="btn-gray" onclick="emailGratitudeLetterToSelf()" style="flex:1;min-width:100px;">Email me</button>
     </div>
