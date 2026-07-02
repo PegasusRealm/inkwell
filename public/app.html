@@ -5666,16 +5666,16 @@ function renderSprintTime() {
   const m = Math.floor(left / 60);
   const s = String(left % 60).padStart(2, '0');
   t.textContent = `${m}:${s}`;
-  // Gentle idle nudge after ~20s of stillness — nudge line + breathing teal
-  // wash on the textarea read as one connected cue (Adam, 2026-07-02)
+  // Gentle idle nudge after ~20s of stillness — whole-screen breathing teal
+  // vignette + teal nudge line read as one connected cue (Adam, 2026-07-02)
   const nudge = document.getElementById('sprintNudge');
-  const ta = document.getElementById('sprintText');
+  const overlay = document.getElementById('sprintBreathOverlay');
   const idle = (Date.now() - sprintLastKey > 20000);
   if (nudge) {
     nudge.style.display = idle ? 'block' : 'none';
     nudge.classList.toggle('sprint-idle', idle);
   }
-  if (ta) ta.classList.toggle('sprint-idle', idle);
+  if (overlay) overlay.classList.toggle('sprint-idle', idle);
   if (left === 0) {
     stopSprintTimer(false);
     t.textContent = 'Time. Keep going or save — both count.';
@@ -5689,7 +5689,7 @@ function stopSprintTimer(resetLabel) {
   if (btn) btn.textContent = '▶ Start';
   const nudge = document.getElementById('sprintNudge');
   if (nudge) { nudge.style.display = 'none'; nudge.classList.remove('sprint-idle'); }
-  document.getElementById('sprintText')?.classList.remove('sprint-idle');
+  document.getElementById('sprintBreathOverlay')?.classList.remove('sprint-idle');
   if (resetLabel) {
     const t = document.getElementById('sprintTimer');
     if (t) { t.style.display = 'none'; t.textContent = `${sprintMinutes}:00`; }
@@ -5714,7 +5714,7 @@ window.addEventListener('DOMContentLoaded', function() {
     sprintLastKey = Date.now();
     const nudge = document.getElementById('sprintNudge');
     if (nudge) { nudge.style.display = 'none'; nudge.classList.remove('sprint-idle'); }
-    this.classList.remove('sprint-idle');
+    document.getElementById('sprintBreathOverlay')?.classList.remove('sprint-idle');
   });
 });
 
@@ -11102,20 +11102,28 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
       <button class="btn" id="sprintStartBtn" onclick="toggleSprint()" style="padding:0.35em 1.2em;">▶ Start</button>
     </div>
     <style>
-      @keyframes sprintBreathe {
-        from {
-          background-color: rgba(137, 201, 212, 0.10);
-          border-color: #89C9D4;
-          box-shadow: 0 0 0 0 rgba(74, 155, 168, 0.0);
-        }
-        to {
-          background-color: rgba(137, 201, 212, 0.45);
-          border-color: #4A9BA8;
-          box-shadow: 0 0 0 6px rgba(74, 155, 168, 0.35);
-        }
+      /* Whole-screen breath: a teal vignette that inhales/exhales around the
+         edges of the viewport while the writer is still (Adam, 2026-07-02).
+         Animates OPACITY on an overlay — no cascade fights with inline styles. */
+      #sprintBreathOverlay {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 9990;
+        display: none;
+        opacity: 0;
+        background: radial-gradient(ellipse at center,
+          rgba(74, 155, 168, 0) 45%,
+          rgba(74, 155, 168, 0.18) 75%,
+          rgba(74, 155, 168, 0.45) 100%);
       }
-      #sprintText.sprint-idle {
-        animation: sprintBreathe 2.4s ease-in-out infinite alternate;
+      #sprintBreathOverlay.sprint-idle {
+        display: block;
+        animation: sprintVignette 3s ease-in-out infinite alternate;
+      }
+      @keyframes sprintVignette {
+        from { opacity: 0.15; }
+        to   { opacity: 0.9; }
       }
       #sprintNudge.sprint-idle {
         color: #4A9BA8 !important;
@@ -11124,6 +11132,7 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
         font-style: normal !important;
       }
     </style>
+    <div id="sprintBreathOverlay"></div>
     <div id="sprintTimer" style="display:none;text-align:center;font-family:monospace;font-size:2em;color:var(--brand-primary);margin-bottom:0.5em;">15:00</div>
     <div id="sprintNudge" style="display:none;text-align:center;font-size:0.85em;font-style:italic;color:var(--font-muted);margin-bottom:0.5em;transition:all 0.3s;">
       Keep the pen moving. Grammar and sense don't matter here.
