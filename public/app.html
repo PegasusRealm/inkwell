@@ -5798,6 +5798,102 @@ window.saveReframeEntry = async function() {
   }
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// COMPOUNDING SURFACES (v2 Phase 4, 2026-07-02)
+// The journal's growing depth made visible: depth indicator, anniversary
+// resurfacing, example questions. Retention spine of "a journal that learns you."
+// ═══════════════════════════════════════════════════════════════════════════
+
+let compoundingLoaded = false;
+let anniversaryFullText = '';
+
+window.loadCompoundingSurfaces = async function() {
+  if (compoundingLoaded) return;
+  const userId = window.currentUserId || window.auth?.currentUser?.uid;
+  if (!userId || !window.db || !window.limitQ) return;
+  compoundingLoaded = true;
+
+  // ── Depth indicator: how far back the journal goes ──
+  try {
+    const firstSnap = await window.getDocs(window.query(
+      window.collection(window.db, 'journalEntries'),
+      window.where('userId', '==', userId),
+      window.orderBy('createdAt', 'asc'),
+      window.limitQ(1)
+    ));
+    const el = document.getElementById('depthIndicator');
+    if (el && !firstSnap.empty) {
+      const first = firstSnap.docs[0].data().createdAt;
+      const firstDate = first?.toDate ? first.toDate() : new Date(first);
+      const months = Math.floor((Date.now() - firstDate.getTime()) / (30.44 * 24 * 3600 * 1000));
+      const since = firstDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      el.textContent = months >= 1
+        ? `📖 Your journal holds ${months} month${months === 1 ? '' : 's'} of your thinking (since ${since}). Everything you write compounds.`
+        : `📖 Your journal is just beginning. Everything you write from here compounds.`;
+      el.style.display = 'block';
+    }
+  } catch (e) { console.warn('Depth indicator skipped:', e.message); }
+
+  // ── Anniversary resurfacing: one year ago, else one month ago ──
+  try {
+    const windows = [
+      { label: 'One year ago you wrote', ms: 365 * 24 * 3600 * 1000, pad: 3 * 24 * 3600 * 1000 },
+      { label: 'One month ago you wrote', ms: 30 * 24 * 3600 * 1000, pad: 2 * 24 * 3600 * 1000 }
+    ];
+    for (const w of windows) {
+      const center = Date.now() - w.ms;
+      const snap = await window.getDocs(window.query(
+        window.collection(window.db, 'journalEntries'),
+        window.where('userId', '==', userId),
+        window.where('createdAt', '>=', new Date(center - w.pad)),
+        window.where('createdAt', '<=', new Date(center + w.pad)),
+        window.orderBy('createdAt', 'desc'),
+        window.limitQ(1)
+      ));
+      if (!snap.empty) {
+        const e = snap.docs[0].data();
+        const d = e.createdAt?.toDate ? e.createdAt.toDate() : new Date(e.createdAt);
+        document.getElementById('anniversaryLabel').textContent = `🕰️ ${w.label}...`;
+        document.getElementById('anniversaryTitle').textContent =
+          `${e.title || 'Journal entry'} — ${d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+        anniversaryFullText = e.text || '';
+        const snippet = anniversaryFullText.slice(0, 220);
+        document.getElementById('anniversarySnippet').textContent =
+          snippet + (anniversaryFullText.length > 220 ? '…' : '');
+        const more = document.getElementById('anniversaryMoreBtn');
+        if (more) more.style.display = anniversaryFullText.length > 220 ? 'inline-block' : 'none';
+        document.getElementById('anniversaryCard').style.display = 'block';
+        break;
+      }
+    }
+  } catch (e) { console.warn('Anniversary resurfacing skipped:', e.message); }
+};
+
+window.expandAnniversary = function() {
+  const s = document.getElementById('anniversarySnippet');
+  if (s) s.textContent = anniversaryFullText;
+  const b = document.getElementById('anniversaryMoreBtn');
+  if (b) b.style.display = 'none';
+};
+
+window.fillSearchExample = function(btn) {
+  const input = document.getElementById('searchQuery');
+  if (!input) return;
+  input.value = btn.textContent.trim();
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  input.focus();
+};
+
+// Load once auth settles (regardless of active tab — queries are tiny)
+window.addEventListener('DOMContentLoaded', function() {
+  let tries = 0;
+  const t = setInterval(function() {
+    tries++;
+    if (window.auth?.currentUser) { clearInterval(t); window.loadCompoundingSurfaces(); }
+    else if (tries > 30) clearInterval(t); // give up after ~30s (logged-out session)
+  }, 1000);
+});
+
 window.saveInkblotEntry = async function() {
   const inkblotText = document.getElementById('inkblotText')?.value?.trim();
   
@@ -11451,7 +11547,17 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
 <!-- Past Entries Tab Content -->
 <div id="calendarTab" class="modern-tab-content" style="display:none; padding: 1em;">
   <div class="tab-inner">
-    <h2 class="journal-heading" onclick="document.getElementById('pastEntriesInfoModal').style.display='flex'" style="text-align:center;margin-bottom:2rem;color:var(--font-main);cursor:pointer;transition:color 0.3s ease;" onmouseover="this.style.color='#4A9BA8'" onmouseout="this.style.color='var(--font-main)'">Your Past Entries</h2>
+    <h2 class="journal-heading" onclick="document.getElementById('pastEntriesInfoModal').style.display='flex'" style="text-align:center;margin-bottom:1rem;color:var(--font-main);cursor:pointer;transition:color 0.3s ease;" onmouseover="this.style.color='#4A9BA8'" onmouseout="this.style.color='var(--font-main)'">Your Past Entries</h2>
+
+    <!-- ═══ Compounding surfaces (v2 Phase 4, 2026-07-02) ═══ -->
+    <div id="depthIndicator" style="display:none;text-align:center;font-size:0.9em;color:var(--font-secondary);margin-bottom:1em;"></div>
+
+    <div id="anniversaryCard" style="display:none;background:var(--bg-card);border-left:4px solid #D49489;border-radius:0 8px 8px 0;padding:1em 1.25em;margin-bottom:1.5em;">
+      <div id="anniversaryLabel" style="font-weight:600;color:var(--brand-primary);margin-bottom:0.4em;"></div>
+      <div id="anniversaryTitle" style="font-size:0.9em;color:var(--font-secondary);margin-bottom:0.4em;"></div>
+      <div id="anniversarySnippet" style="font-size:0.95em;color:var(--font-main);line-height:1.5;white-space:pre-wrap;"></div>
+      <button id="anniversaryMoreBtn" onclick="expandAnniversary()" style="display:none;margin-top:0.5em;padding:0.25em 0.7em;background:transparent;border:1px solid var(--border-medium);border-radius:4px;cursor:pointer;color:var(--font-secondary);font-size:0.8em;">Read the rest</button>
+    </div>
 
     <div id="calendarControls" style="text-align: center; margin-bottom: 1em;">
       <button class="btn" onclick="changeMonth(-1)">← Previous</button>
@@ -11525,6 +11631,18 @@ Life is messy. InkWell™ holds your ideas, plans, and dreams so you can come ba
           style="width: 100%; box-sizing: border-box;"
         />
         <button class="btn" id="searchBtn" onclick="runSmartSearch()" disabled style="width: 100%;">Search</button>
+      </div>
+
+      <!-- ═══ Unlockable questions — examples only history can answer (v2 Phase 4) ═══ -->
+      <div style="text-align:center;margin-top:1em;">
+        <p style="font-size:0.85em;color:var(--font-muted);margin-bottom:0.5em;">Try asking your journal:</p>
+        <div style="display:flex;gap:0.5em;justify-content:center;flex-wrap:wrap;">
+          <button class="grat-pill" onclick="fillSearchExample(this)">When did I feel proud of myself?</button>
+          <button class="grat-pill" onclick="fillSearchExample(this)">What did I say I'd do differently last time?</button>
+          <button class="grat-pill" onclick="fillSearchExample(this)">What shows up when I'm stressed?</button>
+          <button class="grat-pill" onclick="fillSearchExample(this)">What was I grateful for months ago?</button>
+        </div>
+        <p style="font-size:0.8em;color:var(--font-muted);font-style:italic;margin-top:0.6em;">The longer you write, the more your journal can answer.</p>
       </div>
       <div id="searchResults" style="margin-top: 1em; width: 100%;"></div>
       <div id="emptyPastEntriesMessage" style="display:none;"></div>

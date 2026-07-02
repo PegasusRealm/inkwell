@@ -31,6 +31,7 @@ import {
   deleteDoc,
   updateDoc,
   orderBy,
+  limit,
   onSnapshot,
   deleteField
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -667,6 +668,7 @@ window.getDocs = getDocs;
 window.updateDoc = updateDoc;
 window.deleteDoc = deleteDoc;
 window.orderBy = orderBy;
+window.limitQ = limit; // Firestore limit() — named limitQ to avoid global collisions (2026-07-02)
 window.serverTimestamp = serverTimestamp;
 window.signOut = signOut;
 window.onSnapshot = onSnapshot;
