@@ -1722,6 +1722,18 @@ async function signInWithGoogle() {
       
       // Show welcome modal for new OAuth users
       showNewUserWelcomeModal();
+
+      // Email sync to ActiveCampaign (new users only — returning logins skip).
+      // Fire-and-forget, same pattern as the password-signup path. 2026-07-02.
+      setTimeout(async () => {
+        try {
+          const addToMailchimp = httpsCallable(functions, 'addToMailchimp');
+          await addToMailchimp({ email: user.email });
+          console.log('✅ OAuth signup synced to email list');
+        } catch (syncErr) {
+          console.error('Email list sync failed (non-fatal):', syncErr);
+        }
+      }, 100);
     } else {
       // Update last login
       await updateDoc(userDocRef, {
@@ -1808,6 +1820,18 @@ async function signInWithApple() {
       
       // Show welcome modal for new OAuth users
       showNewUserWelcomeModal();
+
+      // Email sync to ActiveCampaign (new users only — returning logins skip).
+      // Fire-and-forget, same pattern as the password-signup path. 2026-07-02.
+      setTimeout(async () => {
+        try {
+          const addToMailchimp = httpsCallable(functions, 'addToMailchimp');
+          await addToMailchimp({ email: user.email });
+          console.log('✅ OAuth signup synced to email list');
+        } catch (syncErr) {
+          console.error('Email list sync failed (non-fatal):', syncErr);
+        }
+      }, 100);
     } else {
       // Update last login
       await updateDoc(userDocRef, {
