@@ -457,6 +457,109 @@ html[data-theme='dark'] #calendarContainer .iw-cal td:hover .iw-cal-day.has-entr
 }
 
 /* ─────────────────────────────────────────────────────────────────
+   COMPONENT: ENTRY CARD — the journal's memory, one voice everywhere.
+   All three views (day click, list, search) render via
+   createPastEntryCard, so this contract IS the entry design.
+   ───────────────────────────────────────────────────────────────── */
+.entry-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 14px !important;
+  padding: 1.4rem 1.6rem !important;
+  margin-bottom: 1.25em !important;
+  box-shadow: var(--shadow-sm) !important;
+  backdrop-filter: none !important;
+  color: var(--font-main) !important;
+  transition: box-shadow 0.2s ease;
+}
+.entry-card:hover { box-shadow: var(--shadow-md) !important; }
+html[data-theme='dark'] .entry-card,
+html[data-theme='dark'] .entry-card.dark-theme-entry {
+  box-shadow: 0 16px 44px -28px rgba(0, 0, 0, 0.75) !important;
+}
+/* Date: quiet caps eyebrow */
+.entry-card .entry-date,
+.entry-card .fixed-dark-date {
+  font-family: var(--body-font) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: var(--font-muted) !important;
+  margin-bottom: 0.9em !important;
+}
+/* Your words: the serif, the brightest thing on the card */
+.entry-card .entry-text {
+  font-family: var(--serif-font) !important;
+  font-size: 1.02rem !important;
+  color: var(--font-main) !important;
+  line-height: 1.7 !important;
+  white-space: pre-wrap;
+}
+/* Toggles: quiet text links, not buttons */
+.entry-card .toggle-button {
+  background: transparent !important;
+  border: none !important;
+  color: var(--brand-primary) !important;
+  font-family: var(--body-font) !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  padding: 0.15em 0 !important;
+  margin: 0 1em 0.4em 0 !important;
+  cursor: pointer;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.entry-card .toggle-button:hover {
+  color: var(--brand-secondary) !important;
+  text-decoration: underline;
+  background: transparent !important;
+}
+/* Tucked content: neutral by default */
+.entry-card .toggle-content {
+  background: var(--bg-muted) !important;
+  border: none !important;
+  border-left: 3px solid var(--brand-primary) !important;
+  border-radius: 0 10px 10px 0 !important;
+  padding: 0.85em 1em !important;
+  margin-bottom: 0.9em !important;
+  color: var(--font-secondary) !important;
+  font-size: 0.92rem !important;
+}
+/* Sophy-touched content wears her coral — prompt, reflection, note */
+.entry-card .toggle-content.sophy-tinted,
+.entry-card .entry-note.sophy-tinted {
+  background: rgba(212, 148, 137, 0.08) !important;
+  border: none !important;
+  border-left: 3px solid #D49489 !important;
+  border-radius: 0 10px 10px 0 !important;
+  padding: 0.85em 1em !important;
+  margin-bottom: 0.9em !important;
+  color: var(--font-secondary) !important;
+  font-size: 0.92rem !important;
+}
+/* Actions: quiet until needed; Delete warns on approach */
+.entry-card .btn {
+  background: transparent !important;
+  color: var(--font-secondary) !important;
+  border: 1.5px solid var(--border-medium) !important;
+  font-size: 0.82rem !important;
+  padding: 0.45em 1.1em !important;
+  box-shadow: none !important;
+}
+.entry-card .btn:hover {
+  background: var(--bg-muted) !important;
+  color: var(--font-main) !important;
+  border-color: var(--brand-primary) !important;
+  box-shadow: none !important;
+}
+.entry-card .btn-gray:hover {
+  border-color: var(--btn-danger) !important;
+  color: var(--btn-danger) !important;
+  background: transparent !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
    SURFACE: dark gets quiet linen so the ink isn't a void.
    Two ultra-faint crosshatch lines — texture you feel, not see.
    ───────────────────────────────────────────────────────────────── */

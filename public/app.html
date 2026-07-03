@@ -2449,55 +2449,8 @@
 /* Past Entries – Dark Mode Readability Fix  */
 /* ========================================= */
 
-html[data-theme='dark'] .entry-card {
-  background: var(--bg-card) !important;
-  color: var(--font-main) !important;
-  border-radius: 12px;
-  padding: 1.25em;
-  margin-bottom: 1.5em;
-  box-shadow: var(--shadow-md) !important;
-  border: 1px solid var(--border-medium) !important;
-  backdrop-filter: blur(5px) !important;
-}
+/* dark entry-card strata (4 blocks incl. nuclear-option) removed 2026-07-02 — .entry-card contract in inkwell-v2.css owns cards */
 
-html[data-theme='dark'] .entry-card.journal-entry {
-  background: var(--bg-card) !important;
-  color: var(--font-main) !important;
-}
-
-/* Force override inline styles with maximum specificity */
-html[data-theme='dark'] #calendarTab .entry-card,
-html[data-theme='dark'] #calendarTab .entry-card.journal-entry,
-html[data-theme='dark'] [id*="calendarTab"] .entry-card,
-html[data-theme='dark'] [class*="modern-tab-content"] .entry-card {
-  background: var(--bg-card) !important;
-  color: var(--font-main) !important;
-  border: 1px solid var(--border-medium) !important;
-  box-shadow: var(--shadow-md) !important;
-}
-
-/* Entry text content */
-html[data-theme='dark'] .entry-card .entry-text,
-html[data-theme='dark'] .entry-card p:not(.entry-date) {
-  color: var(--font-main) !important; /* your words in bone, not teal */
-}
-
-/* Entry date styling */
-html[data-theme='dark'] .entry-card .entry-date,
-html[data-theme='dark'] .entry-card .fixed-dark-date {
-  color: var(--font-muted) !important;
-}
-
-/* Nuclear option: Ultra-high specificity to override inline styles */
-html[data-theme='dark'] div.entry-card[style*="background"],
-html[data-theme='dark'] div.entry-card.journal-entry[style*="background"],
-html[data-theme='dark'] [id="calendarTab"] div.entry-card[style],
-html[data-theme='dark'] [class*="modern-tab-content"] div.entry-card[style] {
-  background: var(--bg-card) !important;
-  color: var(--font-main) !important;
-  border: 1px solid var(--border-medium) !important;
-  box-shadow: var(--shadow-md) !important;
-}
 
 /* Override any nested content that may have inline styles */
 html[data-theme='dark'] .entry-card[style] * {
@@ -3476,19 +3429,7 @@ html[data-theme='dark'] .entry-card .entry-date.fixed-dark-date {
   display: block;
 }
 
-html[data-theme='dark'] .entry-card p.entry-text {
-  color: #222222 !important;
-  font-size: 1em !important;
-  line-height: 1.6 !important;
-  background-color: transparent !important;
-  display: block;
-}
-
-html[data-theme='dark'] .entry-card button {
-  color: var(--font-main);
-  background-color: #eee;
-  border: 1px solid var(--border-medium);
-}
+/* dark entry-text (#222 on dark!) + #eee button fossils removed 2026-07-02 */
 
 #emptyPastEntriesMessage {
   display: none;
@@ -10209,21 +10150,7 @@ window.refreshPastEntriesTheme = function() {
 
 // Add CSS for the dark theme class
 const themeStyle = document.createElement('style');
-themeStyle.textContent = `
-html[data-theme='dark'] .entry-card.dark-theme-entry {
-  background: var(--bg-card) !important;
-  color: var(--font-main) !important;
-  border: 1px solid var(--border-medium) !important;
-  box-shadow: var(--shadow-md) !important;
-}
-html[data-theme='dark'] .entry-card.dark-theme-entry * {
-  color: var(--font-main) !important; /* was force-teal — crisped 2026-07-02 */
-}
-html[data-theme='dark'] .entry-card.dark-theme-entry .entry-date,
-html[data-theme='dark'] .entry-card.dark-theme-entry .fixed-dark-date {
-  color: var(--font-muted) !important;
-}
-`;
+themeStyle.textContent = `/* rules moved to inkwell-v2.css .entry-card contract 2026-07-02 — runtime injection outranked it by load order */`;
 document.head.appendChild(themeStyle);
 
     // --- Password Reset Handler ---
@@ -10383,7 +10310,7 @@ document.head.appendChild(themeStyle);
     };
 
   </script>
-  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.14">
+  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.15">
 </head>
 
 
@@ -15129,7 +15056,7 @@ function startPractitionerStatusRefresh() {
 <script src="./subscription-config.js"></script>
 <script src="./subscription-utils.js"></script>
 
-<script defer type="module" src="./auth.js?v=2.1"></script>
+<script defer type="module" src="./auth.js?v=2.2"></script>
 
 
 <script>

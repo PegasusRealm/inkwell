@@ -2428,7 +2428,7 @@ if (entry.promptUsed) {
   `;
 
   const promptContent = document.createElement("div");
-  promptContent.className = "toggle-content";
+  promptContent.className = "toggle-content sophy-tinted";
   promptContent.innerHTML = `<strong>Prompt:</strong> <em>${entry.promptUsed}</em>`;
   promptContent.style.cssText = `
     display: none;
@@ -2467,7 +2467,7 @@ if (entry.reflectionUsed) {
   `;
 
   const reflectionContent = document.createElement("div");
-  reflectionContent.className = "toggle-content";
+  reflectionContent.className = "toggle-content sophy-tinted";
   reflectionContent.innerHTML = `<strong>Sophy's Reflection:</strong><br/>${entry.reflectionUsed}`;
   reflectionContent.style.cssText = `
     display: none;
@@ -2505,6 +2505,7 @@ if (entry.reflectionUsed) {
 
   if (entry.reflectionNote) {
     const note = document.createElement("div");
+    note.className = "entry-note sophy-tinted";
     note.innerHTML = `<strong>Reflection:</strong> ${entry.reflectionNote}`;
     note.style.cssText = `
       font-size: 0.9em;
