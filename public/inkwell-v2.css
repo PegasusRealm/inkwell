@@ -326,6 +326,31 @@ html[data-theme='dark'] body .sophy-check input[type='checkbox']:focus {
 .sophy-info:empty { display: none !important; }
 
 /* ─────────────────────────────────────────────────────────────────
+   COMPONENT: CARD — one surface language, app-wide (mockup .sheet).
+   Light: white on lift ground, hairline stroke. Dark: raised ink-2,
+   deep soft shadow. Sections SNAP into this; never invent per-surface.
+   ───────────────────────────────────────────────────────────────── */
+.iw-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 14px !important;
+  padding: 1.75rem !important;
+  box-shadow: var(--shadow-md) !important;
+}
+html[data-theme='dark'] .iw-card {
+  box-shadow: 0 24px 60px -32px rgba(0, 0, 0, 0.8) !important;
+}
+@media (max-width: 640px) { .iw-card { padding: 1.1rem !important; } }
+
+/* Divider voice: one hairline, generous air */
+.workflow-divider {
+  border: none !important;
+  height: 1px !important;
+  background: var(--border-light) !important;
+  margin: 2.25rem 0 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
    COMPONENT: CALENDAR — theme-token colors, both themes.
    ───────────────────────────────────────────────────────────────── */
 #calendarContainer table { border-collapse: collapse; }

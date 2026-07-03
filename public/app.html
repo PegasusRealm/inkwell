@@ -5261,6 +5261,19 @@ window.updateWeeklyActivityDots = async function updateWeeklyActivityDots() {
 }
 
 // Switch between journal mode sub-tabs
+// Gratitude nudge dot: coral dot on the pill until a gratitude entry is saved today
+window.updateGratTodayDot = function() {
+  const dot = document.getElementById('gratTodayDot');
+  if (!dot) return;
+  const today = new Date().toISOString().slice(0, 10);
+  dot.style.display = (localStorage.getItem('gratDoneDate') === today) ? 'none' : 'inline-block';
+};
+window.markGratDoneToday = function() {
+  localStorage.setItem('gratDoneDate', new Date().toISOString().slice(0, 10));
+  window.updateGratTodayDot();
+};
+document.addEventListener('DOMContentLoaded', () => window.updateGratTodayDot());
+
 window.switchJournalMode = function(mode) {
   activeJournalMode = mode;
   
@@ -5409,7 +5422,8 @@ window.saveGratitudePractice = async function(mode) {
     document.getElementById(fields[mode]).value = '';
     if (mode === 'letter') { const t = document.getElementById('gratLetterTo'); if (t) t.value = ''; }
     setStatus('✓ Saved to your journal.', '#4A8B8B');
-    setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+    window.markGratDoneToday();
+      setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
   } catch (e) {
     console.error('Gratitude practice save failed:', e);
     setStatus('Save failed. Please try again.', '#c75050');
@@ -5604,6 +5618,7 @@ window.saveGratitudeEntry = async function() {
     // Show success
     if (statusEl) {
       statusEl.textContent = '✓ Gratitude saved!';
+      window.markGratDoneToday();
       statusEl.style.color = '#4A8B8B';
       setTimeout(() => { statusEl.textContent = ''; }, 3000);
     }
@@ -5826,7 +5841,7 @@ window.saveReframeEntry = async function() {
     await window.addDoc(window.collection(window.db, 'journalEntries'), entryData);
     ['reframe1', 'reframe2', 'reframe3', 'reframe4'].forEach((id) => { const el = document.getElementById(id); if (el) el.value = ''; });
     setStatus('✓ Saved to your journal.', '#4A8B8B');
-    setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+      setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
   } catch (e) {
     console.error('Reframe save failed:', e);
     setStatus('Save failed. Please try again.', '#c75050');
@@ -10509,7 +10524,7 @@ document.head.appendChild(themeStyle);
     };
 
   </script>
-  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.12">
+  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.13">
 </head>
 
 
@@ -10971,9 +10986,9 @@ document.head.appendChild(themeStyle);
   border: 1px solid var(--border-light);
 ">
   <div style="display: flex; justify-content: center; gap: 0.5em; width: 100%;">
-    <button id="gratitudeModeBtn" class="grat-pill active" onclick="switchJournalMode('gratitude')">Gratitude</button>
+    <button id="fullJournalModeBtn" class="grat-pill active" onclick="switchJournalMode('full')">Full Journal</button>
     <button id="inkblotModeBtn" class="grat-pill" onclick="switchJournalMode('inkblot')">InkBlot</button>
-    <button id="fullJournalModeBtn" class="grat-pill" onclick="switchJournalMode('full')">Full Journal</button>
+    <button id="gratitudeModeBtn" class="grat-pill" onclick="switchJournalMode('gratitude')">Gratitude<span class="today-dot" id="gratTodayDot" style="display:none;"></span></button>
   </div>
   
   <!-- Weekly Activity Dots (inside container) -->
@@ -11009,7 +11024,7 @@ document.head.appendChild(themeStyle);
 </div>
 
 <!-- ==================== GRATITUDE MODE ==================== -->
-<div id="gratitudeMode" class="journal-mode-content" style="display: block;">
+<div id="gratitudeMode" class="journal-mode-content iw-card" style="display: none;">
   <h2 class="journal-heading" 
       onclick="document.getElementById('gratitudeInfoModal').style.display='flex'"
       style="text-align:center;margin-bottom:0.5rem;color:var(--font-main);cursor:pointer;transition:color 0.2s ease;"
@@ -11143,7 +11158,7 @@ document.head.appendChild(themeStyle);
 </div>
 
 <!-- ==================== INKBLOT MODE ==================== -->
-<div id="inkblotMode" class="journal-mode-content" style="display: none;">
+<div id="inkblotMode" class="journal-mode-content iw-card" style="display: none;">
   <h2 class="journal-heading" id="inkblotHeading"
       onclick="document.getElementById('inkblotInfoModal').style.display='flex'"
       style="text-align:center;margin-bottom:0.5rem;color:var(--font-main);cursor:pointer;transition:color 0.2s ease;"
@@ -11263,7 +11278,7 @@ document.head.appendChild(themeStyle);
 </div>
 
 <!-- ==================== FULL JOURNAL MODE ==================== -->
-<div id="fullJournalMode" class="journal-mode-content" style="display: none;">
+<div id="fullJournalMode" class="journal-mode-content iw-card" style="display: block;">
 <h2 class="journal-heading" id="journalHeading"
     onclick="document.getElementById('journalInfoModal').style.display='flex'"
     style="text-align:center;margin-bottom:1rem;color:var(--font-main);cursor:pointer;transition:color 0.2s ease;"
@@ -11324,10 +11339,9 @@ document.head.appendChild(themeStyle);
 
     <div class="workflow-divider"></div>
 
+    <h2 class="journal-heading" style="text-align:center;margin-bottom:1.25rem;color:var(--font-main);">Journal Entry</h2>
     <button id="voiceBtn" class="grat-pill" style="margin-bottom:0.5em;">InkOutLoud</button>
     <div id="voiceStatus" style="font-size:0.85em;color:#2A6972;margin-bottom:1em;"></div>
-
-    <h2 class="journal-heading" style="text-align:center;margin-bottom:2rem;color:var(--font-main);">Journal Entry</h2>
     <textarea id="journal" placeholder="Write your thoughts here..." style="width:100%;box-sizing:border-box;margin-bottom:0.5em;"></textarea>
     <div id="journalCharCount" style="font-size:0.75em;color:#93A5A8;text-align:right;margin-top:-0.25em;margin-bottom:0.5em;">0 characters</div>
     <div id="entryStatus" style="font-size:0.85em;margin-top:0.5em;"></div>
