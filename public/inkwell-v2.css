@@ -457,6 +457,51 @@ html[data-theme='dark'] #calendarContainer .iw-cal td:hover .iw-cal-day.has-entr
 }
 
 /* ─────────────────────────────────────────────────────────────────
+   COMPONENT: MANIFEST / WISH — one method, one card. Step names are
+   eyebrows, fields are calm, the runway card tracks quietly below.
+   ───────────────────────────────────────────────────────────────── */
+.manifest-eyebrow,
+#manifestTab .wish-section h2 {
+  font-family: var(--body-font) !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  color: var(--brand-primary) !important;
+  text-align: left !important;
+  margin: 0 0 0.9em 0 !important;
+}
+#manifestTab .wish-section textarea {
+  background: var(--bg-card) !important;
+  border: 1.5px solid var(--border-medium) !important;
+  border-radius: 10px !important;
+  color: var(--font-main) !important;
+  font-family: var(--serif-font) !important;
+  font-size: 1rem !important;
+  line-height: 1.6 !important;
+  padding: 0.85em 1em !important;
+  box-shadow: none !important;
+}
+#manifestTab .wish-section textarea:focus {
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 0 3px rgba(95, 179, 191, 0.15) !important;
+  outline: none !important;
+}
+#manifestTab .wish-timeline-select {
+  background: var(--bg-card) !important;
+  border: 1.5px solid var(--border-medium) !important;
+  border-radius: 10px !important;
+  color: var(--font-main) !important;
+  font-family: var(--body-font) !important;
+  font-size: 0.95rem !important;
+  padding: 0.5em 0.9em !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+#manifestTab .wish-timeline-label { color: var(--font-secondary) !important; }
+#manifestTab #wishProgressMessage { color: var(--font-muted) !important; }
+
+/* ─────────────────────────────────────────────────────────────────
    COMPONENT: ENTRY CARD — the journal's memory, one voice everywhere.
    All three views (day click, list, search) render via
    createPastEntryCard, so this contract IS the entry design.
@@ -515,6 +560,11 @@ html[data-theme='dark'] .entry-card.dark-theme-entry {
   text-decoration: underline;
   background: transparent !important;
 }
+/* Sophy's toggles speak coral (Show Prompt / Show Reflection);
+   manifest toggle stays teal — that data is yours, not hers. */
+.entry-card .toggle-button.sophy-toggle { color: #C96F5E !important; }
+html[data-theme='dark'] .entry-card .toggle-button.sophy-toggle { color: #D49489 !important; }
+.entry-card .toggle-button.sophy-toggle:hover { color: #E6A497 !important; }
 /* Tucked content: neutral by default */
 .entry-card .toggle-content {
   background: var(--bg-muted) !important;
