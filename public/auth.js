@@ -1,4 +1,4 @@
-console.log("🔥 auth.js loaded ✅");
+console.log("🔥 auth.js loaded ✓");
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getAuth,
@@ -53,7 +53,7 @@ import {
 
 
 
-// ✅ Unified config block
+// ✓ Unified config block
 const CONFIG = {
   firebase: window.firebaseConfig || {
     apiKey: "AIzaSyDivYKnp_SinGjL7iVVwSyQH-RnFHMFDM0",
@@ -66,7 +66,7 @@ const CONFIG = {
   }
 };
 
-let currentUserId = null; // 🔄 Global holder for logged-in user ID
+let currentUserId = null; // Global holder for logged-in user ID
 
 // Robust Firestore operation wrapper with retry logic
 async function safeFirestoreOperation(operation, retries = 3, delay = 1000) {
@@ -83,7 +83,7 @@ async function safeFirestoreOperation(operation, retries = 3, delay = 1000) {
       
       // If this was the last attempt, throw the error
       if (i === retries - 1) {
-        console.error('❌ All Firestore retry attempts failed:', error);
+        console.error('✗ All Firestore retry attempts failed:', error);
         throw new Error(`Connection failed after ${retries} attempts. Please check your internet connection and try again.`);
       }
       
@@ -228,7 +228,7 @@ function showNewUserWelcomeModal() {
         <div style="
           font-size: 3rem;
           margin-bottom: 1rem;
-        ">🎉</div>
+        "></div>
         <h2 style="
           color: #ffffff !important;
           font-size: 1.5rem;
@@ -628,9 +628,9 @@ try {
     console.warn("⚠️ Offline persistence not available:", persistenceError.message);
   }
   
-  console.log("✅ Firebase initialized successfully");
+  console.log("✓ Firebase initialized successfully");
 } catch (error) {
-  console.error("❌ Firebase initialization failed:", error);
+  console.error("✗ Firebase initialization failed:", error);
   
   // Fallback error handling
   document.addEventListener('DOMContentLoaded', () => {
@@ -817,7 +817,7 @@ onAuthStateChanged(auth, async (user) => {
         await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
         userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
-          console.log(`✅ User document found after ${attempt + 1} attempts`);
+          console.log(`✓ User document found after ${attempt + 1} attempts`);
           break;
         }
       }
@@ -861,7 +861,7 @@ onAuthStateChanged(auth, async (user) => {
     
     const userData = userDoc.data();
     
-    // 🔄 MIGRATION: Ensure existing users have default insight preferences
+    // MIGRATION: Ensure existing users have default insight preferences
     if (!userData.insightsPreferences) {
       console.log("🔄 Migrating user to include default insight preferences");
       try {
@@ -873,9 +873,9 @@ onAuthStateChanged(auth, async (user) => {
             migratedAt: serverTimestamp()
           }
         }, { merge: true });
-        console.log("✅ Successfully migrated user with default insight preferences");
+        console.log("✓ Successfully migrated user with default insight preferences");
       } catch (error) {
-        console.error("❌ Failed to migrate user insight preferences:", error);
+        console.error("✗ Failed to migrate user insight preferences:", error);
       }
     }
     
@@ -1048,7 +1048,7 @@ onAuthStateChanged(auth, async (user) => {
       };
     }
 
-    console.log("✅ User authentication and UI setup complete");
+    console.log("✓ User authentication and UI setup complete");
 
   } catch (error) {
     console.error("Error in auth state change handler:", error);
@@ -1094,7 +1094,7 @@ async function checkForCoachReplies() {
     if (newReplies.length > 0) {
       // Show toast notification
       const replyText = newReplies.length === 1 ? 'reply' : 'replies';
-      window.showToast(`💬 You have ${newReplies.length} new coach ${replyText}! Look for entries with the 'NEW REPLY' badge.`, "success", 8000);
+      window.showToast(`You have ${newReplies.length} new coach ${replyText}! Look for entries with the 'NEW REPLY'badge.`, "success", 8000);
       
       // Update calendar to highlight dates with new replies
       highlightCalendarDatesWithReplies(newReplies);
@@ -1116,10 +1116,10 @@ async function checkForCoachReplies() {
         }
       }
     } else {
-      console.log("✅ No new coach replies found");
+      console.log("✓ No new coach replies found");
     }
   } catch (error) {
-    console.error("❌ Error checking for coach replies:", error);
+    console.error("✗ Error checking for coach replies:", error);
     
     // Try to get more info about the error
     if (error.code) {
@@ -1152,7 +1152,7 @@ function highlightCalendarDatesWithReplies(entries) {
         if (!cell.querySelector('.coach-reply-indicator')) {
           const indicator = document.createElement('span');
           indicator.className = 'coach-reply-indicator';
-          indicator.innerHTML = '💬';
+          indicator.innerHTML = '';
           indicator.style.position = 'absolute';
           indicator.style.top = '2px';
           indicator.style.right = '2px';
@@ -1182,10 +1182,10 @@ if (location.hostname === "localhost") {
     setTimeout(() => {
       createTestUser()
         .then(result => {
-          console.log("✅ Test user created or already exists:", result.data);
+          console.log("✓ Test user created or already exists:", result.data);
         })
         .catch(err => {
-          console.error("❌ Error creating test user:", err.message);
+          console.error("✗ Error creating test user:", err.message);
         });
     }, 500);
   } catch (error) {
@@ -1201,12 +1201,12 @@ if (location.hostname === "localhost") {
   setTimeout(() => {
     createTestUser()
       .then(result => {
-        console.log("✅ Test user created or already exists:", result.data);
+        console.log("✓ Test user created or already exists:", result.data);
       })
       .catch(err => {
-        console.error("❌ Error creating test user:", err.message);
+        console.error("✗ Error creating test user:", err.message);
       });
-  }, 500); // ⏱ Give auth/init a brief moment
+  }, 500); // Give auth/init a brief moment
 }
 
 
@@ -1220,7 +1220,6 @@ const toggleSignup = document.getElementById("toggleSignup");
 const backToLogin = document.getElementById("backToLogin");
 const termsAgreement = document.getElementById("termsAgreement");
 const privacyAgreement = document.getElementById("privacyAgreement"); 
-const betaAgreement = document.getElementById("betaAgreement");
 const signupSubmit = document.querySelector('#signupForm button[type="submit"]');
 const forgotPassword = document.getElementById("forgotPassword");
 
@@ -1286,8 +1285,8 @@ document.addEventListener("click", (e) => {
 
 // Agreement validation logic - disable submit if any agreement unchecked
 function checkAllAgreements() {
-  if (signupSubmit && termsAgreement && privacyAgreement && betaAgreement) {
-    const allChecked = termsAgreement.checked && privacyAgreement.checked && betaAgreement.checked;
+  if (signupSubmit && termsAgreement && privacyAgreement) {
+    const allChecked = termsAgreement.checked && privacyAgreement.checked;
     signupSubmit.disabled = !allChecked;
   }
 }
@@ -1295,7 +1294,6 @@ function checkAllAgreements() {
 // Wire up agreement checkboxes
 if (termsAgreement) termsAgreement.onchange = checkAllAgreements;
 if (privacyAgreement) privacyAgreement.onchange = checkAllAgreements;
-if (betaAgreement) betaAgreement.onchange = checkAllAgreements;
 
 // Initial check on page load
 checkAllAgreements();
@@ -1335,7 +1333,7 @@ async function signIn() {
         console.log("🎯 Login reCAPTCHA widget:", loginRecaptchaWidget);
         
         if (!loginRecaptchaWidget) {
-          console.error("❌ reCAPTCHA widget not found in login modal");
+          console.error("✗ reCAPTCHA widget not found in login modal");
           showToast("reCAPTCHA widget not found. Please refresh the page.", "error");
           return;
         }
@@ -1364,21 +1362,21 @@ async function signIn() {
         }
 
         if (!recaptchaResponse) {
-          console.error("❌ No reCAPTCHA response found");
+          console.error("✗ No reCAPTCHA response found");
           showToast("Please complete the reCAPTCHA verification by checking the box.", "warning");
           return;
         }
 
-        console.log("✅ reCAPTCHA v2 response received:", recaptchaResponse.substring(0, 20) + "...");
+        console.log("✓ reCAPTCHA v2 response received:", recaptchaResponse.substring(0, 20) + "...");
 
         // Verify reCAPTCHA on server
         console.log("🔐 Sending reCAPTCHA verification request...");
         try {
           const verifyRecaptcha = httpsCallable(functions, 'verifyRecaptcha');
           await verifyRecaptcha({ token: recaptchaResponse });
-          console.log("✅ reCAPTCHA v3 verified, proceeding with login...");
+          console.log("✓ reCAPTCHA v3 verified, proceeding with login...");
         } catch (error) {
-          console.error("❌ reCAPTCHA verification failed:", error);
+          console.error("✗ reCAPTCHA verification failed:", error);
           showToast("reCAPTCHA verification failed. Please try again.", "error");
           return;
         }
@@ -1424,7 +1422,6 @@ async function signUp() {
       // Check agreement checkboxes
       const termsAgreed = document.getElementById("termsAgreement")?.checked;
       const privacyAgreed = document.getElementById("privacyAgreement")?.checked;
-      const betaAgreed = document.getElementById("betaAgreement")?.checked;
       
       console.log("📧 Email:", email);
       console.log("🔒 Password:", password ? "●●●●●" : "(empty)");
@@ -1456,7 +1453,7 @@ async function signUp() {
       }
 
       // Validate all agreements are checked
-      if (!termsAgreed || !privacyAgreed || !betaAgreed) {
+      if (!termsAgreed || !privacyAgreed) {
         showToast("Please accept all agreements to join the InkWell community. We value your understanding of our terms and commitment to this beta experience.", "warning");
         return;
       }
@@ -1477,7 +1474,7 @@ async function signUp() {
         console.log("🎯 Signup reCAPTCHA widget:", signupRecaptchaWidget);
         
         if (!signupRecaptchaWidget) {
-          console.error("❌ reCAPTCHA widget not found in signup modal");
+          console.error("✗ reCAPTCHA widget not found in signup modal");
           showToast("reCAPTCHA widget not found. Please refresh the page.", "error");
           return;
         }
@@ -1506,21 +1503,21 @@ async function signUp() {
         }
 
         if (!recaptchaResponse) {
-          console.error("❌ No reCAPTCHA response found");
+          console.error("✗ No reCAPTCHA response found");
           showToast("Please complete the reCAPTCHA verification by checking the box.", "warning");
           return;
         }
 
-        console.log("✅ reCAPTCHA v2 response received:", recaptchaResponse.substring(0, 20) + "...");
+        console.log("✓ reCAPTCHA v2 response received:", recaptchaResponse.substring(0, 20) + "...");
 
         // Verify reCAPTCHA on server
         console.log("🔐 Sending reCAPTCHA verification request...");
         try {
           const verifyRecaptcha = httpsCallable(functions, 'verifyRecaptcha');
           await verifyRecaptcha({ token: recaptchaResponse });
-          console.log("✅ reCAPTCHA v3 verified, proceeding with signup...");
+          console.log("✓ reCAPTCHA v3 verified, proceeding with signup...");
         } catch (error) {
-          console.error("❌ reCAPTCHA verification failed:", error);
+          console.error("✗ reCAPTCHA verification failed:", error);
           showToast("reCAPTCHA verification failed. Please try again.", "error");
           return;
         }
@@ -1624,9 +1621,9 @@ async function signUp() {
             })
           });
           
-          console.log('✅ Practitioner inquiry saved and notification sent');
+          console.log('✓ Practitioner inquiry saved and notification sent');
         } catch (inquiryError) {
-          console.error('❌ Failed to process practitioner inquiry (non-fatal):', inquiryError);
+          console.error('✗ Failed to process practitioner inquiry (non-fatal):', inquiryError);
           // Don't fail signup if this fails
         }
       }
@@ -1637,7 +1634,7 @@ async function signUp() {
         try {
           const addToMailchimp = httpsCallable(functions, 'addToMailchimp');
           await addToMailchimp({ email });
-          console.log('✅ Added to MailChimp successfully');
+          console.log('✓ Added to MailChimp successfully');
         } catch (mailchimpErr) {
           console.error('MailChimp integration failed:', mailchimpErr);
           // Optionally show a toast but do not block signup
@@ -1647,7 +1644,7 @@ async function signUp() {
 
       // Don't manually hide modals - let the auth state handler do it
       // This ensures proper timing and UI state management
-      console.log('✅ Signup successful - auth state handler will manage UI');
+      console.log('✓ Signup successful - auth state handler will manage UI');
 
       // Reset reCAPTCHA after successful signup
       if (!isLocalhost()) {
@@ -1682,7 +1679,7 @@ async function signInWithGoogle() {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
     
-    console.log("✅ Google sign-in successful:", user.email);
+    console.log("✓ Google sign-in successful:", user.email);
     
     // Check if user document exists, create if new user
     const userDocRef = doc(db, "users", user.uid);
@@ -1725,7 +1722,7 @@ async function signInWithGoogle() {
         try {
           const addToMailchimp = httpsCallable(functions, 'addToMailchimp');
           await addToMailchimp({ email: user.email });
-          console.log('✅ OAuth signup synced to email list');
+          console.log('✓ OAuth signup synced to email list');
         } catch (syncErr) {
           console.error('Email list sync failed (non-fatal):', syncErr);
         }
@@ -1749,7 +1746,7 @@ async function signInWithGoogle() {
     }
     
   } catch (error) {
-    console.error("❌ Google sign-in error:", error);
+    console.error("✗ Google sign-in error:", error);
     
     if (error.code === 'auth/popup-closed-by-user') {
       showToast("Sign-in cancelled", "info");
@@ -1773,7 +1770,7 @@ async function signInWithApple() {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
     
-    console.log("✅ Apple sign-in successful:", user.email);
+    console.log("✓ Apple sign-in successful:", user.email);
     
     // Check if user document exists, create if new user
     const userDocRef = doc(db, "users", user.uid);
@@ -1823,7 +1820,7 @@ async function signInWithApple() {
         try {
           const addToMailchimp = httpsCallable(functions, 'addToMailchimp');
           await addToMailchimp({ email: user.email });
-          console.log('✅ OAuth signup synced to email list');
+          console.log('✓ OAuth signup synced to email list');
         } catch (syncErr) {
           console.error('Email list sync failed (non-fatal):', syncErr);
         }
@@ -1847,7 +1844,7 @@ async function signInWithApple() {
     }
     
   } catch (error) {
-    console.error("❌ Apple sign-in error:", error);
+    console.error("✗ Apple sign-in error:", error);
     
     if (error.code === 'auth/popup-closed-by-user') {
       showToast("Sign-in cancelled", "info");
@@ -1868,7 +1865,7 @@ window.signInWithGoogle = signInWithGoogle;
 window.signInWithApple = signInWithApple;
 
 /* ===========================================================
-   🚀 FAST LOGIN PATCH — CLOSE MODAL IMMEDIATELY
+    FAST LOGIN PATCH — CLOSE MODAL IMMEDIATELY
    =========================================================== */
 
 function closeLoginModalFast() {
@@ -2179,47 +2176,8 @@ window.displayedMonth = new Date().getMonth();
 window.displayedYear = new Date().getFullYear();
 
 // Force mobile calendar styling after DOM creation
-function forceMobileCalendarStyling() {
-  if (window.innerWidth <= 768) {
-    const container = document.getElementById("calendarContainer");
-    if (container) {
-      // Force container styling
-      container.style.cssText += `
-        padding: 0 !important;
-        margin: 1em -8px !important;
-        width: calc(100% + 16px) !important;
-        overflow-x: visible !important;
-      `;
-      
-      // Force table styling
-      const table = container.querySelector('table');
-      if (table) {
-        table.style.cssText += `
-          width: calc(100% + 16px) !important;
-          font-size: 16px !important;
-          margin: 1em -8px 0 -8px !important;
-        `;
-      }
-      
-      // Force all cells to mobile sizing
-      container.querySelectorAll('td, th').forEach(cell => {
-        cell.style.cssText += `
-          padding: 0 !important;
-          font-size: 16px !important;
-          min-width: 60px !important;
-          height: 60px !important;
-          max-height: 60px !important;
-          width: 14.28% !important;
-          line-height: 60px !important;
-          overflow: hidden !important;
-          display: table-cell !important;
-          vertical-align: middle !important;
-          text-align: center !important;
-        `;
-      });
-    }
-  }
-}
+// forceMobileCalendarStyling removed 2026-07-02 — .iw-cal contract + media queries own mobile now
+
 
 // Calendar build function
 async function buildCalendar() {
@@ -2232,174 +2190,68 @@ async function buildCalendar() {
   ));
 
   const markedDates = new Set();
-  const datesWithUnreadReplies = new Set();
-  
   snapshot.forEach(doc => {
     const data = doc.data();
     // Handle both Firestore Timestamp and ISO string (legacy gratitude/inkblot entries)
     let createdAt = data.createdAt?.toDate?.();
-    if (!createdAt && typeof data.createdAt === 'string') {
-      createdAt = new Date(data.createdAt);
-    }
+    if (!createdAt && typeof data.createdAt === 'string') createdAt = new Date(data.createdAt);
     if (createdAt &&
         createdAt.getFullYear() === window.displayedYear &&
         createdAt.getMonth() === window.displayedMonth) {
-      const key = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}-${String(createdAt.getDate()).padStart(2, '0')}`;
-      markedDates.add(key);
-      
-      // Track dates with unread coach replies
-      if (data.newCoachReply === true) {
-        datesWithUnreadReplies.add(key);
-      }
+      markedDates.add(`${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}-${String(createdAt.getDate()).padStart(2, '0')}`);
     }
   });
 
-  const currentMonthHeading = document.createElement("h3");
-  const tempDate = new Date(window.displayedYear, window.displayedMonth, 1);
-  currentMonthHeading.textContent = `${tempDate.toLocaleString('default', { month: 'long' })} ${window.displayedYear}`;
-  currentMonthHeading.style.textAlign = "center";
-  currentMonthHeading.style.color = "var(--font-main)";
-  currentMonthHeading.style.marginBottom = "1.5rem";
-  currentMonthHeading.style.fontSize = "1.1rem";
-  currentMonthHeading.style.fontWeight = "500";
+  // Month title lives in the nav row (app.html #calMonthTitle)
+  const titleEl = document.getElementById("calMonthTitle");
+  if (titleEl) {
+    const tempDate = new Date(window.displayedYear, window.displayedMonth, 1);
+    titleEl.textContent = `${tempDate.toLocaleString('default', { month: 'long' })} ${window.displayedYear}`;
+  }
 
-  container.appendChild(currentMonthHeading);
-
- const calendarTable = document.createElement("table");
-calendarTable.style.width = "100%";
-calendarTable.style.maxWidth = "100%";
-calendarTable.style.textAlign = "center";
-calendarTable.style.borderCollapse = "collapse";
-calendarTable.style.margin = window.innerWidth <= 768 ? "1em -8px 0 -8px" : "1em auto 0 auto";
-calendarTable.style.tableLayout = "fixed";
-calendarTable.style.boxSizing = "border-box";
-// Mobile optimization: wider table on small screens
-if (window.innerWidth <= 768) {
-  calendarTable.style.width = "calc(100% + 16px)";
-  calendarTable.style.fontSize = "16px";
-}
+  // Class-driven render — ALL visuals live in inkwell-v2.css (.iw-cal contract).
+  // Rewritten 2026-07-02: inline-style painter + purple Connect branch +
+  // forceMobileCalendarStyling removed; media queries handle mobile.
+  const table = document.createElement("table");
+  table.className = "iw-cal";
 
   const headerRow = document.createElement("tr");
-  const days = CONFIG.calendar.DAYS_OF_WEEK; // ✅ clean and safe
-  days.forEach(day => {
+  CONFIG.calendar.DAYS_OF_WEEK.forEach(day => {
     const th = document.createElement("th");
     th.textContent = day;
-    // Mobile-optimized padding and sizing
-    if (window.innerWidth <= 768) {
-      th.style.padding = "0";
-      th.style.fontSize = "16px";
-      th.style.minWidth = "60px";
-      th.style.height = "60px";
-      th.style.maxHeight = "60px";
-      th.style.lineHeight = "60px";
-      th.style.textAlign = "center";
-      th.style.verticalAlign = "middle";
-      th.style.overflow = "hidden";
-    } else {
-      th.style.padding = "0.5em";
-    }
     headerRow.appendChild(th);
   });
-  calendarTable.appendChild(headerRow);
+  table.appendChild(headerRow);
 
   const firstDay = new Date(window.displayedYear, window.displayedMonth, 1).getDay();
   const daysInMonth = new Date(window.displayedYear, window.displayedMonth + 1, 0).getDate();
+  const now = new Date();
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   let row = document.createElement("tr");
-  for (let i = 0; i < firstDay; i++) {
-    row.appendChild(document.createElement("td"));
-  }
+  for (let i = 0; i < firstDay; i++) row.appendChild(document.createElement("td"));
 
   for (let day = 1; day <= daysInMonth; day++) {
     if ((row.children.length % 7) === 0) {
-      calendarTable.appendChild(row);
+      table.appendChild(row);
       row = document.createElement("tr");
     }
     const td = document.createElement("td");
-    td.textContent = day;
-    td.style.cursor = "pointer";
-    // Mobile-optimized calendar cells
-    if (window.innerWidth <= 768) {
-      td.style.padding = "0";
-      td.style.fontSize = "16px";
-      td.style.minWidth = "60px";
-      td.style.height = "60px";
-      td.style.maxHeight = "60px";
-      td.style.lineHeight = "60px";
-      td.style.textAlign = "center";
-      td.style.verticalAlign = "middle";
-      td.style.overflow = "hidden";
-    } else {
-      td.style.padding = "0.5em";
-    }
-    td.style.border = "1px solid #ccc";
-
     const key = `${window.displayedYear}-${String(window.displayedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    
-    // Add data-date attribute for coach reply highlighting
     td.setAttribute('data-date', key);
-    
-if (markedDates.has(key)) {
-  // Check global state first (set by updateCalendarHighlighting)
-  const globalUnreadReplies = window.globalDatesWithUnreadReplies || new Set();
-  
-  if (globalUnreadReplies.has(key)) {
-    // Has unread coach replies - use Connect purple
-    td.style.backgroundColor = 'var(--tier-connect, #805AD5)';
-    td.style.border = "2px solid var(--tier-connect, #805AD5)";
-    td.style.color = '#fff';
-    td.style.fontWeight = 'bold';
-    td.style.boxShadow = "0 0 4px rgba(128, 90, 213, 0.5)";
-    td.title = "Journal entry with unread coach reply";
-  } else if (datesWithUnreadReplies.has(key)) {
-    // Local check still shows unread - use Connect purple (backup)
-    td.style.backgroundColor = 'var(--tier-connect, #805AD5)';
-    td.style.border = "2px solid var(--tier-connect, #805AD5)";
-    td.style.color = '#fff';
-    td.style.fontWeight = 'bold';
-    td.style.boxShadow = "0 0 4px rgba(128, 90, 213, 0.5)";
-    td.title = "Journal entry with unread coach reply";
-  } else {
-    // No unread replies - use teal
-    td.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--brand-secondary').trim();
-    td.style.color = '#fff';
-    td.style.border = "1px solid #ccc";
-    td.style.fontWeight = 'normal';
-    td.style.boxShadow = '';
-    td.title = "Journal entry";
-  }
-}
 
-    td.onclick = () => {
-      console.log("📅 Day clicked:", window.displayedYear, window.displayedMonth, day);
-      showPromptsByDate(window.displayedYear, window.displayedMonth, day);
-    };
+    const num = document.createElement("span");
+    num.className = "iw-cal-day";
+    num.textContent = day;
+    if (markedDates.has(key)) { num.classList.add("has-entry"); td.title = "Journal entry"; }
+    if (key === todayKey) num.classList.add("is-today");
+    td.appendChild(num);
 
+    td.onclick = () => showPromptsByDate(window.displayedYear, window.displayedMonth, day);
     row.appendChild(td);
   }
-
-  calendarTable.appendChild(row);
-
-// Fix for calendar width issue - wrap in proper container
-const containerWrapper = document.createElement("div");
-containerWrapper.className = "entries-container";
-containerWrapper.style.cssText = `
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
-  width: calc(100% - 2em);
-  max-width: 100%;
-  box-sizing: border-box;
-  margin: 0 auto;
-  padding: 0 1em;
-  overflow-x: hidden;
-`;
-containerWrapper.appendChild(calendarTable);
-container.appendChild(containerWrapper);
-
-// Force mobile styling after calendar is built
-forceMobileCalendarStyling();
-
+  table.appendChild(row);
+  container.appendChild(table);
 }
 window.buildCalendar = buildCalendar;
 
@@ -2564,7 +2416,7 @@ function createPastEntryCard(entry) {
 
 if (entry.promptUsed) {
   const promptToggle = document.createElement("button");
-  promptToggle.textContent = "📝 Show Prompt";
+  promptToggle.textContent = "Show Prompt";
   promptToggle.className = "toggle-button";
   promptToggle.style.cssText = `
     background: transparent;
@@ -2594,7 +2446,7 @@ if (entry.promptUsed) {
   promptToggle.onclick = () => {
     const isVisible = promptContent.style.display === "block";
     promptContent.style.display = isVisible ? "none" : "block";
-    promptToggle.textContent = isVisible ? "📝 Show Prompt" : "📝 Hide Prompt";
+    promptToggle.textContent = isVisible ? "Show Prompt": "Hide Prompt";
   };
 
   card.appendChild(promptToggle);
@@ -2653,7 +2505,7 @@ if (entry.reflectionUsed) {
 
   if (entry.reflectionNote) {
     const note = document.createElement("div");
-    note.innerHTML = `🧠 <strong>Reflection:</strong> ${entry.reflectionNote}`;
+    note.innerHTML = `<strong>Reflection:</strong> ${entry.reflectionNote}`;
     note.style.cssText = `
       font-size: 0.9em;
       background: var(--bg-muted);
@@ -2669,7 +2521,7 @@ if (entry.reflectionUsed) {
 
   if (entry.coachResponse?.text || typeof entry.coachResponse === "string") {
     const coach = document.createElement("div");
-    coach.innerHTML = `🧑‍🏫 <strong>Coach replied:</strong> ${entry.coachResponse.text || entry.coachResponse}`;
+    coach.innerHTML = `<strong>Coach replied:</strong> ${entry.coachResponse.text || entry.coachResponse}`;
     coach.style.cssText = `
       font-size: 0.9em;
       background: var(--bg-muted);
@@ -2733,7 +2585,7 @@ const checkForCoachReplies = async () => {
       `;
       
       const coachRepliesTitle = document.createElement("h4");
-      coachRepliesTitle.innerHTML = entry.newCoachReply ? "💬 New Coach Reply" : "💬 Coach Reply";
+      coachRepliesTitle.innerHTML = entry.newCoachReply ? "New Coach Reply": "Coach Reply";
       coachRepliesTitle.style.cssText = `
         margin: 0 0 0.5em 0;
         color: var(--font-main);
@@ -2843,7 +2695,7 @@ const checkForCoachReplies = async () => {
               }, 500);
             }
             
-            console.log("✅ Coach reply marked as read for entry:", entry.id);
+            console.log("✓ Coach reply marked as read for entry:", entry.id);
           } catch (error) {
             console.error("Error marking coach reply as read:", error);
             window.showToast("Failed to mark as read. Please try again.", "error");
@@ -2855,7 +2707,7 @@ const checkForCoachReplies = async () => {
       card.appendChild(coachRepliesSection);
     }
   } catch (error) {
-    console.error("❌ Error checking for coach replies:", error);
+    console.error("✗ Error checking for coach replies:", error);
     // Don't show errors for missing coach replies - it's normal
   }
 };
@@ -3143,7 +2995,7 @@ function resetInactivityTimers() {
 
   if (auth.currentUser) {
     warningTimeout = setTimeout(() => {
-      showInternalWarning("⚠️ You’ll be logged out in 1 minute due to inactivity.");
+      showInternalWarning("You’ll be logged out in 1 minute due to inactivity.");
     }, WARNING_TIME);
 
     inactivityTimeout = setTimeout(() => {
@@ -3168,7 +3020,7 @@ function setupReturnToLoginHandler() {
       const goodbye = document.getElementById("goodbyeModal");
       if (goodbye) {
         goodbye.style.display = "none";
-        console.log("✅ Goodbye modal hidden");
+        console.log("✓ Goodbye modal hidden");
       }
       
       // Small delay to ensure modal transition completes
@@ -3177,9 +3029,9 @@ function setupReturnToLoginHandler() {
         showLoginModalReliably();
       }, 50);
     };
-    console.log("✅ Return to login handler attached successfully");
+    console.log("✓ Return to login handler attached successfully");
   } else {
-    console.warn("❌ Return to login button not found in DOM");
+    console.warn("✗ Return to login button not found in DOM");
   }
 }
 
@@ -3193,7 +3045,7 @@ function showLoginModalReliably() {
   // Get modal element
   const loginModal = document.getElementById("loginModal");
   if (!loginModal) {
-    console.error("❌ Login modal element not found");
+    console.error("✗ Login modal element not found");
     return;
   }
   
@@ -3227,7 +3079,7 @@ function showLoginModalReliably() {
     if (emailInput) emailInput.focus();
   }, 100);
   
-  console.log("✅ Login modal displayed with forced styling");
+  console.log("✓ Login modal displayed with forced styling");
 }
 
 // Set up the handler when DOM is ready
@@ -3311,26 +3163,17 @@ function refreshPlaceholderStyles() {
   const promptTopic = document.getElementById('promptTopic');
   const searchQuery = document.getElementById('searchQuery');
   
+  // 2026-07-02: inline-important teal painting REMOVED — this function was the
+  // last unbeatable style source (inline + important outranks all stylesheets).
+  // CSS contracts in inkwell-v2.css own input styling now. This only manages
+  // the placeholder helper class and clears any legacy inline paint.
   inputs.forEach(input => {
-    if (isDarkTheme) {
+    input.classList.toggle('force-dark-placeholder', isDarkTheme);
+    if (input.id === 'promptTopic' || input.id === 'searchQuery') {
       input.style.removeProperty('color');
       input.style.removeProperty('background');
-      input.classList.add('force-dark-placeholder');
-      
-      if (input.id === 'promptTopic' || input.id === 'searchQuery') {
-        input.style.setProperty('color', '#89C9D4', 'important');
-        input.style.setProperty('background', 'linear-gradient(135deg, rgba(42, 54, 58, 0.9) 0%, rgba(30, 42, 48, 0.95) 100%)', 'important');
-        input.style.setProperty('border', '2px solid rgba(137, 201, 212, 0.3)', 'important');
-        input.style.setProperty('caret-color', '#89C9D4', 'important');
-      }
-    } else {
-      input.classList.remove('force-dark-placeholder');
-      if (input.id === 'promptTopic' || input.id === 'searchQuery') {
-        input.style.removeProperty('color');
-        input.style.removeProperty('background');
-        input.style.removeProperty('border');
-        input.style.removeProperty('caret-color');
-      }
+      input.style.removeProperty('border');
+      input.style.removeProperty('caret-color');
     }
   });
 }

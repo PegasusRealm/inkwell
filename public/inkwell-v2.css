@@ -353,21 +353,107 @@ html[data-theme='dark'] .iw-card {
 /* ─────────────────────────────────────────────────────────────────
    COMPONENT: CALENDAR — theme-token colors, both themes.
    ───────────────────────────────────────────────────────────────── */
-#calendarContainer table { border-collapse: collapse; }
-#calendarContainer th {
-  color: var(--font-muted) !important;
-  font-family: var(--body-font) !important;
-  font-weight: 700 !important;
+/* Nav row: chevrons flanking the month, one line */
+.iw-cal-nav {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 1.5em !important;
+  margin-bottom: 0.75em !important;
 }
-#calendarContainer td {
+#calMonthTitle {
+  font-family: var(--title-font) !important;
+  font-size: 1.3rem !important;
+  font-weight: 500 !important;
+  color: var(--font-main) !important;
+  min-width: 9.5em;
+  text-align: center;
+}
+.iw-cal-nav-btn {
+  width: 34px !important;
+  height: 34px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  border: 1.5px solid var(--border-medium) !important;
+  background: transparent !important;
   color: var(--font-secondary) !important;
-  border: 1px solid var(--border-light) !important;
-  font-family: var(--body-font) !important;
+  font-size: 1.25rem !important;
+  line-height: 1 !important;
+  padding: 0 0 2px 0 !important;
+  cursor: pointer;
+  transition: all 0.2s ease !important;
 }
-#calendarContainer td[style*="background-color"] {
-  background-color: var(--brand-primary) !important;
+.iw-cal-nav-btn:hover {
+  border-color: var(--brand-primary) !important;
+  color: var(--font-main) !important;
+  transform: translateY(-1px);
+}
+
+/* The grid: no cage lines — air, discs, and one quiet ring */
+#calendarContainer table.iw-cal {
+  width: 100% !important;
+  max-width: 430px !important;
+  margin: 0 auto !important;
+  border-collapse: collapse !important;
+  table-layout: fixed !important;
+}
+#calendarContainer .iw-cal th {
+  font-family: var(--body-font) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  color: var(--font-muted) !important;
+  padding: 0.4em 0 0.9em !important;
+  border: none !important;
+  background: none !important;
+}
+#calendarContainer .iw-cal td {
+  padding: 0.18em 0 !important;
+  text-align: center !important;
+  border: none !important;
+  background: none !important;
+  cursor: pointer;
+}
+#calendarContainer .iw-cal-day {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 2.35em !important;
+  height: 2.35em !important;
+  border-radius: 50% !important;
+  font-family: var(--body-font) !important;
+  font-size: 0.92rem !important;
+  color: var(--font-secondary) !important;
+  border: 1.5px solid transparent !important;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+#calendarContainer .iw-cal td:hover .iw-cal-day {
+  background: var(--bg-muted) !important;
+  color: var(--font-main) !important;
+}
+/* Entry day: solid teal disc, white number */
+#calendarContainer .iw-cal-day.has-entry {
+  background: #2A6972 !important;
   color: #ffffff !important;
-  text-shadow: none !important;
+  font-weight: 600 !important;
+}
+#calendarContainer .iw-cal td:hover .iw-cal-day.has-entry { background: #1E8A99 !important; }
+html[data-theme='dark'] #calendarContainer .iw-cal-day.has-entry { background: #2A6972 !important; }
+html[data-theme='dark'] #calendarContainer .iw-cal td:hover .iw-cal-day.has-entry { background: #35818C !important; }
+/* Today: thin bright ring (stacks with the disc) */
+#calendarContainer .iw-cal-day.is-today { border-color: var(--brand-secondary) !important; }
+/* Selected date (mobile tap): quiet ring + lift */
+#calendarContainer .iw-cal td.selected .iw-cal-day {
+  border-color: var(--brand-secondary) !important;
+  background: var(--bg-muted) !important;
+}
+#calendarContainer .iw-cal td.selected .iw-cal-day.has-entry { background: #1E8A99 !important; }
+@media (max-width: 640px) {
+  #calendarContainer .iw-cal-day { width: 2.6em !important; height: 2.6em !important; font-size: 1rem !important; }
+  #calendarContainer table.iw-cal { max-width: 100% !important; }
 }
 
 /* ─────────────────────────────────────────────────────────────────
