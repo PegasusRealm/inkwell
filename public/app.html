@@ -2476,10 +2476,7 @@ html[data-theme='dark'] .entry-card[style] .fixed-dark-date {
   transition: box-shadow 0.3s ease, transform 0.2s ease;
 }
 
-.entry-card.journal-entry:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-1px);
-}
+/* lift hover removed 2026-07-02 — translateY clipped top borders against sibling containers; contract hover is shadow-only */
 
 /* Style for entries with new coach replies */
 .entry-card.journal-entry[style*="border-left: 5px solid"] {
@@ -2517,16 +2514,7 @@ html[data-theme='dark'] .entry-card .shared-with-coach {
 }
 
 html[data-theme='dark'] .entry-card h3,
-html[data-theme='dark'] .entry-card p:not(.entry-date) {
-  color: #89C9D4 !important;
-}
-
-html[data-theme='dark'] .entry-card:hover {
-  background: linear-gradient(135deg, rgba(42, 105, 114, 0.25) 0%, rgba(30, 80, 85, 0.30) 100%) !important;
-  box-shadow: 0 0 25px rgba(137, 201, 212, 0.25), 0 6px 20px rgba(0, 0, 0, 0.3) !important;
-  transform: translateY(-2px) !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
+/* dark teal paragraph + glow-lift hover removed 2026-07-02 — contract owns cards */
 
 /* Enhanced entry buttons for dark mode */
 html[data-theme='dark'] .entry-btn {
@@ -7286,16 +7274,9 @@ window.renameTag = async function(oldTag) {
         entryData.attachments = attachments;
       }
 
-// Clear Ask Sophy for Prompt fields
-const promptTopic = document.getElementById("promptTopic");
-if (promptTopic) {
-  promptTopic.value = "";
-}
-
-const generatedPrompt = document.getElementById("generatedPrompt");
-if (generatedPrompt) {
-  generatedPrompt.textContent = "";
-}
+      // (Premature Sophy-field clear removed 2026-07-02 — it wiped #generatedPrompt
+      //  4 lines before the promptUsed read below, so prompts never saved. Fields
+      //  now clear in the post-save reset with the checkboxes.)
 
       // Stricter prompt extraction and validation
       const promptElement = document.getElementById("generatedPrompt");
@@ -7559,6 +7540,12 @@ if (generatedPrompt) {
         entryStatus.textContent = "";
       }
       
+      // Clear Ask Sophy for Prompt fields (moved here 2026-07-02 — after the save)
+      const promptTopicEl = document.getElementById("promptTopic");
+      if (promptTopicEl) promptTopicEl.value = "";
+      const generatedPromptEl = document.getElementById("generatedPrompt");
+      if (generatedPromptEl) generatedPromptEl.textContent = "";
+
       // Uncheck the auto-insert checkboxes
       const autoInsertPrompt = document.getElementById("autoInsertPrompt");
       if (autoInsertPrompt) {
@@ -10310,7 +10297,7 @@ document.head.appendChild(themeStyle);
     };
 
   </script>
-  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.15">
+  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.16">
 </head>
 
 
@@ -15056,7 +15043,7 @@ function startPractitionerStatusRefresh() {
 <script src="./subscription-config.js"></script>
 <script src="./subscription-utils.js"></script>
 
-<script defer type="module" src="./auth.js?v=2.2"></script>
+<script defer type="module" src="./auth.js?v=2.3"></script>
 
 
 <script>
