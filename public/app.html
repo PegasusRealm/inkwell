@@ -3934,20 +3934,24 @@ html[data-theme='dark'] .activity-dot.filled::after {
 }
 
 .info-modal-content {
-  background: #fff;
-  color: #2A6972;
-  padding: 2em 1.5em 1.5em 1.5em;
-  border-radius: 10px;
+  background: var(--bg-card);
+  color: var(--font-secondary);
+  padding: 2em 1.75em 1.5em;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
   max-width: 600px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  box-shadow: 0 32px 80px -24px rgba(0, 0, 0, 0.5);
 }
 
 .info-modal-content h2 {
   margin-top: 0;
   text-align: center;
+  font-family: var(--title-font);
+  font-weight: 500;
+  color: var(--font-main);
 }
 
 .info-modal-content h3 {
@@ -3958,7 +3962,7 @@ html[data-theme='dark'] .activity-dot.filled::after {
 .info-modal-content h4 {
   font-size: 1.05em;
   margin-top: 1.2em;
-  color: #2A6972;
+  color: var(--brand-primary);
 }
 
 .info-modal-content p {
@@ -3974,21 +3978,22 @@ html[data-theme='dark'] .activity-dot.filled::after {
 .info-modal-subtitle {
   text-align: center;
   font-size: 1em;
-  color: #2A6972;
+  color: var(--font-muted);
   margin-bottom: 1.5em;
 }
 
 .info-modal-highlight-box {
-  background: rgba(42,105,114,0.08);
-  padding: 1em;
-  border-radius: 8px;
+  background: var(--bg-muted);
+  border-left: 3px solid var(--brand-primary);
+  padding: 0.9em 1em;
+  border-radius: 0 10px 10px 0;
   margin: 1em 0;
 }
 
 .info-modal-highlight-box h4 {
   font-size: 1em;
   margin-top: 0;
-  color: #2A6972;
+  color: var(--brand-primary);
 }
 
 .info-modal-highlight-box p {
@@ -3999,74 +4004,22 @@ html[data-theme='dark'] .activity-dot.filled::after {
 .info-modal-divider {
   margin: 1.5em 0;
   border: none;
-  border-top: 1px solid rgba(42,105,114,0.2);
+  border-top: 1px solid var(--border-light);
 }
 
 .info-modal-footer {
   text-align: center;
   font-size: 1.05em;
-  color: #2A6972;
+  color: var(--font-muted);
   font-style: italic;
   margin: 1em 0 0.5em 0;
 }
 
 /* Dark Theme for Info Modals */
-html[data-theme='dark'] .info-modal-overlay {
-  background: rgba(0,0,0,0.85);
-}
+/* dark info-modal patch blocks removed 2026-07-02 — source now speaks tokens,
+   dark flows through vars. (Old blocks painted h3/h4/em in #89C9D4 teal.) */
+html[data-theme='dark'] .info-modal-content strong { color: var(--font-main); }
 
-html[data-theme='dark'] .info-modal-content {
-  background: rgba(21, 54, 58, 0.95) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(42,105,114,0.3) !important;
-  backdrop-filter: blur(10px) !important;
-}
-
-html[data-theme='dark'] .info-modal-content h2 {
-  color: var(--brand-light) !important;
-}
-
-html[data-theme='dark'] .info-modal-content h3 {
-  color: #89C9D4 !important;
-}
-
-html[data-theme='dark'] .info-modal-content h4 {
-  color: #89C9D4 !important;
-}
-
-html[data-theme='dark'] .info-modal-content p,
-html[data-theme='dark'] .info-modal-content div {
-  color: var(--font-muted) !important;
-}
-
-html[data-theme='dark'] .info-modal-content strong {
-  color: var(--brand-light) !important;
-}
-
-html[data-theme='dark'] .info-modal-content em {
-  color: rgba(137, 201, 212, 0.7) !important;
-}
-
-html[data-theme='dark'] .info-modal-content ul,
-html[data-theme='dark'] .info-modal-content li {
-  color: var(--font-muted) !important;
-}
-
-html[data-theme='dark'] .info-modal-subtitle {
-  color: var(--font-muted) !important;
-}
-
-html[data-theme='dark'] .info-modal-highlight-box {
-  background: rgba(42,105,114,0.15) !important;
-}
-
-html[data-theme='dark'] .info-modal-divider {
-  border-color: rgba(137, 201, 212, 0.3) !important;
-}
-
-html[data-theme='dark'] .info-modal-footer {
-  color: var(--font-muted) !important;
-}
 
 html[data-theme='dark'] .info-modal-content .btn {
   background: linear-gradient(135deg, rgba(42, 105, 114, 0.8) 0%, rgba(30, 80, 85, 0.9) 100%) !important;
@@ -5193,6 +5146,28 @@ window.copyGratitudeLetter = function() {
 };
 
 // ═══ Phase 2b: server-backed actions (gratitudeEngine) ═══
+
+window.sendPracticeSummary = async function() {
+  const status = document.getElementById('practiceSummaryStatus');
+  const set = (t) => { if (status) status.textContent = t; };
+  try {
+    const user = window.auth?.currentUser;
+    if (!user) { set('Sign in first.'); return; }
+    set('Building your summary...');
+    const idToken = await user.getIdToken();
+    const days = Number(document.getElementById('practiceSummaryDays')?.value) || 30;
+    const r = await fetch('https://us-central1-inkwell-alpha.cloudfunctions.net/practiceSummary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+      body: JSON.stringify({ days })
+    });
+    const data = await r.json().catch(() => ({}));
+    if (r.ok && data.sent) { set('✓ Sent to your email.'); setTimeout(() => set(''), 5000); return; }
+    set(data.error || 'Could not send. Please try again.');
+  } catch (e) {
+    set('Could not send. Please try again.');
+  }
+};
 
 async function gratEngineFetch(payload) {
   const user = window.auth?.currentUser;
@@ -10268,7 +10243,7 @@ document.head.appendChild(themeStyle);
     };
 
   </script>
-  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.17">
+  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.18">
 </head>
 
 
@@ -11186,10 +11161,9 @@ document.head.appendChild(themeStyle);
 <div class="wish-section">
     <h2 class="journal-heading" style="text-align:center;margin-bottom:2rem;color:var(--font-main);">Want</h2>
 
-    <textarea id="wishInput" placeholder="Identify a deeply meaningful, specific, and attainable goal that you truly want to achieve.
+    <textarea id="wishInput" placeholder="Name the goal you want most right now. Keep it specific, meaningful, and within reach.
 
-- What is something I genuinely want to accomplish?
-- Is this challenging yet realistic for me?" style="width:100%;height:133px;margin-bottom:1em;padding:0.5em;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;max-width:100%;"></textarea>
+Example: Walk 30 minutes every weekday." style="width:100%;height:133px;margin-bottom:1em;padding:0.5em;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;max-width:100%;"></textarea>
 
 
     <p id="wishStatus" style="margin-top:0.5em;font-style:italic;"></p>
@@ -11203,10 +11177,7 @@ document.head.appendChild(themeStyle);
 <div class="wish-section">
       <h2 class="journal-heading" style="text-align:center;margin-bottom:2rem;color:var(--font-main);">Imagine</h2>
 
-    <textarea id="outcomeInput" placeholder="Vividly imagine and describe the best possible result of achieving what you want.
-
-- What would success look and feel like in detail?
-- How will my life be different and better?" style="width:100%;height:133px;margin-bottom:0.5em;padding:0.5em;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;max-width:100%;"></textarea>
+    <textarea id="outcomeInput" placeholder="Describe the best thing about reaching this goal. How will it feel? What gets better? Write it like it already happened, with real detail." style="width:100%;height:133px;margin-bottom:0.5em;padding:0.5em;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;max-width:100%;"></textarea>
 
     <p id="outcomeStatus" style="margin-top:0.5em;font-style:italic;"></p>
     <button class="btn btn-sophy" onclick="askSophyToRefine('outcome')">Reflect on your Imagine with Sophy</button>
@@ -11219,10 +11190,9 @@ document.head.appendChild(themeStyle);
 <div class="wish-section">
         <h2 class="journal-heading" style="text-align:center;margin-bottom:2rem;color:var(--font-main);">Snags</h2>
 
-    <textarea id="oppositionInput" placeholder="Recognize internal and external snags that could interfere with your success.
+    <textarea id="oppositionInput" placeholder="List what could get in your way. Look inside first: habits, moods, and excuses count as much as outside problems.
 
-- What within me (habits, thoughts, beliefs) might get in the way?
-- Which external factors or obstacles could derail my progress?" style="width:100%;height:133px;margin-bottom:0.5em;padding:0.5em;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;max-width:100%;"></textarea>
+Example: I stay up too late, so I skip my morning walk." style="width:100%;height:133px;margin-bottom:0.5em;padding:0.5em;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;max-width:100%;"></textarea>
 
     <p id="oppositionStatus" style="margin-top:0.5em;font-style:italic;"></p>
     <button class="btn btn-sophy" onclick="askSophyToRefine('opposition')">Reflect on your Snags with Sophy</button>
@@ -11235,10 +11205,9 @@ document.head.appendChild(themeStyle);
 <div class="wish-section">
         <h2 class="journal-heading" style="text-align:center;margin-bottom:2rem;color:var(--font-main);">How</h2>
 
-    <textarea id="planInput" placeholder="Create “if-then” statements for overcoming the snags you identified.
+    <textarea id="planInput" placeholder="Write an if-then plan for each snag, and tie it to something you already do daily.
 
-- If I encounter [specific snag], then I will [planned response or action].
-- How will I get back on track when things go wrong?" style="width:100%;height:133px;margin-bottom:0.5em;padding:0.5em;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;max-width:100%;"></textarea>
+Example: If it hits 9 pm, then I plug my phone in across the room." style="width:100%;height:133px;margin-bottom:0.5em;padding:0.5em;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;max-width:100%;"></textarea>
 
     <p style="font-size:0.85em;color:var(--font-muted);margin-top:0.25em;margin-bottom:0.5em;">
       Tip: anchor new habits to ones you already have. "After I [pour my coffee], I will [write one line]."
@@ -12341,6 +12310,30 @@ document.head.appendChild(themeStyle);
    <!-- My Coach section removed 2026-07-01 — Connect retired, coach layer dead -->
 
    <!-- Appearance Section -->
+    <!-- Practice Summary (2026-07-02): client-generated, self-emailed usage
+         summary for optional sharing with a practitioner. FREE tier by law:
+         never gate this behind Plus. Metadata only, never content. -->
+    <div class="settings-card">
+      <h3 style="color: var(--brand-primary); margin-top: 0; margin-bottom: 0.6em; font-size: 1.1em;">
+        Practice Summary
+      </h3>
+      <p style="margin: 0 0 1em 0; font-size: 0.88em; color: var(--font-secondary); line-height: 1.55;">
+        A one-page summary of how you have been using InkWell: days journaled,
+        streaks, and your practice mix. It never includes what you wrote.
+        We email it to you, and only you. Some people forward it to a therapist,
+        coach, or doctor they work with. That part is always your call.
+      </p>
+      <div style="display: flex; gap: 0.6em; align-items: center; flex-wrap: wrap;">
+        <select id="practiceSummaryDays" style="padding: 0.55em 0.8em; border: 1.5px solid var(--border-medium); border-radius: 10px; background: var(--bg-card); color: var(--font-main); font-size: 0.9em;">
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="90">Last 90 days</option>
+        </select>
+        <button class="btn" onclick="sendPracticeSummary()">Email me my summary</button>
+      </div>
+      <div id="practiceSummaryStatus" style="margin-top: 0.7em; font-size: 0.85em; font-style: italic; color: var(--font-muted);"></div>
+    </div>
+
     <div class="settings-card">
       <h3 style="color: var(--brand-primary); margin-top: 0; margin-bottom: 1em; font-size: 1.1em; display: flex; align-items: center; gap: 0.5em;">
         Appearance

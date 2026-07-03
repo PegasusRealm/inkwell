@@ -457,6 +457,50 @@ html[data-theme='dark'] #calendarContainer .iw-cal td:hover .iw-cal-day.has-entr
 }
 
 /* ─────────────────────────────────────────────────────────────────
+   COMPONENT: MODAL CHROME — one backdrop, one panel voice, 18 modals.
+   Bespoke modals carry inline overlay/panel styles; ID lists + !important
+   outrank them (same law as the calendar). Info-family fixed at source.
+   ───────────────────────────────────────────────────────────────── */
+#loginModal, #signupModal, #goodbyeModal, #userSettingsModal,
+#deleteConfirmModal, #editEntryModal, #aboutInkwellModal,
+#periodInsightsModal, #manifestDataModal, #reflectionDataModal,
+#whatsNewModal, #deleteAccountModal, .onboarding-modal,
+.info-modal-overlay {
+  background: rgba(12, 18, 19, 0.72) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+/* Panels: the card language, everywhere a box floats */
+#loginModal .card-block, #signupModal .card-block,
+#goodbyeModal .card-block, #userSettingsModal .card-block,
+#deleteConfirmModal > div > div, #editEntryModal > div > div,
+#aboutInkwellModal > div > div, #periodInsightsModal > div > div,
+#manifestDataModal > div > div, #reflectionDataModal > div > div,
+#whatsNewModal > div > div, #deleteAccountModal > div > div,
+.onboarding-content {
+  background: var(--bg-card) !important;
+  color: var(--font-secondary) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 32px 80px -24px rgba(0, 0, 0, 0.5) !important;
+}
+html[data-theme='dark'] #loginModal .card-block,
+html[data-theme='dark'] #signupModal .card-block,
+html[data-theme='dark'] #goodbyeModal .card-block,
+html[data-theme='dark'] #userSettingsModal .card-block {
+  box-shadow: 0 32px 90px -20px rgba(0, 0, 0, 0.85) !important;
+}
+
+/* Modal titles: the serif speaks */
+#loginModal h2, #signupModal h2, #goodbyeModal h2, #userSettingsModal h2,
+#deleteConfirmModal h2, #editEntryModal h2, #aboutInkwellModal h2,
+#periodInsightsModal h2, #manifestDataModal h2, #reflectionDataModal h2,
+#whatsNewModal h2, #deleteAccountModal h2 {
+  font-family: var(--title-font) !important;
+  font-weight: 500 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
    COMPONENT: MANIFEST / WISH — one method, one card. Step names are
    eyebrows, fields are calm, the runway card tracks quietly below.
    ───────────────────────────────────────────────────────────────── */
