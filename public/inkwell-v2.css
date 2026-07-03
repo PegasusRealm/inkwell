@@ -231,9 +231,7 @@ html[data-theme='dark'] body .sophy-block .sophy-row-line {
 }
 /* Inputs inside her block: neutral card field, coral only on focus (mockup had
    no teal anywhere near her) */
-html body .sophy-block .ai-input,
-html[data-theme='dark'] body .sophy-block .ai-input,
-html[data-theme='dark'] body .sophy-block input#promptTopic {
+html body .sophy-block .ai-input {
   outline: none !important;
   -webkit-appearance: none !important;
   appearance: none !important;
@@ -242,6 +240,23 @@ html[data-theme='dark'] body .sophy-block input#promptTopic {
   color: var(--font-main) !important;
   -webkit-text-fill-color: var(--font-main) !important;
   caret-color: var(--font-main) !important;
+  box-shadow: none !important;
+  border-radius: 10px !important;
+}
+/* Dark: her field is WARM ink with coral-tinted stroke — the cool
+   card/border tokens read teal inside her coral block (root cause of
+   the 15-round war; no rogue painter, our own neutral was cool). */
+html[data-theme='dark'] body .sophy-block .ai-input,
+html[data-theme='dark'] body .sophy-block input#promptTopic,
+html[data-theme='dark'] body .sophy-block .ai-input#promptTopic {
+  outline: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background: #1D1917 !important;
+  border: 1.5px solid rgba(212, 148, 137, 0.32) !important;
+  color: var(--font-main) !important;
+  -webkit-text-fill-color: var(--font-main) !important;
+  caret-color: #D49489 !important;
   box-shadow: none !important;
   border-radius: 10px !important;
 }
@@ -260,6 +275,43 @@ html[data-theme='dark'] body .sophy-block input::placeholder {
 html body .sophy-block label,
 html[data-theme='dark'] body .sophy-block label { color: var(--font-secondary) !important; }
 .sophy-check input { accent-color: #D49489; }
+/* Text + placeholder ID-strength pin — app strata used .ai-input#promptTopic
+   ID rules that outgun class selectors; match the weight to win forever. */
+html[data-theme='dark'] body .sophy-block .ai-input#promptTopic,
+html[data-theme='dark'] body .sophy-block input#promptTopic {
+  color: var(--font-main) !important;
+  -webkit-text-fill-color: var(--font-main) !important;
+  background: #1D1917 !important;
+}
+html[data-theme='dark'] body .sophy-block .ai-input#promptTopic::placeholder,
+html[data-theme='dark'] body .sophy-block .ai-input#promptTopic::-webkit-input-placeholder {
+  color: var(--font-muted) !important;
+  -webkit-text-fill-color: var(--font-muted) !important;
+}
+/* Sophy's coral checkbox law — both themes. The global teal checkbox rules
+   (app.html ~3030/3060, dark uses brand-secondary) stop at her door. */
+html body .sophy-check input[type='checkbox'],
+html[data-theme='dark'] body .sophy-check input[type='checkbox'] {
+  accent-color: #D49489 !important;
+  border-color: rgba(212, 148, 137, 0.55) !important;
+  background-color: transparent !important;
+}
+html body .sophy-check input[type='checkbox']:checked,
+html[data-theme='dark'] body .sophy-check input[type='checkbox']:checked {
+  accent-color: #D49489 !important;
+  background-color: #D49489 !important;
+  border-color: #D49489 !important;
+}
+html body .sophy-check input[type='checkbox']:hover,
+html[data-theme='dark'] body .sophy-check input[type='checkbox']:hover {
+  border-color: #D49489 !important;
+  transform: none !important;
+}
+html body .sophy-check input[type='checkbox']:focus,
+html[data-theme='dark'] body .sophy-check input[type='checkbox']:focus {
+  outline: 2px solid rgba(212, 148, 137, 0.4) !important;
+  border-color: #D49489 !important;
+}
 /* Her outputs share the tint */
 .sophy-info,
 .sophy-block .sophy-info {

@@ -2776,13 +2776,13 @@ html[data-theme='dark'] #searchQuery.ai-input {
 }
 
 html[data-theme='dark'] #searchQuery.ai-input:focus {
-  border-color: rgba(137, 201, 212, 0.6) !important;
-  box-shadow: 0 0 15px rgba(137, 201, 212, 0.25) !important;
-  background: linear-gradient(135deg, rgba(42, 105, 114, 0.15) 0%, rgba(30, 80, 85, 0.20) 100%) !important;
+  border-color: var(--font-muted) !important;
+  box-shadow: 0 0 0 3px rgba(95, 179, 191, 0.15) !important;
+  background: var(--bg-card) !important;
 }
 
 html[data-theme='dark'] #searchQuery.ai-input::placeholder {
-  color: rgba(137, 201, 212, 0.6) !important;
+  color: var(--font-muted) !important;
 }
 
 /* Enhanced Calendar Controls for Dark Mode */
@@ -3506,29 +3506,29 @@ html[data-theme='dark'] .ai-input::-moz-placeholder,
 html[data-theme='dark'] input.ai-input::placeholder,
 html[data-theme='dark'] input.ai-input::-webkit-input-placeholder,
 html[data-theme='dark'] input.ai-input::-moz-placeholder {
-  color: rgba(137, 201, 212, 0.7) !important;
+  color: var(--font-muted) !important;
   opacity: 1 !important;
-  -webkit-text-fill-color: rgba(137, 201, 212, 0.7) !important;
+  -webkit-text-fill-color: var(--font-muted) !important;
 }
 
 /* Focus state with enhanced teal glow */
 html[data-theme='dark'] input#promptTopic:focus,
 html[data-theme='dark'] input#searchQuery:focus,
 html[data-theme='dark'] .ai-input:focus {
-  border-color: #89C9D4 !important;
-  box-shadow: 0 0 20px rgba(137, 201, 212, 0.4), inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  border-color: var(--font-main) !important;
+  box-shadow: 0 0 0 3px rgba(95, 179, 191, 0.15) !important;
   outline: none !important;
 }
 
 /* Additional dark mode input text fix with higher specificity */
 html[data-theme='dark'] .ai-input#promptTopic,
 html[data-theme='dark'] .ai-input#searchQuery {
-  color: #89C9D4 !important;
-  background: linear-gradient(135deg, rgba(42, 54, 58, 0.9) 0%, rgba(30, 42, 48, 0.95) 100%) !important;
-  border: 2px solid rgba(137, 201, 212, 0.3) !important;
-  box-shadow: 0 0 15px rgba(137, 201, 212, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  caret-color: #89C9D4 !important;
-  -webkit-text-fill-color: #89C9D4 !important;
+  color: var(--font-main) !important;
+  background: var(--bg-card) !important;
+  border: 1.5px solid var(--border-medium) !important;
+  box-shadow: none !important;
+  caret-color: var(--font-main) !important;
+  -webkit-text-fill-color: var(--font-main) !important;
 }
 
 /* Additional placeholder styling with ai-input class */
@@ -3538,28 +3538,28 @@ html[data-theme='dark'] .ai-input#promptTopic::-moz-placeholder,
 html[data-theme='dark'] .ai-input#searchQuery::placeholder,
 html[data-theme='dark'] .ai-input#searchQuery::-webkit-input-placeholder,
 html[data-theme='dark'] .ai-input#searchQuery::-moz-placeholder {
-  color: rgba(137, 201, 212, 0.7) !important;
+  color: var(--font-muted) !important;
   opacity: 1 !important;
 }
 
 /* Dark theme styling for main journal textarea */
 html[data-theme='dark'] #journal {
-  color: #89C9D4 !important;
-  background: linear-gradient(135deg, rgba(42, 54, 58, 0.9) 0%, rgba(30, 42, 48, 0.95) 100%) !important;
-  border: 2px solid rgba(137, 201, 212, 0.3) !important;
-  box-shadow: 0 0 15px rgba(137, 201, 212, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  caret-color: #89C9D4 !important;
-  -webkit-text-fill-color: #89C9D4 !important;
+  color: var(--font-main) !important;
+  background: var(--bg-card) !important;
+  border: 1.5px solid var(--border-medium) !important;
+  box-shadow: none !important;
+  caret-color: var(--font-main) !important;
+  -webkit-text-fill-color: var(--font-main) !important;
 }
 
 html[data-theme='dark'] #journal:focus {
-  border-color: #89C9D4 !important;
-  box-shadow: 0 0 20px rgba(137, 201, 212, 0.4), inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  border-color: var(--font-main) !important;
+  box-shadow: 0 0 0 3px rgba(95, 179, 191, 0.15) !important;
   outline: none !important;
 }
 
 html[data-theme='dark'] #journal::placeholder {
-  color: rgba(137, 201, 212, 0.7) !important;
+  color: var(--font-muted) !important;
   opacity: 1 !important;
 }
 
@@ -3568,20 +3568,20 @@ html[data-theme='dark'] #wishInput,
 html[data-theme='dark'] #outcomeInput,
 html[data-theme='dark'] #oppositionInput,
 html[data-theme='dark'] #planInput {
-  color: #89C9D4 !important;
-  background: linear-gradient(135deg, rgba(42, 54, 58, 0.9) 0%, rgba(30, 42, 48, 0.95) 100%) !important;
-  border: 2px solid rgba(137, 201, 212, 0.3) !important;
-  box-shadow: 0 0 15px rgba(137, 201, 212, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  caret-color: #89C9D4 !important;
-  -webkit-text-fill-color: #89C9D4 !important;
+  color: var(--font-main) !important;
+  background: var(--bg-card) !important;
+  border: 1.5px solid var(--border-medium) !important;
+  box-shadow: none !important;
+  caret-color: var(--font-main) !important;
+  -webkit-text-fill-color: var(--font-main) !important;
 }
 
 html[data-theme='dark'] #wishInput:focus,
 html[data-theme='dark'] #outcomeInput:focus,
 html[data-theme='dark'] #oppositionInput:focus,
 html[data-theme='dark'] #planInput:focus {
-  border-color: #89C9D4 !important;
-  box-shadow: 0 0 20px rgba(137, 201, 212, 0.4), inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  border-color: var(--font-main) !important;
+  box-shadow: 0 0 0 3px rgba(95, 179, 191, 0.15) !important;
   outline: none !important;
 }
 
@@ -3589,7 +3589,7 @@ html[data-theme='dark'] #wishInput::placeholder,
 html[data-theme='dark'] #outcomeInput::placeholder,
 html[data-theme='dark'] #oppositionInput::placeholder,
 html[data-theme='dark'] #planInput::placeholder {
-  color: rgba(137, 201, 212, 0.7) !important;
+  color: var(--font-muted) !important;
   opacity: 1 !important;
 }
 
@@ -3599,9 +3599,9 @@ html[data-theme='dark'] #planInput::placeholder {
 .force-dark-placeholder::-moz-placeholder,
 .force-dark-placeholder:-ms-input-placeholder,
 .force-dark-placeholder:-moz-placeholder {
-  color: rgba(137, 201, 212, 0.7) !important;
+  color: var(--font-muted) !important;
   opacity: 1 !important;
-  -webkit-text-fill-color: rgba(137, 201, 212, 0.7) !important;
+  -webkit-text-fill-color: var(--font-muted) !important;
 }
 
 /* Sub-elements: tags, date, text, buttons */
@@ -10509,7 +10509,7 @@ document.head.appendChild(themeStyle);
     };
 
   </script>
-  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.10">
+  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.12">
 </head>
 
 
