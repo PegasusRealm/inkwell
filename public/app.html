@@ -12468,7 +12468,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
           What's New
           <span id="whatsNewBadge" style="display: none; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; background: var(--brand-primary, #2A6972); border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
         </button>
-        <button onclick="document.getElementById('aboutInkwellModal').style.display='flex'; closeUserSettingsModal();" class="btn" 
+        <button onclick="document.getElementById('aboutInkwellModal').style.display='block'; closeUserSettingsModal();" class="btn" 
           style="flex: 1; min-width: 140px; padding: 0.5em 0.8em; background: #4A8B8B; color: white; border: none; border-radius: 5px; font-size: 0.85em; cursor: pointer;">
           What is InkWell?
         </button>
@@ -12589,7 +12589,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
 
   // What's New Modal Functions
   window.showWhatsNewModal = function() {
-    document.getElementById("whatsNewModal").style.display = "flex";
+    document.getElementById("whatsNewModal").style.display = "block";
     // Mark as viewed when opened
     markWhatsNewAsViewed();
   };
