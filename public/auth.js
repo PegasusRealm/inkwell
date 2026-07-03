@@ -68,6 +68,28 @@ const CONFIG = {
 
 let currentUserId = null; // Global holder for logged-in user ID
 
+// Login should land on the header, not wherever the last session scrolled.
+// Browsers restore scroll on reload; the app re-renders under it. (2026-07-02)
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+// Modals open at the TOP of their content, every time (Adam 2026-07-02:
+// "modals tend to populate at the bottom, first eyes on"). Watches for
+// overlays becoming visible and resets their scroll positions.
+document.addEventListener('click', () => {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.info-modal-overlay, #aboutInkwellModal, #whatsNewModal, #periodInsightsModal, #manifestDataModal, #reflectionDataModal, #userSettingsModal, #deleteAccountModal').forEach(o => {
+      const visible = o.style.display && o.style.display !== 'none';
+      if (visible && o.dataset.openReset !== '1') {
+        o.dataset.openReset = '1';
+        o.scrollTop = 0;
+        o.querySelectorAll('.info-modal-wrapper, .info-modal-content, .card-block, :scope > div, :scope > div > div').forEach(el => { el.scrollTop = 0; });
+      } else if (!visible && o.dataset.openReset) {
+        o.dataset.openReset = '';
+      }
+    });
+  });
+});
+
 // Robust Firestore operation wrapper with retry logic
 async function safeFirestoreOperation(operation, retries = 3, delay = 1000) {
   for (let i = 0; i < retries; i++) {
@@ -1885,6 +1907,7 @@ function renderAppShell(user) {
     mainUI.style.visibility = "visible";
     mainUI.style.opacity = "1";
   }
+  window.scrollTo(0, 0); // land on the header (2026-07-02)
   
   // Force refresh placeholder styles when app shell renders
   setTimeout(() => {
@@ -2417,7 +2440,7 @@ function createPastEntryCard(entry) {
 if (entry.promptUsed) {
   const promptToggle = document.createElement("button");
   promptToggle.textContent = "Show Prompt";
-  promptToggle.className = "toggle-button";
+  promptToggle.className = "toggle-button sophy-toggle";
   promptToggle.style.cssText = `
     background: transparent;
     color: var(--brand-primary);
@@ -2456,7 +2479,7 @@ if (entry.promptUsed) {
 if (entry.reflectionUsed) {
   const reflectionToggle = document.createElement("button");
   reflectionToggle.textContent = "Show Reflection";
-  reflectionToggle.className = "toggle-button";
+  reflectionToggle.className = "toggle-button sophy-toggle";
   reflectionToggle.style.cssText = `
     background: transparent;
     color: var(--brand-primary);

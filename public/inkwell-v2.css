@@ -491,6 +491,36 @@ html[data-theme='dark'] #userSettingsModal .card-block {
   box-shadow: 0 32px 90px -20px rgba(0, 0, 0, 0.85) !important;
 }
 
+/* Auth fields: calm in BOTH themes. Kills the inline gradient/glow/backdrop
+   painters (light) and outranks any dark stratum stragglers. The 80s called;
+   they can keep the glow. */
+#loginModal input, #signupModal input, #userSettingsModal input,
+html[data-theme='dark'] #loginModal input,
+html[data-theme='dark'] #signupModal input,
+html[data-theme='dark'] #userSettingsModal input {
+  background: var(--bg-card) !important;
+  color: var(--font-main) !important;
+  border: 1.5px solid var(--border-medium) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  caret-color: var(--font-main) !important;
+}
+#loginModal input:focus, #signupModal input:focus, #userSettingsModal input:focus,
+html[data-theme='dark'] #loginModal input:focus,
+html[data-theme='dark'] #signupModal input:focus,
+html[data-theme='dark'] #userSettingsModal input:focus {
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 0 3px rgba(95, 179, 191, 0.15) !important;
+  outline: none !important;
+}
+#loginModal input::placeholder, #signupModal input::placeholder,
+html[data-theme='dark'] #loginModal input::placeholder,
+html[data-theme='dark'] #signupModal input::placeholder {
+  color: var(--font-muted) !important;
+  -webkit-text-fill-color: var(--font-muted) !important;
+}
+
 /* Modal titles: the serif speaks */
 #loginModal h2, #signupModal h2, #goodbyeModal h2, #userSettingsModal h2,
 #deleteConfirmModal h2, #editEntryModal h2, #aboutInkwellModal h2,
