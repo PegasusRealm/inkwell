@@ -1279,18 +1279,18 @@
 
     /* Enhanced Dark Theme for Signup Modal */
     html[data-theme='dark'] #signupModal .card-block {
-      background: rgba(21, 54, 58, 0.95) !important;
-      color: #ffffff !important;
-      border: 1px solid rgba(42,105,114,0.3) !important;
-      backdrop-filter: blur(10px) !important;
+      background: var(--bg-card) !important;
+      color: var(--font-main) !important;
+      border: 1px solid var(--border-light) !important;
+      backdrop-filter: none !important;
     }
 
     /* Enhanced Dark Theme for Goodbye Modal */
     html[data-theme='dark'] #goodbyeModal .card-block {
-      background: rgba(21, 54, 58, 0.95) !important;
-      color: #ffffff !important;
-      border: 1px solid rgba(42,105,114,0.3) !important;
-      backdrop-filter: blur(10px) !important;
+      background: var(--bg-card) !important;
+      color: var(--font-main) !important;
+      border: 1px solid var(--border-light) !important;
+      backdrop-filter: none !important;
     }
 
     html[data-theme='dark'] #goodbyeModal h2 {
@@ -1364,10 +1364,10 @@
 
     /* Enhanced Dark Theme for Login Modal */
     html[data-theme='dark'] #loginModal .card-block {
-      background: rgba(21, 54, 58, 0.95) !important;
-      color: #ffffff !important;
-      border: 1px solid rgba(42,105,114,0.3) !important;
-      backdrop-filter: blur(10px) !important;
+      background: var(--bg-card) !important;
+      color: var(--font-main) !important;
+      border: 1px solid var(--border-light) !important;
+      backdrop-filter: none !important;
     }
 
     html[data-theme='dark'] #loginModal h2 {
@@ -1420,10 +1420,10 @@
 
     /* Enhanced Dark Theme for About InkWell Modal */
     html[data-theme='dark'] #aboutInkwellModal > div {
-      background: rgba(21, 54, 58, 0.95) !important;
-      color: #ffffff !important;
-      border: 1px solid rgba(42,105,114,0.3) !important;
-      backdrop-filter: blur(10px) !important;
+      background: var(--bg-card) !important;
+      color: var(--font-main) !important;
+      border: 1px solid var(--border-light) !important;
+      backdrop-filter: none !important;
     }
 
     html[data-theme='dark'] #aboutInkwellModal h2 {
@@ -2890,9 +2890,9 @@ html[data-theme='dark'] .entry-card a:hover {
 
 /* Updated Settings Modal Dark Theme - Matches Login Modal Style */
 html[data-theme='dark'] #userSettingsModal .card-block {
-  background: rgba(21, 54, 58, 0.95) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(42,105,114,0.3) !important;
+  background: var(--bg-card) !important;
+  color: var(--font-main) !important;
+  border: 1px solid var(--border-light) !important;
 }
 
 /* Dark theme styles for all container sections - More specific selectors */
@@ -3012,9 +3012,9 @@ html[data-theme='dark'] #sophyInsightsSection strong {
 
 /* Edit Entry Modal Dark Theme */
 html[data-theme='dark'] #editEntryModal .card-block {
-  background: rgba(21, 54, 58, 0.95) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(42,105,114,0.3) !important;
+  background: var(--bg-card) !important;
+  color: var(--font-main) !important;
+  border: 1px solid var(--border-light) !important;
 }
 
 html[data-theme='dark'] #editEntryModal h2 {
@@ -10313,7 +10313,7 @@ document.head.appendChild(themeStyle);
     </form>
     <div style="display: flex; justify-content: space-between; margin-top: 0.8em; font-size: 0.9em; width: 90%; margin-left: auto; margin-right: auto;">
       <a href="#" id="forgotPassword" style="color: #2A6972; text-decoration: underline;">Forgot password?</a>
-      <a href="#" id="toggleSignup" style="color: #6A1B9A; text-decoration: underline; font-weight: 500;">Sign up</a>
+      <a href="#" id="toggleSignup" style="color: var(--brand-primary); text-decoration: underline; font-weight: 600;">Sign up</a>
     </div>
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1em;">
       v26.182.1
@@ -11907,7 +11907,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
     
     <div style="text-align: center; margin-bottom: 1.5em;">
       <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 80px; margin-bottom: 0.5em;" />
-      <h2 style="margin: 0; font-size: 1.4em; color: var(--brand-primary, #2A6972);">Welcome to InkWell! </h2>
+      <h2 style="margin: 0; font-size: 1.4em; color: var(--brand-primary, #2A6972); font-family: var(--title-font); font-weight: 500;">Welcome to InkWell</h2>
       <p style="margin: 0.5em 0; font-style: italic; color: var(--text-secondary, #666); font-size: 1.1em;">"For the Thinkers and the Forgetters."</p>
     </div>
     
@@ -11919,7 +11919,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
       <h3 style="color: var(--brand-primary, #2A6972); font-size: 1.1em; margin: 1.3em 0 0.7em 0;">What You Can Do in InkWell:</h3>
       
       <div style="margin-bottom: 1.2em;">
-        <h4 style="color: var(--brand-secondary, #4A8B8B); font-size: 1em; margin: 0.8em 0 0.4em 0;"> Core Journaling</h4>
+        <h4 style="color: var(--brand-secondary, #4A8B8B); font-size: 1em; margin: 0.8em 0 0.4em 0;">Core Journaling</h4>
         <ul style="margin: 0.3em 0 0 1.2em; padding: 0;">
           <li>Unlimited journaling with a clean, neurodivergent-friendly interface</li>
           <li>Voice journaling with "InkOutLoud" - speak your thoughts and let AI clean up your transcriptions</li>
@@ -11929,7 +11929,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
       </div>
       
       <div style="margin-bottom: 1.2em;">
-        <h4 style="color: var(--brand-secondary, #4A8B8B); font-size: 1em; margin: 0.8em 0 0.4em 0;"> Meet Sophy - Your AI Wellness Guide</h4>
+        <h4 style="color: var(--brand-secondary, #4A8B8B); font-size: 1em; margin: 0.8em 0 0.4em 0;">Meet Sophy, Your AI Wellness Guide</h4>
         <ul style="margin: 0.3em 0 0 1.2em; padding: 0;">
           <li>Personalized prompts to spark meaningful reflection</li>
           <li>AI-powered insights that recognize patterns and growth opportunities</li>
@@ -11941,7 +11941,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
       </div>
       
       <div style="margin-bottom: 1.2em;">
-        <h4 style="color: var(--brand-secondary, #4A8B8B); font-size: 1em; margin: 0.8em 0 0.4em 0;"> Growth & Analytics</h4>
+        <h4 style="color: var(--brand-secondary, #4A8B8B); font-size: 1em; margin: 0.8em 0 0.4em 0;">Growth & Analytics</h4>
         <ul style="margin: 0.3em 0 0 1.2em; padding: 0;">
           <li>Progress tracking with mood patterns and reflection insights</li>
           <li>Growth analytics to visualize your personal development journey</li>
@@ -12003,9 +12003,9 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
 <div id="periodInsightsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto;">
   <div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 20px;">
     <div style="background: var(--bg-card); color: var(--font-main); padding: 2em; border-radius: 12px; max-width: 650px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
-      <h2 id="periodInsightsTitle"style="margin-top: 0; text-align: center; color: var(--brand-primary);"> Your 7-Day Insights</h2>
+      <h2 id="periodInsightsTitle" style="margin-top: 0; text-align: center; color: var(--brand-primary);">Your 7-Day Insights</h2>
       
-      <div id="periodInsightsContent" style="line-height: 1.8; font-size: 1.05em; white-space: pre-wrap; text-align: left;">
+      <div id="periodInsightsContent" style="line-height: 1.8; font-size: 1.02em; white-space: pre-wrap; text-align: left; font-family: var(--serif-font);">
         <!-- Content will be populated by JavaScript -->
       </div>
       
@@ -12018,12 +12018,12 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
         <!-- Error/status messages will be populated here (centered) -->
       </div>
       
-      <div id="periodInsightsMeta" style="margin-top: 1.5em; padding-top: 1em; border-top: 1px solid rgba(42, 105, 114, 0.2); text-align: center; font-size: 0.85em; color: var(--font-secondary); display: none;">
+      <div id="periodInsightsMeta" style="margin-top: 1.5em; padding-top: 1em; border-top: 1px solid var(--border-light); text-align: center; font-size: 0.85em; color: var(--font-secondary); display: none;">
         <span id="periodInsightsEntryCount"></span> entries analyzed
       </div>
       
       <div style="text-align: center; margin-top: 1.5em;">
-        <button class="btn" onclick="closePeriodInsightsModal()" style="background-color: var(--btn-bg); color: var(--btn-font);">Close</button>
+        <button class="btn" onclick="closePeriodInsightsModal()">Close</button>
       </div>
     </div>
   </div>
@@ -12033,14 +12033,14 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
 <div id="manifestDataModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto;">
   <div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 20px;">
     <div style="background: var(--bg-card); color: var(--font-main); padding: 2em; border-radius: 10px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
-    <h2 style="margin-top: 0; text-align: center; color: var(--brand-primary);"> Manifest Data</h2>
+    <h2 style="margin-top: 0; text-align: center; color: var(--brand-primary);">Manifest Data</h2>
     
     <div id="manifestDataContent" style="line-height: 1.6;">
       <!-- Content will be populated by JavaScript -->
     </div>
     
     <div style="text-align: center; margin-top: 2em;">
-      <button class="btn" onclick="closeManifestModal()" style="background-color: var(--btn-bg); color: var(--btn-font);">Close</button>
+      <button class="btn" onclick="closeManifestModal()">Close</button>
     </div>
     </div>
   </div>
@@ -12050,14 +12050,14 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
 <div id="reflectionDataModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto;">
   <div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 20px;">
     <div style="background: var(--bg-card); color: var(--font-main); padding: 2em; border-radius: 10px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
-      <h2 style="margin-top: 0; text-align: center; color: var(--brand-light);"> Sophy's Reflection</h2>
+      <h2 style="margin-top: 0; text-align: center; color: #D49489;">Sophy's Reflection</h2>
     
-    <div id="reflectionDataContent" style="line-height: 1.6;">
+    <div id="reflectionDataContent" style="line-height: 1.6; font-family: var(--serif-font); font-style: italic; background: rgba(212, 148, 137, 0.08); border-left: 3px solid #D49489; border-radius: 0 10px 10px 0; padding: 0.9em 1.1em;">
       <!-- Content will be populated by JavaScript -->
     </div>
     
     <div style="text-align: center; margin-top: 2em;">
-      <button class="btn" onclick="closeReflectionModal()" style="background-color: var(--btn-bg); color: var(--btn-font);">Close</button>
+      <button class="btn" onclick="closeReflectionModal()">Close</button>
     </div>
     </div>
   </div>
@@ -13807,7 +13807,7 @@ function applyFeatureGating(tier) {
     if (!coachNotice && coachContainer) {
       coachNotice = document.createElement('span');
       coachNotice.id = 'coachNotice';
-      coachNotice.style.cssText = 'margin-left: 0.5em; padding: 0.2em 0.6em; background: #805AD5; border-radius: 4px; cursor: pointer; font-size: 0.8em; color: white; vertical-align: middle;';
+      coachNotice.style.cssText = 'margin-left: 0.5em; padding: 0.2em 0.6em; background: #4A9BA8; border-radius: 4px; cursor: pointer; font-size: 0.8em; color: white; vertical-align: middle;';
       coachNotice.textContent = 'Connect';
       coachNotice.onclick = function() { window.showSubscriptionModal(); };
       coachContainer.appendChild(coachNotice);
@@ -15328,7 +15328,7 @@ async function loadPractitionerStatus() {
           <p style="margin: 0 0 0.75em 0; color: var(--font-secondary); font-size: 0.9em;">
             Work with a wellness coach who can see your journal entries and provide personalized guidance.
           </p>
-          <span onclick="window.showSubscriptionModal()" style="display: inline-block; padding: 0.3em 0.8em; background: #805AD5; border-radius: 4px; cursor: pointer; font-size: 0.85em; color: white;">
+          <span onclick="window.showSubscriptionModal()" style="display: inline-block; padding: 0.3em 0.8em; background: #4A9BA8; border-radius: 4px; cursor: pointer; font-size: 0.85em; color: white;">
              Upgrade to Connect
           </span>
         </div>
