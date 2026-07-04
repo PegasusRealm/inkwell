@@ -5665,6 +5665,144 @@ window.plannerQuickSeed = async function() {
 // Resume-note on manifest visits
 document.addEventListener('DOMContentLoaded', () => { setTimeout(async () => { try { await vpLoad(); vpResumeNote(); } catch(e) {} }, 2500); });
 
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FIRST STEPS (2026-07-02) — event-driven onboarding. A quest line and four
+// coach marks, each fired ONCE by real user events. No timers, no center-
+// screen lectures. State syncs to the user doc; veterans never see it.
+// ═══════════════════════════════════════════════════════════════════════════
+window.FirstSteps = {
+  state: null,
+  STEPS: [
+    ['write',   'Write a line',            'One sentence counts.'],
+    ['prompt',  'Ask Sophy for a prompt',  'She reads nothing until you ask.'],
+    ['save',    'Save your first entry',   'That is the whole habit, right there.'],
+    ['entries', 'Find it in Entries',      'Everything you write compounds here.'],
+    ['wish',    'Plant a WISH',            'A goal with a plan attached.']
+  ],
+
+  async init() {
+    const userId = window.currentUserId || window.auth?.currentUser?.uid;
+    if (!userId) return;
+    const cacheKey = 'inkwell-firststeps-' + userId;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) this.state = JSON.parse(cached);
+    } catch (e) {}
+    if (!this.state) {
+      // remote state, else veteran check (any existing entry = no quest)
+      try {
+        const snap = await window.getDoc(window.doc(window.db, 'users', userId));
+        if (snap.exists() && snap.data().firstSteps) this.state = snap.data().firstSteps;
+      } catch (e) {}
+      if (!this.state) {
+        let veteran = false;
+        try {
+          const q = window.query(window.collection(window.db, 'journalEntries'),
+            window.where('userId', '==', userId), window.limitQ(1));
+          veteran = !(await window.getDocs(q)).empty;
+        } catch (e) {}
+        this.state = { write: false, prompt: false, save: false, entries: false, wish: false,
+                       dismissed: veteran, done: veteran, marks: {} };
+      }
+    }
+    if (!this.state.marks) this.state.marks = {};
+    this.persist();
+    this.render();
+    if (!this.state.done && !this.state.dismissed) {
+      const j = document.getElementById('journal');
+      if (j && !this.state.write) {
+        j.addEventListener('input', () => this.complete('write'), { once: true });
+        this.mark('textarea', '#journal', 'Start anywhere. One sentence counts.');
+      }
+    }
+  },
+
+  persist() {
+    const userId = window.currentUserId || window.auth?.currentUser?.uid;
+    if (!userId || !this.state) return;
+    try { localStorage.setItem('inkwell-firststeps-' + userId, JSON.stringify(this.state)); } catch (e) {}
+    clearTimeout(this._t);
+    this._t = setTimeout(() => {
+      try { window.setDoc(window.doc(window.db, 'users', userId), { firstSteps: this.state }, { merge: true }); } catch (e) {}
+    }, 800);
+  },
+
+  complete(step) {
+    if (!this.state || this.state.done || this.state.dismissed || this.state[step]) return;
+    this.state[step] = true;
+    if (step === 'save') this.mark('entriestab', '#calendarTabButton, #pastEntriesTabButton', 'It lives here now.');
+    if (this.STEPS.every(([k]) => this.state[k])) {
+      this.state.done = true;
+      this.render(true);
+    } else { this.render(); }
+    this.persist();
+  },
+
+  dismiss() {
+    if (!this.state) return;
+    this.state.dismissed = true;
+    this.persist();
+    const card = document.getElementById('firstStepsCard');
+    if (card) card.style.display = 'none';
+  },
+
+  render(finale) {
+    const card = document.getElementById('firstStepsCard');
+    const rows = document.getElementById('firstStepsRows');
+    if (!card || !rows || !this.state) return;
+    if (this.state.dismissed || (this.state.done && !finale)) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    if (finale) {
+      rows.innerHTML = '<p style="margin:0;font-family:var(--serif-font);font-style:italic;font-size:1em;color:var(--font-main);">You know your way around. The rest reveals itself as you write.</p>';
+      setTimeout(() => { card.style.transition = 'opacity 1.2s ease'; card.style.opacity = '0';
+        setTimeout(() => { card.style.display = 'none'; }, 1300); }, 3200);
+      return;
+    }
+    const go = { write: "showTab('journalTab'); document.getElementById('journal')?.focus();",
+                 prompt: "showTab('journalTab'); document.getElementById('promptTopic')?.focus();",
+                 save: "showTab('journalTab'); document.getElementById('journal')?.focus();",
+                 entries: "showTab('calendarTab');",
+                 wish: "showTab('manifestTab');" };
+    rows.innerHTML = this.STEPS.map(([k, label, sub]) => {
+      const done = this.state[k];
+      return '<div onclick="' + go[k] + '" style="display:flex;align-items:baseline;gap:0.6em;padding:0.35em 0.2em;cursor:pointer;' + (done ? 'opacity:0.55;' : '') + '">' +
+        '<span style="display:inline-flex;align-items:center;justify-content:center;width:1.15em;height:1.15em;border-radius:50%;flex-shrink:0;align-self:center;font-size:0.7em;font-weight:700;' +
+        (done ? 'background:var(--brand-primary);color:#fff;">✓' : 'border:1.5px solid var(--border-medium);color:transparent;">·') + '</span>' +
+        '<span style="font-weight:600;font-size:0.92em;color:var(--font-main);' + (done ? 'text-decoration:line-through;' : '') + '">' + label + '</span>' +
+        '<span style="font-size:0.8em;color:var(--font-muted);">' + sub + '</span></div>';
+    }).join('');
+  },
+
+  onTabVisit(tabId) {
+    if (!this.state || this.state.done || this.state.dismissed) return;
+    if (tabId === 'calendarTab') this.mark('calendar', '#calendarContainer', 'Teal days hold your words. Tap one.');
+    if (tabId === 'manifestTab') this.mark('planner', '#plannerCard', 'No goal yet? This is where you find one.');
+  },
+
+  mark(id, selector, text) {
+    if (!this.state || this.state.marks[id] || this.state.done || this.state.dismissed) return;
+    const target = document.querySelector(selector);
+    if (!target || target.offsetParent === null) return;
+    this.state.marks[id] = true; this.persist();
+    document.getElementById('fsCoachMark')?.remove();
+    const r = target.getBoundingClientRect();
+    const el = document.createElement('div');
+    el.id = 'fsCoachMark';
+    el.className = 'coach-mark';
+    el.innerHTML = '<span>' + text + '</span><button onclick="document.getElementById(\'fsCoachMark\').remove()">Got it</button>';
+    document.body.appendChild(el);
+    const top = r.bottom + window.scrollY + 10;
+    let left = r.left + window.scrollX + Math.min(40, r.width / 4);
+    left = Math.min(left, window.scrollX + document.documentElement.clientWidth - 290);
+    el.style.top = top + 'px'; el.style.left = Math.max(10, left) + 'px';
+    setTimeout(() => el.remove(), 14000);
+  }
+};
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => { try { FirstSteps.init(); } catch (e) { console.warn('FirstSteps init failed:', e.message); } }, 3500);
+});
+
 window.sendPracticeSummary = async function() {
   const status = document.getElementById('practiceSummaryStatus');
   const set = (t) => { if (status) status.textContent = t; };
@@ -6437,7 +6575,11 @@ window.TabIntroManager = {
   },
   
   // Show the appropriate intro modal for the tab
+  // DEMOLISHED 2026-07-02: timer-fired intro modals replaced by FirstSteps
+  // (event-driven quest + coach marks). The three showXTabOnboarding bodies
+  // below are dead code — excise in the monolith split.
   showIntroForTab: function(tabId) {
+    return; // intentionally inert
     if (!OnboardingManager) return;
     
     switch(tabId) {
@@ -6459,37 +6601,16 @@ const originalShowTab = window.showTab;
 window.showTab = function(tabId) {
   originalShowTab(tabId);
   
-  // Cancel any pending intros from previous tab
-  if (TabIntroManager) {
-    ['journalTab', 'manifestTab', 'calendarTab'].forEach(tab => {
-      TabIntroManager.cancelIntro(tab);
-    });
-  }
-  
-  // If switching to manifest tab, ensure textareas are properly sized
+  // Onboarding timers demolished 2026-07-02 — FirstSteps reacts to events instead.
   if (tabId === 'manifestTab') {
     setTimeout(initAutoResizeTextareas, 200);
-    
-    // Schedule WISH onboarding for first-time visitors with 3-second delay
-    if (TabIntroManager) {
-      TabIntroManager.scheduleIntro('manifestTab', 3000);
-    }
+    if (window.FirstSteps) FirstSteps.onTabVisit('manifestTab');
   }
-  
-  // Schedule intro for Journal tab on first access
   if (tabId === 'journalTab') {
-    if (TabIntroManager) {
-      TabIntroManager.scheduleIntro('journalTab', 3000);
-    }
-    // Update weekly activity dots
     updateWeeklyActivityDots();
   }
-  
-  // Schedule intro for Calendar/Past Entries tab on first access
   if (tabId === 'calendarTab') {
-    if (TabIntroManager) {
-      TabIntroManager.scheduleIntro('calendarTab', 3000);
-    }
+    if (window.FirstSteps) { FirstSteps.complete('entries'); FirstSteps.onTabVisit('calendarTab'); }
   }
 };
 
@@ -8011,6 +8132,7 @@ window.renameTag = async function(oldTag) {
         entryStatus.textContent = "";
       }
       
+      if (window.FirstSteps) FirstSteps.complete('save');
       // Clear Ask Sophy for Prompt fields (moved here 2026-07-02 — after the save)
       const promptTopicEl = document.getElementById("promptTopic");
       if (promptTopicEl) promptTopicEl.value = "";
@@ -8371,6 +8493,7 @@ if (planSuggestion) planSuggestion.textContent = "";
         }
         const autoInsertCheckbox = document.getElementById("autoInsertPrompt");
         if (autoInsertCheckbox) autoInsertCheckbox.checked = true;
+        if (window.FirstSteps) FirstSteps.complete('prompt');
         
         // Record successful Sophy use for daily limit tracking
         recordSophyUse();
@@ -9742,6 +9865,7 @@ async function askSophyAboutEntry() {
 
         // Show success message
         status.innerHTML = "✓ Vision saved. You're building something meaningful.";
+        if (window.FirstSteps) FirstSteps.complete('wish');
         status.style.color = "#2A6D6D";
         window.showToast("Your manifest has been saved!", "success", 4000);
 
@@ -10774,7 +10898,7 @@ document.head.appendChild(themeStyle);
     };
 
   </script>
-  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.20">
+  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.21">
 </head>
 
 
@@ -11224,6 +11348,17 @@ document.head.appendChild(themeStyle);
 <div class="tab-inner">
 
 <!-- Journal Mode Sub-Tabs -->
+<!-- FIRST STEPS (2026-07-02): event-driven quest for new users. Replaces the
+     timer-fired onboarding modals. Fills as things actually happen; leaves forever
+     when done. Video-game structure, InkWell manners. -->
+<div class="iw-card" id="firstStepsCard" style="display:none; margin-bottom: 1.5em;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6em;">
+    <span class="manifest-eyebrow" style="margin:0 !important;">First steps</span>
+    <button onclick="FirstSteps.dismiss()" style="background:none;border:none;color:var(--font-muted);font-size:0.78em;cursor:pointer;text-decoration:underline;">I know my way around</button>
+  </div>
+  <div id="firstStepsRows"></div>
+</div>
+
 <div id="journalModeTabs" style="
   display: flex;
   flex-direction: column;

@@ -457,6 +457,105 @@ html[data-theme='dark'] #calendarContainer .iw-cal td:hover .iw-cal-day.has-entr
 }
 
 /* ─────────────────────────────────────────────────────────────────
+   COMPONENT: COACH MARK — one sentence, anchored to the thing itself.
+   The entire onboarding voice: quiet, pointed, dismissible.
+   ───────────────────────────────────────────────────────────────── */
+.coach-mark {
+  position: absolute;
+  z-index: 10500;
+  max-width: 270px;
+  background: var(--bg-card);
+  color: var(--font-main);
+  border: 1px solid var(--border-medium);
+  border-left: 3px solid var(--brand-primary);
+  border-radius: 0 12px 12px 12px;
+  box-shadow: 0 18px 50px -18px rgba(0, 0, 0, 0.45);
+  padding: 0.8em 1em;
+  font-family: var(--body-font);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  animation: coachIn 0.35s ease both;
+}
+.coach-mark button {
+  display: block;
+  margin-top: 0.55em;
+  background: transparent;
+  border: none;
+  color: var(--brand-primary);
+  font-family: var(--body-font);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+.coach-mark button:hover { color: var(--brand-secondary); }
+@keyframes coachIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   COMPONENT: VALUES PLANNER — tap-rows for the sort/rank/choose steps.
+   ───────────────────────────────────────────────────────────────── */
+#plannerCard .vp-row {
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 0.6em !important;
+  padding: 0.5em 0.8em !important;
+  border: 1.5px solid var(--border-light) !important;
+  border-radius: 10px !important;
+  margin-bottom: 0.35em !important;
+  cursor: pointer;
+  background: var(--bg-card) !important;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+#plannerCard .vp-row:hover { border-color: var(--border-medium) !important; }
+#plannerCard .vp-row.sel {
+  border-color: var(--brand-primary) !important;
+  background: var(--info-bg, rgba(95, 179, 191, 0.08)) !important;
+}
+#plannerCard .vp-name {
+  font-family: var(--body-font) !important;
+  font-weight: 700 !important;
+  font-size: 0.88rem !important;
+  color: var(--font-main) !important;
+  white-space: nowrap;
+}
+#plannerCard .vp-def {
+  font-family: var(--body-font) !important;
+  font-size: 0.8rem !important;
+  color: var(--font-muted) !important;
+}
+#plannerCard .vp-rank {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 1.5em !important;
+  height: 1.5em !important;
+  border-radius: 50% !important;
+  background: var(--brand-primary) !important;
+  color: #fff !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  flex-shrink: 0;
+}
+#plannerCard .vp-row:not(.sel) .vp-rank { background: var(--bg-muted) !important; color: transparent !important; }
+#plannerCard textarea, #plannerCard input[type='text'] {
+  background: var(--bg-card) !important;
+  border: 1.5px solid var(--border-medium) !important;
+  border-radius: 10px !important;
+  color: var(--font-main) !important;
+  padding: 0.7em 0.9em !important;
+  font-family: var(--body-font) !important;
+}
+#plannerCard textarea:focus, #plannerCard input[type='text']:focus {
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 0 3px rgba(95, 179, 191, 0.15) !important;
+  outline: none !important;
+}
+#plannerCard #vpVision { font-family: var(--serif-font) !important; font-size: 1rem !important; line-height: 1.6 !important; }
+
+/* ─────────────────────────────────────────────────────────────────
    COMPONENT: MODAL CHROME — one backdrop, one panel voice, 18 modals.
    Bespoke modals carry inline overlay/panel styles; ID lists + !important
    outrank them (same law as the calendar). Info-family fixed at source.
