@@ -5150,10 +5150,12 @@ window.saveGratitudePractice = async function(mode) {
       createdAt: window.serverTimestamp ? window.serverTimestamp() : new Date(),
       updatedAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
     };
-    await window.addDoc(window.collection(window.db, 'journalEntries'), entryData);
+    if (window.FeelCheck) FeelCheck.stamp('gratitude', entryData);
+    const gratDocRef = await window.addDoc(window.collection(window.db, 'journalEntries'), entryData);
     document.getElementById(fields[mode]).value = '';
     if (mode === 'letter') { const t = document.getElementById('gratLetterTo'); if (t) t.value = ''; }
     setStatus('✓ Saved to your journal.', '#4A8B8B');
+    if (window.FeelCheck) FeelCheck.offerAfter('gratitude', gratDocRef.id, statusEl?.parentElement);
     window.markGratDoneToday();
       setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
   } catch (e) {
@@ -5731,7 +5733,10 @@ window.FirstSteps = {
   complete(step) {
     if (!this.state || this.state.done || this.state.dismissed || this.state[step]) return;
     this.state[step] = true;
-    if (step === 'save') this.mark('entriestab', '#calendarTabButton, #pastEntriesTabButton', 'It lives here now.');
+    if (step === 'save') {
+      this.mark('entriestab', '#calendarTabButton, #pastEntriesTabButton', 'It lives here now.');
+      if (window.showToast) window.showToast('Saved. A year from now, this entry comes back to you.', 'info', 6000);
+    }
     if (this.STEPS.every(([k]) => this.state[k])) {
       this.state.done = true;
       this.render(true);
@@ -5802,6 +5807,103 @@ window.FirstSteps = {
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => { try { FirstSteps.init(); } catch (e) { console.warn('FirstSteps init failed:', e.message); } }, 3500);
 });
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FEEL CHECK (2026-07-04) — optional 1-5 "how heavy does it feel" before and
+// after practices. LAW: a self-rated feel, NEVER a symptom score. No clinical
+// words on or near the scale. Feeds an anonymous shift line in the Practice
+// Summary (numbers only, never words).
+// ═══════════════════════════════════════════════════════════════════════════
+window.FeelCheck = {
+  before: {},          // practiceKey -> 1..5
+  lastEntry: null,     // { id, key } awaiting the "and now?" tap
+
+  rowHTML(key, phase) {
+    const sel = phase === 'before' ? (this.before[key] || 0) : 0;
+    const btns = [1,2,3,4,5].map(n =>
+      '<button type="button" class="feel-dot' + (sel === n ? ' sel' : '') + '" onclick="FeelCheck.tap(\'' + key + '\',\'' + phase + '\',' + n + ', this)">' + n + '</button>').join('');
+    const q = phase === 'before' ? 'How heavy does it feel right now?' : 'And now?';
+    return '<div class="feel-row" id="feelRow-' + key + '-' + phase + '">' +
+      '<span class="feel-q">' + q + '</span>' +
+      '<span class="feel-scale"><span class="feel-end">light</span>' + btns + '<span class="feel-end">heavy</span></span>' +
+      '<span class="feel-skip">optional</span></div>';
+  },
+
+  tap(key, phase, n, btn) {
+    if (phase === 'before') {
+      this.before[key] = n;
+      btn.parentElement.querySelectorAll('.feel-dot').forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel');
+    } else {
+      // after: write feelAfter onto the saved entry
+      const t = this.lastEntry;
+      if (t && t.id && window.updateDoc && window.doc) {
+        try { window.updateDoc(window.doc(window.db, 'journalEntries', t.id), { feelAfter: n }); } catch (e) {}
+      }
+      const row = document.getElementById('feelRow-' + key + '-after');
+      if (row) row.innerHTML = '<span class="feel-q" style="opacity:0.75;">Noted. The shift is yours.</span>';
+      this.lastEntry = null;
+    }
+  },
+
+  // called by practice saves: attach feelBefore to entryData
+  stamp(key, entryData) {
+    if (this.before[key]) { entryData.feelBefore = this.before[key]; }
+    return entryData;
+  },
+
+  // called after a successful save: remember the entry, offer "and now?"
+  offerAfter(key, entryId, mountEl) {
+    if (!this.before[key]) { this.reset(key); return; }
+    this.lastEntry = { id: entryId, key };
+    if (mountEl) {
+      const holder = document.createElement('div');
+      holder.innerHTML = this.rowHTML(key, 'after');
+      mountEl.appendChild(holder.firstChild);
+      setTimeout(() => { document.getElementById('feelRow-' + key + '-after')?.remove(); }, 30000);
+    }
+    this.reset(key);
+  },
+
+  reset(key) {
+    delete this.before[key];
+    const row = document.getElementById('feelRow-' + key + '-before');
+    if (row) row.querySelectorAll('.feel-dot').forEach(b => b.classList.remove('sel'));
+  }
+};
+// One-time coach mark for ANY user (FirstSteps marks are new-users-only).
+// Fires once per user per id, ever. Reuses the .coach-mark contract.
+window.oneTimeMark = function(id, selector, text) {
+  const userId = window.currentUserId || window.auth?.currentUser?.uid;
+  if (!userId) return;
+  const key = 'inkwell-mark-' + userId + '-' + id;
+  try { if (localStorage.getItem(key)) return; } catch (e) {}
+  const target = document.querySelector(selector);
+  if (!target || target.offsetParent === null) return;
+  try { localStorage.setItem(key, '1'); } catch (e) {}
+  document.getElementById('fsCoachMark')?.remove();
+  const r = target.getBoundingClientRect();
+  const el = document.createElement('div');
+  el.id = 'fsCoachMark';
+  el.className = 'coach-mark';
+  el.innerHTML = '<span>' + text + '</span><button onclick="document.getElementById(\'fsCoachMark\').remove()">Got it</button>';
+  document.body.appendChild(el);
+  const top = r.top + window.scrollY - el.offsetHeight - 12;
+  let left = r.left + window.scrollX + Math.min(40, r.width / 4);
+  left = Math.min(left, window.scrollX + document.documentElement.clientWidth - 290);
+  el.style.top = Math.max(window.scrollY + 10, top) + 'px';
+  el.style.left = Math.max(10, left) + 'px';
+  setTimeout(() => el.remove(), 14000);
+};
+
+// Mount the before-rows (module scripts run post-parse, DOM is ready)
+(function() {
+  const g = document.getElementById('feelMountGrat');
+  if (g) g.innerHTML = window.FeelCheck.rowHTML('gratitude', 'before');
+  const r = document.getElementById('feelMountReframe');
+  if (r) r.innerHTML = window.FeelCheck.rowHTML('reframe', 'before');
+})();
 
 window.sendPracticeSummary = async function() {
   const status = document.getElementById('practiceSummaryStatus');
@@ -5988,6 +6090,7 @@ window.saveGratitudeEntry = async function() {
       createdAt: window.serverTimestamp ? window.serverTimestamp() : new Date(),
       updatedAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
     };
+    if (window.FeelCheck) FeelCheck.stamp('gratitude', entryData);
     
     // Save to Firestore
     const docRef = await window.addDoc(window.collection(window.db, 'journalEntries'), entryData);
@@ -6006,6 +6109,7 @@ window.saveGratitudeEntry = async function() {
       statusEl.style.color = '#4A8B8B';
       setTimeout(() => { statusEl.textContent = ''; }, 3000);
     }
+    if (window.FeelCheck) FeelCheck.offerAfter('gratitude', docRef.id, statusEl?.parentElement);
     
     // Update weekly activity dots
     updateWeeklyActivityDots();
@@ -6222,9 +6326,11 @@ window.saveReframeEntry = async function() {
       createdAt: window.serverTimestamp ? window.serverTimestamp() : new Date(),
       updatedAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
     };
-    await window.addDoc(window.collection(window.db, 'journalEntries'), entryData);
+    if (window.FeelCheck) FeelCheck.stamp('reframe', entryData);
+    const reframeDocRef = await window.addDoc(window.collection(window.db, 'journalEntries'), entryData);
     ['reframe1', 'reframe2', 'reframe3', 'reframe4'].forEach((id) => { const el = document.getElementById(id); if (el) el.value = ''; });
     setStatus('✓ Saved to your journal.', '#4A8B8B');
+    if (window.FeelCheck) FeelCheck.offerAfter('reframe', reframeDocRef.id, statusEl?.parentElement);
       setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
   } catch (e) {
     console.error('Reframe save failed:', e);
@@ -6813,7 +6919,7 @@ window.SwipeNavigation = {
     
     const tabNames = {
       'journalTab': 'Journal',
-      'manifestTab': 'Manifest', 
+      'manifestTab': 'Goals', 
       'calendarTab': 'Past Entries'
     };
     
@@ -8133,6 +8239,19 @@ window.renameTag = async function(oldTag) {
       }
       
       if (window.FirstSteps) FirstSteps.complete('save');
+      // Retention: offer nudges AFTER the habit has a heartbeat, never at signup (2026-07-04)
+      try {
+        const uid = window.currentUserId || window.auth?.currentUser?.uid;
+        if (uid) {
+          const ck = 'inkwell-savecount-' + uid;
+          const c = (parseInt(localStorage.getItem(ck) || '0', 10) || 0) + 1;
+          localStorage.setItem(ck, String(c));
+          if (c === 3 && !localStorage.getItem('inkwell-nudgeoffered-' + uid)) {
+            localStorage.setItem('inkwell-nudgeoffered-' + uid, '1');
+            setTimeout(() => window.showToast && window.showToast('Three entries. Want a nudge tomorrow? Sophy can text you a prompt. Set it up in Settings.', 'info', 9000), 1600);
+          }
+        }
+      } catch (e) {}
       // Clear Ask Sophy for Prompt fields (moved here 2026-07-02 — after the save)
       const promptTopicEl = document.getElementById("promptTopic");
       if (promptTopicEl) promptTopicEl.value = "";
@@ -8465,7 +8584,7 @@ if (planSuggestion) planSuggestion.textContent = "";
         if (topicInput && manifestText) {
           topic = `My manifest is: "${manifestText}". Please base the prompt on this and also consider: "${topicInput}".`;
         } else if (manifestText) {
-          topic = `Please generate a prompt based on my Manifest Statement: "${manifestText}"`;
+          topic = `Please generate a prompt based on my Vision Statement: "${manifestText}"`;
         } else {
           topic = topicInput || "manifesting";
         }
@@ -8703,10 +8822,10 @@ if (planSuggestion) planSuggestion.textContent = "";
       const button = content.previousElementSibling;
       if (content.style.display === "none") {
         content.style.display = "block";
-        button.textContent = "Hide Manifest";
+        button.textContent = "Hide Goal Data";
       } else {
         content.style.display = "none";
-        button.textContent = "Show Manifest";
+        button.textContent = "Show Goal Data";
       }
     };
 
@@ -8879,6 +8998,11 @@ container.style.cssText = `
   
   pastEntriesContainer.innerHTML = "";
   pastEntriesContainer.appendChild(container);
+
+  // Earned feature announces itself once (2026-07-04): enough history for patterns
+  if (entriesHtml.length >= 7 && window.oneTimeMark) {
+    setTimeout(() => oneTimeMark('insights-earned', '#periodInsightsSection', "There's enough here now. Let Sophy find the patterns."), 900);
+  }
 }
 } 
 
@@ -9947,12 +10071,12 @@ window.askSophyToRefineManifest = async function () {
   const label = document.getElementById("manifestSuggestionLabel");
 
   if (!input) {
-    suggestionBox.textContent = "Please write something in your Manifest Statement first.";
+    suggestionBox.textContent = "Please write something in your Vision Statement first.";
     if (label) label.style.display = "block";
     return;
   }
 
-  suggestionBox.textContent = "Refining your Manifest Statement with Sophy...";
+  suggestionBox.textContent = "Refining your Vision Statement with Sophy...";
   if (label) label.style.display = "block";
 
   try {
@@ -10898,7 +11022,7 @@ document.head.appendChild(themeStyle);
     };
 
   </script>
-  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.21">
+  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.23">
 </head>
 
 
@@ -11064,7 +11188,11 @@ document.head.appendChild(themeStyle);
           Receive wellness reminders and journal prompts via text message from InkWell's AI companion, Sophy. Standard messaging rates may apply. You can opt-out anytime and manage preferences in Settings or text STOP to unsubscribe.
         </p>
         
-        <label style="display: block; margin: 1em 0 0.5em 0; font-size: 0.9em; color: #2A6972;">
+        <p style="margin: 1em 0 0.9em 0; font-size: 0.82em; color: var(--font-secondary); line-height: 1.5; text-align: left;">
+          Your words are yours. Never sold, never used to train AI, never visible to another user.
+          <a href="https://pegasusrealm.com/privacy-policy/" target="_blank" style="color: #2A6972;">How we handle your data</a>
+        </p>
+        <label style="display: block; margin: 0 0 0.5em 0; font-size: 0.9em; color: #2A6972;">
           <input type="checkbox" id="termsAgreement" name="termsAgreement" checked style="margin-right: 0.5em;">
           I agree to the <a href="https://pegasusrealm.com/terms-conditions/" target="_blank" style="color: #2A6972; text-decoration: underline;">Terms & Conditions</a>
         </label>
@@ -11313,7 +11441,7 @@ document.head.appendChild(themeStyle);
         Journal</button>
       <button id="manifestTabButton" class="tab-button" onclick="showTab('manifestTab')">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>
-        Manifest</button>
+        Goals</button>
       <button id="calendarTabButton" class="tab-button" onclick="showTab('calendarTab')">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
         Entries</button>
@@ -11336,7 +11464,7 @@ document.head.appendChild(themeStyle);
 <!-- Mini Wish Progress Bar (always visible when active wish exists) -->
 <div id="miniWishProgress" style="display: none; padding: 0.6em 1em; background: linear-gradient(135deg, rgba(42, 105, 114, 0.06) 0%, rgba(74, 155, 168, 0.03) 100%); border-bottom: 1px solid rgba(42, 105, 114, 0.1); cursor: pointer;" onclick="showTab('manifestTab')">
   <div style="display: flex; align-items: center; gap: 0.6em;">
-    <span style="font-size: 0.85em; color: var(--brand-primary); white-space: nowrap;">Manifesting:</span>
+    <span style="font-size: 0.85em; color: var(--brand-primary); white-space: nowrap;">Vision:</span>
     <div style="flex: 1; height: 8px; background: rgba(42, 105, 114, 0.1); border-radius: 4px; overflow: hidden; min-width: 100px;">
       <div id="miniWishProgressFill" style="height: 100%; width: 0%; background: linear-gradient(90deg, rgba(42,105,114,0.5), rgba(74,139,139,0.7)); border-radius: 4px; transition: width 0.8s ease;"></div>
     </div>
@@ -11436,6 +11564,7 @@ document.head.appendChild(themeStyle);
     .sophy-row-who{color:var(--accent-sophy);font-family:var(--body-font);font-size:0.7rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;}
     .sophy-row-line{font-family:var(--serif-font);font-style:italic;font-size:1rem;color:var(--font-main);}
   </style>
+  <div id="feelMountGrat"></div>
   <div id="gratitudePills" style="display:flex;gap:0.5em;justify-content:center;flex-wrap:wrap;margin-bottom:1.25em;">
     <button class="grat-pill active" id="gratPill-three" onclick="switchGratitudePractice('three')">Three</button>
     <button class="grat-pill" id="gratPill-deep" onclick="switchGratitudePractice('deep')">One, Deeply</button>
@@ -11680,6 +11809,7 @@ document.head.appendChild(themeStyle);
 
 <!-- ═══ Reframe panel (perspective practice — wellness-framed, zero clinical language) ═══ -->
 <div id="journalPracticeReframe" style="display:none;">
+  <div id="feelMountReframe"></div>
   <p style="font-size:0.9em;color:var(--font-muted);text-align:center;margin-bottom:1.25em;">
     Four short steps to look at one moment from a second angle.
   </p>
@@ -11725,7 +11855,7 @@ document.head.appendChild(themeStyle);
     <div class="workflow-divider"></div>
 
     <h2 class="journal-heading" style="text-align:center;margin-bottom:1.25rem;color:var(--font-main);">Journal Entry</h2>
-    <button id="voiceBtn" class="grat-pill" style="margin-bottom:0.5em;">InkOutLoud</button>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:0.4em;"><button id="voiceBtn" class="grat-pill" style="display:inline-flex;align-items:center;gap:0.45em;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>Speak it instead</button></div>
     <div id="voiceStatus" style="font-size:0.85em;color:#2A6972;margin-bottom:1em;"></div>
     <textarea id="journal" placeholder="or write your thoughts here..." style="width:100%;box-sizing:border-box;margin-bottom:0.5em;"></textarea>
     <div id="journalCharCount" style="font-size:0.75em;color:#93A5A8;text-align:right;margin-top:-0.25em;margin-bottom:0.5em;">0 characters</div>
@@ -11805,7 +11935,7 @@ document.head.appendChild(themeStyle);
     style="text-align:center;margin-bottom:2rem;color:var(--font-main);cursor:pointer;transition:color 0.2s ease;" 
     onmouseover="this.style.color='#4A9BA8'" 
     onmouseout="this.style.color='var(--font-main)'">
-  Your Manifest
+  Your Goals
 </h2>
 <p style="text-align:center;margin-top:-1.5rem;margin-bottom:1.5rem;color:var(--font-muted);font-size:0.9em;font-style:italic;">using the WISH method</p>
 
@@ -11920,7 +12050,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
 <!-- WISH runway: the timeline + progress, tracking the WISH above -->
 <div class="iw-card" id="wishRunwayCard">
   <div class="wish-timeline-input-group">
-    <label for="wishTimelineSelect" class="wish-timeline-label">How many days to manifest this?</label>
+    <label for="wishTimelineSelect" class="wish-timeline-label">How many days to build this?</label>
     <select id="wishTimelineSelect" onchange="updateWishTimeline()" class="wish-timeline-select">
       <option value="30">30 days</option>
       <option value="60" selected>60 days</option>
@@ -11930,7 +12060,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
 
   <!-- Static Timeline (shows before saving) -->
   <div id="staticTimeline" style="text-align: center;">
-    <p style="margin: 0 0 1em 0; color: var(--brand-primary); font-weight: 600; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase;">Your Manifesting Journey</p>
+    <p style="margin: 0 0 1em 0; color: var(--brand-primary); font-weight: 600; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase;">Your WISH Runway</p>
     <div id="growthStages" style="
       display: flex; 
       justify-content: space-between; 
@@ -11956,7 +12086,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
   
   <!-- Dynamic Progress Bar (shows after saving) -->
   <div id="wishProgressBar" style="display: none; margin-top: 1.5em;">
-    <h4 style="text-align: center; color: var(--brand-primary); margin-bottom: 0.8em; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; font-family: var(--body-font);">Your Manifesting Journey</h4>
+    <h4 style="text-align: center; color: var(--brand-primary); margin-bottom: 0.8em; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; font-family: var(--body-font);">Your WISH Runway</h4>
     
     <div style="position: relative; height: 25px; background: var(--bg-muted); border-radius: 15px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); margin: 0 auto; width: 75%; max-width: 400px;">
       <div id="wishProgressFill" style="position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #2A6972, #4A8B8B); transition: width 0.8s ease, background 0.5s ease; border-radius: 15px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;">
@@ -11983,6 +12113,36 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
       <div id="anniversaryTitle" style="font-size:0.9em;color:var(--font-secondary);margin-bottom:0.4em;"></div>
       <div id="anniversarySnippet" style="font-size:0.95em;color:var(--font-main);line-height:1.5;white-space:pre-wrap;"></div>
       <button id="anniversaryMoreBtn" onclick="expandAnniversary()" style="display:none;margin-top:0.5em;padding:0.25em 0.7em;background:transparent;border:1px solid var(--border-medium);border-radius:4px;cursor:pointer;color:var(--font-secondary);font-size:0.8em;">Read the rest</button>
+    </div>
+
+    <!-- Smart Search Bar UI -->
+    <div class="iw-card" style="margin-top: 2em; width: 100%; box-sizing: border-box;">
+      <h3 class="section-header" style="text-align:center;margin-bottom:1.5rem;color:var(--font-main);">Ask Your Journal Anything</h3>
+      <div style="display: flex; flex-direction: column; gap: 1em; width: 100%;">
+        <input
+          type="text"
+          id="searchQuery"
+          class="ai-input"
+          placeholder="ask anything about your past entries"
+          style="width: 100%; box-sizing: border-box;"
+        />
+        <button class="btn btn-gray" id="searchBtn" onclick="runSmartSearch()" disabled style="width: 100%;">Search</button>
+      </div>
+
+      <!-- ═══ Unlockable questions — examples only history can answer (v2 Phase 4) ═══ -->
+      <div style="text-align:center;margin-top:1em;">
+        <p style="font-size:0.85em;color:var(--font-muted);margin-bottom:0.5em;">Try asking your journal:</p>
+        <div style="display:flex;gap:0.5em;justify-content:center;flex-wrap:wrap;">
+          <button class="grat-pill" onclick="fillSearchExample(this)">When did I feel proud of myself?</button>
+          <button class="grat-pill" onclick="fillSearchExample(this)">What did I say I'd do differently last time?</button>
+          <button class="grat-pill" onclick="fillSearchExample(this)">What shows up when I'm stressed?</button>
+          <button class="grat-pill" onclick="fillSearchExample(this)">What was I grateful for months ago?</button>
+        </div>
+        <p style="font-size:0.8em;color:var(--font-muted);font-style:italic;margin-top:0.6em;">The longer you write, the more your journal can answer.</p>
+      </div>
+      <div id="searchResults" style="margin-top: 1em; width: 100%;"></div>
+      <div id="emptyPastEntriesMessage" style="display:none;"></div>
+      <div id="calendarEntries" style="display:none;"></div>
     </div>
 
     <div class="iw-card" style="margin-bottom: 1.5em;">
@@ -12048,35 +12208,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
 
     <div class="workflow-divider"></div>
 
-    <!-- Smart Search Bar UI -->
-    <div class="iw-card" style="margin-top: 2em; width: 100%; box-sizing: border-box;">
-      <h3 class="section-header" style="text-align:center;margin-bottom:1.5rem;color:var(--font-main);">Ask Your Journal Anything</h3>
-      <div style="display: flex; flex-direction: column; gap: 1em; width: 100%;">
-        <input
-          type="text"
-          id="searchQuery"
-          class="ai-input"
-          placeholder="ask anything about your past entries"
-          style="width: 100%; box-sizing: border-box;"
-        />
-        <button class="btn btn-gray" id="searchBtn" onclick="runSmartSearch()" disabled style="width: 100%;">Search</button>
-      </div>
-
-      <!-- ═══ Unlockable questions — examples only history can answer (v2 Phase 4) ═══ -->
-      <div style="text-align:center;margin-top:1em;">
-        <p style="font-size:0.85em;color:var(--font-muted);margin-bottom:0.5em;">Try asking your journal:</p>
-        <div style="display:flex;gap:0.5em;justify-content:center;flex-wrap:wrap;">
-          <button class="grat-pill" onclick="fillSearchExample(this)">When did I feel proud of myself?</button>
-          <button class="grat-pill" onclick="fillSearchExample(this)">What did I say I'd do differently last time?</button>
-          <button class="grat-pill" onclick="fillSearchExample(this)">What shows up when I'm stressed?</button>
-          <button class="grat-pill" onclick="fillSearchExample(this)">What was I grateful for months ago?</button>
-        </div>
-        <p style="font-size:0.8em;color:var(--font-muted);font-style:italic;margin-top:0.6em;">The longer you write, the more your journal can answer.</p>
-      </div>
-      <div id="searchResults" style="margin-top: 1em; width: 100%;"></div>
-      <div id="emptyPastEntriesMessage" style="display:none;"></div>
-      <div id="calendarEntries" style="display:none;"></div>
-    </div>
+<!-- search moved above calendar 2026-07-04 (headline feature, headline placement) -->
 
     <div id="pastEntries" style="margin-top: 1em;"></div>
   </div>
@@ -12117,8 +12249,8 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
       <div style="font-size:1em; line-height:1.65; margin-bottom:1.2em;">
         <strong>InkWell</strong> is part of the Pegasus Realm wellness ecosystem—designed for individuals, coaches, counselors, and mental health professionals seeking science-backed, intuitive tools for growth.
         <hr style="margin:1em 0;"/>
-        <h3 style="font-size:1.09em;">Why Manifest Statements?</h3>
-        At the heart of InkWell is your Manifest Statement: a personal guiding vision. This method draws on <strong>goal-setting theory</strong> and positive psychology, helping you translate intentions into action through evidence-based habit building and self-reflection.<br/>
+        <h3 style="font-size:1.09em;">Why Vision Statements?</h3>
+        At the heart of InkWell is your Vision Statement: a personal guiding vision. This method draws on <strong>goal-setting theory</strong> and positive psychology, helping you translate intentions into action through evidence-based habit building and self-reflection.<br/>
         <span style="font-size:0.98em; color:#388b97;">
           <em>Research shows written goals and expressive journaling increase achievement, resilience, and emotional well-being.</em>
         </span>
@@ -12632,7 +12764,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
         <ul style="margin: 0.3em 0 0 1.2em; padding: 0;">
           <li>Progress tracking with mood patterns and reflection insights</li>
           <li>Growth analytics to visualize your personal development journey</li>
-          <li>Manifest creation to clarify your vision and track meaningful goals</li>
+          <li>Goal building to clarify your vision and track what matters</li>
           <li>Weekly insight emails from Sophy - personalized reflection on your growth patterns</li>
         </ul>
       </div>
@@ -12720,7 +12852,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
 <div id="manifestDataModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto;">
   <div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 20px;">
     <div style="background: var(--bg-card); color: var(--font-main); padding: 2em; border-radius: 10px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
-    <h2 style="margin-top: 0; text-align: center; color: var(--brand-primary);">Manifest Data</h2>
+    <h2 style="margin-top: 0; text-align: center; color: var(--brand-primary);">Goal Data</h2>
     
     <div id="manifestDataContent" style="line-height: 1.6;">
       <!-- Content will be populated by JavaScript -->
@@ -12996,6 +13128,27 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
    <!-- My Coach section removed 2026-07-01 — Connect retired, coach layer dead -->
 
    <!-- Appearance Section -->
+    <!-- YOUR WORDS (2026-07-04): the privacy promise, stated plainly.
+         LAW: every line here must stay architecturally true. Never say HIPAA.
+         If analytics ship, events must NEVER contain entry text (see TASKS analytics law). -->
+    <div class="settings-card">
+      <h3 style="color: var(--brand-primary); margin-top: 0; margin-bottom: 0.6em; font-size: 1.1em;">
+        Your Words
+      </h3>
+      <div style="font-size: 0.88em; color: var(--font-secondary); line-height: 1.6; text-align: left;">
+        <p style="margin: 0 0 0.6em 0;">Your entries are encrypted in transit and at rest. No other user can ever see them.</p>
+        <p style="margin: 0 0 0.6em 0;">Nothing you write is sold, shared with advertisers, or used to train AI models.</p>
+        <p style="margin: 0 0 0.6em 0;">Sophy reads an entry only when you ask her to. Her AI providers process it to respond and do not keep it to train on.</p>
+        <p style="margin: 0 0 0.6em 0;">We measure taps and screens to make InkWell better. We do not measure your words.</p>
+        <p style="margin: 0 0 0.6em 0;">Delete your account and your words are permanently gone within 30 days.</p>
+        <p style="margin: 0; font-size: 0.92em; color: var(--font-muted);">
+          Like any company, we must answer valid legal process; we keep what we store minimal.
+          Full details in the <a href="https://www.inkwelljournal.io/privacy-policy/" target="_blank" style="color: var(--brand-primary);">Privacy Policy</a>.
+          InkWell is a wellness journal, not a medical record.
+        </p>
+      </div>
+    </div>
+
     <!-- Practice Summary (2026-07-02): client-generated, self-emailed usage
          summary for optional sharing with a practitioner. FREE tier by law:
          never gate this behind Plus. Metadata only, never content. -->
