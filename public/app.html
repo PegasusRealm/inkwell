@@ -156,6 +156,32 @@
       --brand-secondary: #1E8A99;
     }
 
+    /* READING MODE (2026-07-02) — the opt-in warm paper. LAW: legal ONLY as an
+       explicit user choice, never a default (zombie-pastel rule). Warm ink on
+       warm paper, teal stays structural, Sophy coral saturated for cream ground. */
+    html[data-theme='reading'] {
+      --bg-primary: linear-gradient(180deg, #F4EDDE 0%, #EFE6D2 100%);
+      --bg-card: #FBF6EA;
+      --bg-card-hover: #F7F0E0;
+      --bg-muted: #F1E9D6;
+      --bg-overlay: rgba(251, 246, 234, 0.92);
+      --font-main: #2E2A22;
+      --font-secondary: #574F3E;
+      --font-muted: #83795F;
+      --font-accent: #2A6972;
+      --brand-primary: #2A6972;
+      --brand-secondary: #1E8A99;
+      --border-light: #E8DDC5;
+      --border-medium: #D6C8A8;
+      --shadow-sm: 0 1px 2px rgba(74, 60, 34, 0.08);
+      --shadow-md: 0 4px 12px -2px rgba(74, 60, 34, 0.12);
+      --btn-secondary: #EDE4CE;
+      --btn-secondary-hover: #E5DABD;
+      --accent-sophy: #C96F5E;
+      --accent-sophy-light: #D49489;
+      --info-bg: rgba(42, 105, 114, 0.06);
+    }
+
     /* System preference dark = Ink & Light (mirrors data-theme='dark' essentials) */
     @media (prefers-color-scheme: dark) {
       :root {
@@ -6639,8 +6665,21 @@ window.toggleTagInput = function() {
   if (body && header) {
     body.classList.toggle('visible');
     header.classList.toggle('expanded');
+    if (body.classList.contains('visible')) renderTagQuickRow();
   }
 };
+
+// One-tap chips of the user's existing tags inside the journal tag section
+function renderTagQuickRow() {
+  const row = document.getElementById('tagLibraryQuickRow');
+  if (!row) return;
+  const tags = (typeof userTagLibrary !== 'undefined' && Array.isArray(userTagLibrary)) ? userTagLibrary : [];
+  if (tags.length === 0) { row.style.display = 'none'; return; }
+  row.style.display = 'flex';
+  row.innerHTML = '<span style="font-size:0.8em;color:var(--font-muted);">Your tags:</span>' +
+    tags.map(t => '<button type="button" onclick="addTagToEntry(\'' + t + '\')" style="cursor:pointer;border:1px solid var(--border-medium);background:var(--bg-muted);color:var(--font-secondary);border-radius:999px;padding:0.25em 0.85em;font-size:0.85em;font-family:var(--body-font);">' + t + '</button>').join('');
+}
+window.renderTagQuickRow = renderTagQuickRow;
 
 // Normalize tag (lowercase, trimmed, no special chars except hyphen)
 function normalizeTag(tag) {
@@ -11099,6 +11138,8 @@ document.head.appendChild(themeStyle);
         <span class="toggle-icon">▼</span>
       </div>
       <div class="tag-input-body" id="tagInputBody">
+        <!-- Your existing tags as one-tap chips (2026-07-02, Adam request) -->
+        <div id="tagLibraryQuickRow" style="display:none;flex-wrap:wrap;gap:0.4em;align-items:center;margin-bottom:0.75em;"></div>
         <div class="tag-chips-container" id="entryTagsContainer">
           <!-- Selected tags appear here as chips -->
         </div>
@@ -12344,6 +12385,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
           <option value="default">System Default</option>
           <option value="light">Light Mode</option>
           <option value="dark">Dark Mode</option>
+          <option value="reading">Reading Mode (warm)</option>
         </select>
       </div>
     </div>
