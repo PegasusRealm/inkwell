@@ -5173,6 +5173,498 @@ window.copyGratitudeLetter = function() {
 
 // ═══ Phase 2b: server-backed actions (gratitudeEngine) ═══
 
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VALUES-BASED GOAL PLANNER (2026-07-02) — the 6-step worksheet, in-app.
+// Free-tier flow by law. Writing steps save as journal entries so they
+// compound. State persists to the user doc so the ritual can span days.
+// Sort: Personal Values Card Sort (Miller, C'de Baca, Matthews & Wilbourne,
+// 2001, UNM). Step 6 = WISH (WOOP; Oettingen & Gollwitzer).
+// ═══════════════════════════════════════════════════════════════════════════
+const PLANNER_VALUES = [
+  ["ACCEPTANCE", "to be accepted as I am"],
+  ["ACCURACY", "to be accurate in my opinions and beliefs"],
+  ["ACHIEVEMENT", "to have important accomplishments"],
+  ["ADVENTURE", "to have new and exciting experiences"],
+  ["ATTRACTIVENESS", "to be physically attractive"],
+  ["AUTHORITY", "to be in charge of and responsible for others"],
+  ["AUTONOMY", "to be self-determined and independent"],
+  ["BEAUTY", "to appreciate beauty around me"],
+  ["CARING", "to take care of others"],
+  ["CHALLENGE", "to take on difficult tasks and problems"],
+  ["CHANGE", "to have a life full of change and variety"],
+  ["COMFORT", "to have a pleasant and comfortable life"],
+  ["COMMITMENT", "to make enduring, meaningful commitments"],
+  ["COMPASSION", "to feel and act on concern for others"],
+  ["CONTRIBUTION", "to make a lasting contribution in the world"],
+  ["COOPERATION", "to work collaboratively with others"],
+  ["COURTESY", "to be considerate and polite toward others"],
+  ["CREATIVITY", "to have new and original ideas"],
+  ["DEPENDABILITY", "to be reliable and trustworthy"],
+  ["DUTY", "to carry out my duties and obligations"],
+  ["ECOLOGY", "to live in harmony with the environment"],
+  ["EXCITEMENT", "to have a life full of thrills and stimulation"],
+  ["FAITHFULNESS", "to be loyal and true in relationships"],
+  ["FAME", "to be known and recognized"],
+  ["FAMILY", "to have a happy, loving family"],
+  ["FITNESS", "to be physically fit and strong"],
+  ["FLEXIBILITY", "to adjust to new circumstances easily"],
+  ["FORGIVENESS", "to be forgiving of others"],
+  ["FRIENDSHIP", "to have close, supportive friends"],
+  ["FUN", "to play and have fun"],
+  ["GENEROSITY", "to give what I have to others"],
+  ["GENUINENESS", "to act in a manner that is true to who I am"],
+  ["GOD'S WILL", "to seek and obey the will of God"],
+  ["GROWTH", "to keep changing and growing"],
+  ["HEALTH", "to be physically well and healthy"],
+  ["HELPFULNESS", "to be helpful to others"],
+  ["HONESTY", "to be honest and truthful"],
+  ["HOPE", "to maintain a positive and optimistic outlook"],
+  ["HUMILITY", "to be modest and unassuming"],
+  ["HUMOR", "to see the humorous side of myself and the world"],
+  ["INDEPENDENCE", "to be free from dependence on others"],
+  ["INDUSTRY", "to work hard and well at my life tasks"],
+  ["INNER PEACE", "to experience personal peace"],
+  ["INTIMACY", "to share my innermost experiences with others"],
+  ["JUSTICE", "to promote fair and equal treatment for all"],
+  ["KNOWLEDGE", "to learn and contribute valuable knowledge"],
+  ["LEISURE", "to take time to relax and enjoy"],
+  ["LOVED", "to be loved by those close to me"],
+  ["LOVING", "to give love to others"],
+  ["MASTERY", "to be competent in my everyday activities"],
+  ["MINDFULNESS", "to live conscious and mindful of the present moment"],
+  ["MODERATION", "to avoid excesses and find a middle ground"],
+  ["MONOGAMY", "to have one close, loving relationship"],
+  ["NON-CONFORMITY", "to question and challenge authority and norms"],
+  ["NURTURANCE", "to take care of and nurture others"],
+  ["OPENNESS", "to be open to new experiences, ideas, and options"],
+  ["ORDER", "to have a life that is well-ordered and organized"],
+  ["PASSION", "to have deep feelings about ideas, activities, or people"],
+  ["PLEASURE", "to feel good"],
+  ["POPULARITY", "to be well-liked by many people"],
+  ["POWER", "to have control over others"],
+  ["PURPOSE", "to have meaning and direction in my life"],
+  ["RATIONALITY", "to be guided by reason and logic"],
+  ["REALISM", "to see and act realistically and practically"],
+  ["RESPONSIBILITY", "to make and carry out responsible decisions"],
+  ["RISK", "to take risks and chances"],
+  ["ROMANCE", "to have intense, exciting love in my life"],
+  ["SAFETY", "to be safe and secure"],
+  ["SELF-ACCEPTANCE", "to accept myself as I am"],
+  ["SELF-CONTROL", "to be disciplined in my own actions"],
+  ["SELF-ESTEEM", "to feel good about myself"],
+  ["SELF-KNOWLEDGE", "to have a deep and honest understanding of myself"],
+  ["SERVICE", "to be of service to others"],
+  ["SEXUALITY", "to have an active and satisfying sex life"],
+  ["SIMPLICITY", "to live life simply, with minimal needs"],
+  ["SOLITUDE", "to have time and space where I can be apart from others"],
+  ["SPIRITUALITY", "to grow and mature spiritually"],
+  ["STABILITY", "to have a life that stays fairly consistent"],
+  ["TOLERANCE", "to accept and respect those who differ from me"],
+  ["TRADITION", "to follow respected patterns of the past"],
+  ["VIRTUE", "to live a morally pure and excellent life"],
+  ["WEALTH", "to have plenty of money"],
+  ["WORLD PEACE", "to work to promote peace in the world"]
+];
+
+let vp = null; // planner state
+
+function vpDefault() {
+  return { stage: 'values', round: 1, pool: PLANNER_VALUES.map(v => v[0]), selected: [],
+           ranked: [], vision: '', ideas: [], top3: [], notes: {}, chosen: '', done: false };
+}
+
+async function vpLoad() {
+  if (vp) return vp;
+  vp = vpDefault();
+  try {
+    const userId = window.currentUserId || window.auth?.currentUser?.uid;
+    if (userId && window.db && window.getDoc && window.doc) {
+      const snap = await window.getDoc(window.doc(window.db, 'users', userId));
+      if (snap.exists() && snap.data().valuesPlanner) vp = Object.assign(vpDefault(), snap.data().valuesPlanner);
+    }
+  } catch (e) { console.warn('planner load failed, starting fresh:', e.message); }
+  return vp;
+}
+
+let vpSaveTimer = null;
+function vpSave() {
+  clearTimeout(vpSaveTimer);
+  vpSaveTimer = setTimeout(async () => {
+    try {
+      const userId = window.currentUserId || window.auth?.currentUser?.uid;
+      if (userId && window.db && window.setDoc && window.doc) {
+        await window.setDoc(window.doc(window.db, 'users', userId), { valuesPlanner: vp }, { merge: true });
+      }
+    } catch (e) { console.warn('planner save failed:', e.message); }
+  }, 600);
+}
+
+async function plannerAssistFetch(step, payload) {
+  const user = window.auth?.currentUser;
+  if (!user) throw new Error('Sign in required');
+  const idToken = await user.getIdToken();
+  const r = await fetch('https://us-central1-inkwell-alpha.cloudfunctions.net/plannerAssist', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+    body: JSON.stringify(Object.assign({ step }, payload))
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || 'Sophy is unavailable right now.');
+  return data.text;
+}
+
+async function vpSaveAsEntry(title, text, tags) {
+  const userId = window.currentUserId || window.auth?.currentUser?.uid;
+  if (!userId || !window.addDoc) return null;
+  const docRef = await window.addDoc(window.collection(window.db, 'journalEntries'), {
+    userId, title, text, tags, entryMode: 'journal',
+    createdAt: window.serverTimestamp ? window.serverTimestamp() : new Date(),
+    updatedAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
+  });
+  return docRef.id;
+}
+
+const vpEsc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+function vpSetWishVisible(show) {
+  ['wishBuilderCard', 'wishRunwayCard'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = show ? '' : 'none';
+  });
+}
+
+async function vpArchiveRun() {
+  // Completed runs stack into history — never overwritten. Future compounding
+  // surface: values drift over the years ("a year ago your top value was...").
+  try {
+    const userId = window.currentUserId || window.auth?.currentUser?.uid;
+    if (!userId || !window.getDoc || !window.setDoc) return;
+    const snap = await window.getDoc(window.doc(window.db, 'users', userId));
+    const hist = (snap.exists() && Array.isArray(snap.data().valuesPlannerHistory)) ? snap.data().valuesPlannerHistory : [];
+    hist.push({ completedAt: vp.completedAt || new Date().toISOString(), ranked: vp.ranked.slice(0, 10), chosen: vp.chosen || '' });
+    await window.setDoc(window.doc(window.db, 'users', userId), { valuesPlannerHistory: hist.slice(-20) }, { merge: true });
+  } catch (e) { console.warn('planner archive failed (non-blocking):', e.message); }
+}
+
+window.plannerStart = async function() {
+  await vpLoad();
+  if (vp.done && vp.chosen) {
+    // Informed restart: archive always; friction copy depends on how fresh the last run is.
+    if (!document.getElementById('vpRestartGate')) {
+      const intro = document.getElementById('plannerIntro');
+      const days = vp.completedAt ? Math.floor((Date.now() - new Date(vp.completedAt).getTime()) / 86400000) : 999;
+      const ago = days >= 999 ? 'a while' : days === 0 ? 'today' : days === 1 ? 'yesterday' : days + ' days ago';
+      const topVals = vp.ranked.slice(0, 3).join(', ') || 'your values';
+      const copy = days < 90
+        ? 'You walked the planner ' + ago + '. Your top values were <strong>' + vpEsc(topVals) + '</strong> and you chose <strong>' + vpEsc(vp.chosen) + '</strong>. Values usually shift with seasons of life, not weeks. If something big changed, walk it again. If the goal is just fighting you, it might need attention, not replacement.'
+        : 'It has been ' + ago + ' since your last walk. Your top values were <strong>' + vpEsc(topVals) + '</strong>. Seasons change; a fresh walk is timely. Your old run stays archived either way.';
+      const gate = document.createElement('div');
+      gate.id = 'vpRestartGate';
+      gate.style.cssText = 'margin-top:1em;padding:0.9em 1em;border:1.5px solid var(--border-medium);border-radius:10px;background:var(--bg-muted);';
+      gate.innerHTML = '<p style="margin:0 0 0.7em 0;font-size:0.9em;color:var(--font-secondary);line-height:1.55;">' + copy + '</p>' +
+        '<div style="display:flex;gap:0.5em;flex-wrap:wrap;">' +
+        '<button class="btn btn-gray" onclick="vpRestartConfirm()">' + (days < 90 ? 'Something big changed, start fresh' : 'Start a fresh walk') + '</button>' +
+        '<button class="btn" onclick="document.getElementById(\'vpRestartGate\').remove()">Keep what I have</button></div>';
+      intro.appendChild(gate);
+    }
+    return;
+  }
+  document.getElementById('plannerIntro').style.display = 'none';
+  document.getElementById('plannerFlow').style.display = 'block';
+  vpSetWishVisible(false); // the WISH waits; quitting should be a choice, not a drift
+  vpRender();
+};
+
+window.vpRestartConfirm = async function() {
+  document.getElementById('vpRestartGate')?.remove();
+  await vpArchiveRun();
+  vp = vpDefault(); vpSave();
+  document.getElementById('plannerIntro').style.display = 'none';
+  document.getElementById('plannerFlow').style.display = 'block';
+  vpSetWishVisible(false);
+  vpRender();
+};
+
+// Abandoning mid-ritual is allowed, but it is a real choice: type the
+// commitment to leave. No judgment, no guilt, just intent. (Adam, 2026-07-02)
+window.plannerExit = function(force) {
+  if (!force && !vp.done) {
+    const body = document.getElementById('plannerStepBody');
+    if (!document.getElementById('vpExitGate')) {
+      const gate = document.createElement('div');
+      gate.id = 'vpExitGate';
+      gate.style.cssText = 'margin-top:1em;padding:0.9em 1em;border:1.5px solid var(--border-medium);border-radius:10px;background:var(--bg-muted);';
+      gate.innerHTML = '<p style="margin:0 0 0.6em 0;font-size:0.9em;color:var(--font-secondary);">No judgment, life happens. Your progress saves right here. To step out, type <strong>I\u2019ll come back</strong> so it\u2019s a promise, not a drift.</p>' +
+        '<div style="display:flex;gap:0.5em;flex-wrap:wrap;">' +
+        '<input type="text" id="vpExitInput" placeholder="I\u2019ll come back" style="flex:1;min-width:150px;">' +
+        '<button class="btn btn-gray" onclick="vpExitConfirm()">Save &amp; step out</button>' +
+        '<button class="btn" onclick="document.getElementById(\'vpExitGate\').remove()">Keep going</button></div>';
+      body.appendChild(gate);
+      document.getElementById('vpExitInput')?.focus();
+    }
+    return;
+  }
+  vpSave();
+  document.getElementById('plannerFlow').style.display = 'none';
+  document.getElementById('plannerIntro').style.display = 'block';
+  vpSetWishVisible(true);
+  vpResumeNote();
+};
+
+window.vpExitConfirm = function() {
+  const t = (document.getElementById('vpExitInput')?.value || '').toLowerCase().replace(/[\u2018\u2019']/g, '');
+  if (t.includes('ill come back') || t.includes('i will come back') || t.includes('will come back')) {
+    document.getElementById('vpExitGate')?.remove();
+    plannerExit(true);
+  } else {
+    const inp = document.getElementById('vpExitInput');
+    if (inp) { inp.style.borderColor = 'var(--accent-sophy)'; inp.placeholder = 'type: I\u2019ll come back'; }
+  }
+};
+
+function vpResumeNote() {
+  const n = document.getElementById('plannerResumeNote');
+  if (!n || !vp) return;
+  if (vp.done) { n.style.display = 'block'; n.textContent = 'Planner complete. Your goal: "' + vp.chosen + '". Start again anytime.'; }
+  else if (vp.stage !== 'values' || vp.selected.length > 0) { n.style.display = 'block'; n.textContent = 'You have a planner in progress. "Find a goal worth wanting" picks up where you left off.'; }
+}
+
+function vpStatus(t) { const s = document.getElementById('plannerStatus'); if (s) s.textContent = t || ''; }
+
+const VP_STAGES = ['values', 'rank', 'vision', 'brainstorm', 'evaluate', 'handoff'];
+const VP_LABELS = { values: 'Step 1 of 6, Your values', rank: 'Step 2 of 6, Rank your top values',
+  vision: 'Step 3 of 6, A day in your life, 15 years from now', brainstorm: 'Step 4 of 6, Brainstorm',
+  evaluate: 'Step 5 of 6, Choose one', handoff: 'Step 6 of 6, Into your WISH' };
+
+function vpRender() {
+  document.getElementById('plannerStepLabel').textContent = VP_LABELS[vp.stage];
+  document.getElementById('plannerBackBtn').style.visibility = (vp.stage === 'values' && vp.round === 1) ? 'hidden' : 'visible';
+  vpStatus('');
+  const body = document.getElementById('plannerStepBody');
+  const next = document.getElementById('plannerNextBtn');
+  next.textContent = 'Continue';
+
+  if (vp.stage === 'values') {
+    const roundNote = vp.round === 1
+      ? 'Tap every value that is Very Important to you. Quick gut calls, no overthinking.'
+      : 'Still ' + vp.pool.length + '. Same question, harder cut: tap only the values that are Very Important. The rest slip away.';
+    body.innerHTML = '<p style="margin:0 0 0.9em 0;color:var(--font-secondary);font-size:0.92em;">' + roundNote + '</p>' +
+      '<div style="max-height:340px;overflow-y:auto;padding-right:0.4em;" id="vpValuesList">' +
+      vp.pool.map(name => {
+        const def = (PLANNER_VALUES.find(v => v[0] === name) || ['',''])[1];
+        const sel = vp.selected.includes(name);
+        return '<div class="vp-row' + (sel ? ' sel' : '') + '" onclick="vpToggleValue(\'' + name.replace(/'/g, "\\'") + '\')">' +
+          '<span class="vp-name">' + vpEsc(name) + '</span><span class="vp-def">' + vpEsc(def) + '</span></div>';
+      }).join('') + '</div>' +
+      '<p style="margin:0.7em 0 0 0;font-size:0.85em;color:var(--font-muted);"><span id="vpCount">' + vp.selected.length + '</span> selected · 10 or fewer moves you to ranking</p>' +
+      '<p style="margin:0.4em 0 0 0;font-size:0.72em;color:var(--font-muted);font-style:italic;">Values sort adapted from Miller, C\u2019de Baca, Matthews &amp; Wilbourne (2001), University of New Mexico.</p>';
+  }
+
+  if (vp.stage === 'rank') {
+    body.innerHTML = '<p style="margin:0 0 0.9em 0;color:var(--font-secondary);font-size:0.92em;">Tap your values in order of importance. First tap is 1, your most important. Tap again to un-rank.</p>' +
+      vp.pool.map(name => {
+        const idx = vp.ranked.indexOf(name);
+        return '<div class="vp-row' + (idx >= 0 ? ' sel' : '') + '" onclick="vpToggleRank(\'' + name.replace(/'/g, "\\'") + '\')">' +
+          '<span class="vp-rank">' + (idx >= 0 ? (idx + 1) : '') + '</span><span class="vp-name">' + vpEsc(name) + '</span></div>';
+      }).join('');
+  }
+
+  if (vp.stage === 'vision') {
+    body.innerHTML = '<p style="margin:0 0 0.9em 0;color:var(--font-secondary);font-size:0.92em;">Your top values got to lead for 15 years. Write one ordinary day in that life, waking up to falling asleep. Present tense. Use your senses. One real day, not a highlight reel.</p>' +
+      '<textarea id="vpVision" style="width:100%;min-height:170px;box-sizing:border-box;" placeholder="I wake up and the first thing I hear is...">' + vpEsc(vp.vision) + '</textarea>' +
+      '<div style="margin-top:0.6em;"><button class="btn btn-sophy" onclick="vpVivid()">Help me make it vivid</button></div>' +
+      '<div id="vpVividOut" class="sophy-info"></div>' +
+      '<p style="margin:0.6em 0 0 0;font-size:0.72em;color:var(--font-muted);font-style:italic;">Saves to your journal. Based on the Best Possible Self exercise (King, 2001).</p>';
+    next.textContent = 'Save to journal & continue';
+  }
+
+  if (vp.stage === 'brainstorm') {
+    body.innerHTML = '<p style="margin:0 0 0.9em 0;color:var(--font-secondary);font-size:0.92em;">List anything that could move your real life toward that day. Twenty or more. The first ten are the obvious ones. The stupid, silly, impossible ones after that are the whole point. No filtering.</p>' +
+      '<div style="display:flex;gap:0.5em;"><input type="text" id="vpIdeaInput" placeholder="an idea, a goal, a resource..." style="flex:1;" onkeydown="if(event.key===\'Enter\'){vpAddIdea();return false;}">' +
+      '<button class="btn btn-gray" onclick="vpAddIdea()">Add</button></div>' +
+      '<div id="vpIdeaList" style="margin-top:0.8em;"></div>' +
+      '<div style="margin-top:0.6em;"><button class="btn btn-sophy" onclick="vpSeed()">Sophy, seed some ideas</button></div>' +
+      '<div id="vpSeedOut" class="sophy-info"></div>';
+    vpRenderIdeas();
+    next.textContent = 'Save list & continue';
+  }
+
+  if (vp.stage === 'evaluate') {
+    const top3 = vp.top3;
+    body.innerHTML = '<p style="margin:0 0 0.9em 0;color:var(--font-secondary);font-size:0.92em;">Tap your top 3 ideas, then jot quick pros and cons for each. Two questions before you choose: Would you still want it if nobody ever saw the result? Is it a want, or a should?</p>' +
+      '<div style="max-height:180px;overflow-y:auto;">' + vp.ideas.map(idea => {
+        const sel = top3.includes(idea);
+        return '<div class="vp-row' + (sel ? ' sel' : '') + '" onclick="vpToggleTop3(this)" data-idea="' + vpEsc(idea) + '"><span class="vp-name" style="font-weight:500;white-space:normal;word-break:break-word;">' + vpEsc(idea) + '</span></div>';
+      }).join('') + '</div><div id="vpEvalBlocks" style="margin-top:0.9em;"></div>' +
+      '<div style="margin-top:0.6em;"><button class="btn btn-sophy" onclick="vpWantShould()">Sophy, want or should?</button></div>' +
+      '<div id="vpWSOut" class="sophy-info"></div>';
+    vpRenderEvalBlocks();
+  }
+
+  if (vp.stage === 'handoff') {
+    body.innerHTML = '<p style="margin:0 0 0.9em 0;color:var(--font-secondary);font-size:0.92em;">Pick the one that survived. It becomes the Want of your WISH below.</p>' +
+      vp.top3.map(idea => '<div class="vp-row' + (vp.chosen === idea ? ' sel' : '') + '" onclick="vpChoose(this)" data-idea="' + vpEsc(idea) + '"><span class="vp-name" style="font-weight:500;white-space:normal;word-break:break-word;">' + vpEsc(idea) + '</span></div>').join('');
+    next.textContent = 'Send to my WISH';
+  }
+}
+
+window.vpToggleValue = function(name) {
+  const i = vp.selected.indexOf(name);
+  if (i >= 0) vp.selected.splice(i, 1); else vp.selected.push(name);
+  const c = document.getElementById('vpCount'); if (c) c.textContent = vp.selected.length;
+  event.currentTarget.classList.toggle('sel');
+  vpSave();
+};
+
+window.vpToggleRank = function(name) {
+  const i = vp.ranked.indexOf(name);
+  if (i >= 0) vp.ranked.splice(i, 1); else vp.ranked.push(name);
+  vpSave(); vpRender();
+};
+
+function vpRenderIdeas() {
+  const el = document.getElementById('vpIdeaList');
+  if (!el) return;
+  el.innerHTML = vp.ideas.map((idea, i) =>
+    '<div class="vp-row" style="cursor:default;"><span class="vp-name" style="font-weight:500;white-space:normal;word-break:break-word;">' + vpEsc(idea) + '</span>' +
+    '<button onclick="vpRemoveIdea(' + i + ')" style="background:none;border:none;color:var(--font-muted);cursor:pointer;font-size:1em;margin-left:auto;">&times;</button></div>').join('');
+}
+window.vpAddIdea = function() {
+  const inp = document.getElementById('vpIdeaInput');
+  const t = (inp?.value || '').trim();
+  if (!t) return;
+  vp.ideas.push(t.slice(0, 200)); vp.dedupeOk = false; inp.value = ''; vpSave(); vpRenderIdeas();
+};
+window.vpRemoveIdea = function(i) { vp.ideas.splice(i, 1); vp.dedupeOk = false; vpSave(); vpRenderIdeas(); };
+
+window.vpToggleTop3 = function(el) {
+  const idea = el.dataset.idea;
+  const i = vp.top3.indexOf(idea);
+  if (i >= 0) vp.top3.splice(i, 1);
+  else { if (vp.top3.length >= 3) { vpStatus('Three is the limit. Un-tap one first.'); return; } vp.top3.push(idea); }
+  vpSave(); vpRender();
+};
+
+function vpRenderEvalBlocks() {
+  const el = document.getElementById('vpEvalBlocks');
+  if (!el) return;
+  el.innerHTML = vp.top3.map((idea, i) =>
+    '<div style="margin-bottom:0.8em;"><div style="font-size:0.85em;font-weight:600;color:var(--brand-primary);margin-bottom:0.3em;">' + vpEsc(idea) + '</div>' +
+    '<textarea data-eval="' + vpEsc(idea) + '" oninput="vpNoteChange(this)" placeholder="Pros: ...  Cons: ..." style="width:100%;min-height:56px;box-sizing:border-box;font-size:0.9em;">' + vpEsc(vp.notes[idea] || '') + '</textarea></div>').join('');
+}
+window.vpNoteChange = function(el) { vp.notes[el.dataset.eval] = el.value.slice(0, 1200); vpSave(); };
+
+window.vpChoose = function(el) { vp.chosen = el.dataset.idea; vpSave(); vpRender(); };
+
+window.vpVivid = async function() {
+  const out = document.getElementById('vpVividOut');
+  vp.vision = document.getElementById('vpVision')?.value || vp.vision;
+  out.textContent = 'Sophy is reading...';
+  try { out.textContent = await plannerAssistFetch('vivid', { vision: vp.vision }); }
+  catch (e) { out.textContent = e.message; }
+};
+window.vpSeed = async function() {
+  const out = document.getElementById('vpSeedOut');
+  out.textContent = 'Sophy is thinking...';
+  try {
+    const text = await plannerAssistFetch('seed', { vision: vp.vision, topValues: vp.ranked.slice(0, 10) });
+    out.innerHTML = vpEsc(text).split('\n').filter(l => l.trim()).map(l => {
+      const isIdea = /^\s*-/.test(l);
+      const btn = isIdea ? ' <button onclick="vpAdoptSeed(this)" data-line="' + vpEsc(l.replace(/^[-\s]+/, '')) + '" style="background:none;border:1px solid var(--border-medium);border-radius:999px;padding:0.1em 0.6em;font-size:0.78em;cursor:pointer;color:var(--font-secondary);">add</button>' : '';
+      return '<div style="margin-bottom:0.4em;">' + l + btn + '</div>';
+    }).join('');
+  } catch (e) { out.textContent = e.message; }
+};
+window.vpAdoptSeed = function(el) {
+  const line = el.dataset.line.split(' because')[0].trim();
+  vp.ideas.push(line.slice(0, 200)); vpSave(); vpRenderIdeas(); el.disabled = true; el.textContent = 'added';
+};
+window.vpWantShould = async function() {
+  const out = document.getElementById('vpWSOut');
+  const notes = vp.top3.map(i => i + ':\n' + (vp.notes[i] || '(no notes)')).join('\n\n');
+  out.textContent = 'Sophy is reading...';
+  try { out.textContent = await plannerAssistFetch('wantshould', { notes }); }
+  catch (e) { out.textContent = e.message; }
+};
+
+window.plannerBack = function() {
+  if (vp.stage === 'values' && vp.round > 1) { vp.round--; vp.pool = PLANNER_VALUES.map(v => v[0]); vp.selected = []; vpSave(); vpRender(); return; }
+  const i = VP_STAGES.indexOf(vp.stage);
+  if (i > 0) { vp.stage = VP_STAGES[i - 1]; vpSave(); vpRender(); }
+};
+
+window.plannerNext = async function() {
+  if (vp.stage === 'values') {
+    if (vp.selected.length === 0) { vpStatus('Tap at least one value first.'); return; }
+    if (vp.selected.length > 10) { vp.pool = vp.selected.slice(); vp.selected = []; vp.round++; vpSave(); vpRender(); return; }
+    vp.pool = vp.selected.slice(); vp.ranked = []; vp.stage = 'rank'; vpSave(); vpRender(); return;
+  }
+  if (vp.stage === 'rank') {
+    if (vp.ranked.length !== vp.pool.length) { vpStatus('Rank all of them: ' + vp.ranked.length + ' of ' + vp.pool.length + ' so far.'); return; }
+    vp.stage = 'vision'; vpSave(); vpRender(); return;
+  }
+  if (vp.stage === 'vision') {
+    vp.vision = document.getElementById('vpVision')?.value?.trim() || '';
+    if (vp.vision.length < 40) { vpStatus('Give the day a little more life first, a few sentences at least.'); return; }
+    vpStatus('Saving to your journal...');
+    try { await vpSaveAsEntry('A Day in My Life, 15 Years From Now', vp.vision, ['values-planner', 'vision']); }
+    catch (e) { console.warn('vision entry save failed:', e.message); }
+    vp.stage = 'brainstorm'; vpSave(); vpRender(); return;
+  }
+  if (vp.stage === 'brainstorm') {
+    if (vp.ideas.length < 20) { vpStatus(vp.ideas.length + ' of 20. Keep going, the good ones live past the obvious.'); return; }
+    // Sophy dedupe scrub: reworded repeats don't count (fail-open if she's unavailable)
+    if (!vp.dedupeOk) {
+      vpStatus('Sophy is checking for repeats...');
+      try {
+        const verdict = await plannerAssistFetch('dedupe', { ideas: vp.ideas });
+        const m = verdict.match(/DISTINCT:\s*(\d+)/i);
+        const distinct = m ? parseInt(m[1], 10) : vp.ideas.length;
+        if (distinct < 20) {
+          const out = document.getElementById('vpSeedOut');
+          if (out) out.textContent = verdict.replace(/^DISTINCT:.*$/im, '').trim();
+          vpStatus(distinct + ' truly distinct so far. Rewording the same idea does not fool either of us.');
+          return;
+        }
+        vp.dedupeOk = true;
+      } catch (e) { console.warn('dedupe scrub unavailable, failing open:', e.message); vp.dedupeOk = true; }
+    }
+    vpStatus('Saving your list...');
+    try { await vpSaveAsEntry('Goal Brainstorm', 'Ideas toward my 15-year vision:\n\n' + vp.ideas.map((x, i) => (i + 1) + '. ' + x).join('\n'), ['values-planner', 'brainstorm']); }
+    catch (e) { console.warn('brainstorm entry save failed:', e.message); }
+    vp.stage = 'evaluate'; vpSave(); vpRender(); return;
+  }
+  if (vp.stage === 'evaluate') {
+    if (vp.top3.length === 0) { vpStatus('Tap up to three ideas to compare.'); return; }
+    vp.stage = 'handoff'; vpSave(); vpRender(); return;
+  }
+  if (vp.stage === 'handoff') {
+    if (!vp.chosen) { vpStatus('Tap the one you choose.'); return; }
+    const wish = document.getElementById('wishInput');
+    if (wish) {
+      if (wish.value.trim() && !confirm('Your Want field already has a goal. Replace it with "' + vp.chosen + '"?')) return;
+      wish.value = vp.chosen;
+    }
+    vp.done = true; vp.completedAt = new Date().toISOString(); vpSave();
+    plannerExit(true);
+    document.querySelector('#manifestTab .wish-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    vpStatus('');
+  }
+};
+
+// Intro quick path: Sophy ideas without entering the flow
+window.plannerQuickSeed = async function() {
+  const out = document.getElementById('plannerQuickSeedOut');
+  out.textContent = 'Sophy is reading your journal...';
+  await vpLoad();
+  try { out.textContent = await plannerAssistFetch('seed', { vision: vp.vision, topValues: vp.ranked.slice(0, 10) }); }
+  catch (e) { out.textContent = e.message; }
+};
+
+// Resume-note on manifest visits
+document.addEventListener('DOMContentLoaded', () => { setTimeout(async () => { try { await vpLoad(); vpResumeNote(); } catch(e) {} }, 2500); });
+
 window.sendPracticeSummary = async function() {
   const status = document.getElementById('practiceSummaryStatus');
   const set = (t) => { if (status) status.textContent = t; };
@@ -10282,7 +10774,7 @@ document.head.appendChild(themeStyle);
     };
 
   </script>
-  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.19">
+  <link rel="stylesheet" href="inkwell-v2.css?v=26.183.20">
 </head>
 
 
@@ -11187,17 +11679,36 @@ document.head.appendChild(themeStyle);
 
 <!-- Goal-finder slot (2026-07-02): values planner + Sophy suggestions land here.
      Design law: FREE-tier flows only in this space — never a paywall gate. -->
-<div class="iw-card" style="margin-bottom: 1.5em;">
+<div class="iw-card" style="margin-bottom: 1.5em;" id="plannerCard">
   <div class="manifest-eyebrow">Finding your goal</div>
-  <p style="margin: 0; color: var(--font-secondary); font-size: 0.95em; line-height: 1.6;">
-    Already know what you want? Build it below.
-    Not sure yet? Sophy goal suggestions and the Pegasus Realm Values-Based
-    Goal Planner will live right here soon.
-  </p>
+  <div id="plannerIntro">
+    <p style="margin: 0 0 1em 0; color: var(--font-secondary); font-size: 0.95em; line-height: 1.6;">
+      Already know what you want? Build it below.
+      Not sure yet? Walk the Values Planner, or let Sophy read your journal and suggest a place to start.
+    </p>
+    <div style="display: flex; gap: 0.6em; flex-wrap: wrap;">
+      <button class="btn" onclick="plannerStart()">Find a goal worth wanting</button>
+      <button class="btn btn-sophy" onclick="plannerQuickSeed()">Ask Sophy for ideas</button>
+    </div>
+    <p id="plannerResumeNote" style="display:none; margin: 0.8em 0 0 0; font-size: 0.85em; font-style: italic; color: var(--font-muted);"></p>
+    <div id="plannerQuickSeedOut" class="sophy-info" style="margin-top: 0.9em;"></div>
+  </div>
+  <div id="plannerFlow" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1em;">
+      <span id="plannerStepLabel" class="manifest-eyebrow" style="margin: 0 !important;"></span>
+      <button onclick="plannerExit()" style="background: none; border: none; color: var(--font-muted); font-size: 0.8em; cursor: pointer; text-decoration: underline;">save &amp; close</button>
+    </div>
+    <div id="plannerStepBody"></div>
+    <div style="display: flex; justify-content: space-between; margin-top: 1.25em;">
+      <button class="btn btn-gray" id="plannerBackBtn" onclick="plannerBack()">Back</button>
+      <button class="btn" id="plannerNextBtn" onclick="plannerNext()">Continue</button>
+    </div>
+    <p id="plannerStatus" style="margin: 0.6em 0 0 0; font-size: 0.85em; font-style: italic; color: var(--font-muted);"></p>
+  </div>
 </div>
 
 <!-- WISH builder: one method, one card -->
-<div class="iw-card" style="margin-bottom: 1.5em;">
+<div class="iw-card" style="margin-bottom: 1.5em;" id="wishBuilderCard">
 <!-- Wish Block -->
 <div class="wish-section">
     <h2 class="journal-heading" style="text-align:center;margin-bottom:2rem;color:var(--font-main);">Want</h2>
@@ -11272,7 +11783,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
 </div>
 
 <!-- WISH runway: the timeline + progress, tracking the WISH above -->
-<div class="iw-card">
+<div class="iw-card" id="wishRunwayCard">
   <div class="wish-timeline-input-group">
     <label for="wishTimelineSelect" class="wish-timeline-label">How many days to manifest this?</label>
     <select id="wishTimelineSelect" onchange="updateWishTimeline()" class="wish-timeline-select">
