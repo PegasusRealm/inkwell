@@ -6654,6 +6654,12 @@ function initAutoResizeTextareas() {
 document.addEventListener('DOMContentLoaded', initAutoResizeTextareas);
 
 // Tab Introduction Manager - Shows intro modals on first tab access with delay
+// Alias: SMS-settings Plus badges call openSubscriptionModal; the real fn is
+// showSubscriptionModal (subscription-utils). Alias prevents a throw. (2026-07-04)
+window.openSubscriptionModal = function(tier) {
+  if (typeof window.showSubscriptionModal === 'function') window.showSubscriptionModal(tier);
+};
+
 window.TabIntroManager = {
   pendingIntros: {},
   
@@ -10350,7 +10356,7 @@ window.replaceWithSuggestion = function (section) {
     // Handle the original manifest section (for backward compatibility)
     const suggestion = document.getElementById("manifestSuggestion")?.textContent;
     if (suggestion) {
-      document.getElementById("manifestInput").value = suggestion;
+      const mi = document.getElementById("manifestInput"); if (mi) mi.value = suggestion;
     }
   }
 };
