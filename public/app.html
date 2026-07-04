@@ -5974,7 +5974,7 @@ function renderSprintTime() {
   if (overlay) overlay.classList.toggle('sprint-idle', idle);
   if (left === 0) {
     stopSprintTimer(false);
-    t.textContent = 'Time. Keep going or save — both count.';
+    t.textContent = 'Time. Keep going or save. Both count.';
   }
 }
 
@@ -8639,11 +8639,11 @@ if (planSuggestion) planSuggestion.textContent = "";
         return;
       }
 
-      pastEntriesContainer.innerHTML = "<p>Loading entries...</p>";
+      pastEntriesContainer.innerHTML = "<p>Gathering what you’ve written...</p>";
       
       // Ensure Firebase is properly initialized
       if (!window.db || !window.currentUserId) {
-        pastEntriesContainer.innerHTML = "<p>Please log in to view your entries.</p>";
+        pastEntriesContainer.innerHTML = "<p>Sign in to see what you’ve written.</p>";
         return;
       }
 
@@ -8654,11 +8654,11 @@ if (planSuggestion) planSuggestion.textContent = "";
         snapshot = await getDocs(q);
         console.log("📥 Query successful, found", snapshot.size, "entries");
       } catch (e) {
-        pastEntriesContainer.innerHTML = "<p>We’re setting things up behind the scenes. This feature will be available shortly — please check back soon.</p>";
+        pastEntriesContainer.innerHTML = "<p>We are setting things up behind the scenes. Check back in a moment.</p>";
         return;
       }
       if (snapshot.empty) {
-        pastEntriesContainer.innerHTML = "<p>No journal entries yet. Try your first reflection — it doesn’t have to be perfect.</p>";
+        pastEntriesContainer.innerHTML = "<p>Nothing here yet. Write the first one. It does not have to be good, it just has to be yours.</p>";
         return;
       }
 
@@ -9598,7 +9598,7 @@ window.logOutUser = async function (reason = "manual") {
           if (subMessageEl) subMessageEl.textContent = "Simply sign in again to continue where you left off.";
         } else {
           // Default manual logout messages
-          if (titleEl) titleEl.textContent = "See You Soon!";
+          if (titleEl) titleEl.textContent = "See you soon.";
           if (messageEl) messageEl.textContent = "Thanks for journaling with InkWell today.";
           if (subMessageEl) subMessageEl.textContent = "Take care, and don't forget to stay positive.";
         }
@@ -10783,10 +10783,10 @@ document.head.appendChild(themeStyle);
 <div class="splash-screen" id="splashScreen">
   <!-- Phase 1: Welcome + Pegasus Realm -->
   <div class="splash-phase-one">
-    <h1 class="splash-welcome-title">Welcome to Your Journey</h1>
+    <h1 class="splash-welcome-title">Welcome to <em style="font-style: italic; color: #89C9D4;">Your</em> Journey</h1>
     <p class="splash-welcome-text">
-      Journaling and Manifesting<br>
-      with psychology-trained AI
+      A journal that learns you.<br>
+      Goals that grow from your values.
     </p>
     <div class="splash-brought-by">
       <span class="splash-brought-text">brought to you by</span>
@@ -11047,7 +11047,7 @@ document.head.appendChild(themeStyle);
     <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 120px; margin-bottom: 1.5em;" />
     
     <h2 id="goodbyeTitle" style="margin-top: 0; margin-bottom: 1em; color: #2A6972; font-size: 1.3em;">
-      See You Soon! 
+      See you soon.
     </h2>
     
     <p id="goodbyeMessage" style="color: #000000; margin-bottom: 0.5em; font-size: 1em;">
@@ -11383,7 +11383,7 @@ document.head.appendChild(themeStyle);
   <!-- ═══ Letter (gratitude visit — Seligman et al. 2005, largest effect size) ═══ -->
   <div id="gratPracticeLetter" style="display:none;">
     <input type="text" id="gratLetterTo" placeholder="To (their name)..." style="width:100%;padding:0.6em;border-radius:8px;border:1px solid var(--border-medium);background:var(--bg-card);color:var(--font-main);font-size:1em;margin-bottom:0.75em;box-sizing:border-box;">
-    <textarea id="gratLetterText" class="grat-textarea" style="min-height:180px;" placeholder="Dear ___ — what did they do? What did it cost them? What did it change for you? Be specific. The details carry the gratitude."></textarea>
+    <textarea id="gratLetterText" class="grat-textarea" style="min-height:180px;" placeholder="Dear ___ , what did they do? What did it cost them? What did it change for you? Be specific. The details carry the gratitude."></textarea>
     <div style="display:flex;gap:0.5em;margin-top:0.75em;margin-bottom:0.5em;flex-wrap:wrap;">
       <button class="btn" onclick="saveGratitudePractice('letter')" style="flex:2;min-width:140px;">Save Letter</button>
       <button class="btn btn-sophy" onclick="sophyLetterAssist()" style="flex:1;min-width:130px;">Ask Sophy for help</button>
@@ -11875,7 +11875,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
     <!-- Period Insights Buttons (below calendar) -->
     <div id="periodInsightsSection" style="text-align: center; margin: 1.5em 0; padding: 1em; background: linear-gradient(135deg, rgba(42, 105, 114, 0.08) 0%, rgba(74, 155, 168, 0.05) 100%); border-radius: 12px; border: 1px solid rgba(42, 105, 114, 0.15);">
       <p style="margin: 0 0 0.8em 0; color: var(--font-secondary); font-size: 0.9em;">
-        Let Sophy find patterns in your journey
+        Let Sophy show you what has been building
       </p>
       <div style="display: flex; gap: 1em; justify-content: center; flex-wrap: wrap;">
         <button class="btn" onclick="requestPeriodInsights('weekly')" style="display: inline-flex; align-items: center; gap: 0.5em;">
@@ -11915,7 +11915,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
 
     <!-- Smart Search Bar UI -->
     <div class="iw-card" style="margin-top: 2em; width: 100%; box-sizing: border-box;">
-      <h3 class="section-header" style="text-align:center;margin-bottom:1.5rem;color:var(--font-main);">Smart Search Your Journal</h3>
+      <h3 class="section-header" style="text-align:center;margin-bottom:1.5rem;color:var(--font-main);">Ask Your Journal Anything</h3>
       <div style="display: flex; flex-direction: column; gap: 1em; width: 100%;">
         <input
           type="text"
@@ -12316,7 +12316,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
       
       <h3>Why Three Gratitudes?</h3>
       <p>
-        Research by Dr. Robert Emmons found that listing <strong>three specific things</strong> you're grateful for is the sweet spot—enough to create impact without becoming a chore. Specificity matters: "I'm grateful my friend texted to check on me" works better than "I'm grateful for friends."
+        Research by Dr. Robert Emmons found that listing <strong>three specific things</strong> you're grateful for is the sweet spot: enough to create impact without becoming a chore. Specificity matters: "I'm grateful my friend texted to check on me" works better than "I'm grateful for friends."
       </p>
       
       <h3>Making It Work</h3>
@@ -12344,22 +12344,22 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
 
       <div class="info-modal-highlight-box">
         <h4> One, Deeply</h4>
-        <p>Writing about one good thing—what happened, why it happened, and your part in it—outperforms longer lists. Depth beats breadth. <em>(Seligman, Steen, Park &amp; Peterson, 2005)</em></p>
+        <p>Writing about one good thing, what happened, why it happened, and your part in it, outperforms longer lists. Depth beats breadth. <em>(Seligman, Steen, Park &amp; Peterson, 2005)</em></p>
       </div>
 
       <div class="info-modal-highlight-box">
         <h4> Without It</h4>
-        <p>Mental subtraction: imagining that a good thing had never happened produces a stronger emotional response than simply recalling it. Your mind weighs loss about twice as heavily as gain—this practice puts that to work for you. <em>(Koo, Algoe, Wilson &amp; Gilbert, 2008)</em></p>
+        <p>Mental subtraction: imagining that a good thing had never happened produces a stronger emotional response than simply recalling it. Your mind weighs loss about twice as heavily as gain. This practice puts that to work for you. <em>(Koo, Algoe, Wilson &amp; Gilbert, 2008)</em></p>
       </div>
 
       <div class="info-modal-highlight-box">
         <h4> Letter</h4>
-        <p>Writing a gratitude letter to a real person carries the largest measured effect of any positive-psychology exercise. Delivering it is optional—the writing itself does most of the work. <em>(Seligman et al., 2005)</em></p>
+        <p>Writing a gratitude letter to a real person carries the largest measured effect of any positive-psychology exercise. Delivering it is optional. The writing itself does most of the work. <em>(Seligman et al., 2005)</em></p>
       </div>
 
       <div class="info-modal-highlight-box">
         <h4> Savor</h4>
-        <p>Capturing one positive moment in full sensory detail trains attention toward the good—savoring is a skill, and it strengthens with practice. <em>(Bryant &amp; Veroff, 2007)</em></p>
+        <p>Capturing one positive moment in full sensory detail trains attention toward the good. Savoring is a skill, and it strengthens with practice. <em>(Bryant &amp; Veroff, 2007)</em></p>
       </div>
 
       <p>
@@ -12422,8 +12422,8 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
       <h3>How to Use InkBlot</h3>
       <ul>
         <li><strong>Type or speak</strong> whatever's on your mind (up to 500 characters)</li>
-        <li><strong>Don't overthink it</strong>—messy is fine, incomplete is fine</li>
-        <li><strong>Save and move on</strong>—you can always revisit in Past Entries</li>
+        <li><strong>Don't overthink it.</strong> Messy is fine, incomplete is fine</li>
+        <li><strong>Save and move on.</strong> You can always revisit in Past Entries</li>
       </ul>
       <p>
         Think of InkBlot entries as seeds. Some will grow into bigger reflections later. Others simply needed to be planted and acknowledged.
@@ -12465,7 +12465,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
     
     <div style="font-size: 0.95em; line-height: 1.6; color: var(--font-main, #333);">
       <p style="margin-bottom: 1.2em;">
-        Life is messy. <strong>InkWell™</strong> holds your thinking and gives you back insight. A journal that remembers, reflects, and grows with you.
+        Life is messy. <strong>InkWell™</strong> holds your thinking and gives you back insight. A journal that remembers, reflects, and learns you.
       </p>
       
       <h3 style="color: var(--brand-primary, #2A6972); font-size: 1.1em; margin: 1.3em 0 0.7em 0;">What You Can Do in InkWell:</h3>
@@ -12535,7 +12535,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
       
       <div style="text-align: center; padding: 1em; background: var(--pale-teal, rgba(42,105,114,0.05)); border-radius: 8px; margin: 1.2em 0;">
         <p style="margin: 0 0 0.5em 0; font-weight: 500; color: var(--brand-primary, #2A6972);">Remember:</p>
-        <p style="margin: 0; font-style: italic;">This doesn't have to be perfect. Small, consistent actions create lasting change. Your wellness journey starts with a single thought—let's capture it together.</p>
+        <p style="margin: 0; font-style: italic;">This does not have to be perfect. Small, consistent actions become who you are. It starts with a single thought. Let's catch it.</p>
       </div>
       
       <div style="text-align: center; margin-top: 1.5em; padding-top: 1em; border-top: 1px solid var(--border, rgba(42,105,114,0.2));">
@@ -16774,7 +16774,7 @@ window.OnboardingManager = {
       icon: '',
       title: 'Your Space to Reflect',
       content: `
-        <p style="font-size: 1.1em; line-height: 1.6; margin-bottom: 1.2em;">Just start writing—even one sentence counts. There's no right or wrong way to journal.</p>
+        <p style="font-size: 1.1em; line-height: 1.6; margin-bottom: 1.2em;">Just start writing. One sentence counts. There is no wrong way to do this.</p>
         <p style="color: var(--font-muted); font-size: 0.95em;"> <strong>Tip:</strong> If you're stuck, tap <strong>Ask Sophy</strong> for a personalized prompt!</p>
       `,
       primaryButton: 'Start Writing',
@@ -16826,7 +16826,7 @@ window.OnboardingManager = {
       id: 'calendar_tab_intro',
       keepCentered: true,
       icon: '',
-      title: 'Your Journey So Far',
+      title: 'Your Story So Far',
       content: `
         <p style="font-size: 1.1em; line-height: 1.6; margin-bottom: 1.2em;">Tap any highlighted date to revisit that day's reflections. Watch your growth unfold over time.</p>
         <p style="color: var(--font-muted); font-size: 0.95em;"> As you journal more, you'll unlock weekly insights and patterns!</p>
@@ -16841,8 +16841,8 @@ window.OnboardingManager = {
     OnboardingToast.show({
       milestone: 'first_voice_entry',
       icon: '',
-      title: 'Voice Entry Complete!',
-      message: 'Great job! Your voice has been analyzed for emotional insights.',
+      title: 'Voice entry saved',
+      message: 'Spoken and kept. The emotional read is tucked into your entry.',
       duration: 5000
     });
   },
@@ -16852,8 +16852,8 @@ window.OnboardingManager = {
     OnboardingToast.show({
       milestone: 'first_wish_created',
       icon: '',
-      title: 'WISH Created!',
-      message: 'Excellent! You\'ve created your first WISH framework. Check your timeline!',
+      title: 'Your WISH is set',
+      message: 'It is on the runway now. The timeline tracks every day you move it forward.',
       duration: 6000
     });
   },
@@ -16863,8 +16863,8 @@ window.OnboardingManager = {
     OnboardingToast.show({
       milestone: 'first_sophy_chat',
       icon: '',
-      title: 'Sophy Helped!',
-      message: 'Nice work using Sophy to refine your thoughts. Keep exploring!',
+      title: 'A second pair of eyes',
+      message: 'Her reflection is a mirror, not a verdict. Take what fits, leave the rest.',
       duration: 4500
     });
   }
