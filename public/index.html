@@ -3,3059 +3,872 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InkWell - Digital Journaling for Growth & Understanding</title>
-    <meta name="description" content="InkWell by Pegasus Realm: Science-backed digital journaling with AI-powered support. Let Sophy guide your wellness journey.">
-    
+    <title>InkWell: Journal &amp; Insight | A Journal That Learns You</title>
+    <meta name="description" content="InkWell is a journal for people who think in circles, forget what they figured out last month, and want a place that holds all of it. Write it, say it, find it later. Free on web, iOS, and Android.">
+
     <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="InkWell™ - Digital Wellness Journal" />
-    <meta property="og:description" content="For the Thinkers and the Forgetters. A journal that remembers, reflects, and grows with you." />
-    <meta property="og:image" content="https://inkwelljournal.io/assets/inkwell-social-preview.png" />
+    <meta property="og:title" content="InkWell: Journal &amp; Insight" />
+    <meta property="og:description" content="For the Thinkers and the Forgetters. A journal that learns you." />
+    <meta property="og:image" content="https://inkwelljournal.io/inkwell-social-preview.png" />
     <meta property="og:url" content="https://inkwelljournal.io" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="InkWell" />
 
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="InkWell™ - Digital Wellness Journal" />
-    <meta name="twitter:description" content="For the Thinkers and the Forgetters. A journal that remembers, reflects, and grows with you." />
-    <meta name="twitter:image" content="https://inkwelljournal.io/assets/inkwell-social-preview.png" />
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-    
+    <meta name="twitter:title" content="InkWell: Journal &amp; Insight" />
+    <meta name="twitter:description" content="For the Thinkers and the Forgetters. A journal that learns you." />
+    <meta name="twitter:image" content="https://inkwelljournal.io/inkwell-social-preview.png" />
+
+    <!-- Fonts: Newsreader (display serif) + Manrope (UI) per InkWell v2 type system -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..800;1,6..72,400..800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
+        /* ============================================================
+           InkWell v2 marketing surface — spec per PR bible §5.6.3
+           Build constants: 12-col grid · 1140px container · 8px scale
+           · type scale 1.333 · semantic color law:
+           ink = reflection · dark teal = growth/action ·
+           light teal = brand mark only · coral = Sophy only
+           ============================================================ */
         :root {
-            /* Primary Brand Colors */
-            --primary-teal: #2A6972;
-            --secondary-teal: #89C9D4;
-            
-            /* Color Theory Expansions */
-            --deep-teal: #1E4B52;
-            --soft-teal: #B8E0E8;
-            --pale-teal: #E8F6F9;
-            --warm-teal: #4A9BA8;
-            
-            /* Complementary & Analogous Colors */
-            --sage-green: #7BB8A9;
-            --mint-white: #F0FDFA;
-            --ocean-blue: #5B9BD5;
-            --pearl-white: #FEFFFE;
-            --driftwood: #A8B5B3;
-            
-            /* Typography & Text */
-            --text-primary: #1A2B2E;
-            --text-secondary: #4A5B5E;
-            --text-muted: #748B8F;
-            --text-light: #A8B5B3;
-            
-            /* Backgrounds */
-            --bg-primary: linear-gradient(135deg, var(--mint-white) 0%, var(--pale-teal) 100%);
-            --bg-section: rgba(255, 255, 255, 0.7);
-            --bg-card: rgba(255, 255, 255, 0.9);
-            
-            /* Shadows & Effects */
-            --shadow-soft: 0 8px 32px rgba(42, 105, 114, 0.08);
-            --shadow-medium: 0 16px 64px rgba(42, 105, 114, 0.12);
-            --shadow-hover: 0 20px 80px rgba(42, 105, 114, 0.16);
-            
-            /* Fonts */
-            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-display: 'Crimson Text', Georgia, serif;
+            /* Canvas + ink */
+            --paper: #F6F9F8;
+            --ink: #111C1A;
+            --ink-tile: #16232A;
+            --card: #FFFFFF;
+
+            /* Teals */
+            --teal-dark: #2A6972;   /* growth / action */
+            --teal-ink: #2F8C99;    /* "Ink" wordmark + emphasis */
+            --teal-deep-hover: #225660;
+
+            /* Sophy only */
+            --coral: #D49489;
+            --coral-deep: #C2867D;
+
+            /* Text */
+            --text: #111C1A;
+            --text-muted: #54635F;
+            --text-on-dark: #EDF3F2;
+            --text-on-dark-muted: #B8C6C4;
+
+            /* Spacing scale (8px) */
+            --s1: 8px; --s2: 16px; --s3: 24px; --s4: 32px;
+            --s5: 40px; --s6: 48px; --s8: 64px; --s10: 80px; --s12: 96px;
+
+            /* Type scale 1.333: 15 → 20 → 27 → 36 → 48 → 64 */
+            --t-sm: 0.9375rem;
+            --t-body: 1.0625rem;
+            --t-lg: 1.25rem;
+            --t-h3: 1.6875rem;
+            --t-h2: 2.25rem;
+            --t-h1: 3rem;
+            --t-hero: 4rem;
+
+            --font-ui: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-serif: 'Newsreader', Georgia, serif;
+
+            --radius: 16px;
+            --radius-sm: 8px;
+            --shadow-card: 0 2px 8px rgba(17, 28, 26, 0.06), 0 8px 24px rgba(17, 28, 26, 0.05);
+            --shadow-lift: 0 4px 12px rgba(17, 28, 26, 0.08), 0 16px 40px rgba(17, 28, 26, 0.08);
         }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
         body {
-            font-family: var(--font-primary);
-            line-height: 1.7;
-            color: var(--text-primary);
-            overflow-x: hidden;
-            background: var(--bg-primary);
-            opacity: 1;
-        }
-        
-        /* Smooth Scroll */
-        html {
-            scroll-behavior: smooth;
-        }
-        
-        /* Container */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-        
-        /* Modern Navigation with Glass Effect */
-        .nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(42, 105, 114, 0.08);
-            z-index: 1000;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 32px rgba(42, 105, 114, 0.04);
-        }
-        
-        .nav.scrolled {
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 8px 32px rgba(42, 105, 114, 0.12);
-        }
-        
-        .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.25rem 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.875rem;
-            text-decoration: none;
-            color: var(--primary-teal);
-            transition: transform 0.3s ease;
-        }
-        
-        .logo:hover {
-            transform: scale(1.02);
-        }
-        
-        .logo-img {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            box-shadow: 0 4px 16px rgba(42, 105, 114, 0.15);
-            image-rendering: auto;
-            image-rendering: high-quality;
+            font-family: var(--font-ui);
+            font-size: var(--t-body);
+            line-height: 1.65;
+            color: var(--text);
+            background: var(--paper);
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
-        
-        .logo-text {
-            font-family: var(--font-display);
-            font-size: 1.75rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            background: linear-gradient(135deg, var(--primary-teal) 0%, var(--warm-teal) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+
+        .container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 var(--s3);
         }
-        
+
+        /* ---------- Type voices ---------- */
+        .serif { font-family: var(--font-serif); }
+        .eyebrow {
+            font-family: var(--font-ui);
+            font-size: 0.8125rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--teal-dark);
+        }
+        .you-italic { font-style: italic; color: var(--teal-dark); }
+
+        /* ---------- Nav ---------- */
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(246, 249, 248, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(17, 28, 26, 0.07);
+        }
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+        .brand-lockup {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+        .brand-tile {
+            width: 40px;
+            height: 40px;
+            border-radius: 9px; /* ≈22% of tile per §5.6.3 */
+            display: block;
+        }
+        .wordmark {
+            font-family: var(--font-serif);
+            font-optical-sizing: auto;
+            font-weight: 700;
+            font-size: 1.5rem;
+            line-height: 1;
+            letter-spacing: -0.01em;
+        }
+        .wordmark .wm-ink { color: var(--teal-ink); }
+        .wordmark .wm-well { color: var(--teal-dark); }
+
         .nav-links {
             display: flex;
-            gap: 2.5rem;
             align-items: center;
+            gap: var(--s4);
         }
-        
         .nav-link {
-            text-decoration: none;
-            color: var(--text-secondary);
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-            position: relative;
-            padding: 0.5rem 0;
-        }
-        
-        .nav-link:hover {
-            color: var(--primary-teal);
-            transform: translateY(-1px);
-        }
-        
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--primary-teal), var(--warm-teal));
-            transition: width 0.3s ease;
-        }
-        
-        .nav-link:hover::after {
-            width: 100%;
-        }
-        
-        .nav-cta {
-            background: linear-gradient(135deg, var(--primary-teal) 0%, var(--warm-teal) 100%);
-            color: white;
-            padding: 0.875rem 2rem;
-            border-radius: 50px;
-            text-decoration: none;
+            font-size: var(--t-sm);
             font-weight: 600;
-            font-size: 0.95rem;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 24px rgba(42, 105, 114, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .nav-cta::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-        
-        .nav-cta:hover::before {
-            left: 100%;
-        }
-        
-        .nav-cta:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 12px 32px rgba(42, 105, 114, 0.3);
-        }
-        
-        /* Revolutionary Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            position: relative;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(42, 105, 114, 0.06) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(137, 201, 212, 0.08) 0%, transparent 50%),
-                linear-gradient(135deg, var(--mint-white) 0%, var(--pale-teal) 100%);
-            overflow: hidden;
-        }
-        
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 80%;
-            height: 200%;
-            background: linear-gradient(45deg, 
-                rgba(42, 105, 114, 0.03) 0%, 
-                rgba(137, 201, 212, 0.05) 50%, 
-                transparent 100%);
-            border-radius: 50%;
-        }
-        
-        @keyframes heroFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-30px) rotate(5deg); }
-        }
-        
-        .hero-content {
-            display: grid;
-            grid-template-columns: 1fr 1.3fr;
-            gap: 2rem;
-            align-items: center;
-            min-height: 80vh;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .hero-text {
-            animation: slideInLeft 1s ease-out;
-        }
-        
-        @keyframes slideInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        .hero-text h1 {
-            font-family: var(--font-display);
-            font-size: clamp(3.5rem, 8vw, 7rem);
-            font-weight: 600;
-            line-height: 0.9;
-            letter-spacing: -0.03em;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, 
-                var(--primary-teal) 0%, 
-                var(--warm-teal) 40%, 
-                var(--ocean-blue) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            position: relative;
-        }
-        
-        .hero-tagline {
-            font-family: var(--font-display);
-            font-size: clamp(1.2rem, 3vw, 1.8rem);
-            font-style: italic;
-            color: var(--primary-teal);
-            margin-bottom: 1rem;
-            opacity: 0.9;
-            animation: fadeInUp 1s ease-out 0.3s both;
-        }
-        
-        .hero-subtitle {
-            font-family: var(--font-display);
-            font-size: clamp(1.3rem, 3.5vw, 2rem);
-            font-weight: 500;
-            line-height: 1.4;
-            color: var(--text-primary);
-            margin-bottom: 2rem;
-            max-width: 95%;
-            animation: fadeInUp 1s ease-out 0.4s both;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .hero-description {
-            font-size: clamp(1.1rem, 2.5vw, 1.4rem);
-            line-height: 1.7;
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-            max-width: 90%;
-            animation: fadeInUp 1s ease-out 0.7s both;
-            font-weight: 500;
-        }
-        
-        .hero-cta-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            animation: fadeInUp 1s ease-out 0.9s both;
-        }
-        
-        .cta-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-            background: linear-gradient(135deg, var(--primary-teal) 0%, var(--warm-teal) 100%);
-            color: white;
-            padding: 1.25rem 2.5rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 12px 40px rgba(42, 105, 114, 0.25);
-            position: relative;
-            overflow: hidden;
-            width: fit-content;
-        }
-        
-        .cta-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.6s;
-        }
-        
-        .cta-primary:hover::before {
-            left: 100%;
-        }
-        
-        .cta-primary:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 20px 60px rgba(42, 105, 114, 0.35);
-        }
-        
-        .cta-secondary {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-            color: var(--primary-teal);
-            padding: 1rem 2rem;
-            border: 2px solid var(--primary-teal);
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            width: fit-content;
-            background: transparent;
-        }
-        
-        .cta-secondary:hover {
-            background: var(--primary-teal);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(42, 105, 114, 0.2);
-        }
-        
-        .beta-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(42, 105, 114, 0.08);
-            color: var(--primary-teal);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            border: 1px solid rgba(42, 105, 114, 0.2);
-        }
-        
-        .beta-badge::before {
-            content: '✨';
-            font-size: 0.9rem;
-        }
-        
-        /* Modern Hero Visual - Desk Scene */
-        .hero-visual {
-            position: relative;
-            height: 600px;
-            display: flex;
-            align-items: stretch;
-            justify-content: stretch;
-            animation: slideInRight 1s ease-out 0.5s both;
-        }
-        
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        .desk-photo-scene {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            border-radius: 20px 0 0 0;
-            overflow: hidden;
-            box-shadow: 0 25px 50px rgba(42, 105, 114, 0.15);
-        }
-        
-        .desk-background {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: left center;
-            opacity: 1;
-            transform: scale(1);
-        }
-        
-        .logo-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 180px;
-            height: auto;
-            filter: drop-shadow(0 10px 25px rgba(42, 105, 114, 0.3));
-            animation: logoGentleFloat 6s ease-in-out infinite;
-            z-index: 10;
-            image-rendering: auto;
-            image-rendering: high-quality;
-            image-rendering: -webkit-optimize-contrast;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        
-        @keyframes logoGentleFloat {
-            0%, 100% { 
-                transform: translate(-50%, -50%) scale(1);
-                filter: drop-shadow(0 10px 25px rgba(42, 105, 114, 0.3));
-            }
-            50% { 
-                transform: translate(-50%, -50%) scale(1.05);
-                filter: drop-shadow(0 15px 35px rgba(42, 105, 114, 0.4));
-            }
-        }
-        
-        /* Floating Inspiration - Simplified */
-        .floating-inspiration {
-            position: absolute;
-            font-size: 1.5rem;
-            animation: inspirationFloat 8s ease-in-out infinite;
-            opacity: 0.6;
-            z-index: 5;
-        }
-        
-        .inspiration-1 {
-            top: 15%;
-            left: 15%;
-            animation-delay: 0s;
-        }
-        
-        .inspiration-2 {
-            top: 20%;
-            right: 20%;
-            animation-delay: 2.5s;
-        }
-        
-        .inspiration-3 {
-            bottom: 20%;
-            right: 15%;
-            animation-delay: 5s;
-        }
-        
-        @keyframes inspirationFloat {
-            0%, 100% { 
-                transform: translateY(0) rotate(0deg) scale(1);
-                opacity: 0.6;
-            }
-            33% { 
-                transform: translateY(-15px) rotate(10deg) scale(1.1);
-                opacity: 0.8;
-            }
-            66% { 
-                transform: translateY(-8px) rotate(-5deg) scale(0.95);
-                opacity: 0.7;
-            }
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .nav-container {
-                padding: 1rem;
-            }
-            
-            .nav-links {
-                display: none;
-            }
-            
-            .hero-content {
-                grid-template-columns: 1fr;
-                gap: 3rem;
-                text-align: center;
-            }
-            
-            .hero-visual {
-                height: 400px;
-                order: -1;
-            }
-            
-            .desk-photo-scene {
-                width: 350px;
-                height: 300px;
-            }
-            
-            .logo-overlay {
-                width: 140px;
-            }
-            
-            .floating-inspiration {
-                font-size: 1.2rem;
-            }
-            
-            .hero-cta-container {
-                align-items: center;
-            }
-        }
-        
-        /* Industry-Leading Features Section */
-        .features {
-            padding: 8rem 0;
-            background: 
-                radial-gradient(circle at 10% 20%, rgba(42, 105, 114, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 90% 80%, rgba(137, 201, 212, 0.05) 0%, transparent 50%),
-                linear-gradient(180deg, var(--mint-white) 0%, var(--pearl-white) 100%);
-            position: relative;
-        }
-        
-        .features-header {
-            text-align: center;
-            max-width: 800px;
-            margin: 0 auto 5rem;
-        }
-        
-        .section-title {
-            font-family: var(--font-display);
-            font-size: clamp(2.5rem, 5vw, 4rem);
-            font-weight: 600;
-            line-height: 1.2;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, 
-                var(--primary-teal) 0%, 
-                var(--warm-teal) 50%, 
-                var(--ocean-blue) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .section-subtitle {
-            font-size: clamp(1.1rem, 2.5vw, 1.4rem);
-            color: var(--text-secondary);
-            line-height: 1.6;
-            opacity: 0.9;
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2.5rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .feature-card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 2.5rem;
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(42, 105, 114, 0.08);
-            box-shadow: 0 8px 32px rgba(42, 105, 114, 0.06);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary-teal), var(--warm-teal));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .feature-card:hover::before {
-            opacity: 1;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 60px rgba(42, 105, 114, 0.15);
-            border-color: rgba(42, 105, 114, 0.2);
-        }
-        
-        .feature-icon {
-            font-size: 3.5rem;
-            margin-bottom: 1.5rem;
-            display: block;
-            animation: iconFloat 6s ease-in-out infinite;
-        }
-        
-        @keyframes iconFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .feature-card h3 {
-            font-family: var(--font-display);
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--primary-teal);
-            margin-bottom: 1rem;
-            line-height: 1.3;
-        }
-        
-        .feature-card p {
-            color: var(--text-secondary);
-            line-height: 1.6;
-            font-size: 1rem;
-        }
-        
-        /* Features Responsive */
-        @media (max-width: 768px) {
-            .features {
-                padding: 5rem 0;
-            }
-            
-            .features-grid {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-            
-            .feature-card {
-                padding: 2rem;
-            }
-        }
-        
-        /* Revolutionary Sophy AI Section */
-        .sophy-section {
-            padding: 8rem 0;
-            background: 
-                radial-gradient(circle at 80% 20%, rgba(42, 105, 114, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 20% 80%, rgba(91, 155, 213, 0.04) 0%, transparent 50%),
-                linear-gradient(135deg, var(--pale-teal) 0%, var(--mint-white) 50%, var(--pearl-white) 100%);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .sophy-section::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -20%;
-            width: 80%;
-            height: 200%;
-            background: linear-gradient(45deg, 
-                rgba(91, 155, 213, 0.02) 0%, 
-                rgba(42, 105, 114, 0.03) 50%, 
-                transparent 100%);
-            border-radius: 50%;
-            animation: sophyFloat 25s ease-in-out infinite;
-        }
-        
-        @keyframes sophyFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-40px) rotate(3deg); }
-        }
-        
-        .sophy-hero {
-            display: grid;
-            grid-template-columns: 1.1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-            margin-bottom: 6rem;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .sophy-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: linear-gradient(135deg, var(--ocean-blue), var(--primary-teal));
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 8px 24px rgba(91, 155, 213, 0.2);
-            animation: badgeGlow 3s ease-in-out infinite;
-        }
-        
-        @keyframes badgeGlow {
-            0%, 100% { box-shadow: 0 8px 24px rgba(91, 155, 213, 0.2); }
-            50% { box-shadow: 0 8px 32px rgba(91, 155, 213, 0.35); }
-        }
-        
-        .sophy-title {
-            font-family: var(--font-display);
-            font-size: clamp(3rem, 6vw, 5rem);
-            font-weight: 700;
-            line-height: 0.9;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, 
-                var(--ocean-blue) 0%, 
-                var(--primary-teal) 50%, 
-                var(--warm-teal) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .sophy-subtitle {
-            font-family: var(--font-display);
-            font-size: clamp(1.4rem, 3vw, 2rem);
-            color: var(--primary-teal);
-            margin-bottom: 2rem;
-            font-style: italic;
-            opacity: 0.9;
-        }
-        
-        .sophy-description {
-            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
-            line-height: 1.7;
-            color: var(--text-secondary);
-            margin-bottom: 3rem;
-            max-width: 95%;
-        }
-        
-        .sophy-stats {
-            display: flex;
-            gap: 2rem;
-            flex-wrap: wrap;
-        }
-        
-        .stat {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-        
-        .stat-number {
-            font-family: var(--font-display);
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--primary-teal);
-            line-height: 1;
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
             color: var(--text-muted);
-            font-weight: 500;
-        }
-        
-        /* Sophy Visual */
-        .sophy-visual {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .sophy-avatar {
-            position: relative;
-            margin-bottom: 2rem;
-        }
-        
-        .avatar-glow {
-            position: absolute;
-            top: -20px;
-            left: -20px;
-            right: -20px;
-            bottom: -20px;
-            background: radial-gradient(circle, rgba(91, 155, 213, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            animation: avatarPulse 4s ease-in-out infinite;
-        }
-        
-        @keyframes avatarPulse {
-            0%, 100% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.1); opacity: 1; }
-        }
-        
-        .avatar-main {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, var(--ocean-blue), var(--primary-teal));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 16px 48px rgba(91, 155, 213, 0.25);
-            z-index: 2;
-        }
-        
-        .avatar-emoji {
-            font-size: 3rem;
-            filter: brightness(1.2);
-        }
-        
-        .typing-indicator {
-            position: absolute;
-            bottom: -10px;
-            right: -10px;
-            background: white;
-            border-radius: 20px;
-            padding: 8px 12px;
-            display: flex;
-            gap: 4px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        }
-        
-        .dot {
-            width: 8px;
-            height: 8px;
-            background: var(--primary-teal);
-            border-radius: 50%;
-            animation: typingDot 1.5s ease-in-out infinite;
-        }
-        
-        .dot:nth-child(2) { animation-delay: 0.2s; }
-        .dot:nth-child(3) { animation-delay: 0.4s; }
-        
-        @keyframes typingDot {
-            0%, 60%, 100% { transform: scale(1); opacity: 0.7; }
-            30% { transform: scale(1.2); opacity: 1; }
-        }
-        
-        /* Chat Preview */
-        .sophy-chat-preview {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 1.5rem;
-            box-shadow: 0 16px 48px rgba(42, 105, 114, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            max-width: 350px;
-        }
-        
-        .chat-message {
-            margin-bottom: 1rem;
-        }
-        
-        .chat-message:last-child {
-            margin-bottom: 0;
-        }
-        
-        .message-bubble {
-            padding: 0.875rem 1.25rem;
-            border-radius: 18px;
-            font-size: 0.9rem;
-            line-height: 1.4;
-            position: relative;
-        }
-        
-        .sophy-message .message-bubble {
-            background: linear-gradient(135deg, var(--primary-teal), var(--warm-teal));
-            color: white;
-            margin-right: 2rem;
-        }
-        
-        .user-message .message-bubble {
-            background: rgba(255, 255, 255, 0.8);
-            color: var(--text-secondary);
-            margin-left: 2rem;
-            border: 1px solid rgba(42, 105, 114, 0.1);
-        }
-        
-        /* Capabilities Section */
-        .sophy-capabilities {
-            position: relative;
-            z-index: 2;
-        }
-        
-        .capabilities-title {
-            font-family: var(--font-display);
-            font-size: clamp(2rem, 4vw, 3rem);
-            text-align: center;
-            color: var(--primary-teal);
-            margin-bottom: 3rem;
-            font-weight: 600;
-        }
-        
-        .capabilities-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-        }
-        
-        .capability-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(42, 105, 114, 0.08);
-            box-shadow: 0 8px 32px rgba(42, 105, 114, 0.06);
-        }
-        
-        .capability-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 60px rgba(42, 105, 114, 0.15);
-        }
-        
-        .capability-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            display: block;
-        }
-        
-        .capability-card h4 {
-            font-family: var(--font-display);
-            font-size: 1.3rem;
-            color: var(--primary-teal);
-            margin-bottom: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .capability-card p {
-            color: var(--text-secondary);
-            line-height: 1.6;
-            font-size: 0.95rem;
-        }
-        
-        /* Sophy Responsive */
-        @media (max-width: 768px) {
-            .sophy-section {
-                padding: 5rem 0;
-            }
-            
-            .sophy-hero {
-                grid-template-columns: 1fr;
-                gap: 3rem;
-                text-align: center;
-            }
-            
-            .sophy-stats {
-                justify-content: center;
-            }
-            
-            .capabilities-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        /* Revolutionary Practitioners Section */
-        .practitioners-section {
-            padding: 8rem 0;
-            background: 
-                radial-gradient(circle at 30% 20%, rgba(42, 105, 114, 0.04) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(74, 155, 168, 0.05) 0%, transparent 50%),
-                linear-gradient(180deg, var(--pearl-white) 0%, var(--mint-white) 50%, var(--pale-teal) 100%);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .practitioners-section::before {
-            content: '';
-            position: absolute;
-            top: -30%;
-            right: -30%;
-            width: 60%;
-            height: 160%;
-            background: linear-gradient(45deg, 
-                rgba(74, 155, 168, 0.02) 0%, 
-                rgba(42, 105, 114, 0.04) 50%, 
-                transparent 100%);
-            border-radius: 50%;
-            animation: practitionersFloat 30s ease-in-out infinite;
-        }
-        
-        @keyframes practitionersFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-50px) rotate(-3deg); }
-        }
-        
-        .practitioners-hero {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-            margin-bottom: 6rem;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .practitioners-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: linear-gradient(135deg, var(--warm-teal), var(--primary-teal));
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 8px 24px rgba(74, 155, 168, 0.2);
-        }
-        
-        .practitioners-title {
-            font-family: var(--font-display);
-            font-size: clamp(2.5rem, 5vw, 4rem);
-            font-weight: 700;
-            line-height: 1.1;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, 
-                var(--primary-teal) 0%, 
-                var(--warm-teal) 50%, 
-                var(--sage-green) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .practitioners-subtitle {
-            font-family: var(--font-display);
-            font-size: clamp(1.3rem, 2.5vw, 1.8rem);
-            color: var(--primary-teal);
-            margin-bottom: 1.5rem;
-            font-style: italic;
-            opacity: 0.9;
-        }
-        
-        .practitioners-description {
-            font-size: clamp(1rem, 2vw, 1.2rem);
-            line-height: 1.7;
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-        }
-        
-        .practitioners-bridge {
-            font-size: clamp(1rem, 2vw, 1.2rem);
-            line-height: 1.7;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-        
-        /* Practitioners Visual */
-        .practitioners-visual {
-            position: relative;
-        }
-        
-        .practitioners-hero-image {
-            position: relative;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(42, 105, 114, 0.15);
-        }
-        
-        .practitioners-hero-image img {
-            width: 100%;
-            height: 400px;
-            object-fit: cover;
-            transition: transform 0.6s ease;
-        }
-        
-        .practitioners-hero-image:hover img {
-            transform: scale(1.05);
-        }
-        
-        .image-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-            padding: 2rem;
-        }
-        
-        .overlay-content {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-        
-        .trust-badge {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 0.75rem 1rem;
-            border-radius: 12px;
-            color: var(--primary-teal);
-            font-weight: 600;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        }
-        
-        .badge-icon {
-            font-size: 1.1rem;
-        }
-        
-        /* Practitioners Options */
-        .practitioners-options {
-            margin-bottom: 6rem;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .options-title {
-            font-family: var(--font-display);
-            font-size: clamp(2rem, 4vw, 3rem);
-            text-align: center;
-            color: var(--primary-teal);
-            margin-bottom: 3rem;
-            font-weight: 600;
-        }
-        
-        .options-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-        }
-        
-        .option-card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(42, 105, 114, 0.08);
-            box-shadow: 0 8px 32px rgba(42, 105, 114, 0.06);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .option-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary-teal), var(--warm-teal));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .option-card:hover::before {
-            opacity: 1;
-        }
-        
-        .option-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 60px rgba(42, 105, 114, 0.15);
-        }
-        
-        .option-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            display: block;
-        }
-        
-        .option-number {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, var(--primary-teal), var(--warm-teal));
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-        
-        .option-card h4 {
-            font-family: var(--font-display);
-            font-size: 1.3rem;
-            color: var(--primary-teal);
-            margin-bottom: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .option-card p {
-            color: var(--text-secondary);
-            line-height: 1.6;
-            font-size: 0.95rem;
-        }
-        
-        /* Practitioners Verification */
-        .practitioners-verification {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 3rem;
-            border: 1px solid rgba(42, 105, 114, 0.1);
-            box-shadow: 0 16px 48px rgba(42, 105, 114, 0.08);
-            position: relative;
-            z-index: 2;
-        }
-        
-        .verification-content {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 3rem;
-            align-items: center;
-        }
-        
-        .verification-badges {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        
-        .verification-badge {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 1rem 1.5rem;
-            border-radius: 16px;
-            color: var(--primary-teal);
-            font-weight: 600;
-            box-shadow: 0 4px 16px rgba(42, 105, 114, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .verification-badge:hover {
-            transform: translateX(5px);
-            box-shadow: 0 8px 24px rgba(42, 105, 114, 0.15);
-        }
-        
-        .verification-icon {
-            font-size: 1.5rem;
-        }
-        
-        .verification-text h3 {
-            font-family: var(--font-display);
-            font-size: clamp(1.8rem, 3vw, 2.5rem);
-            color: var(--primary-teal);
-            margin-bottom: 2rem;
-            font-weight: 600;
-        }
-        
-        .verification-details p {
-            color: var(--text-secondary);
-            line-height: 1.7;
-            margin-bottom: 1.5rem;
-            font-size: 1rem;
-        }
-        
-        .verification-details p:last-child {
-            margin-bottom: 0;
-        }
-        
-        .verification-details strong {
-            color: var(--primary-teal);
-            font-weight: 600;
-        }
-        
-        /* Practitioners Responsive */
-        @media (max-width: 768px) {
-            .practitioners-section {
-                padding: 5rem 0;
-            }
-            
-            .practitioners-hero {
-                grid-template-columns: 1fr;
-                gap: 3rem;
-                text-align: center;
-            }
-            
-            .practitioners-hero-image img {
-                height: 300px;
-            }
-            
-            .options-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .verification-content {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-                text-align: center;
-            }
-            
-            .practitioners-verification {
-                padding: 2rem;
-            }
-        }
-        
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-            padding-top: 80px;
-        }
-        
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                url('water-ripples-bg.jpg') repeat,
-                linear-gradient(135deg, rgba(137, 201, 212, 0.3) 0%, rgba(42, 105, 114, 0.2) 100%);
-            background-size: 800px 600px, cover;
-            background-position: 0 0, center;
-            opacity: 0.4;
-            z-index: -1;
-        }
-        
-        .hero-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-            width: 100%;
-        }
-        
-        .hero-text {
-            z-index: 2;
-        }
-        
-        .hero-subtitle {
-            color: var(--primary-teal);
-            font-weight: 600;
-            font-size: 1rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            margin-bottom: 1rem;
-            opacity: 0.9;
-        }
-        
-        .hero-title {
-            font-family: var(--font-display);
-            font-size: clamp(2.5rem, 5vw, 4rem);
-            font-weight: 400;
-            line-height: 1.2;
-            margin-bottom: 1.5rem;
-            color: var(--text-primary);
-        }
-        
-        .hero-title .accent {
-            color: var(--primary-teal);
-            font-style: italic;
-        }
-        
-        .hero-description {
-            font-size: 1.25rem;
-            color: var(--text-secondary);
-            margin-bottom: 2.5rem;
-            line-height: 1.6;
-        }
-        
-        .hero-cta {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-        
-        .btn-primary {
-            background: var(--primary-teal);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 50px;
             text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-soft);
+            transition: color 0.2s ease;
+        }
+        .nav-link:hover { color: var(--teal-dark); }
+        .btn {
+            display: inline-block;
+            font-family: var(--font-ui);
+            font-weight: 700;
+            font-size: var(--t-sm);
+            text-decoration: none;
+            border-radius: 100px;
+            padding: 12px 24px;
+            transition: background 0.2s ease, transform 0.2s ease;
             border: none;
             cursor: pointer;
         }
-        
-        .btn-primary:hover {
-            background: var(--deep-teal);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-hover);
+        .btn-primary {
+            background: var(--teal-dark);
+            color: #FFFFFF;
         }
-        
-        .btn-secondary {
-            color: var(--primary-teal);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            padding: 1rem 2rem;
-            border: 2px solid var(--primary-teal);
-            border-radius: 50px;
-            transition: all 0.3s ease;
+        .btn-primary:hover { background: var(--teal-deep-hover); transform: translateY(-1px); }
+        .btn-ghost {
             background: transparent;
+            color: var(--teal-dark);
+            border: 2px solid var(--teal-dark);
+            padding: 10px 22px;
         }
-        
-        .btn-secondary:hover {
-            background: var(--primary-teal);
-            color: white;
-            transform: translateY(-3px);
-        }
-        
-        .hero-visual {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: url('watercolor-teal-bg.png') center/cover;
-            border-radius: 20px;
-            overflow: hidden;
-            min-height: 400px;
-        }
-        
+        .btn-ghost:hover { background: rgba(42, 105, 114, 0.08); }
 
-        
-        .hero-image {
-            width: 100%;
-            max-width: 500px;
-            height: auto;
-            border-radius: 20px;
-            box-shadow: var(--shadow-medium);
-            transition: transform 0.3s ease;
+        /* ---------- Hero ---------- */
+        .hero { padding: var(--s12) 0 var(--s10); }
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 7fr 5fr;
+            gap: var(--s8);
+            align-items: center;
         }
-        
-        .hero-image:hover {
-            transform: scale(1.02);
+        .hero h1 {
+            font-family: var(--font-serif);
+            font-optical-sizing: auto;
+            font-weight: 700;
+            font-size: var(--t-hero);
+            line-height: 1.08;
+            letter-spacing: -0.015em;
+            color: var(--ink);
+            margin: var(--s3) 0 var(--s2);
         }
-        
-        /* Floating Elements */
-        .floating-element {
-            position: absolute;
-            opacity: 0.6;
-            animation: float 6s ease-in-out infinite;
+        .hero h1 .grow { color: var(--teal-dark); }
+        .hero-tagline {
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-size: var(--t-lg);
+            color: var(--text-muted);
+            margin-bottom: var(--s3);
         }
-        
-        .floating-1 {
-            top: 20%;
-            right: 10%;
-            animation-delay: 0s;
+        .hero-copy {
+            font-size: var(--t-body);
+            color: var(--text-muted);
+            max-width: 34em;
+            margin-bottom: var(--s4);
         }
-        
-        .floating-2 {
-            bottom: 30%;
-            left: 15%;
-            animation-delay: 2s;
+        .hero-ctas {
+            display: flex;
+            align-items: center;
+            gap: var(--s2);
+            flex-wrap: wrap;
+            margin-bottom: var(--s3);
         }
-        
-        .floating-3 {
-            top: 60%;
-            right: 25%;
-            animation-delay: 4s;
+        .store-badges {
+            display: flex;
+            align-items: center;
+            gap: var(--s2);
         }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+        .store-badges img { height: 48px; display: block; }
+        .store-badges .badge-play img { height: 72px; margin: -12px 0; } /* Google badge ships with built-in padding */
+
+        .hero-visual { text-align: center; }
+        .hero-mark-tile {
+            width: min(320px, 70%);
+            border-radius: 22%;
+            box-shadow: var(--shadow-lift);
         }
-        
-        /* Features Section */
-        .features {
-            padding: 6rem 0;
-            background: var(--bg-section);
-            backdrop-filter: blur(10px);
-            position: relative;
+        .hero-wordmark {
+            font-size: 2.5rem;
+            display: inline-block;
+            margin-top: var(--s3);
         }
-        
-        .features::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('watercolor-teal-bg.png') no-repeat center;
-            background-size: cover;
-            opacity: 0.15;
-            z-index: -1;
+
+        /* ---------- Section scaffolding ---------- */
+        section { padding: var(--s12) 0; }
+        .section-head { max-width: 720px; margin: 0 auto var(--s8); text-align: center; }
+        .section-head h2 {
+            font-family: var(--font-serif);
+            font-weight: 700;
+            font-size: var(--t-h2);
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+            margin: var(--s2) 0;
         }
-        
-        .section-header {
-            text-align: center;
-            margin-bottom: 4rem;
-        }
-        
-        .section-subtitle {
-            color: var(--primary-teal);
-            font-weight: 600;
-            font-size: 1rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            margin-bottom: 1rem;
-        }
-        
-        .section-title {
-            font-family: var(--font-display);
-            font-size: clamp(2rem, 4vw, 3rem);
-            font-weight: 400;
-            margin-bottom: 1.5rem;
-            color: var(--text-primary);
-        }
-        
-        .section-description {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-        
+        .section-head p { color: var(--text-muted); }
+
+        /* ---------- Features ---------- */
+        .features { background: var(--card); border-top: 1px solid rgba(17,28,26,0.06); border-bottom: 1px solid rgba(17,28,26,0.06); }
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--s3);
         }
-        
         .feature-card {
-            background: var(--bg-card);
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: var(--shadow-soft);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(42, 105, 114, 0.1);
+            background: var(--paper);
+            border: 1px solid rgba(17, 28, 26, 0.06);
+            border-radius: var(--radius);
+            padding: var(--s4);
         }
-        
-        .feature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-medium);
-        }
-        
         .feature-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--secondary-teal), var(--primary-teal));
-            border-radius: 15px;
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+            background: rgba(42, 105, 114, 0.10);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
+            margin-bottom: var(--s2);
         }
-        
-        .feature-title {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--text-primary);
-        }
-        
-        .feature-description {
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-        
-        /* About Section */
-        .about {
-            padding: 6rem 0;
-            background: var(--mint-white);
-            position: relative;
-        }
-        
-        .about::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                url('hawaii-aerial-beach.jpg') center/cover,
-                linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(137, 201, 212, 0.9) 100%);
-            background-blend-mode: overlay;
-            z-index: -1;
-        }
-        
-        .about-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-        }
-        
-        .about-text {
-            order: 2;
-        }
-        
-        .about-visual {
-            order: 1;
-            position: relative;
-        }
-        
-        .about-image {
-            width: 100%;
-            height: 400px;
-            object-fit: cover;
-            border-radius: 20px;
-            box-shadow: var(--shadow-medium);
-        }
-        
-        /* Stats Section */
-        .stats {
-            padding: 4rem 0;
-            background: var(--primary-teal);
-            color: white;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            text-align: center;
-        }
-        
-        .stat-item {
-            padding: 1.5rem;
-        }
-        
-        .stat-number {
-            font-size: 3rem;
+        .feature-icon svg { width: 22px; height: 22px; stroke: var(--teal-dark); }
+        .feature-card h3 {
+            font-family: var(--font-serif);
             font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: var(--secondary-teal);
+            font-size: var(--t-lg);
+            margin-bottom: var(--s1);
         }
-        
-        .stat-label {
-            font-size: 1.1rem;
-            opacity: 0.9;
+        .feature-card p { font-size: var(--t-sm); color: var(--text-muted); }
+        .plus-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: var(--teal-dark);
+            background: rgba(42, 105, 114, 0.10);
+            border-radius: 100px;
+            padding: 2px 10px;
+            margin-left: 6px;
+            vertical-align: middle;
         }
-        
-        /* Science Section */
-        .science {
-            padding: 6rem 0;
-            background: var(--bg-section);
-            position: relative;
-        }
-        
-        .science::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                url('watercolor-teal-bg.png') no-repeat center,
-                linear-gradient(135deg, rgba(247, 252, 253, 0.95) 0%, rgba(137, 201, 212, 0.1) 100%);
-            background-size: 80% auto, cover;
-            background-position: center, center;
-            opacity: 0.8;
-            z-index: -1;
-        }
-        
-        .science-content {
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        
-        .science-grid {
+
+        /* ---------- Sophy (dark band, coral = Sophy only) ---------- */
+        .sophy { background: var(--ink-tile); color: var(--text-on-dark); }
+        .sophy-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-        
-        .science-item {
-            background: var(--bg-card);
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: var(--shadow-soft);
-            text-align: left;
-        }
-        
-        .science-title {
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--primary-teal);
-        }
-        
-        .science-description {
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
-        }
-        
-        .science-reference {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            font-style: italic;
-        }
-        
-        /* CTA Section */
-        .cta-section {
-            padding: 6rem 0;
-            background: linear-gradient(135deg, var(--primary-teal), var(--deep-teal));
-            color: white;
-            text-align: center;
-        }
-        
-        .cta-content {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .cta-title {
-            font-family: var(--font-display);
-            font-size: clamp(2rem, 4vw, 3rem);
-            margin-bottom: 1.5rem;
-        }
-        
-        .cta-description {
-            font-size: 1.2rem;
-            margin-bottom: 2.5rem;
-            opacity: 0.9;
-            line-height: 1.6;
-        }
-        
-        .cta-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .cta-primary {
-            background: var(--secondary-teal);
-            color: var(--text-primary);
-            padding: 1rem 2rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-soft);
-        }
-        
-        .cta-primary:hover {
-            background: var(--soft-teal);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .cta-secondary {
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            padding: 1rem 2rem;
-            border: 2px solid white;
-            border-radius: 50px;
-            transition: all 0.3s ease;
-        }
-        
-        .cta-secondary:hover {
-            background: white;
-            color: var(--primary-teal);
-            transform: translateY(-3px);
-        }
-        
-        /* Footer */
-        .footer {
-            background: linear-gradient(135deg, var(--deep-teal) 0%, var(--primary-teal) 100%);
-            color: white;
-            padding: 4rem 0 2rem;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .footer::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(137, 201, 212, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
-            pointer-events: none;
-        }
-        
-        .footer-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 3rem;
-            margin-bottom: 2rem;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .footer-brand {
-            display: flex;
+            grid-template-columns: 6fr 6fr;
+            gap: var(--s8);
             align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
         }
-        
-        .footer-brand-img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
+        .sophy .eyebrow { color: var(--coral); }
+        .sophy h2 {
+            font-family: var(--font-serif);
+            font-weight: 700;
+            font-size: var(--t-h2);
+            line-height: 1.2;
+            margin: var(--s2) 0 var(--s3);
+            color: #FFFFFF;
         }
-        
-        .footer-brand-text {
-            font-family: var(--font-display);
-            font-size: 1.8rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #ffffff 0%, var(--secondary-teal) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .footer-description {
-            color: rgba(255, 255, 255, 0.8);
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-            font-size: 1rem;
-        }
-        
-        .footer-links {
+        .sophy p { color: var(--text-on-dark-muted); margin-bottom: var(--s2); }
+        .sophy-points { list-style: none; margin-top: var(--s3); }
+        .sophy-points li {
             display: flex;
-            flex-direction: column;
-            gap: 1rem;
+            gap: 12px;
+            align-items: flex-start;
+            padding: var(--s1) 0;
+            color: var(--text-on-dark);
+            font-size: var(--t-sm);
         }
-        
-        .footer-link {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            transition: all 0.3s ease;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid transparent;
-            font-weight: 500;
+        .sophy-points svg { flex: none; width: 18px; height: 18px; stroke: var(--coral); margin-top: 3px; }
+
+        .chat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: var(--radius);
+            padding: var(--s4);
         }
-        
-        .footer-link:hover {
-            color: var(--secondary-teal);
-            border-bottom-color: var(--secondary-teal);
-            transform: translateX(5px);
+        .chat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-on-dark-muted);
+            margin-bottom: var(--s3);
         }
-        
-        .footer-section-title {
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: var(--secondary-teal);
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
+        .bubble {
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: var(--s2);
+            font-size: var(--t-sm);
+            max-width: 90%;
         }
-        
-        .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            padding-top: 2rem;
-            text-align: center;
-            position: relative;
-            z-index: 2;
+        .bubble-user {
+            background: rgba(255, 255, 255, 0.09);
+            color: var(--text-on-dark);
+            margin-left: auto;
         }
-        
-        .footer-copyright {
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 0.5rem;
-            font-size: 0.95rem;
+        .bubble-sophy {
+            background: rgba(212, 148, 137, 0.16);
+            border: 1px solid rgba(212, 148, 137, 0.35);
+            color: #F2DED9;
+            font-family: var(--font-serif);
         }
-        
-        .footer-tagline {
-            color: var(--secondary-teal);
-            font-style: italic;
-            font-size: 0.9rem;
-            font-weight: 500;
+
+        /* ---------- Privacy ---------- */
+        .privacy { background: var(--card); border-top: 1px solid rgba(17,28,26,0.06); border-bottom: 1px solid rgba(17,28,26,0.06); }
+        .privacy-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--s3);
+            max-width: 960px;
+            margin: 0 auto;
         }
-        
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .nav-container {
-                padding: 1rem;
-            }
-            
-            .nav-links {
-                display: none;
-            }
-            
-            .hero-content {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-                text-align: center;
-            }
-            
-            .hero-visual {
-                order: -1;
-            }
-            
-            .about-content {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-            
-            .about-text {
-                order: 1;
-            }
-            
-            .about-visual {
-                order: 2;
-            }
-            
-            .footer-content {
-                grid-template-columns: 1fr;
-                text-align: center;
-                gap: 2rem;
-            }
-            
-            .footer-brand-section {
-                order: 1;
-            }
-            
-            .footer-section {
-                order: 2;
-            }
-            
-            .footer-links {
-                align-items: center;
-            }
-            
-            .cta-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .container {
-                padding: 0 1rem;
-            }
-            
-            /* Pricing Section Mobile */
-            .pricing-section {
-                padding: 80px 0;
-            }
-            
-            .pricing-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-                max-width: 400px;
-                margin: 0 auto;
-            }
-            
-            .pricing-card {
-                padding: 30px 20px;
-            }
-            
-            .pricing-card.featured {
-                transform: none;
-            }
-            
-            .pricing-card.featured:hover {
-                transform: translateY(-5px);
-            }
-            
-            .plan-badge {
-                right: 20px;
-                padding: 6px 15px;
-                font-size: 0.7rem;
-            }
-            
-            .plan-name {
-                font-size: 1.5rem;
-            }
-            
-            .price-amount {
-                font-size: 2.5rem;
-            }
-            
-            .plan-features {
-                margin: 25px 0;
-            }
-            
-            .feature-item {
-                font-size: 0.9rem;
-                margin-bottom: 10px;
-            }
-            
-            .plan-perfect-for,
-            .plan-pricing-details {
-                padding: 15px;
-                margin: 20px 0;
-            }
-            
-            .plan-cta {
-                padding: 14px 25px;
-                font-size: 1rem;
-            }
-            
-            .pricing-guarantee {
-                margin-top: 40px;
-                padding: 20px;
-            }
-            
-            /* FAQ Section Mobile */
-            .faq-section {
-                padding: 80px 0;
-            }
-            
-            .faq-item {
-                margin-bottom: 15px;
-                border-radius: 12px;
-            }
-            
-            .faq-question {
-                padding: 20px;
-            }
-            
-            .faq-question h3 {
-                font-size: 1rem;
-            }
-            
-            .faq-toggle {
-                font-size: 1.3rem;
-                margin-left: 15px;
-            }
-            
-            .faq-item.active .faq-answer {
-                padding: 0 20px 20px;
-            }
-            
-            .faq-answer p {
-                font-size: 0.9rem;
-            }
+        .privacy-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            font-size: var(--t-sm);
+            color: var(--text-muted);
         }
-        
-        /* Accessibility */
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
-        
-        /* Focus styles */
-        .btn-primary:focus,
-        .btn-secondary:focus,
-        .nav-cta:focus,
-        .nav-link:focus {
-            outline: 2px solid var(--secondary-teal);
-            outline-offset: 2px;
-        }
-        
-        /* Pricing Section */
-        .pricing-section {
-            padding: 120px 0;
-            background: linear-gradient(135deg, rgba(42, 105, 114, 0.03), rgba(217, 242, 245, 0.05));
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .pricing-section::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(42, 105, 114, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(217, 242, 245, 0.1) 0%, transparent 50%);
-            animation: rotate 30s linear infinite;
-            z-index: 1;
-        }
-        
-        .pricing-header {
-            text-align: center;
-            margin-bottom: 80px;
-            position: relative;
-            z-index: 2;
-        }
-        
+        .privacy-item svg { flex: none; width: 20px; height: 20px; stroke: var(--teal-dark); margin-top: 2px; }
+        .privacy-item strong { color: var(--text); display: block; margin-bottom: 2px; }
+
+        /* ---------- Pricing ---------- */
         .pricing-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(300px, 380px));
+            grid-template-columns: repeat(2, minmax(0, 440px));
+            gap: var(--s3);
             justify-content: center;
-            gap: 30px;
-            max-width: 1400px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 2;
         }
-        
-        .pricing-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(42, 105, 114, 0.1);
-            border-radius: 24px;
-            padding: 40px;
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
+        .price-card {
+            background: var(--card);
+            border: 1px solid rgba(17, 28, 26, 0.08);
+            border-radius: var(--radius);
+            padding: var(--s5);
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
         }
-        
-        .pricing-card::before {
-            content: '';
+        .price-card.featured { border: 2px solid var(--teal-dark); position: relative; }
+        .plan-flag {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary-teal), var(--warm-teal));
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-        
-        .pricing-card:hover::before {
-            transform: scaleX(1);
-        }
-        
-        .pricing-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 30px 60px rgba(42, 105, 114, 0.15);
-            border-color: rgba(42, 105, 114, 0.2);
-        }
-        
-        .pricing-card.featured {
-            border: 2px solid #D49489;
-            transform: scale(1.05);
-            box-shadow: 0 20px 40px rgba(212, 148, 137, 0.25);
-        }
-        
-        .pricing-card.featured:hover {
-            transform: scale(1.05) translateY(-10px);
-            box-shadow: 0 30px 60px rgba(212, 148, 137, 0.3);
-        }
-        
-        .plan-badge {
-            position: absolute;
-            top: -1px;
-            right: 30px;
-            background: linear-gradient(135deg, #D49489, #C2867D);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 0 0 12px 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--teal-dark);
+            color: #FFFFFF;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            border-radius: 100px;
+            padding: 4px 16px;
         }
-        
-        .plan-header {
-            margin-bottom: 30px;
-        }
-        
         .plan-name {
-            font-size: 1.8rem;
+            font-family: var(--font-serif);
             font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 10px;
+            font-size: var(--t-h3);
         }
-        
-        .plan-subtitle {
-            font-size: 1rem;
-            color: var(--primary-teal);
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-        
         .plan-price {
-            display: flex;
-            align-items: baseline;
-            justify-content: center;
-            margin: 20px 0;
-        }
-        
-        .price-amount {
-            font-size: 3rem;
-            font-weight: 800;
-            color: var(--primary-teal);
-            line-height: 1;
-        }
-        
-        .price-period {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            margin-left: 5px;
-        }
-        
-        .price-yearly {
-            font-size: 0.9rem;
-            color: var(--primary-teal);
-            font-weight: 600;
-            margin-top: 5px;
-        }
-        
-        .plan-description {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-        }
-        
-        .plan-details {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-top: 15px;
-            text-align: left;
-        }
-        
-        .plan-features {
-            margin: 30px 0;
-            text-align: left;
-        }
-        
-        .feature-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-            font-size: 0.95rem;
-        }
-        
-        .feature-check {
-            margin-right: 12px;
-            font-size: 1rem;
-        }
-        
-        .plan-perfect-for {
-            background: rgba(42, 105, 114, 0.05);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 30px 0;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            text-align: left;
-        }
-        
-        .plan-pricing-details {
-            background: rgba(217, 242, 245, 0.3);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 30px 0;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            text-align: left;
-        }
-        
-        .plan-cta {
-            width: 100%;
-            padding: 16px 30px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .basic-cta {
-            background: transparent;
-            border: 2px solid var(--primary-teal);
-            color: var(--primary-teal);
-        }
-        
-        .basic-cta:hover {
-            background: var(--primary-teal);
-            color: white;
-            transform: translateY(-2px);
-        }
-        
-        .plus-cta {
-            background: transparent;
-            border: 2px solid #D49489;
-            color: #D49489;
-        }
-        
-        .plus-cta:hover {
-            background: linear-gradient(135deg, #D49489, #C2867D);
-            color: white;
-            border-color: #D49489;
-            transform: translateY(-2px);
-        }
-        
-        .connect-cta, .pro-cta {
-            background: transparent;
-            border: 2px solid #805AD5;
-            color: #805AD5;
-        }
-        
-        .connect-cta:hover, .pro-cta:hover {
-            background: linear-gradient(135deg, #805AD5, #6B46C1);
-            color: white;
-            border-color: #805AD5;
-            transform: translateY(-2px);
-        }
-        
-        .pricing-guarantee {
-            text-align: center;
-            margin-top: 60px;
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .pricing-guarantee p {
-            margin: 10px 0;
-            color: var(--text-secondary);
-        }
-        
-        .pricing-guarantee a {
-            color: var(--primary-teal);
-            text-decoration: none;
-            font-weight: 600;
-        }
-        
-        .pricing-guarantee a:hover {
-            text-decoration: underline;
-        }
-        
-        /* Pro Plan Landscape Layout */
-        .pro-plan-landscape {
-            margin-top: 40px;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .pro-plan-content {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
-            backdrop-filter: blur(20px);
-            border: 2px solid var(--primary-teal);
-            border-radius: 24px;
-            padding: 40px;
-            display: grid;
-            grid-template-columns: 1fr 1.2fr 1fr;
-            gap: 40px;
-            align-items: start;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .pro-plan-content::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary-teal), var(--warm-teal), var(--ocean-blue));
-        }
-        
-        .pro-plan-content:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 25px 50px rgba(42, 105, 114, 0.2);
-        }
-        
-        .pro-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, var(--primary-teal), var(--warm-teal));
-            color: white;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 15px;
-        }
-        
-        .pro-title {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-        
-        .pro-subtitle {
-            font-size: 1.1rem;
-            color: var(--primary-teal);
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-        
-        .pro-description {
-            color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
-        
-        .pro-pricing {
-            background: rgba(42, 105, 114, 0.05);
-            border-radius: 12px;
-            padding: 20px;
-        }
-        
-        .pricing-model {
+            margin: var(--s2) 0;
             display: flex;
             align-items: baseline;
             gap: 8px;
-            margin-bottom: 8px;
         }
-        
-        .pricing-label {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-        
-        .pricing-amount {
-            font-size: 1.8rem;
+        .plan-price .amount {
+            font-family: var(--font-serif);
             font-weight: 700;
-            color: var(--primary-teal);
+            font-size: var(--t-h1);
+            line-height: 1;
         }
-        
-        .pricing-per {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-        
-        .pricing-note {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin: 0;
-            font-style: italic;
-        }
-        
-        .features-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .pro-features-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .pro-feature {
+        .plan-price .period { color: var(--text-muted); font-size: var(--t-sm); }
+        .plan-sub { color: var(--text-muted); font-size: var(--t-sm); margin-bottom: var(--s3); }
+        .plan-list { list-style: none; margin-bottom: var(--s4); }
+        .plan-list li {
             display: flex;
-            align-items: center;
             gap: 10px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
+            align-items: flex-start;
+            padding: 6px 0;
+            font-size: var(--t-sm);
         }
-        
-        .pro-feature .feature-icon {
-            font-size: 1.1rem;
-        }
-        
-        .pro-perfect-for {
-            background: rgba(217, 242, 245, 0.3);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-        }
-        
-        .pro-perfect-for h4 {
-            margin: 0 0 12px 0;
-            font-size: 1.1rem;
-            color: var(--text-primary);
-        }
-        
-        .pro-perfect-for ul {
-            margin: 0;
-            padding-left: 20px;
-            list-style: none;
-        }
-        
-        .pro-perfect-for li {
-            position: relative;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-        
-        .pro-perfect-for li::before {
-            content: '✓';
-            position: absolute;
-            left: -20px;
-            color: var(--primary-teal);
-            font-weight: bold;
-        }
-        
-        .pro-cta-button {
-            width: 100%;
-            background: linear-gradient(135deg, var(--primary-teal), var(--warm-teal));
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 16px 24px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
-        }
-        
-        .pro-cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(42, 105, 114, 0.3);
-        }
-        
-        .pro-contact-note {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
+        .plan-list svg { flex: none; width: 18px; height: 18px; stroke: var(--teal-dark); margin-top: 3px; }
+        .price-card .btn { margin-top: auto; text-align: center; }
+        .pricing-note {
             text-align: center;
-            margin: 0;
-            line-height: 1.4;
+            color: var(--text-muted);
+            font-size: var(--t-sm);
+            margin-top: var(--s4);
         }
-        
-        /* Mobile Responsive for Pro Plan */
-        @media (max-width: 768px) {
-            .pro-plan-content {
-                grid-template-columns: 1fr;
-                gap: 30px;
-                padding: 30px 20px;
-            }
-            
-            .pro-title {
-                font-size: 1.8rem;
-            }
-            
-            .pro-features-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-            
-            .pro-feature {
-                font-size: 0.85rem;
-            }
-        }
-        
-        /* FAQ Section */
-        .faq-section {
-            padding: 120px 0;
-            background: rgba(255, 255, 255, 0.5);
-        }
-        
-        .faq-header {
-            text-align: center;
-            margin-bottom: 80px;
-        }
-        
-        .faq-grid {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
+        .pricing-note a { color: var(--teal-dark); }
+
+        /* ---------- FAQ ---------- */
+        .faq-list { max-width: 720px; margin: 0 auto; }
         .faq-item {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(42, 105, 114, 0.1);
-            border-radius: 16px;
-            margin-bottom: 20px;
+            background: var(--card);
+            border: 1px solid rgba(17, 28, 26, 0.07);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--s2);
             overflow: hidden;
-            transition: all 0.3s ease;
         }
-        
-        .faq-item:hover {
-            border-color: rgba(42, 105, 114, 0.2);
-            box-shadow: 0 10px 30px rgba(42, 105, 114, 0.1);
-        }
-        
-        .faq-question {
+        .faq-q {
+            width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 25px 30px;
+            gap: var(--s2);
+            padding: var(--s3);
+            background: none;
+            border: none;
             cursor: pointer;
-            transition: all 0.3s ease;
+            font-family: var(--font-ui);
+            font-size: var(--t-body);
+            font-weight: 700;
+            color: var(--text);
+            text-align: left;
         }
-        
-        .faq-question:hover {
-            background: rgba(42, 105, 114, 0.02);
+        .faq-q .faq-mark {
+            flex: none;
+            font-family: var(--font-serif);
+            font-size: var(--t-lg);
+            color: var(--teal-dark);
+            transition: transform 0.2s ease;
         }
-        
-        .faq-question h3 {
-            margin: 0;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            flex: 1;
-        }
-        
-        .faq-toggle {
-            font-size: 1.5rem;
-            font-weight: 300;
-            color: var(--primary-teal);
-            transition: transform 0.3s ease;
-            margin-left: 20px;
-        }
-        
-        .faq-item.active .faq-toggle {
-            transform: rotate(45deg);
-        }
-        
-        .faq-answer {
+        .faq-item.open .faq-mark { transform: rotate(45deg); }
+        .faq-a {
             max-height: 0;
             overflow: hidden;
-            transition: all 0.3s ease;
-            background: rgba(217, 242, 245, 0.1);
+            transition: max-height 0.25s ease;
         }
-        
-        .faq-item.active .faq-answer {
-            max-height: 200px;
-            padding: 0 30px 25px;
+        .faq-a p {
+            padding: 0 var(--s3) var(--s3);
+            color: var(--text-muted);
+            font-size: var(--t-sm);
         }
-        
-        .faq-answer p {
-            margin: 15px 0 0;
-            color: var(--text-secondary);
-            line-height: 1.6;
+
+        /* ---------- Closing CTA ---------- */
+        .closing { background: var(--ink-tile); color: var(--text-on-dark); text-align: center; }
+        .closing h2 {
+            font-family: var(--font-serif);
+            font-weight: 700;
+            font-size: var(--t-h2);
+            color: #FFFFFF;
+            max-width: 18em;
+            margin: 0 auto var(--s2);
+            line-height: 1.25;
         }
-        
-        .faq-answer a {
-            color: var(--primary-teal);
+        .closing p { color: var(--text-on-dark-muted); max-width: 36em; margin: 0 auto var(--s4); }
+        .closing .store-badges { justify-content: center; margin-top: var(--s4); }
+
+        /* ---------- Footer ---------- */
+        .footer {
+            background: var(--paper);
+            padding: var(--s8) 0 var(--s5);
+            border-top: 1px solid rgba(17, 28, 26, 0.07);
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 5fr 3fr 4fr;
+            gap: var(--s6);
+            margin-bottom: var(--s6);
+        }
+        .footer-desc { color: var(--text-muted); font-size: var(--t-sm); margin-top: var(--s2); max-width: 30em; }
+        .footer h4 {
+            font-size: 0.8125rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text);
+            margin-bottom: var(--s2);
+        }
+        .footer-links { display: flex; flex-direction: column; gap: 10px; }
+        .footer-links a {
+            color: var(--text-muted);
+            font-size: var(--t-sm);
             text-decoration: none;
-            font-weight: 600;
         }
-        
-        .faq-answer a:hover {
-            text-decoration: underline;
+        .footer-links a:hover { color: var(--teal-dark); }
+        .footer-bottom {
+            border-top: 1px solid rgba(17, 28, 26, 0.07);
+            padding-top: var(--s3);
+            display: flex;
+            justify-content: space-between;
+            gap: var(--s2);
+            flex-wrap: wrap;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 900px) {
+            :root { --t-hero: 2.8rem; --t-h2: 1.875rem; }
+            .hero-grid, .sophy-grid { grid-template-columns: 1fr; gap: var(--s6); }
+            .hero-visual { order: -1; }
+            .hero-mark-tile { width: min(200px, 50%); }
+            .features-grid, .privacy-grid { grid-template-columns: 1fr 1fr; }
+            .pricing-grid { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr; gap: var(--s4); }
+            .nav-links .nav-link { display: none; }
+        }
+        @media (max-width: 560px) {
+            .features-grid, .privacy-grid { grid-template-columns: 1fr; }
+            section { padding: var(--s8) 0; }
         }
     </style>
 </head>
 <body>
-    <!-- Premium Navigation -->
-    <nav class="nav" id="navbar">
-        <div class="nav-container">
-            <a href="#" class="logo">
-                <img src="InkWell-Logo.png" alt="InkWell" class="logo-img">
-                <span class="logo-text">InkWell</span>
+
+    <!-- Nav -->
+    <nav class="nav">
+        <div class="container nav-inner">
+            <a href="#" class="brand-lockup" aria-label="InkWell home">
+                <img src="inkwell-icon-512.png" alt="" class="brand-tile">
+                <span class="wordmark"><span class="wm-ink">Ink</span><span class="wm-well">Well</span></span>
             </a>
             <div class="nav-links">
                 <a href="#features" class="nav-link">Features</a>
-                <a href="#sophy" class="nav-link">Meet Sophy</a>
+                <a href="#sophy" class="nav-link">Sophy</a>
                 <a href="#pricing" class="nav-link">Pricing</a>
+                <a href="/practitioners.html" class="nav-link">For Practitioners</a>
                 <a href="/support.html" class="nav-link">Support</a>
-                <a href="/app.html" class="nav-cta">Get Started Free</a>
+                <a href="/app.html" class="btn btn-primary">Open InkWell</a>
             </div>
         </div>
     </nav>
 
-    <!-- Revolutionary Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <div class="hero-text">
-                    <h1>InkWell</h1>
-                    <p class="hero-tagline">For the Thinkers and the Forgetters.</p>
-                    <p class="hero-description">
-                        Transform thoughts → insights → action with our science-backed digital journaling and manifesting app. Get AI-powered support from "Sophy" for growth that creates real change.
-                    </p>
-                    <div class="hero-cta-container">
-                        <a href="/app.html" class="cta-primary">
-                       Start Journaling Free
+    <!-- Hero -->
+    <header class="hero">
+        <div class="container hero-grid">
+            <div>
+                <p class="eyebrow">A Journal That Learns <span class="you-italic">You</span></p>
+                <h1>Stop re&#8209;reading your life. <span class="grow">Start growing from it.</span></h1>
+                <p class="hero-tagline">For the Thinkers and the Forgetters.</p>
+                <p class="hero-copy">
+                    InkWell is a journal for people who think in circles, forget what they
+                    figured out last month, and want a place that holds all of it without
+                    judgment. Write it down. Say it out loud. Search for the thing you know
+                    you wrote but can't remember when.
+                </p>
+                <div class="hero-ctas">
+                    <a href="/app.html" class="btn btn-primary">Start writing free</a>
+                    <div class="store-badges">
+                        <a href="https://apps.apple.com/app/id6755095548" aria-label="Download on the App Store">
+                            <img src="Download_on_the_App_Store_Badge_US-UK_RGB_blk_092917.svg" alt="Download on the App Store">
                         </a>
-                
-                    </div>
-                </div>
-                <div class="hero-visual">
-                    <div class="desk-photo-scene">
-                        <!-- Desk background photo -->
-                        <img src="hero-journal-desk.png" alt="Elegant desk workspace" class="desk-background" />
-                        
+                        <a href="https://play.google.com/store/apps/details?id=com.inkwellmobile" class="badge-play" aria-label="Get it on Google Play">
+                            <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play">
+                        </a>
                     </div>
                 </div>
             </div>
+            <div class="hero-visual">
+                <img src="inkwell-icon-512.png" alt="InkWell mark" class="hero-mark-tile">
+                <div class="wordmark hero-wordmark" aria-hidden="true"><span class="wm-ink">Ink</span><span class="wm-well">Well</span></div>
+            </div>
         </div>
-    </section>
+    </header>
 
-    <!-- Industry-Leading Features Section -->
+    <!-- Features -->
     <section class="features" id="features">
         <div class="container">
-            <div class="features-header">
-                <h2 class="section-title">Life is messy. InkWell holds your thinking and gives you back insight.</h2>
-                <p class="section-subtitle">Science-backed tools designed with neurodivergent-friendly principles</p>
+            <div class="section-head">
+                <p class="eyebrow">What's Inside</p>
+                <h2>Life is messy. InkWell holds your thinking and gives you back insight.</h2>
+                <p>Every capture mode is free. The intelligence layer is there when you want more.</p>
             </div>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">🧠</div>
-                    <h3>AI-Powered Insights</h3>
-                    <p>Sophy, your AI wellness coach, provides personalized prompts and insights based on positive psychology principles.</p>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+                    </div>
+                    <h3>Write however it comes out</h3>
+                    <p>Type it, or just talk. InkOutLoud turns your voice into a clean, readable entry automatically, so a thought caught on a walk doesn't die on a blank page later.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🎯</div>
-                    <h3>WISH Goal Tracking</h3>
-                    <p>Track your "Wants, Imagination, Snags, and How" with our evidence-based progress system.</p>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
+                    </div>
+                    <h3>Ask your journal anything</h3>
+                    <p>Search by meaning, not just keywords. Ask "when did I feel most like myself this year" and InkWell finds the entries that answer it. <span class="plus-tag">Plus</span></p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
-                    <h3>Privacy First</h3>
-                    <p>Your thoughts are yours. Bank-grade encryption ensures your entries remain completely private.</p>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C7 7 5 10.5 5 14a7 7 0 0 0 14 0c0-3.5-2-7-7-12z"></path></svg>
+                    </div>
+                    <h3>Gratitude that doesn't go flat</h3>
+                    <p>Five distinct, research-cited gratitude practices on rotation, so the practice keeps working instead of becoming background noise.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">♿</div>
-                    <h3>Neurodivergent-Friendly</h3>
-                    <p>Clean, intuitive interface designed for focus and clarity, perfect for ADHD and neurodiverse minds.</p>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"></path><path d="M3 4v5h5"></path><path d="M12 7v5l3 3"></path></svg>
+                    </div>
+                    <h3>Quick capture and longer Sprints</h3>
+                    <p>InkBlot is for the fast thought you don't want to lose. Sprints are timed, uninterrupted writing sessions for thinking something all the way through.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3>Growth Analytics</h3>
-                    <p>Visualize your progress with mood tracking, reflection patterns, and personal growth metrics.</p>
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="M7 22l-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg>
+                    </div>
+                    <h3>See the other side</h3>
+                    <p>Reframe walks you through a short, structured practice for looking at a hard moment from a different angle, in your own words.</p>
                 </div>
-            </div>
-        </div>
-    </section>
-      
-
-
-    <!-- Revolutionary Sophy AI Section -->
-    <section class="sophy-section" id="sophy">
-        <div class="container">
-            <div class="sophy-hero">
-                <div class="sophy-content">
-                    <div class="sophy-badge">🤖 Powered by Advanced AI</div>
-                    <h2 class="sophy-title">Meet Sophy</h2>
-                    <h3 class="sophy-subtitle">Your Compassionate AI Wellness Guide</h3>
-                    <p class="sophy-description">
-                        Sophy isn't just another chatbot. She's your personal wellness companion, trained on evidence-based psychology principles and designed to understand your unique journey. Available 24/7, Sophy provides personalized insights that evolve with you.
-                    </p>
-                    <div class="sophy-stats">
-                        <div class="stat">
-                            <span class="stat-number">10,000+</span>
-                            <span class="stat-label">Psychology Insights</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-number">24/7</span>
-                            <span class="stat-label">Available Support</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-number">100%</span>
-                            <span class="stat-label">Personalized</span>
-                        </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"></path><path d="M5 9l7-7 7 7"></path><path d="M5 22V12h14v10"></path><path d="M9 22v-6h6v6"></path></svg>
                     </div>
+                    <h3>Goals built from what you value</h3>
+                    <p>WISH is a values-based goal method. Sort what matters to you, name a goal that grows out of it, and get a plan with a realistic runway instead of a vague resolution.</p>
                 </div>
-                <div class="sophy-visual">
-                    <div class="sophy-avatar">
-                        <div class="avatar-glow"></div>
-                        <div class="avatar-main">
-                            <span class="avatar-emoji">🧠</span>
-                        </div>
-                        <div class="typing-indicator">
-                            <div class="dot"></div>
-                            <div class="dot"></div>
-                            <div class="dot"></div>
-                        </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg>
                     </div>
-                    <div class="sophy-chat-preview">
-                        <div class="chat-message sophy-message">
-                            <div class="message-bubble">
-                                "I notice you've been reflecting on growth lately. What's one small step you could take today toward that goal?"
-                            </div>
-                        </div>
-                        <div class="chat-message user-message">
-                            <div class="message-bubble">
-                                "Maybe I could start with a 5-minute morning routine..."
-                            </div>
-                        </div>
-                        <div class="chat-message sophy-message">
-                            <div class="message-bubble">
-                                "That's a beautiful start! Small, consistent actions create lasting change. What would make this routine feel nurturing to you?"
-                            </div>
-                        </div>
-                    </div>
+                    <h3>See your year, not just your day</h3>
+                    <p>Browse entries on a calendar, and get weekly and monthly insight summaries that connect dots across time <span class="plus-tag">Plus</span></p>
                 </div>
-            </div>
-            
-            <div class="sophy-capabilities">
-                <h3 class="capabilities-title">How Sophy Transforms Your Journaling</h3>
-                <div class="capabilities-grid">
-                    <div class="capability-card">
-                        <div class="capability-icon">💡</div>
-                        <h4>Insight Recognition</h4>
-                        <p>Identifies patterns in your thoughts and helps you recognize breakthrough moments and growth opportunities.</p>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
                     </div>
-                    <div class="capability-card">
-                        <div class="capability-icon">🌱</div>
-                        <h4>Growth Coaching</h4>
-                        <p>Provides evidence-based strategies and gentle guidance to help you build positive habits and sustain progress.</p>
+                    <h3>A simple, optional check-in</h3>
+                    <p>FeelCheck is a 1-to-5 rating you can attach before and after a practice if you want to notice a shift. Optional, never required, never a score.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
                     </div>
-                    <div class="capability-card">
-                        <div class="capability-icon">🎯</div>
-                        <h4>Goal Alignment</h4>
-                        <p>Helps you clarify values, set meaningful goals, and maintain focus on what truly matters to your wellbeing.</p>
-                    </div>
+                    <h3>Share on your terms</h3>
+                    <p>Generate a Practice Summary you can choose to share with a therapist or anyone you trust. Built from usage patterns, never the content of what you wrote.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Pricing Section -->
-    <section class="pricing-section" id="pricing">
-        <div class="container">
-            <div class="pricing-header">
-                <h2 class="section-title">Choose Your InkWell Plan</h2>
-                <p class="section-subtitle">Start your wellness journey with the plan that fits your needs. Upgrade or downgrade anytime.</p>
-            </div>
-            
-            <!-- Key Stats -->
-            <div class="beta-community-stats" style="text-align: center; margin: 3rem 0;">
-                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; justify-content: center; max-width: 800px; margin: 0 auto;">
-                
-                    <div class="stat">
-                        <div class="stat-number">7 Days</div>
-                        <div class="stat-label">Free Plus Trial</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number">24/7</div>
-                        <div class="stat-label">Available Access</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number">100%</div>
-                        <div class="stat-label">Privacy Protected</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="pricing-grid">
-                <!-- Basic Plan -->
-                <div class="pricing-card basic-plan">
-                    <div class="plan-header">
-                        <h3 class="plan-name">InkWell Basic</h3>
-                        <div class="plan-price">
-                            <span class="price-amount">FREE</span>
-                            <span class="price-period">Forever</span>
-                        </div>
-                        <p class="plan-description">Get started with AI-powered journaling</p>
-                    </div>
-                    
-                    <div class="plan-features">
-                        <div class="feature-item">
-                            <span class="feature-check">✅</span>
-                            <span>Unlimited journaling</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="feature-check">✅</span>
-                            <span>25 AI prompts per month from Sophy</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="feature-check">✅</span>
-                            <span>90-day data retention</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="feature-check">✅</span>
-                            <span>100MB file storage</span>
-                        </div>
-                    </div>
-                     <div class="feature-item">
-                            <span class="feature-check">✅</span>
-                            <span>7 Day Free Trial</span>
-                        </div>
-                    <div class="plan-perfect-for">
-                        <strong>Perfect for:</strong> First-time journalers and those exploring digital wellness tools
-                    </div>
-                    
-                    <button class="plan-cta basic-cta" onclick="window.location.href='/app.html'">Get Started Free</button>
-                </div>
-                
-                <!-- Plus Plan -->
-                <div class="pricing-card plus-plan featured">
-                    <div class="plan-badge">Most Popular</div>
-                    <div class="plan-header">
-                        <h3 class="plan-name">InkWell Plus</h3>
-                        <div class="plan-price">
-                            <span class="price-amount">$6.99</span>
-                            <span class="price-period">/month</span>
-                        </div>
-                        <div class="price-yearly">or $49.99/year (save 40%)</div>
-                        <p class="plan-description">Unlock your full potential with unlimited insights</p>
-                    </div>
-                    
-                    <div class="plan-features">
-                        <div class="feature-item">
-                            <span class="feature-check">✅</span>
-                            <span>Everything in Basic</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="feature-check">✅</span>
-                            <span>Unlimited AI insights from Sophy</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="feature-check">✅</span>
-                            <span>Weekly insights emails</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="feature-check">✅</span>
-                            <span>Unlimited data retention</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="feature-check">✅</span>
-                            <span>1GB file storage</span>
-                        </div>
-    
-                        <div class="feature-item">
-                            <span class="feature-check">✅</span>
-                            <span>Priority support</span>
-                        </div>
-                    </div>
-                    
-                    <div class="plan-perfect-for">
-                        <strong>Perfect for:</strong> Serious journalers ready to accelerate their personal growth
-                    </div>
-                    
-                    <button class="plan-cta plus-cta" onclick="window.location.href='/app.html'">Start Free Trial</button>
-                </div>
-            </div>
-            
-            <div class="pricing-guarantee">
-                <p><strong>Plus subscriptions</strong> include a 7-day free trial.</p>
-                <p>Have questions about which plan is right for you? <a href="mailto:support@inkwelljournal.io">Contact our team</a> - we're here to help.</p>
-            </div>
-        </div>
-    </section>
-    
-    <!-- FAQ Section -->
-    <section class="faq-section" id="faq">
-        <div class="container">
-            <div class="faq-header">
-                <h2 class="section-title">Frequently Asked Questions</h2>
-                <p class="section-subtitle">Everything you need to know about InkWell plans and features</p>
-            </div>
-            
-            <div class="faq-grid">
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Can I change plans anytime?</h3>
-                        <span class="faq-toggle">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Yes! Upgrade or downgrade your plan at any time. Changes take effect on the next month's billing cycle.</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>What happens to my data if I downgrade?</h3>
-                        <span class="faq-toggle">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Your journal entries are always safe. Although some features, such as unlimited AI insights, may be limited, your data remains accessible.</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Is there a long-term contract?</h3>
-                        <span class="faq-toggle">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>No contracts ever. Cancel anytime with one click.</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Do you offer student discounts?</h3>
-                        <span class="faq-toggle">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Yes! Students and educators receive 50% off any paid plan. Contact support with your .edu email.</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Is my data secure?</h3>
-                        <span class="faq-toggle">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Absolutely. We use bank-level encryption and never share your personal information. Learn more in our <a href="#privacy">Privacy Policy</a>.</p>
-                    </div>
-                </div>
-                
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="container">
-            <div class="cta-content">
-                <h2>Start Your Wellness Journey Today</h2>
+    <!-- Sophy -->
+    <section class="sophy" id="sophy">
+        <div class="container sophy-grid">
+            <div>
+                <p class="eyebrow">Meet Sophy</p>
+                <h2>A companion who reads only when you ask.</h2>
                 <p>
-                    Join hundreds of users already experiencing the benefits of science-backed digital journaling. 
-                    InkWell is completely free during our beta testing phase—no credit card required.
+                    Sophy is InkWell's AI companion. She offers a prompt when you want one
+                    and reflects back what she notices when you ask her to. She does not
+                    read your entries in the background. Silence is the default.
                 </p>
-                <div class="cta-buttons">
-                    <a href="/app.html" class="cta-primary">Start Journaling Free</a>
-                    <a href="https://pegasusrealm.com" class="cta-secondary">Learn About Pegasus Realm</a>
+                <p>
+                    When you do ask, she remembers. Sophy can bring back what you wrote
+                    months ago, dated and in your own words, when it's genuinely relevant
+                    to what you're working through today.
+                </p>
+                <ul class="sophy-points">
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+                        <span>Reflections grounded in your own past entries, only when you ask</span>
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+                        <span>Prompts when you want a starting point, silence when you don't</span>
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+                        <span>Your entries are never used to train AI</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="chat-card">
+                <p class="chat-label">Example reflection</p>
+                <div class="bubble bubble-user">
+                    I keep circling the same decision and getting nowhere.
                 </div>
+                <div class="bubble bubble-sophy">
+                    You wrote something close to this in March, and back then the circling
+                    stopped once you named what you were actually afraid of losing. What
+                    would that look like this time?
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Privacy -->
+    <section class="privacy" id="privacy">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Your Words</p>
+                <h2>Built to stay private.</h2>
+            </div>
+            <div class="privacy-grid">
+                <div class="privacy-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <span><strong>Encrypted</strong> in transit and at rest.</span>
+                </div>
+                <div class="privacy-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M4.9 4.9l14.2 14.2"></path></svg>
+                    <span><strong>Never sold.</strong> Your data is not a product.</span>
+                </div>
+                <div class="privacy-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.5 4-3 5.5V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.5C6.5 13 5 11.5 5 9a7 7 0 0 1 7-7z"></path><path d="M9 21h6"></path></svg>
+                    <span><strong>Never used to train AI.</strong> Your thinking stays yours.</span>
+                </div>
+                <div class="privacy-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg>
+                    <span><strong>Never visible to others.</strong> No one else can read what you write.</span>
+                </div>
+                <div class="privacy-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <span><strong>Sophy reads on request.</strong> She only sees an entry when you ask her about it.</span>
+                </div>
+                <div class="privacy-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M7 10l5 5 5-5"></path><path d="M12 15V3"></path></svg>
+                    <span><strong>Yours to take.</strong> Export your entries whenever you want them.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Pricing</p>
+                <h2>Free, actually.</h2>
+                <p>The free version is a complete journal, not a teaser. Plus is there if you want the intelligence layer on top.</p>
+            </div>
+            <div class="pricing-grid">
+                <div class="price-card">
+                    <h3 class="plan-name">InkWell Free</h3>
+                    <div class="plan-price">
+                        <span class="amount">$0</span>
+                        <span class="period">forever</span>
+                    </div>
+                    <p class="plan-sub">A real journal. Nothing is a trial.</p>
+                    <ul class="plan-list">
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Unlimited journaling, every capture mode</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Voice journaling with clean transcription</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>The full five-practice gratitude rotation</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>The full WISH values-based goal flow</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Practice Summary, shareable on your terms</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Export your entries anytime</span></li>
+                    </ul>
+                    <a href="/app.html" class="btn btn-ghost">Start writing free</a>
+                </div>
+                <div class="price-card featured">
+                    <div class="plan-flag">It learns you</div>
+                    <h3 class="plan-name">InkWell Plus</h3>
+                    <div class="plan-price">
+                        <span class="amount">$6.99</span>
+                        <span class="period">/month, or $49.99/year</span>
+                    </div>
+                    <p class="plan-sub">Starts with a 7-day free trial.</p>
+                    <ul class="plan-list">
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Everything in Free</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Deeper reflection from Sophy, with memory of your past entries</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Ask Your Journal Anything semantic search</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Weekly and monthly insight reports</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>More from your voice entries, including what Sophy notices</span></li>
+                    </ul>
+                    <a href="/app.html" class="btn btn-primary">Try Plus free for 7 days</a>
+                </div>
+            </div>
+            <p class="pricing-note">
+                Cancel anytime, no contracts. Questions about which plan fits?
+                <a href="mailto:support@inkwelljournal.io">Ask our team</a>, we're happy to help.
+            </p>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Questions</p>
+                <h2>Frequently asked.</h2>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <button class="faq-q">Can I change plans anytime?<span class="faq-mark">+</span></button>
+                    <div class="faq-a"><p>Yes. Upgrade or downgrade whenever you like; changes take effect on the next billing cycle. No contracts, cancel anytime.</p></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q">What happens to my entries if I downgrade?<span class="faq-mark">+</span></button>
+                    <div class="faq-a"><p>Your journal is always yours. Plus features like semantic search and insight reports pause, but every entry stays accessible and exportable on the free plan.</p></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q">Is my journal private?<span class="faq-mark">+</span></button>
+                    <div class="faq-a"><p>Your entries are encrypted in transit and at rest, never sold, never used to train AI, and never visible to other users. Sophy only sees an entry when you ask her a question about it.</p></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q">Does the AI read my journal?<span class="faq-mark">+</span></button>
+                    <div class="faq-a"><p>Not unless you ask. Silence is the default. Sophy offers a prompt when you request one and reflects on an entry only when you invite her to. There is no background analysis of your writing.</p></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q">Is InkWell a therapy app?<span class="faq-mark">+</span></button>
+                    <div class="faq-a"><p>No. InkWell isn't a medical app and isn't a therapy replacement. It's a place to think, out loud or on the page, that remembers what you told it and gives some of it back when it matters. If you're working with a therapist, the Practice Summary lets you share your journaling patterns with them on your own terms.</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Closing CTA -->
+    <section class="closing">
+        <div class="container">
+            <p class="eyebrow" style="color: var(--text-on-dark-muted);">On Web, iOS, and Android</p>
+            <h2>Your thinking deserves a place that remembers.</h2>
+            <p>Start tonight's entry in the browser, or take InkWell with you.</p>
+            <a href="/app.html" class="btn btn-primary">Start writing free</a>
+            <div class="store-badges">
+                <a href="https://apps.apple.com/app/id6755095548" aria-label="Download on the App Store">
+                    <img src="Download_on_the_App_Store_Badge_US-UK_RGB_wht_092917.svg" alt="Download on the App Store">
+                </a>
+                <a href="https://play.google.com/store/apps/details?id=com.inkwellmobile" class="badge-play" aria-label="Get it on Google Play">
+                    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play">
+                </a>
             </div>
         </div>
     </section>
@@ -3063,244 +876,60 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-brand-section">
-                    <div class="footer-brand">
-                        <img src="InkWell-Logo.png" alt="InkWell Logo" class="footer-brand-img" />
-                        <div class="footer-brand-text">InkWell</div>
-                    </div>
-                    <p class="footer-description">
-                        Transform thoughts into insights and action with our science-backed digital journaling platform. 
-                        For the Thinkers and the Forgetters.
+            <div class="footer-grid">
+                <div>
+                    <a href="#" class="brand-lockup" aria-label="InkWell home">
+                        <img src="inkwell-icon-512.png" alt="" class="brand-tile">
+                        <span class="wordmark"><span class="wm-ink">Ink</span><span class="wm-well">Well</span></span>
+                    </a>
+                    <p class="footer-desc">
+                        A journal that learns you. For the Thinkers and the Forgetters.
                     </p>
                 </div>
-                
-                <div class="footer-section">
-                    <h4 class="footer-section-title">Quick Links</h4>
+                <div>
+                    <h4>InkWell</h4>
                     <div class="footer-links">
-                        <a href="/app.html" class="footer-link">Start Journaling</a>
-                        <a href="#features" class="footer-link">Features</a>
-                        <a href="#pricing" class="footer-link">Pricing</a>
-                        <a href="#faq" class="footer-link">FAQ</a>
+                        <a href="/app.html">Open InkWell</a>
+                        <a href="#features">Features</a>
+                        <a href="#pricing">Pricing</a>
+                        <a href="#faq">FAQ</a>
+                        <a href="/practitioners.html">For Practitioners</a>
                     </div>
                 </div>
-                
-                <div class="footer-section">
-                    <h4 class="footer-section-title">Support & Info</h4>
+                <div>
+                    <h4>Support &amp; Company</h4>
                     <div class="footer-links">
-                        <a href="/support.html" class="footer-link">Support</a>
-                        <a href="mailto:support@inkwelljournal.io" class="footer-link">Contact</a>
-                        <a href="https://pegasusrealm.com" class="footer-link">Pegasus Realm</a>
-                        <a href="https://adamgrimmcoach.com" class="footer-link">Adam Grimm Coaching</a>
+                        <a href="/support.html">Support</a>
+                        <a href="mailto:support@inkwelljournal.io">support@inkwelljournal.io</a>
+                        <a href="https://pegasusrealm.com">Pegasus Realm</a>
+                        <a href="https://adamgrimmcoach.com">Adam Grimm Coaching</a>
                     </div>
                 </div>
             </div>
-            
             <div class="footer-bottom">
-                <div class="footer-copyright">
-                    © 2025 InkWell by Pegasus Realm. All rights reserved.
-                </div>
-                <div class="footer-tagline">
-                    For the Thinkers and the Forgetters • Science-Based Wellness Solutions
-                </div>
+                <span>© 2026 InkWell by Pegasus Realm. All rights reserved.</span>
+                <span>For the Thinkers and the Forgetters.</span>
             </div>
         </div>
     </footer>
 
-    <!-- Premium Interactive JavaScript -->
     <script>
-        // Smooth scrolling for navigation links
-        document.addEventListener('DOMContentLoaded', function() {
-            // Navbar scroll effect
-            const navbar = document.getElementById('navbar');
-            let lastScrollY = window.scrollY;
-            
-            window.addEventListener('scroll', () => {
-                if (window.scrollY > 100) {
-                    navbar.classList.add('scrolled');
-                } else {
-                    navbar.classList.remove('scrolled');
+        // FAQ accordion
+        document.querySelectorAll('.faq-q').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var item = btn.parentElement;
+                var answer = item.querySelector('.faq-a');
+                var isOpen = item.classList.contains('open');
+                document.querySelectorAll('.faq-item.open').forEach(function (openItem) {
+                    openItem.classList.remove('open');
+                    openItem.querySelector('.faq-a').style.maxHeight = null;
+                });
+                if (!isOpen) {
+                    item.classList.add('open');
+                    answer.style.maxHeight = answer.scrollHeight + 'px';
                 }
-                
-                // Update last scroll position
-                lastScrollY = window.scrollY;
             });
-            
-            // Smooth scrolling for anchor links
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                });
-            });
-            
-            // Intersection Observer for animations
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
-            
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                    }
-                });
-            }, observerOptions);
-            
-            // Observe elements for animation
-            document.querySelectorAll('.feature-card, .capability-card').forEach(card => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(30px)';
-                card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-                observer.observe(card);
-            });
-            
-            // Add stagger animation to feature cards
-            document.querySelectorAll('.feature-card').forEach((card, index) => {
-                card.style.transitionDelay = `${index * 0.1}s`;
-            });
-            
-            // Add stagger animation to capability cards
-            document.querySelectorAll('.capability-card').forEach((card, index) => {
-                card.style.transitionDelay = `${index * 0.15}s`;
-            });
-            
-            // Enhanced hover effects for CTA buttons
-            document.querySelectorAll('.cta-primary, .cta-secondary, .nav-cta').forEach(button => {
-                button.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-3px) scale(1.02)';
-                });
-                
-                button.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0) scale(1)';
-                });
-            });
-            
-            // Particle effect for hero section (subtle)
-            createParticles();
-            
-            // FAQ Toggle Functionality
-            document.querySelectorAll('.faq-question').forEach(question => {
-                question.addEventListener('click', function() {
-                    const faqItem = this.parentElement;
-                    const isActive = faqItem.classList.contains('active');
-                    
-                    // Close all FAQ items
-                    document.querySelectorAll('.faq-item').forEach(item => {
-                        item.classList.remove('active');
-                    });
-                    
-                    // If this item wasn't active, open it
-                    if (!isActive) {
-                        faqItem.classList.add('active');
-                    }
-                });
-            });
-            
-            // Pricing plan button functionality
-            document.querySelectorAll('.plan-cta').forEach(button => {
-                button.addEventListener('click', function() {
-                    const planName = this.closest('.pricing-card').querySelector('.plan-name').textContent;
-                    console.log(`Selected plan: ${planName}`);
-                    // Add your plan selection logic here
-                });
-            });
-            
-            // Add dynamic styles
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes particleFade {
-                    0%, 100% { opacity: 0; }
-                    50% { opacity: 0.6; }
-                }
-                
-                /* Additional hover enhancements */
-                .feature-card:hover .feature-icon,
-                .capability-card:hover .capability-icon {
-                    transform: scale(1.1) rotate(5deg);
-                    transition: transform 0.3s ease;
-                }
-                
-                /* Scroll progress indicator */
-                .scroll-progress {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 0;
-                    height: 3px;
-                    background: linear-gradient(90deg, var(--primary-teal), var(--warm-teal));
-                    z-index: 9999;
-                    transition: width 0.1s ease;
-                }
-            `;
-            document.head.appendChild(style);
-            
-            // Scroll progress bar
-            const progressBar = document.createElement('div');
-            progressBar.className = 'scroll-progress';
-            document.body.appendChild(progressBar);
-            
-            window.addEventListener('scroll', () => {
-                const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-                progressBar.style.width = scrolled + '%';
-            });
-            
-            // Loading animation complete
-            document.body.style.opacity = '1';
         });
-        
-        // Particle system for hero background
-        function createParticles() {
-            const hero = document.querySelector('.hero');
-            if (!hero) return;
-            
-            const particleCount = 20;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.style.cssText = `
-                    position: absolute;
-                    width: 4px;
-                    height: 4px;
-                    background: radial-gradient(circle, rgba(42, 105, 114, 0.3), transparent);
-                    border-radius: 50%;
-                    pointer-events: none;
-                    z-index: 1;
-                `;
-                
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                
-                const duration = 15 + Math.random() * 20;
-                const delay = Math.random() * 10;
-                const translateX = Math.random() * 200 - 100;
-                
-                particle.style.animation = `
-                    particleFloat${i} ${duration}s linear ${delay}s infinite,
-                    particleFade 4s ease-in-out ${delay}s infinite alternate
-                `;
-                
-                const keyframe = `
-                    @keyframes particleFloat${i} {
-                        0% { transform: translateY(100vh) translateX(0) rotate(0deg); }
-                        100% { transform: translateY(-100px) translateX(${translateX}px) rotate(360deg); }
-                    }
-                `;
-                const styleSheet = document.createElement('style');
-                styleSheet.textContent = keyframe;
-                document.head.appendChild(styleSheet);
-                
-                hero.appendChild(particle);
-            }
-        }
     </script>
 </body>
 </html>
