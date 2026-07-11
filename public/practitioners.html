@@ -89,6 +89,9 @@
         .wordmark .wm-ink { color: var(--teal-ink); }
         .wordmark .wm-well { color: var(--teal-dark); }
         .nav-links { display: flex; align-items: center; gap: var(--s4); }
+        .nav-right { display: flex; align-items: center; gap: var(--s2); }
+        .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
+        .nav-toggle svg { width: 24px; height: 24px; stroke: var(--teal-dark); display: block; }
         .nav-link { font-size: var(--t-sm); font-weight: 600; color: var(--text-muted); text-decoration: none; transition: color 0.2s ease; }
         .nav-link:hover { color: var(--teal-dark); }
         .nav-link.active { color: var(--teal-dark); }
@@ -240,7 +243,19 @@
             .summary-grid, .plans-grid { grid-template-columns: 1fr; gap: var(--s5); }
             .scope-grid { grid-template-columns: 1fr 1fr; }
             .footer-grid { grid-template-columns: 1fr; gap: var(--s4); }
-            .nav-links .nav-link { display: none; }
+            .nav-toggle { display: block; }
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 72px; left: 0; right: 0;
+                background: var(--paper);
+                border-bottom: 1px solid rgba(17, 28, 26, 0.07);
+                flex-direction: column;
+                align-items: flex-start;
+                padding: var(--s2) var(--s3) var(--s3);
+                gap: var(--s2);
+            }
+            .nav.open .nav-links { display: flex; }
         }
         @media (max-width: 560px) {
             .arg-grid, .scope-grid { grid-template-columns: 1fr; }
@@ -261,7 +276,12 @@
                 <a href="/#pricing" class="nav-link">Pricing</a>
                 <a href="/practitioners.html" class="nav-link active">For Practitioners</a>
                 <a href="/support.html" class="nav-link">Support</a>
+            </div>
+            <div class="nav-right">
                 <a href="/app.html" class="btn btn-primary">Open InkWell</a>
+                <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"></path><path d="M3 12h18"></path><path d="M3 18h18"></path></svg>
+                </button>
             </div>
         </div>
     </nav>
@@ -458,5 +478,14 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        var navToggle = document.querySelector('.nav-toggle');
+        navToggle.addEventListener('click', function () {
+            var nav = document.querySelector('.nav');
+            var open = nav.classList.toggle('open');
+            navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+    </script>
 </body>
 </html>
