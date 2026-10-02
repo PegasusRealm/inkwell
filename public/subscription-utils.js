@@ -461,10 +461,9 @@ function createSubscriptionSelectionModal(alreadyPlus) {
   } else {
     const feature = (t) => `<li style="margin-bottom: 0.35rem; color: var(--font-secondary); font-size: 0.9rem;">${t}</li>`;
     const features = feature('Unlimited Sophy prompts, reflections, and insights') +
-      feature('Weekly and monthly pattern insights by email') +
-      feature('SMS nudges and milestone messages') +
-      feature('Personalized practices drawn from your own journal') +
-      feature('Full data export');
+      feature('Weekly and monthly insight emails, if you turn them on') +
+      feature('Text message reminders and goal milestones') +
+      feature('Help from Sophy drafting a gratitude letter');
     body = `
         <h2 style="margin: 0 0 0.3rem; font-family: var(--title-font); font-size: 1.5rem; font-weight: 500; color: var(--font-main); text-align: center;">Go further with Plus</h2>
         <p style="margin: 0 0 1.4rem; text-align: center; color: var(--font-secondary); font-size: 0.95rem;">More of Sophy. Deeper patterns. The journal that keeps learning you.</p>
