@@ -473,7 +473,7 @@ function createSubscriptionSelectionModal(alreadyPlus) {
             <div style="font-family: var(--body-font); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--font-muted); margin-bottom: 0.5rem;">Monthly</div>
             <div style="font-family: var(--title-font); font-size: 2rem; color: var(--font-main);">$6.99<span style="font-size: 0.9rem; color: var(--font-muted);"> /month</span></div>
             <ul style="margin: 0.9rem 0 1.1rem; padding-left: 1.1rem;">${features}</ul>
-            <button class="btn" style="width: 100%;" onclick="startUpgradeFlow('plus')">Start 7-day free trial</button>
+            <button class="btn" style="width: 100%;" onclick="startUpgradeFlow('plus')">Start Plus monthly</button>
           </div>
           <div style="flex: 1; min-width: 240px; border: 1.5px solid var(--brand-primary); border-radius: 14px; padding: 1.25rem; position: relative;">
             <span style="position: absolute; top: -0.7em; left: 1rem; background: var(--brand-primary); color: #fff; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25em 0.7em; border-radius: 999px;">Best value</span>
@@ -481,11 +481,11 @@ function createSubscriptionSelectionModal(alreadyPlus) {
             <div style="font-family: var(--title-font); font-size: 2rem; color: var(--font-main);">$49.99<span style="font-size: 0.9rem; color: var(--font-muted);"> /year</span></div>
             <div style="font-size: 0.82rem; color: var(--brand-primary); font-weight: 600; margin-top: 0.15rem;">Save $34 a year, about $4.17 a month</div>
             <ul style="margin: 0.9rem 0 1.1rem; padding-left: 1.1rem;">${features}</ul>
-            <button class="btn" style="width: 100%;" onclick="startUpgradeFlow('plus_annual')">Start 7-day free trial</button>
+            <button class="btn" style="width: 100%;" onclick="startUpgradeFlow('plus_annual')">Start Plus yearly</button>
           </div>
         </div>
         <p style="margin: 1.2rem 0 0; text-align: center; color: var(--font-muted); font-size: 0.8rem;">
-          7-day free trial on both. Cancel anytime. Secure payment via Stripe.<br>
+          Cancel anytime. Secure payment via Stripe.<br>
           The free journal stays fully functional, forever. Plus just goes deeper.
         </p>`;
   }

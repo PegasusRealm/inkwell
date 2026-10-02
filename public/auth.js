@@ -864,8 +864,8 @@ onAuthStateChanged(auth, async (user) => {
           stripeCustomerId: null,
           stripeSubscriptionId: null,
           insightsPreferences: {
-            weeklyEnabled: true,
-            monthlyEnabled: true,
+            weeklyEnabled: false,
+            monthlyEnabled: false,
             createdAt: serverTimestamp()
           },
           needsProfileCompletion: true, // Flag for new OAuth users
@@ -889,8 +889,8 @@ onAuthStateChanged(auth, async (user) => {
       try {
         await setDoc(userDocRef, {
           insightsPreferences: {
-            weeklyEnabled: true,
-            monthlyEnabled: true,
+            weeklyEnabled: false,
+            monthlyEnabled: false,
             createdAt: serverTimestamp(),
             migratedAt: serverTimestamp()
           }
@@ -1589,8 +1589,8 @@ async function signUp() {
         // special_code only set manually for loyalty rewards now
         // Default insight preferences for new users (opt-in by default)
         insightsPreferences: {
-          weeklyEnabled: true,
-          monthlyEnabled: true,
+          weeklyEnabled: false,
+          monthlyEnabled: false,
           createdAt: serverTimestamp()
         },
         createdAt: serverTimestamp(),
@@ -1728,8 +1728,8 @@ async function signInWithGoogle() {
         stripeCustomerId: null,
         stripeSubscriptionId: null,
         insightsPreferences: {
-          weeklyEnabled: true,
-          monthlyEnabled: true,
+          weeklyEnabled: false,
+          monthlyEnabled: false,
           createdAt: serverTimestamp()
         },
         needsProfileCompletion: true, // Flag for new OAuth users
@@ -1826,8 +1826,8 @@ async function signInWithApple() {
         stripeCustomerId: null,
         stripeSubscriptionId: null,
         insightsPreferences: {
-          weeklyEnabled: true,
-          monthlyEnabled: true,
+          weeklyEnabled: false,
+          monthlyEnabled: false,
           createdAt: serverTimestamp()
         },
         needsProfileCompletion: true, // Flag for new OAuth users
