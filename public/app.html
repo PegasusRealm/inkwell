@@ -4,8 +4,11 @@
     
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>InkWell - Your Digital Sanctuary for Reflection</title>
+  <title>Castalia - Your Digital Sanctuary for Reflection</title>
   
+  <link rel="icon" href="/castalia-favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/castalia-favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/castalia-apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -181,6 +184,22 @@
       --accent-sophy-light: #D49489;
       --info-bg: rgba(42, 105, 114, 0.06);
     }
+
+    /* Castalia wordmark as text (2026-10-01): Newsreader Regular, 36pt optical size, tracked
+       0.04em. Ink on light, paper on dark: the two approved variants. */
+    :root { --cas-word: #16232A; }
+    html[data-theme='light'], html[data-theme='reading'] { --cas-word: #16232A; }
+    html[data-theme='dark'] { --cas-word: #F6F9F8; }
+    @media (prefers-color-scheme: dark) { :root { --cas-word: #F6F9F8; } html[data-theme='light'], html[data-theme='reading'] { --cas-word: #16232A; } }
+    .cas-formerly { margin: 0 0 0.9em; font-size: 0.9em; color: #5B6B68; }
+    html[data-theme='dark'] .cas-formerly { color: #C9C4B8; }
+    /* On a dark card the ink tile gets a faint teal ring so it reads as a tile, not a hole */
+    html[data-theme='dark'] .cas-tile { box-shadow: 0 0 0 1px rgba(137, 201, 212, 0.28); }
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme='light']):not([data-theme='reading']) .cas-formerly { color: #C9C4B8; }
+      html:not([data-theme='light']):not([data-theme='reading']) .cas-tile { box-shadow: 0 0 0 1px rgba(137, 201, 212, 0.28); }
+    }
+    .cas-word { font-family: 'Newsreader', Georgia, serif; font-weight: 400; font-variation-settings: 'opsz' 36; font-size: 1.9rem; line-height: 1; letter-spacing: 0.04em; color: var(--cas-word); }
 
     /* System preference dark = Ink & Light (mirrors data-theme='dark' essentials) */
     @media (prefers-color-scheme: dark) {
@@ -1444,7 +1463,7 @@
       color: var(--brand-light) !important;
     }
 
-    /* Enhanced Dark Theme for About InkWell Modal */
+    /* Enhanced Dark Theme for About Castalia Modal */
     html[data-theme='dark'] #aboutInkwellModal > div {
       background: var(--bg-card) !important;
       color: var(--font-main) !important;
@@ -4188,7 +4207,7 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
   to { opacity: 1; transform: scale(1); }
 }
 
-/* Phase 2: InkWell Logo Reveal */
+/* Phase 2: Castalia Logo Reveal */
 .splash-phase-two {
   position: absolute;
   display: flex;
@@ -4201,10 +4220,10 @@ html[data-theme='dark'] .info-modal-content .btn:hover {
 }
 
 .splash-large-logo {
-  width: 360px;
+  width: 280px;
   height: auto;
   margin-bottom: 2rem;
-  filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.5)) brightness(1.1);
+  filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.5)); /* no brightness: brand asset stays as drawn */
   opacity: 0;
   transform: scale(0.9);
   animation: logo-reveal 1.5s cubic-bezier(0.4, 0, 0.2, 1) 4s forwards;
@@ -5940,7 +5959,7 @@ window.personalSubtractionPrompt = async function() {
   try {
     const r = await gratEngineFetch({ action: 'personalSubtraction' });
     if (r.status === 403 && r.data.code === 'UPGRADE_REQUIRED') {
-      gratStatus('Personalized practice is an InkWell Plus feature.', 'var(--font-muted)');
+      gratStatus('Personalized practice is a Castalia Plus feature.', 'var(--font-muted)');
       if (typeof window.showSubscriptionModal === 'function') window.showSubscriptionModal();
       return;
     }
@@ -5979,7 +5998,7 @@ window.sophyLetterAssist = async function() {
       recipientName: document.getElementById('gratLetterTo')?.value?.trim() || ''
     });
     if (r.status === 403 && r.data.code === 'UPGRADE_REQUIRED') {
-      gratStatus('Sophy letter drafting is an InkWell Plus feature.', 'var(--font-muted)');
+      gratStatus('Sophy letter drafting is a Castalia Plus feature.', 'var(--font-muted)');
       if (typeof window.showSubscriptionModal === 'function') window.showSubscriptionModal();
       return;
     }
@@ -9176,7 +9195,7 @@ container.style.cssText = `
         // Handle upgrade required (returned as 200 to avoid CORS issues)
         if (data.upgradeRequired) {
           closePeriodInsightsModal();
-          showUpgradePrompt('periodInsights', 'Unlock pattern insights with InkWell Plus');
+          showUpgradePrompt('periodInsights', 'Unlock pattern insights with Castalia Plus');
           return;
         }
 
@@ -9782,25 +9801,25 @@ window.showToast = function (message, type = "info", duration = 4000) {
   toast.style.maxWidth = "400px";
   toast.style.textAlign = "center";
   
-  // Set color based on type - InkWell themed colors
+  // Set color based on type - Castalia themed colors
   switch (type) {
     case "error":
-      toast.style.backgroundColor = "#B85450"; // Muted red to match InkWell's earthy palette
+      toast.style.backgroundColor = "#B85450"; // Muted red to match Castalia's earthy palette
       toast.style.color = "#fff";
       toast.style.border = "2px solid #A0453F";
       break;
     case "success":
-      toast.style.backgroundColor = "#4A8B8B"; // InkWell's teal/turquoise color
+      toast.style.backgroundColor = "#4A8B8B"; // Castalia's teal/turquoise color
       toast.style.color = "#fff";
       toast.style.border = "2px solid #3A6B6B";
       break;
     case "warning":
-      toast.style.backgroundColor = "#D4A574"; // Warmer orange to match InkWell's palette
+      toast.style.backgroundColor = "#D4A574"; // Warmer orange to match Castalia's palette
       toast.style.color = "#2C3E50"; // Dark text for better contrast
       toast.style.border = "2px solid #B8955F";
       break;
     default:
-      toast.style.backgroundColor = "#FFA76D"; // InkWell's signature orange
+      toast.style.backgroundColor = "#FFA76D"; // Castalia's signature orange
       toast.style.color = "#2C3E50"; // Dark text for better contrast
       toast.style.border = "2px solid #E6935A";
   }
@@ -9842,7 +9861,7 @@ window.logOutUser = async function (reason = "manual") {
         } else {
           // Default manual logout messages
           if (titleEl) titleEl.textContent = "See you soon.";
-          if (messageEl) messageEl.textContent = "Thanks for journaling with InkWell today.";
+          if (messageEl) messageEl.textContent = "Thanks for journaling with Castalia today.";
           if (subMessageEl) subMessageEl.textContent = "Take care, and don't forget to stay positive.";
         }
         
@@ -11039,9 +11058,9 @@ document.head.appendChild(themeStyle);
     </div>
   </div>
   
-  <!-- Phase 2: Large InkWell Logo + Tagline -->
+  <!-- Phase 2: Large Castalia Logo + Tagline -->
   <div class="splash-phase-two">
-    <img src="InkWell-Logo.png" alt="InkWell" class="splash-large-logo">
+    <img src="castalia-lockup-stacked-dark.png" alt="Castalia" class="splash-large-logo">
     <p class="splash-tagline">For the <em style="color: #89C9D4;">Thinkers</em> and the <em style="color: #89C9D4;">Forgetters</em>.</p>
   </div>
 </div>
@@ -11049,7 +11068,9 @@ document.head.appendChild(themeStyle);
 <!-- Login Modal -->
 <div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; padding: 1em; box-sizing: border-box; z-index: 9999;">
   <div class="card-block" style="max-width: 400px; width: 100%; background: white; padding: 1.5em; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-    <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 100px; margin-bottom: 0.8em;" />
+    <img src="castalia-icon-512.png" alt="" class="cas-tile" style="height: 72px; width: 72px; border-radius: 22%; margin-bottom: 0.5em;" />
+    <div class="cas-word" style="margin-bottom: 0.2em;">Castalia</div>
+    <p class="cas-formerly">Formerly InkWell. Same account, same entries.</p>
     <form id="loginForm">
   <input type="email" id="loginEmail" placeholder="Email" required
         style="width: 90%; padding: 1em 1.2em; margin-bottom: 1em; background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%); border: 2px solid rgba(42,105,114,0.15); border-radius: 10px; backdrop-filter: blur(3px); box-shadow: 0 2px 8px rgba(42,105,114,0.08); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: #0D3F45; font-family: var(--body-font);" />
@@ -11091,7 +11112,7 @@ document.head.appendChild(themeStyle);
       <a href="#" id="toggleSignup" style="color: var(--brand-primary); text-decoration: underline; font-weight: 600;">Sign up</a>
     </div>
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1em;">
-      v26.185.1
+      v26.274.1
     </div>
   </div>
 </div>
@@ -11115,7 +11136,7 @@ document.head.appendChild(themeStyle);
 <div id="editEntryModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto;">
   <div style="display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 20px;">
     <div class="card-block" style="max-width: 500px; width: 90%; background: white; padding: 2em; border-radius: 8px; text-align: center; max-height: 90vh; overflow-y: auto;">
-      <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 100px; margin-bottom: 1.5em;" />
+      <img src="castalia-icon-512.png" alt="Castalia" style="height: 72px; width: 72px; border-radius: 22%; margin-bottom: 1.5em;" />
     
       <h2 style="margin-top: 0; margin-bottom: 1.5em; color: #2A6972; font-size: 1.3em;">
         Edit Entry
@@ -11143,7 +11164,7 @@ document.head.appendChild(themeStyle);
     </form>
     
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1.5em;">
-      v26.185.1
+      v26.274.1
     </div>
     </div>
   </div>
@@ -11152,7 +11173,9 @@ document.head.appendChild(themeStyle);
 <!-- Signup Modal (moved here to be with other modals and before </body>) -->
 <div id="signupModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; padding: 1em; box-sizing: border-box; z-index: 9999;">
   <div class="card-block" style="max-width: 420px; width: 100%; max-height: 90vh; background: white; padding: 1.5em; border-radius: 12px; text-align: center; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-    <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 100px; margin-bottom: 0.8em;" />
+    <img src="castalia-icon-512.png" alt="" class="cas-tile" style="height: 72px; width: 72px; border-radius: 22%; margin-bottom: 0.5em;" />
+    <div class="cas-word" style="margin-bottom: 0.2em;">Castalia</div>
+    <p class="cas-formerly">Formerly InkWell. Have an account? <a href="#" onclick="document.getElementById('toggleLogin').click(); return false;" style="color: inherit; text-decoration: underline;">Log in</a>.</p>
     <form id="signupForm">
       <input type="text" id="signupUsername" name="username" placeholder="What should Sophy call you? (optional)" 
         style="width: 90%; padding: 1em 1.2em; margin-bottom: 1em; background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%); border: 2px solid rgba(42,105,114,0.15); border-radius: 10px; backdrop-filter: blur(3px); box-shadow: 0 2px 8px rgba(42,105,114,0.08); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: #0D3F45; font-family: var(--body-font);" />
@@ -11264,8 +11287,8 @@ document.head.appendChild(themeStyle);
   
 <div class="logo-hero-inner" aria-hidden="true">
   <img id="animatedImage"
-    src="/InkWell-Logo.png"
-    alt="InkWell Logo"
+    src="/castalia-icon-512.png"
+    alt="Castalia"
     class="logo-img"
   />
   <img id="avatarImage"
@@ -11284,7 +11307,7 @@ document.head.appendChild(themeStyle);
   For the <em style="font-style: italic; color: var(--brand-primary);">Thinkers</em> and the <em style="font-style: italic; color: var(--brand-primary);">Forgetters</em>.
 </h1>
 <p style="margin: 0 auto 2.5em; max-width: 52ch; font-family: var(--body-font); font-size: 1.02em; line-height: 1.6; color: var(--font-muted); text-align: center; position: relative; z-index: 1;">
-  Life is messy.<br>InkWell&trade; holds your thinking and gives you back insight.
+  Life is messy.<br>Castalia&trade; holds your thinking and gives you back insight.
 </p>
 
 
@@ -11292,14 +11315,14 @@ document.head.appendChild(themeStyle);
 
 <div id="goodbyeModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; z-index: 9999; background: rgba(0,0,0,0.7);">
   <div class="card-block" style="max-width: 400px; width: 90%; background: white; padding: 2em; border-radius: 8px; text-align: center;">
-    <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 120px; margin-bottom: 1.5em;" />
+    <img src="castalia-icon-512.png" alt="Castalia" style="height: 86px; width: 86px; border-radius: 22%; margin-bottom: 1.5em;" />
     
     <h2 id="goodbyeTitle" style="margin-top: 0; margin-bottom: 1em; color: #2A6972; font-size: 1.3em;">
       See you soon.
     </h2>
     
     <p id="goodbyeMessage" style="color: #000000; margin-bottom: 0.5em; font-size: 1em;">
-      Thanks for journaling with InkWell today.
+      Thanks for journaling with Castalia today.
     </p>
     
     <p id="goodbyeSubMessage" style="color: #000000; margin-bottom: 2em; font-size: 0.95em;">
@@ -11312,7 +11335,7 @@ document.head.appendChild(themeStyle);
     </button>
     
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1.5em;">
-      v26.185.1
+      v26.274.1
     </div>
   </div>
 </div>
@@ -11474,7 +11497,7 @@ document.head.appendChild(themeStyle);
 <!-- Journal Mode Sub-Tabs -->
 <!-- FIRST STEPS (2026-07-02): event-driven quest for new users. Replaces the
      timer-fired onboarding modals. Fills as things actually happen; leaves forever
-     when done. Video-game structure, InkWell manners. -->
+     when done. Video-game structure, Castalia manners. -->
 <div class="iw-card" id="firstStepsCard" style="display:none; margin-bottom: 1.5em;">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6em;">
     <span class="manifest-eyebrow" style="margin:0 !important;">First steps</span>
@@ -12219,13 +12242,13 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
     <button id="logoutBtn" class="btn btn-gray" style="width: 100%; max-width: 200px; margin-bottom: 2em;">Log Out</button>
 
     <div style="font-family: var(--body-font); font-size: 0.76em; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--font-muted); margin-bottom: 1em;">
-      InkWell &mdash; For the Thinkers and the Forgetters
+      Castalia. For the Thinkers and the Forgetters.
     </div>
 
     <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5em 1.75em; margin-bottom: 1em; font-size: 0.85em;">
-      <a href="https://www.inkwelljournal.io/privacy-policy/" target="_blank" style="color: var(--brand-primary); text-decoration: none;">Privacy Policy</a>
-      <a href="https://www.inkwelljournal.io/terms-conditions/" target="_blank" style="color: var(--brand-primary); text-decoration: none;">Terms &amp; Conditions</a>
-      <a href="mailto:support@inkwelljournal.io" style="color: var(--brand-primary); text-decoration: none;">Share Feedback</a>
+      <a href="https://pegasusrealm.com/privacy-policy/" target="_blank" style="color: var(--brand-primary); text-decoration: none;">Privacy Policy</a>
+      <a href="https://pegasusrealm.com/terms-conditions/" target="_blank" style="color: var(--brand-primary); text-decoration: none;">Terms &amp; Conditions</a>
+      <a href="mailto:support@pegasusrealm.com" style="color: var(--brand-primary); text-decoration: none;">Share Feedback</a>
     </div>
 
     <div style="font-size: 0.8em; color: var(--font-muted);">&copy; 2026 Pegasus Realm LLC</div>
@@ -12240,12 +12263,12 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
   <div id="aboutInkwellModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(21,54,58,0.86); z-index:9999; overflow-y:auto;">
     <div style="display:flex; align-items:center; justify-content:center; min-height:100%; padding:20px;">
       <div style="background:#fff; color:#2A6972; padding:2em 1.3em 1.5em 1.3em; border-radius:10px; max-width:560px; width:92%; max-height:90vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.13);">
-        <h2 style="margin-top:0; text-align:center;">About InkWell</h2>
+        <h2 style="margin-top:0; text-align:center;">About Castalia</h2>
       <div style="font-size:1em; line-height:1.65; margin-bottom:1.2em;">
-        <strong>InkWell</strong> is part of the Pegasus Realm wellness ecosystem—designed for individuals, coaches, counselors, and mental health professionals seeking science-backed, intuitive tools for growth.
+        <strong>Castalia</strong> is part of the Pegasus Realm wellness ecosystem—designed for individuals, coaches, counselors, and mental health professionals seeking science-backed, intuitive tools for growth.
         <hr style="margin:1em 0;"/>
         <h3 style="font-size:1.09em;">Why Vision Statements?</h3>
-        At the heart of InkWell is your Vision Statement: a personal guiding vision. This method draws on <strong>goal-setting theory</strong> and positive psychology, helping you translate intentions into action through evidence-based habit building and self-reflection.<br/>
+        At the heart of Castalia is your Vision Statement: a personal guiding vision. This method draws on <strong>goal-setting theory</strong> and positive psychology, helping you translate intentions into action through evidence-based habit building and self-reflection.<br/>
         <span style="font-size:0.98em; color:#388b97;">
           <em>Research shows written goals and expressive journaling increase achievement, resilience, and emotional well-being.</em>
         </span>
@@ -12264,7 +12287,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
         Sophy motivates and supports you as you work toward your goals, blending proven frameworks with the spirit of aloha.
         <hr style="margin:1em 0;"/>
         <h3 style="font-size:1.09em;">Feeling Overwhelmed?</h3>
-        Try the <strong>Aloha Wellness Guide™</strong> at <a href="https://www.alohawellness.guide" target="_blank" style="color:#2A6972;text-decoration:underline;">alohawellness.guide</a> for simple, beginner-friendly wellness tips. InkWell is best for those ready to deepen their journey and set actionable goals.
+        Try the <strong>Aloha Wellness Guide™</strong> at <a href="https://www.alohawellness.guide" target="_blank" style="color:#2A6972;text-decoration:underline;">alohawellness.guide</a> for simple, beginner-friendly wellness tips. Castalia is best for those ready to deepen their journey and set actionable goals.
         <hr style="margin:1em 0;"/>
         <h3 style="font-size:1.09em;">About the Founder</h3>
         <div style="font-size: 0.98em; line-height:1.55; margin:0.7em 0;">
@@ -12277,7 +12300,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
         <hr style="margin:1em 0;"/>
         <div style="font-size:0.96em; text-align:center; color:#2A6972;">
           <b>For questions, feedback, or upgrade ideas:<br/>
-          <a href="mailto:support@inkwelljournal.io" style="color:#2A6972; text-decoration:underline;">support@inkwelljournal.io</a></b>
+          <a href="mailto:support@pegasusrealm.com" style="color:#2A6972; text-decoration:underline;">support@pegasusrealm.com</a></b>
         </div>
       </div>
       <button class="btn" onclick="document.getElementById('aboutInkwellModal').style.display='none'">Close</button>
@@ -12294,7 +12317,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
         <em>Your personal sanctuary for thoughts, dreams, and self-discovery.</em>
       </p>
     
-      <h3>What Makes InkWell Journaling Different?</h3>
+      <h3>What Makes Castalia Journaling Different?</h3>
       
       <h4>InkOutLoud: Your Voice, Captured</h4>
       <p>
@@ -12440,7 +12463,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
     
       <h3> Smart Search Your Journal</h3>
       <p>
-        InkWell's <strong>Smart Search</strong> uses AI to understand what you're really looking for—not just matching keywords, but grasping the meaning behind your question.
+        Castalia's <strong>Smart Search</strong> uses AI to understand what you're really looking for—not just matching keywords, but grasping the meaning behind your question.
       </p>
       
       <div class="info-modal-highlight-box">
@@ -12596,7 +12619,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
 
       <h3>Five Practices, One Goal</h3>
       <p>
-        Gratitude journaling has one known weakness: repetition dulls it. Researchers call it habituation—write the same list every day and the effect fades (Lyubomirsky, Sheldon &amp; Schkade, 2005). That's why InkWell rotates five research-backed practices instead of one:
+        Gratitude journaling has one known weakness: repetition dulls it. Researchers call it habituation—write the same list every day and the effect fades (Lyubomirsky, Sheldon &amp; Schkade, 2005). That's why Castalia rotates five research-backed practices instead of one:
       </p>
 
       <div class="info-modal-highlight-box">
@@ -12625,7 +12648,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
       </div>
 
       <p>
-        The coral dot on a practice is the day's suggestion—variety is the mechanism, so InkWell nudges you to rotate. Any practice, any day, always your choice.
+        The coral dot on a practice is the day's suggestion—variety is the mechanism, so Castalia nudges you to rotate. Any practice, any day, always your choice.
       </p>
 
       <button class="btn" onclick="document.getElementById('gratitudeInfoModal').style.display='none'">Close</button>
@@ -12720,17 +12743,17 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
     <div style="background: var(--bg-card, #fff); color: var(--font-main, #2A6972); padding:2em 1.5em 1.5em 1.5em; border-radius:12px; max-width:700px; width:94%; max-height:90vh; overflow-y:auto; box-shadow:0 12px 40px rgba(0,0,0,0.15); border: 1px solid var(--border, rgba(42,105,114,0.1));">
     
     <div style="text-align: center; margin-bottom: 1.5em;">
-      <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 80px; margin-bottom: 0.5em;" />
-      <h2 style="margin: 0; font-size: 1.4em; color: var(--brand-primary, #2A6972); font-family: var(--title-font); font-weight: 500;">Welcome to InkWell</h2>
+      <img src="castalia-icon-512.png" alt="Castalia" style="height: 57px; width: 57px; border-radius: 22%; margin-bottom: 0.5em;" />
+      <h2 style="margin: 0; font-size: 1.4em; color: var(--brand-primary, #2A6972); font-family: var(--title-font); font-weight: 500;">Welcome to Castalia</h2>
       <p style="margin: 0.5em 0; font-style: italic; color: var(--text-secondary, #666); font-size: 1.1em;">"For the Thinkers and the Forgetters."</p>
     </div>
     
     <div style="font-size: 0.95em; line-height: 1.6; color: var(--font-main, #333);">
       <p style="margin-bottom: 1.2em;">
-        Life is messy. <strong>InkWell™</strong> holds your thinking and gives you back insight. A journal that remembers, reflects, and learns you.
+        Life is messy. <strong>Castalia™</strong> holds your thinking and gives you back insight. A journal that remembers, reflects, and learns you.
       </p>
       
-      <h3 style="color: var(--brand-primary, #2A6972); font-size: 1.1em; margin: 1.3em 0 0.7em 0;">What You Can Do in InkWell:</h3>
+      <h3 style="color: var(--brand-primary, #2A6972); font-size: 1.1em; margin: 1.3em 0 0.7em 0;">What You Can Do in Castalia:</h3>
       
       <div style="margin-bottom: 1.2em;">
         <h4 style="color: var(--brand-secondary, #4A8B8B); font-size: 1em; margin: 0.8em 0 0.4em 0;">Core Journaling</h4>
@@ -12802,7 +12825,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
       
       <div style="text-align: center; margin-top: 1.5em; padding-top: 1em; border-top: 1px solid var(--border, rgba(42,105,114,0.2));">
         <h4 style="color: var(--brand-primary, #2A6972); margin: 0 0 0.5em 0;">Ready to transform thoughts into insights and action?</h4>
-        <p style="margin: 0; color: var(--text-secondary, #666);">Start journaling, and let InkWell hold space for your growth.</p>
+        <p style="margin: 0; color: var(--text-secondary, #666);">Start journaling, and let Castalia hold space for your growth.</p>
       </div>
     </div>
     
@@ -12882,7 +12905,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
 <!-- User Settings Modal -->
 <div id="userSettingsModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto;">
   <div class="card-block" style="max-width: 450px; width: 90%; background: var(--bg-primary); padding: 2em; border-radius: 8px; text-align: center; max-height: 90vh; overflow-y: auto; margin: auto;">
-      <img src="InkWell-Logo.png" alt="InkWell Logo" style="max-height: 120px; margin-bottom: 1.5em;" />
+      <img src="castalia-icon-512.png" alt="Castalia" style="height: 86px; width: 86px; border-radius: 22%; margin-bottom: 1.5em;" />
     
     <h2 style="margin-top: 0; margin-bottom: 1.5em; color: #2A6972; font-size: 1.3em;">
       Settings
@@ -13134,12 +13157,12 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
         <p style="margin: 0 0 0.6em 0;">Your entries are encrypted in transit and at rest. No other user can ever see them.</p>
         <p style="margin: 0 0 0.6em 0;">Nothing you write is sold, shared with advertisers, or used to train AI models.</p>
         <p style="margin: 0 0 0.6em 0;">Sophy reads an entry only when you ask her to. Her AI providers process it to respond and do not keep it to train on.</p>
-        <p style="margin: 0 0 0.6em 0;">We measure taps and screens to make InkWell better. We do not measure your words.</p>
+        <p style="margin: 0 0 0.6em 0;">We measure taps and screens to make Castalia better. We do not measure your words.</p>
         <p style="margin: 0 0 0.6em 0;">Delete your account and your words are permanently gone within 30 days.</p>
         <p style="margin: 0; font-size: 0.92em; color: var(--font-muted);">
           Like any company, we must answer valid legal process; we keep what we store minimal.
-          Full details in the <a href="https://www.inkwelljournal.io/privacy-policy/" target="_blank" style="color: var(--brand-primary);">Privacy Policy</a>.
-          InkWell is a wellness journal, not a medical record.
+          Full details in the <a href="https://pegasusrealm.com/privacy-policy/" target="_blank" style="color: var(--brand-primary);">Privacy Policy</a>.
+          Castalia is a wellness journal, not a medical record.
         </p>
       </div>
     </div>
@@ -13152,7 +13175,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
         Practice Summary
       </h3>
       <p style="margin: 0 0 1em 0; font-size: 0.88em; color: var(--font-secondary); line-height: 1.55;">
-        A one-page summary of how you have been using InkWell: days journaled,
+        A one-page summary of how you have been using Castalia: days journaled,
         streaks, and your practice mix. It never includes what you wrote.
         We email it to you, and only you. Some people forward it to a therapist,
         coach, or doctor they work with. That part is always your call.
@@ -13191,7 +13214,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
       </h3>
       <div style="font-size: 0.85em; color: #666;">
         <span style="font-weight: 500;">Version:</span>
-        <span id="settingsVersion" style="margin-left: 0.5em; font-family: monospace;">v26.185.1</span>
+        <span id="settingsVersion" style="margin-left: 0.5em; font-family: monospace;">v26.274.1</span>
       </div>
     </div>
     
@@ -13244,7 +13267,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
         Data Export
       </h3>
       <p style="font-size: 0.85em; color: #555; margin-bottom: 1em; line-height: 1.4;">
-        Download all your InkWell data. Choose the format that works best for you.
+        Download all your Castalia data. Choose the format that works best for you.
       </p>
       
       <!-- Export Format Selection -->
@@ -13306,7 +13329,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
         </button>
         <button onclick="document.getElementById('aboutInkwellModal').style.display='block'; closeUserSettingsModal();" class="btn" 
           style="flex: 1; min-width: 140px; padding: 0.5em 0.8em; background: #4A8B8B; color: white; border: none; border-radius: 5px; font-size: 0.85em; cursor: pointer;">
-          What is InkWell?
+          What is Castalia?
         </button>
       </div>
       
@@ -13331,7 +13354,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
            <em>Outside the US?</em> Please reach out to your local emergency services or mental health resources.
         </p>
         <p style="font-size: 0.8em; color: #888; margin: 0.8em 0 0 0; line-height: 1.4; font-style: italic;">
-          InkWell, Sophy, and all coaches are wellness tools — not emergency services or replacements for professional mental health care.
+          Castalia, Sophy, and all coaches are wellness tools — not emergency services or replacements for professional mental health care.
         </p>
       </div>
     </div>
@@ -13790,7 +13813,7 @@ async function collectAllUserData() {
       userEmail: user.email,
       exportTimestamp: exportTimestamp,
       exportDate: formatReadableDate(new Date()),
-      appVersion: "v26.185.1",
+      appVersion: "v26.274.1",
       dataFormat: "InkWell Export v1.0"
     },
     journalEntries: [],
@@ -13926,7 +13949,7 @@ function downloadReadableReport(data) {
     
     const now = new Date();
     const timestamp = now.toISOString().slice(0, 10);
-    const filename = `InkWell_Report_${timestamp}.html`;
+    const filename = `Castalia_Report_${timestamp}.html`;
     
     triggerDownload(blob, filename);
     console.log('✓ Readable report download triggered:', filename);
@@ -13957,7 +13980,7 @@ function downloadSpreadsheetZip(data) {
     
     const now = new Date();
     const timestamp = now.toISOString().slice(0, 10);
-    const filename = `InkWell_Spreadsheets_${timestamp}.txt`; // Note: Would be .zip with proper library
+    const filename = `Castalia_Spreadsheets_${timestamp}.txt`; // Note: Would be .zip with proper library
     
     triggerDownload(blob, filename);
     console.log('✓ Spreadsheet archive download triggered:', filename);
@@ -13976,7 +13999,7 @@ function downloadDataAsJSON(data) {
     
     const now = new Date();
     const timestamp = now.toISOString().slice(0, 10);
-    const filename = `InkWell_Export_${timestamp}.json`;
+    const filename = `Castalia_Export_${timestamp}.json`;
     
     triggerDownload(blob, filename);
     console.log('✓ JSON download triggered:', filename);
@@ -13996,7 +14019,7 @@ function generateReadableHTML(data) {
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>InkWell Data Report - ${userProfile.displayName || 'User'}</title>
+    <title>Castalia Data Report - ${userProfile.displayName || 'User'}</title>
     <style>
         body { font-family: Georgia, serif; max-width: 800px; margin: 0 auto; padding: 2em; line-height: 1.6; color: #333; }
         h1, h2, h3 { color: #2A6972; border-bottom: 2px solid #2A6972; padding-bottom: 0.5em; }
@@ -14015,7 +14038,7 @@ function generateReadableHTML(data) {
 </head>
 <body>
     <div class="header">
-        <h1>InkWell Personal Data Report</h1>
+        <h1>Castalia Personal Data Report</h1>
         <p><strong>${userProfile.displayName || 'User Report'}</strong><br>
         Generated: ${exportInfo.exportDate}<br>
         Total Entries: ${statistics.totalJournalEntries} | Active Goals: ${statistics.activeManifests}</p>
@@ -14081,7 +14104,7 @@ function generateReadableHTML(data) {
         <strong>Export Date:</strong> ${exportInfo.exportDate}<br>
         <strong>App Version:</strong> ${exportInfo.appVersion}<br>
         <strong>Data Format:</strong> ${exportInfo.dataFormat}</p>
-        <p><em>This report was generated from your InkWell account. For technical data access, use the JSON export option.</em></p>
+        <p><em>This report was generated from your Castalia account. For technical data access, use the JSON export option.</em></p>
     </div>
 </body>
 </html>`;
@@ -14151,15 +14174,15 @@ function generateSummaryCSV(data) {
 
 // Generate README text for archive
 function generateReadmeText(data) {
-  return `InkWell Data Export - ${data.exportInfo.exportDate}
+  return `Castalia Data Export - ${data.exportInfo.exportDate}
 =========================================
 
-This archive contains your personal InkWell data in spreadsheet format:
+This archive contains your personal Castalia data in spreadsheet format:
 
  FILES INCLUDED:
 - journal_entries.csv: All your journal entries with dates and metadata
 - wish_manifests.csv: Your life goals and aspirations (WISH framework)
-- summary.csv: Statistics and overview of your InkWell journey
+- summary.csv: Statistics and overview of your Castalia journey
 - README.txt: This file
 
  HOW TO USE:
@@ -14176,14 +14199,14 @@ This archive contains your personal InkWell data in spreadsheet format:
  PRIVACY:
 This export contains only your personal data. Keep it secure and only share with trusted parties.
 
-Generated by InkWell ${data.exportInfo.appVersion} on ${data.exportInfo.exportDate}
-Visit: https://inkwelljournal.io
+Generated by Castalia ${data.exportInfo.appVersion} on ${data.exportInfo.exportDate}
+Visit: https://castaliajournal.com
 `;
 }
 
 // Create simple archive format (in real app, use JSZip library)
 function createSimpleArchive(files) {
-  let archive = `InkWell Data Archive - Generated ${new Date().toISOString()}\n`;
+  let archive = `Castalia Data Archive - Generated ${new Date().toISOString()}\n`;
   archive += `====================================================\n\n`;
   
   Object.entries(files).forEach(([filename, content]) => {
@@ -14732,7 +14755,7 @@ async function openBillingPortal() {
     if (error.message && error.message.includes('Apple Pay')) {
       alert('Your subscription was purchased through the iOS app. To manage it, go to Settings → Apple ID → Subscriptions on your iPhone.');
     } else {
-      alert('Unable to open subscription management. Please try again or contact support@inkwelljournal.io');
+      alert('Unable to open subscription management. Please try again or contact support@pegasusrealm.com');
     }
   }
 }
@@ -15867,7 +15890,7 @@ function startPractitionerStatusRefresh() {
 <script>
   /**
    * Avatar/Logo swap — robust version - FIXED
-   * - Shows InkWell logo by default
+   * - Shows Castalia logo by default
    * - Tries saved avatar URL if available
    * - Falls back to Pegasus Realm SVG placeholder if no avatar
    * - Only swaps to avatar if it successfully loaded
@@ -16596,7 +16619,7 @@ async function invitePractitioner() {
     // Reload status to show pending state
     setTimeout(() => {
       loadPractitionerStatus();
-      inviteButton.textContent = "Send InkWell Invitation";
+      inviteButton.textContent = "Send Castalia Invitation";
     }, 2000);
     
   } catch (error) {
@@ -16613,7 +16636,7 @@ async function invitePractitioner() {
     }
     
     statusDiv.innerHTML = `<span style="color: #dc3545;">✗ Error: ${errorMessage}</span>`;
-    inviteButton.textContent = "Send InkWell Invitation";
+    inviteButton.textContent = "Send Castalia Invitation";
     
     // Log full error details for debugging
     console.log("Full error details:", {
@@ -16729,7 +16752,7 @@ document.addEventListener('click', function(e) {
 </script>
 <script>
 // COMPREHENSIVE DEBUG LOGGING
-console.log("=== INKWELL DEBUG START ===");
+console.log("=== CASTALIA DEBUG START ===");
 
 // Check if critical functions exist
 window.addEventListener('DOMContentLoaded', function() {

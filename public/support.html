@@ -3,22 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InkWell Support | We're Here to Help</title>
-    <meta name="description" content="Get help with InkWell: getting started, account questions, privacy and data, and crisis resources. We typically respond within 24 to 48 hours.">
+    <title>Castalia Support | We're Here to Help</title>
+    <meta name="description" content="Get help with Castalia: getting started, account questions, privacy and data, and crisis resources. We typically respond within 24 to 48 hours.">
 
-    <meta property="og:title" content="InkWell Support" />
+    <meta property="og:title" content="Castalia Support" />
     <meta property="og:description" content="Questions, feedback, or help with your account. We typically respond within 24 to 48 hours." />
-    <meta property="og:image" content="https://inkwelljournal.io/inkwell-social-preview.png" />
-    <meta property="og:url" content="https://inkwelljournal.io/support.html" />
+    <meta property="og:image" content="https://castaliajournal.com/castalia-social-preview.png" />
+    <meta property="og:url" content="https://castaliajournal.com/support.html" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="InkWell" />
+    <meta property="og:site_name" content="Castalia" />
 
+    <link rel="icon" href="/castalia-favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/castalia-favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/castalia-apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..800;1,6..72,400..800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* InkWell v2 marketing surface — same system as index.html / practitioners.html
+        /* Castalia v2 marketing surface — same system as index.html / practitioners.html
            single-column card stack (820px) on 1140px container · 8px scale · type 1.333
            semantic law: ink = reflection · dark teal = growth/action ·
            light teal = mark only · coral = Sophy only */
@@ -73,18 +76,21 @@
             border-bottom: 1px solid rgba(17, 28, 26, 0.07);
         }
         .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 72px; }
-        .brand-lockup { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .brand-lockup { display: flex; align-items: center; gap: 8px; text-decoration: none; }
         .brand-tile { width: 40px; height: 40px; border-radius: 9px; display: block; }
+        /* Castalia lockup (2026-10-01): the arch-and-drop mark + "Castalia" in Newsreader Regular,
+           36pt optical size, tracked 0.04em, ink. Brand asset: paths and colors are fixed. */
+        .brand-mark { width: 31px; height: 31px; display: block; flex: none; margin-top: -9px; margin-left: -5px; }
+        @media (max-width: 400px) { .btn-name { display: none; } }
         .wordmark {
             font-family: var(--font-serif);
-            font-optical-sizing: auto;
-            font-weight: 700;
+            font-weight: 400;
+            font-variation-settings: 'opsz' 36;
             font-size: 1.5rem;
             line-height: 1;
-            letter-spacing: -0.01em;
+            letter-spacing: 0.04em;
+            color: #16232A;
         }
-        .wordmark .wm-ink { color: var(--teal-ink); }
-        .wordmark .wm-well { color: var(--teal-dark); }
         .nav-links { display: flex; align-items: center; gap: var(--s4); }
         .nav-right { display: flex; align-items: center; gap: var(--s2); }
         .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
@@ -223,9 +229,9 @@
 
     <nav class="nav">
         <div class="container nav-inner">
-            <a href="/" class="brand-lockup" aria-label="InkWell home">
-                <img src="inkwell-icon-512.png" alt="" class="brand-tile">
-                <span class="wordmark"><span class="wm-ink">Ink</span><span class="wm-well">Well</span></span>
+            <a href="/" class="brand-lockup" aria-label="Castalia home">
+                <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true"><path d="M21 86 V47 A29 29 0 0 1 79 47 V86" fill="none" stroke="#2A6972" stroke-width="11" stroke-linecap="round"/><path d="M50 38 C50 38 37 53 37 62 A13 13 0 0 0 63 62 C63 53 50 38 50 38 Z" fill="#4A9BA8"/></svg>
+                <span class="wordmark">Castalia</span>
             </a>
             <div class="nav-links">
                 <a href="/#features" class="nav-link">Features</a>
@@ -234,7 +240,7 @@
                 <a href="/support.html" class="nav-link active">Support</a>
             </div>
             <div class="nav-right">
-                <a href="/app.html" class="btn btn-primary">Open InkWell</a>
+                <a href="/app.html" class="btn btn-primary" aria-label="Open Castalia">Open<span class="btn-name"> Castalia</span></a>
                 <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"></path><path d="M3 12h18"></path><path d="M3 18h18"></path></svg>
                 </button>
@@ -255,13 +261,13 @@
 
             <!-- About -->
             <div class="card">
-                <h2>About InkWell</h2>
+                <h2>About Castalia</h2>
                 <p>
-                    InkWell is a journal for people who think in circles, forget what they
+                    Castalia (formerly InkWell) is a journal for people who think in circles, forget what they
                     figured out last month, and want a place that holds all of it without
                     judgment. For the Thinkers and the Forgetters.
                 </p>
-                <h3>What InkWell does</h3>
+                <h3>What Castalia does</h3>
                 <ul>
                     <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Private journaling that syncs across web, iOS, and Android</span></li>
                     <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Voice journaling that turns speech into clean, readable entries</span></li>
@@ -282,7 +288,7 @@
             <div class="card crisis-card">
                 <h2>Crisis resources</h2>
                 <p>
-                    <strong>InkWell is not a substitute for professional mental health care.</strong>
+                    <strong>Castalia is not a substitute for professional mental health care.</strong>
                     If you or someone you know is in crisis, please reach out to these resources now:
                 </p>
                 <div class="crisis-row">
@@ -323,7 +329,7 @@
                     within 24 to 48 hours.
                 </p>
                 <div class="contact-cta">
-                    <a href="mailto:support@inkwelljournal.io" class="btn btn-primary">Email support</a>
+                    <a href="mailto:support@pegasusrealm.com" class="btn btn-primary">Email support</a>
                     <a href="/practitioners.html" class="btn btn-ghost">Practitioner questions</a>
                 </div>
             </div>
@@ -346,9 +352,9 @@
             <!-- App Information -->
             <div class="card">
                 <h2>App information</h2>
-                <p><strong>InkWell: Journal &amp; Insight</strong> by Pegasus Realm, available three ways:</p>
+                <p><strong>Castalia: Journal &amp; Insight</strong> by Pegasus Realm, available three ways:</p>
                 <ul>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span><a href="/app.html">Web</a>, from any browser at inkwelljournal.io</span></li>
+                    <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span><a href="/app.html">Web</a>, from any browser at castaliajournal.com</span></li>
                     <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span><a href="https://apps.apple.com/app/id6755095548">iOS</a>, on the App Store</span></li>
                     <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span><a href="https://play.google.com/store/apps/details?id=com.inkwellmobile">Android</a>, on Google Play</span></li>
                 </ul>
@@ -360,18 +366,18 @@
         <div class="container">
             <div class="footer-grid">
                 <div>
-                    <a href="/" class="brand-lockup" aria-label="InkWell home">
-                        <img src="inkwell-icon-512.png" alt="" class="brand-tile">
-                        <span class="wordmark"><span class="wm-ink">Ink</span><span class="wm-well">Well</span></span>
+                    <a href="/" class="brand-lockup" aria-label="Castalia home">
+                        <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true"><path d="M21 86 V47 A29 29 0 0 1 79 47 V86" fill="none" stroke="#2A6972" stroke-width="11" stroke-linecap="round"/><path d="M50 38 C50 38 37 53 37 62 A13 13 0 0 0 63 62 C63 53 50 38 50 38 Z" fill="#4A9BA8"/></svg>
+                        <span class="wordmark">Castalia</span>
                     </a>
                     <p class="footer-desc">
                         A journal that learns you. For the Thinkers and the Forgetters.
                     </p>
                 </div>
                 <div>
-                    <h4>InkWell</h4>
+                    <h4>Castalia</h4>
                     <div class="footer-links">
-                        <a href="/app.html">Open InkWell</a>
+                        <a href="/app.html">Open Castalia</a>
                         <a href="/#features">Features</a>
                         <a href="/#pricing">Pricing</a>
                         <a href="/practitioners.html">For Practitioners</a>
@@ -381,14 +387,14 @@
                     <h4>Support &amp; Company</h4>
                     <div class="footer-links">
                         <a href="/support.html">Support</a>
-                        <a href="mailto:support@inkwelljournal.io">support@inkwelljournal.io</a>
+                        <a href="mailto:support@pegasusrealm.com">support@pegasusrealm.com</a>
                         <a href="https://pegasusrealm.com">Pegasus Realm</a>
                         <a href="https://adamgrimmcoach.com">Adam Grimm Coaching</a>
                     </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <span>© 2026 InkWell by Pegasus Realm. All rights reserved.</span>
+                <span>© 2026 Castalia by Pegasus Realm. All rights reserved.</span>
                 <span>For the Thinkers and the Forgetters.</span>
             </div>
         </div>

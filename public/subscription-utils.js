@@ -1,5 +1,5 @@
 /**
- * InkWell Subscription Utilities
+ * Castalia Subscription Utilities
  * Feature gating, upgrade prompts, and subscription management
  */
 
@@ -403,7 +403,7 @@ async function checkUpgradeSuccess() {
         console.error('Error fetching tier for welcome message:', e);
       }
       
-      alert('🎉 Welcome to InkWell Plus! Your subscription is now active.\n\n💡 Tip: Go to Settings to enable SMS gratitude reminders and Sophy\'s weekly email insights!');
+      alert('🎉 Welcome to Castalia Plus! Your subscription is now active.\n\n💡 Tip: Go to Settings to enable SMS gratitude reminders and Sophy\'s weekly email insights!');
       
       window.history.replaceState({}, document.title, '/app.html');
       location.reload();
@@ -451,11 +451,11 @@ function createSubscriptionSelectionModal(alreadyPlus) {
     body = `
         <h2 style="margin: 0 0 0.4rem; font-family: var(--title-font); font-size: 1.5rem; font-weight: 500; color: var(--font-main); text-align: center;">You are already on Plus</h2>
         <p style="margin: 0 0 1.2rem; text-align: center; color: var(--font-secondary); font-size: 0.95rem; line-height: 1.6;">
-          Thank you for backing InkWell. Everything unlocks for you already.<br>
+          Thank you for backing Castalia. Everything unlocks for you already.<br>
           Looking for something Plus does not do yet? Tell the team and we will try to build it into a future release.
         </p>
         <div style="display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap;">
-          <a href="mailto:support@inkwelljournal.io?subject=InkWell%20feature%20idea" class="btn" style="text-decoration: none; display: inline-flex; align-items: center;">Email the team</a>
+          <a href="mailto:support@pegasusrealm.com?subject=Castalia%20feature%20idea" class="btn" style="text-decoration: none; display: inline-flex; align-items: center;">Email the team</a>
           <button class="btn btn-gray" onclick="document.getElementById('subscriptionSelectionModal').style.display='none'">Close</button>
         </div>`;
   } else {

@@ -3,22 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InkWell for Practitioners | Where Assignments Survive the Week</title>
-    <meta name="description" content="Your interventions stay yours. InkWell carries the between-session work. Use plans, adherence visibility through client-controlled Practice Summaries, and a free tier your clients never have to pay for.">
+    <title>Castalia for Practitioners | Where Assignments Survive the Week</title>
+    <meta name="description" content="Your interventions stay yours. Castalia carries the between-session work. Use plans, adherence visibility through client-controlled Practice Summaries, and a free tier your clients never have to pay for.">
 
-    <meta property="og:title" content="InkWell for Practitioners" />
-    <meta property="og:description" content="InkWell replaces nothing. It's where your assignments go to survive the week." />
-    <meta property="og:image" content="https://inkwelljournal.io/inkwell-social-preview.png" />
-    <meta property="og:url" content="https://inkwelljournal.io/practitioners.html" />
+    <meta property="og:title" content="Castalia for Practitioners" />
+    <meta property="og:description" content="Castalia replaces nothing. It's where your assignments go to survive the week." />
+    <meta property="og:image" content="https://castaliajournal.com/castalia-social-preview.png" />
+    <meta property="og:url" content="https://castaliajournal.com/practitioners.html" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="InkWell" />
+    <meta property="og:site_name" content="Castalia" />
 
+    <link rel="icon" href="/castalia-favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/castalia-favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/castalia-apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..800;1,6..72,400..800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* InkWell v2 marketing surface — same system as index.html
+        /* Castalia v2 marketing surface — same system as index.html
            12-col grid · 1140px container · 8px scale · type 1.333
            semantic law: ink = reflection · dark teal = growth/action ·
            light teal = mark only · coral = Sophy only */
@@ -76,18 +79,21 @@
             border-bottom: 1px solid rgba(17, 28, 26, 0.07);
         }
         .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 72px; }
-        .brand-lockup { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .brand-lockup { display: flex; align-items: center; gap: 8px; text-decoration: none; }
         .brand-tile { width: 40px; height: 40px; border-radius: 9px; display: block; }
+        /* Castalia lockup (2026-10-01): the arch-and-drop mark + "Castalia" in Newsreader Regular,
+           36pt optical size, tracked 0.04em, ink. Brand asset: paths and colors are fixed. */
+        .brand-mark { width: 31px; height: 31px; display: block; flex: none; margin-top: -9px; margin-left: -5px; }
+        @media (max-width: 400px) { .btn-name { display: none; } }
         .wordmark {
             font-family: var(--font-serif);
-            font-optical-sizing: auto;
-            font-weight: 700;
+            font-weight: 400;
+            font-variation-settings: 'opsz' 36;
             font-size: 1.5rem;
             line-height: 1;
-            letter-spacing: -0.01em;
+            letter-spacing: 0.04em;
+            color: #16232A;
         }
-        .wordmark .wm-ink { color: var(--teal-ink); }
-        .wordmark .wm-well { color: var(--teal-dark); }
         .nav-links { display: flex; align-items: center; gap: var(--s4); }
         .nav-right { display: flex; align-items: center; gap: var(--s2); }
         .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
@@ -280,9 +286,9 @@
 
     <nav class="nav">
         <div class="container nav-inner">
-            <a href="/" class="brand-lockup" aria-label="InkWell home">
-                <img src="inkwell-icon-512.png" alt="" class="brand-tile">
-                <span class="wordmark"><span class="wm-ink">Ink</span><span class="wm-well">Well</span></span>
+            <a href="/" class="brand-lockup" aria-label="Castalia home">
+                <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true"><path d="M21 86 V47 A29 29 0 0 1 79 47 V86" fill="none" stroke="#2A6972" stroke-width="11" stroke-linecap="round"/><path d="M50 38 C50 38 37 53 37 62 A13 13 0 0 0 63 62 C63 53 50 38 50 38 Z" fill="#4A9BA8"/></svg>
+                <span class="wordmark">Castalia</span>
             </a>
             <div class="nav-links">
                 <a href="/#features" class="nav-link">Features</a>
@@ -291,7 +297,7 @@
                 <a href="/support.html" class="nav-link">Support</a>
             </div>
             <div class="nav-right">
-                <a href="/app.html" class="btn btn-primary">Open InkWell</a>
+                <a href="/app.html" class="btn btn-primary" aria-label="Open Castalia">Open<span class="btn-name"> Castalia</span></a>
                 <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"></path><path d="M3 12h18"></path><path d="M3 18h18"></path></svg>
                 </button>
@@ -302,14 +308,14 @@
     <header class="hero">
         <div class="container hero-inner">
             <p class="eyebrow">For Practitioners</p>
-            <h1>InkWell replaces nothing. <span class="accent">It's where your assignments go to survive the week.</span></h1>
+            <h1>Castalia replaces nothing. <span class="accent">It's where your assignments go to survive the week.</span></h1>
             <p>
                 Your interventions stay yours. The worksheet, the activity schedule, the thought
                 record, the between-session practice: that's your clinical work, and
-                InkWell doesn't touch it.
+                Castalia (formerly InkWell) doesn't touch it.
             </p>
             <p>
-                What InkWell does is carry it. A worksheet is a snapshot that dies in the
+                What Castalia does is carry it. A worksheet is a snapshot that dies in the
                 glovebox. A journal is a trajectory. When the between-session work lives in
                 the same place a client already writes, it gets done, and you get to see
                 that it got done, on the client's terms.
@@ -326,7 +332,7 @@
             <div class="arg-grid">
                 <div class="arg-card">
                     <h3>Adherence</h3>
-                    <p>InkWell lives on the client's phone. They can type an entry, or just talk and let voice capture turn it into clean text in the moment, not at the end of a long day from memory.</p>
+                    <p>Castalia lives on the client's phone. They can type an entry, or just talk and let voice capture turn it into clean text in the moment, not at the end of a long day from memory.</p>
                 </div>
                 <div class="arg-card">
                     <h3>Visibility</h3>
@@ -350,10 +356,10 @@
                 <p class="eyebrow">Adherence, Not Surveillance</p>
                 <h2>The Practice Summary is your client's to share, on their own terms.</h2>
                 <p>
-                    Journaling honesty dies under observation, so InkWell has no
+                    Journaling honesty dies under observation, so Castalia has no
                     practitioner dashboard and no back door. The client generates a
                     Practice Summary inside the app, receives it at their own email
-                    address, and forwards it to you if they choose to. InkWell never
+                    address, and forwards it to you if they choose to. Castalia never
                     sends anything to anyone but the client.
                 </p>
                 <p>
@@ -374,7 +380,7 @@
             </div>
         </div>
         <div class="container summary-flow">
-            <img src="inkwell-summary-flow.png" alt="Practice Summary flow: the client journals privately, generates a usage-patterns-only summary, and forwards it to their practitioner on their own terms" loading="lazy">
+            <img src="castalia-summary-flow.png" alt="Practice Summary flow: the client journals privately, generates a usage-patterns-only summary, and forwards it to their practitioner on their own terms" loading="lazy">
         </div>
     </section>
 
@@ -383,7 +389,7 @@
             <div class="section-head">
                 <p class="eyebrow">Use Plans</p>
                 <h2>Ready-to-hand plans built on features that already exist.</h2>
-                <p>Each plan is two pages: a directions page with an in-session script for you, and a take-home page for your client, mapping a common between-session assignment onto InkWell's existing tools. Print it, or send it with your referral.</p>
+                <p>Each plan is two pages: a directions page with an in-session script for you, and a take-home page for your client, mapping a common between-session assignment onto Castalia's existing tools. Print it, or send it with your referral.</p>
             </div>
             <div class="plans-grid">
                 <div class="plan-card">
@@ -443,8 +449,8 @@
                 </div>
                 <div class="plan-card invite">
                     <h3>Have an assignment you'd like mapped?</h3>
-                    <p>More plans are on the way. Tell us the between-session assignment you hand out most, and we'll map it onto InkWell's existing tools.</p>
-                    <a href="mailto:support@inkwelljournal.io?subject=Use%20plan%20suggestion" class="btn btn-ghost">Suggest a plan</a>
+                    <p>More plans are on the way. Tell us the between-session assignment you hand out most, and we'll map it onto Castalia's existing tools.</p>
+                    <a href="mailto:support@pegasusrealm.com?subject=Use%20plan%20suggestion" class="btn btn-ghost">Suggest a plan</a>
                 </div>
             </div>
         </div>
@@ -454,16 +460,16 @@
         <div class="container">
             <div class="section-head">
                 <p class="eyebrow">Scope, Stated Plainly</p>
-                <h2>What InkWell is not.</h2>
+                <h2>What Castalia is not.</h2>
             </div>
             <div class="scope-grid">
                 <div class="scope-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M4.9 4.9l14.2 14.2"></path></svg>
-                    <span><strong>Not crisis care.</strong> InkWell is not for emergencies and is no substitute for crisis services or your clinical judgment.</span>
+                    <span><strong>Not crisis care.</strong> Castalia is not for emergencies and is no substitute for crisis services or your clinical judgment.</span>
                 </div>
                 <div class="scope-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M4.9 4.9l14.2 14.2"></path></svg>
-                    <span><strong>Not treatment.</strong> InkWell is a wellness journaling tool. It doesn't diagnose, treat, or replace therapy. The interventions are yours.</span>
+                    <span><strong>Not treatment.</strong> Castalia is a wellness journaling tool. It doesn't diagnose, treat, or replace therapy. The interventions are yours.</span>
                 </div>
                 <div class="scope-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M4.9 4.9l14.2 14.2"></path></svg>
@@ -484,8 +490,8 @@
                 depends on it.
             </p>
             <div class="ctas">
-                <a href="/app.html" class="btn btn-primary">See InkWell as your client will</a>
-                <a href="mailto:support@inkwelljournal.io" class="btn btn-ghost">Ask us a question</a>
+                <a href="/app.html" class="btn btn-primary">See Castalia as your client will</a>
+                <a href="mailto:support@pegasusrealm.com" class="btn btn-ghost">Ask us a question</a>
             </div>
         </div>
     </section>
@@ -494,18 +500,18 @@
         <div class="container">
             <div class="footer-grid">
                 <div>
-                    <a href="/" class="brand-lockup" aria-label="InkWell home">
-                        <img src="inkwell-icon-512.png" alt="" class="brand-tile">
-                        <span class="wordmark"><span class="wm-ink">Ink</span><span class="wm-well">Well</span></span>
+                    <a href="/" class="brand-lockup" aria-label="Castalia home">
+                        <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true"><path d="M21 86 V47 A29 29 0 0 1 79 47 V86" fill="none" stroke="#2A6972" stroke-width="11" stroke-linecap="round"/><path d="M50 38 C50 38 37 53 37 62 A13 13 0 0 0 63 62 C63 53 50 38 50 38 Z" fill="#4A9BA8"/></svg>
+                        <span class="wordmark">Castalia</span>
                     </a>
                     <p class="footer-desc">
                         A journal that learns you. For the Thinkers and the Forgetters.
                     </p>
                 </div>
                 <div>
-                    <h4>InkWell</h4>
+                    <h4>Castalia</h4>
                     <div class="footer-links">
-                        <a href="/app.html">Open InkWell</a>
+                        <a href="/app.html">Open Castalia</a>
                         <a href="/#features">Features</a>
                         <a href="/#pricing">Pricing</a>
                         <a href="/practitioners.html">For Practitioners</a>
@@ -515,14 +521,14 @@
                     <h4>Support &amp; Company</h4>
                     <div class="footer-links">
                         <a href="/support.html">Support</a>
-                        <a href="mailto:support@inkwelljournal.io">support@inkwelljournal.io</a>
+                        <a href="mailto:support@pegasusrealm.com">support@pegasusrealm.com</a>
                         <a href="https://pegasusrealm.com">Pegasus Realm</a>
                         <a href="https://adamgrimmcoach.com">Adam Grimm Coaching</a>
                     </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <span>© 2026 InkWell by Pegasus Realm. All rights reserved.</span>
+                <span>© 2026 Castalia by Pegasus Realm. All rights reserved.</span>
                 <span>For the Thinkers and the Forgetters.</span>
             </div>
         </div>

@@ -257,7 +257,7 @@ function showNewUserWelcomeModal() {
           margin: 0 0 0.75rem 0;
           font-weight: 700;
           text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        ">Welcome to InkWell!</h2>
+        ">Welcome to Castalia!</h2>
         <p style="
           color: #ffffff !important;
           font-size: 1rem;
@@ -659,7 +659,7 @@ try {
     const errorDiv = document.createElement('div');
     errorDiv.innerHTML = `
       <div style="position: fixed; top: 20px; left: 20px; right: 20px; z-index: 10000; background: #f8d7da; color: #721c24; padding: 15px; border: 1px solid #f5c6cb; border-radius: 8px;">
-        <strong>Connection Error:</strong> Unable to connect to InkWell services. Please refresh the page or try again later.
+        <strong>Connection Error:</strong> Unable to connect to Castalia services. Please refresh the page or try again later.
         <button onclick="location.reload()" style="float: right; background: #721c24; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Refresh</button>
       </div>
     `;
@@ -721,7 +721,7 @@ onAuthStateChanged(auth, async (user) => {
   const statusDiv = document.getElementById("userStatus");
   const logoHero = document.querySelector('.logo-hero-inner');
   const baseUrl = window.location.origin;
-  const inkwellLogoPath = `${baseUrl}/InkWell-Logo.png`;
+  const inkwellLogoPath = `${baseUrl}/castalia-icon-512.png`; // Castalia icon (name kept for the callers below)
   const backupLogoPath = `${baseUrl}/LOGO_SQ_Lg_Border_2024.png`;
   const mainUI = document.getElementById("mainUI");
   const mainApp = document.getElementById("mainAppContainer");
@@ -763,7 +763,7 @@ onAuthStateChanged(auth, async (user) => {
       logoHero.innerHTML = '';
       const defaultLogo = document.createElement('img');
       defaultLogo.src = inkwellLogoPath;
-      defaultLogo.alt = "InkWell Logo";
+      defaultLogo.alt = "Castalia";
       defaultLogo.className = 'logo-img';
       logoHero.appendChild(defaultLogo);
     }
@@ -919,7 +919,7 @@ onAuthStateChanged(auth, async (user) => {
       
       heroLogo.className = 'logo-img show';
       heroLogo.src = inkwellLogoPath;
-      heroLogo.alt = "InkWell Logo";
+      heroLogo.alt = "Castalia";
       heroLogo.style.opacity = "1";
       
       heroAvatar.className = 'avatar-img';
@@ -1478,7 +1478,7 @@ async function signUp() {
 
       // Validate all agreements are checked
       if (!termsAgreed || !privacyAgreed) {
-        showToast("Please accept all agreements to join the InkWell community. We value your understanding of our terms and commitment to this beta experience.", "warning");
+        showToast("Please accept all agreements to join the Castalia community. We value your understanding of our terms and commitment to this beta experience.", "warning");
         return;
       }
 
@@ -1810,7 +1810,7 @@ async function signInWithApple() {
       const displayName = user.displayName || 
                          result._tokenResponse?.fullName?.displayName ||
                          user.email?.split('@')[0] || 
-                         "InkWell User";
+                         "Castalia User";
       
       await setDoc(userDocRef, {
         userId: user.uid,

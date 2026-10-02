@@ -1,5 +1,5 @@
 /**
- * InkWell Subscription Configuration
+ * Castalia Subscription Configuration
  * Central control for paywall features and pricing
  */
 
@@ -38,9 +38,9 @@ const SUBSCRIPTION_CONFIG = {
       id: 'plus',
       name: 'Plus',
       price: 6.99,
-      priceId: 'price_1SeQaJIu1E0bDEgZq6V8lATE', // InkWell Plus - $6.99/month (LIVE)
+      priceId: 'price_1SeQaJIu1E0bDEgZq6V8lATE', // Castalia Plus - $6.99/month (LIVE)
       annualPrice: 49.99,
-      annualPriceId: 'price_1ToXwuIu1E0bDEgZRe1elpOv', // InkWell Plus - $49.99/year (LIVE, 2026-07-01)
+      annualPriceId: 'price_1ToXwuIu1E0bDEgZRe1elpOv', // Castalia Plus - $49.99/year (LIVE, 2026-07-01)
       features: {
         journaling: true,
         manifestTool: true,
@@ -59,7 +59,7 @@ const SUBSCRIPTION_CONFIG = {
       name: 'Connect',
       discontinued: true,
       price: 29.99,
-      priceId: 'price_1SeQcGIu1E0bDEgZQWWqkrjK', // InkWell Connect - $29.99/month (LIVE)
+      priceId: 'price_1SeQcGIu1E0bDEgZQWWqkrjK', // Castalia Connect - $29.99/month (LIVE)
       features: {
         journaling: true,
         manifestTool: true,
@@ -81,7 +81,7 @@ const SUBSCRIPTION_CONFIG = {
     priceId: null, // Feature discontinued
   },
 
-  // Role-based permanent discounts (InkWell absorbs cost)
+  // Role-based permanent discounts (Castalia absorbs cost)
   ROLE_DISCOUNTS: {
     alpha: {
       plus: 1.0,      // 100% off Plus tier — FREE FOR LIFE (founding cohort, locked 2026-07-01)
@@ -105,7 +105,7 @@ const SUBSCRIPTION_CONFIG = {
       discountPercent: 0.80,        // 80% off Connect ($9.99/mo)
       waivePractitionerFee: true,   // Practitioner gets $0
       isPenName: true,
-      disclosure: 'Hollis Verdant is a pen name used by InkWell\'s founder for pro-bono alpha/beta client support.',
+      disclosure: 'Hollis Verdant is a pen name used by Castalia\'s founder for pro-bono alpha/beta client support.',
     },
   },
 
