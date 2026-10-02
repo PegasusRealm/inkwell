@@ -2608,18 +2608,7 @@ html[data-theme='dark'] #pastEntries p {
 }
 
 /* Enhanced Search Button for Dark Mode */
-html[data-theme='dark'] #searchBtn {
-  background: linear-gradient(135deg, rgba(42, 105, 114, 0.8) 0%, rgba(30, 80, 85, 0.9) 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(137, 201, 212, 0.4) !important;
-  box-shadow: 0 2px 8px rgba(137, 201, 212, 0.2) !important;
-}
-
-html[data-theme='dark'] #searchBtn:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(42, 105, 114, 0.9) 0%, rgba(30, 80, 85, 1) 100%) !important;
-  box-shadow: 0 0 12px rgba(137, 201, 212, 0.4) !important;
-  transform: translateY(-1px) !important;
-}
+/* dark #searchBtn ID stratum removed 2026-07-04 — search is Sophy's, btn-sophy contract owns it */
 html[data-theme='light'] .entry-card .entry-date {
   color: var(--font-main);
   font-size: 0.95em;
@@ -11102,7 +11091,7 @@ document.head.appendChild(themeStyle);
       <a href="#" id="toggleSignup" style="color: var(--brand-primary); text-decoration: underline; font-weight: 600;">Sign up</a>
     </div>
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1em;">
-      v26.182.1
+      v26.185.1
     </div>
   </div>
 </div>
@@ -11154,7 +11143,7 @@ document.head.appendChild(themeStyle);
     </form>
     
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1.5em;">
-      v26.182.1
+      v26.185.1
     </div>
     </div>
   </div>
@@ -11323,7 +11312,7 @@ document.head.appendChild(themeStyle);
     </button>
     
     <div style="text-align: center; font-size: 0.75em; color: #999; margin-top: 1.5em;">
-      v26.182.1
+      v26.185.1
     </div>
   </div>
 </div>
@@ -13202,7 +13191,7 @@ Example: If it hits 9 pm, then I plug my phone in across the room." style="width
       </h3>
       <div style="font-size: 0.85em; color: #666;">
         <span style="font-weight: 500;">Version:</span>
-        <span id="settingsVersion" style="margin-left: 0.5em; font-family: monospace;">v26.182.1</span>
+        <span id="settingsVersion" style="margin-left: 0.5em; font-family: monospace;">v26.185.1</span>
       </div>
     </div>
     
@@ -13801,7 +13790,7 @@ async function collectAllUserData() {
       userEmail: user.email,
       exportTimestamp: exportTimestamp,
       exportDate: formatReadableDate(new Date()),
-      appVersion: "v26.182.1",
+      appVersion: "v26.185.1",
       dataFormat: "InkWell Export v1.0"
     },
     journalEntries: [],

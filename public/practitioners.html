@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InkWell for Practitioners | Where Assignments Survive the Week</title>
-    <meta name="description" content="You hold the protocol. InkWell carries the between-session work. Use plans, adherence visibility through client-controlled Practice Summaries, and a free tier your clients never have to pay for.">
+    <meta name="description" content="Your interventions stay yours. InkWell carries the between-session work. Use plans, adherence visibility through client-controlled Practice Summaries, and a free tier your clients never have to pay for.">
 
     <meta property="og:title" content="InkWell for Practitioners" />
     <meta property="og:description" content="InkWell replaces nothing. It's where your assignments go to survive the week." />
@@ -182,6 +182,11 @@
             color: var(--text-on-dark-muted);
             margin-bottom: var(--s3);
         }
+        .summary-flow {
+            max-width: 1000px;
+            margin: var(--s8) auto 0;
+        }
+        .summary-flow img { width: 100%; height: auto; display: block; }
 
         /* Plans */
         .plans-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s3); max-width: 960px; margin: 0 auto; }
@@ -204,7 +209,15 @@
         }
         .plan-card li svg { flex: none; width: 18px; height: 18px; stroke: var(--teal-dark); margin-top: 3px; }
         .plan-card .btn { margin-top: auto; text-align: center; }
-        .plans-note { text-align: center; color: var(--text-muted); font-size: var(--t-sm); max-width: 46em; margin: var(--s5) auto 0; }
+        .plan-card.invite {
+            background: transparent;
+            border: 1.5px dashed rgba(42, 105, 114, 0.35);
+            box-shadow: none;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .plan-card.invite .btn { margin-top: var(--s2); }
 
         /* Scope band */
         .scope { background: var(--card); border-top: 1px solid rgba(17,28,26,0.06); border-bottom: 1px solid rgba(17,28,26,0.06); }
@@ -291,7 +304,7 @@
             <p class="eyebrow">For Practitioners</p>
             <h1>InkWell replaces nothing. <span class="accent">It's where your assignments go to survive the week.</span></h1>
             <p>
-                You hold the protocol. The worksheet, the activity schedule, the thought
+                Your interventions stay yours. The worksheet, the activity schedule, the thought
                 record, the between-session practice: that's your clinical work, and
                 InkWell doesn't touch it.
             </p>
@@ -360,6 +373,9 @@
                 </ul>
             </div>
         </div>
+        <div class="container summary-flow">
+            <img src="inkwell-summary-flow.png" alt="Practice Summary flow: the client journals privately, generates a usage-patterns-only summary, and forwards it to their practitioner on their own terms" loading="lazy">
+        </div>
     </section>
 
     <section class="plans" id="plans">
@@ -367,7 +383,7 @@
             <div class="section-head">
                 <p class="eyebrow">Use Plans</p>
                 <h2>Ready-to-hand plans built on features that already exist.</h2>
-                <p>Each one-pager maps a common between-session assignment onto InkWell's existing tools, with a weekly structure, what the Practice Summary will show you, and a clear scope line. Print it, or send it with your referral.</p>
+                <p>Each plan is two pages: a directions page with an in-session script for you, and a take-home page for your client, mapping a common between-session assignment onto InkWell's existing tools. Print it, or send it with your referral.</p>
             </div>
             <div class="plans-grid">
                 <div class="plan-card">
@@ -379,7 +395,7 @@
                         <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Weekly rotation through five research-cited gratitude practices</span></li>
                         <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Optional FeelCheck before/after ratings to notice shifts</span></li>
                     </ul>
-                    <a href="inkwell-use-plan-low-mood.pdf" class="btn btn-ghost" download>Download the one-pager</a>
+                    <a href="inkwell-use-plan-low-mood.pdf" class="btn btn-ghost" download>Download the plan</a>
                 </div>
                 <div class="plan-card">
                     <h3>Anxious thinking &amp; worry</h3>
@@ -390,14 +406,47 @@
                         <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Voice capture for in-the-moment worries, hands-free</span></li>
                         <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Optional FeelCheck before/after ratings to notice shifts</span></li>
                     </ul>
-                    <a href="inkwell-use-plan-anxious-thinking.pdf" class="btn btn-ghost" download>Download the one-pager</a>
+                    <a href="inkwell-use-plan-anxious-thinking.pdf" class="btn btn-ghost" download>Download the plan</a>
+                </div>
+                <div class="plan-card">
+                    <h3>Sleep &amp; wind-down</h3>
+                    <p class="plan-for">For clients working on sleep, wind-down routines, or CBT-I homework</p>
+                    <ul>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Sprint as an early-evening closing-the-day worry offload</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>A short, warm wind-down note before getting into bed</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Out-of-bed voice capture for racing thoughts at night</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Sleep diary, restriction, and stimulus control stay yours</span></li>
+                    </ul>
+                    <a href="inkwell-use-plan-sleep-winddown.pdf" class="btn btn-ghost" download>Download the plan</a>
+                </div>
+                <div class="plan-card">
+                    <h3>Values &amp; goal work</h3>
+                    <p class="plan-for">For clients working on values clarification, goals, or behavior change</p>
+                    <ul>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>A guided values flow that builds one WISH goal (MCII research tradition)</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Light quick-capture of value-aligned actions during the week</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>A short written weekly check-in on the goal</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Goal progress reported in the Practice Summary</span></li>
+                    </ul>
+                    <a href="inkwell-use-plan-values-goals.pdf" class="btn btn-ghost" download>Download the plan</a>
+                </div>
+                <div class="plan-card">
+                    <h3>Rumination &amp; self-criticism</h3>
+                    <p class="plan-for">For clients working on rumination, self-critical loops, or perspective-taking</p>
+                    <ul>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>In-the-moment quick capture that externalizes the loop</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Reframe for structured perspective-taking on captured loops</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>A weekly rotating kindness practice as counterweight</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg><span>Optional FeelCheck before/after ratings to notice shifts</span></li>
+                    </ul>
+                    <a href="inkwell-use-plan-rumination.pdf" class="btn btn-ghost" download>Download the plan</a>
+                </div>
+                <div class="plan-card invite">
+                    <h3>Have an assignment you'd like mapped?</h3>
+                    <p>More plans are on the way. Tell us the between-session assignment you hand out most, and we'll map it onto InkWell's existing tools.</p>
+                    <a href="mailto:support@inkwelljournal.io?subject=Use%20plan%20suggestion" class="btn btn-ghost">Suggest a plan</a>
                 </div>
             </div>
-            <p class="plans-note">
-                Running CBT-I? Clients use InkWell for wind-down journaling alongside
-                CBT-I. More plans are coming; if there's an assignment you'd like
-                mapped, <a href="mailto:support@inkwelljournal.io" style="color: var(--teal-dark);">tell us</a>.
-            </p>
         </div>
     </section>
 
@@ -414,7 +463,7 @@
                 </div>
                 <div class="scope-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M4.9 4.9l14.2 14.2"></path></svg>
-                    <span><strong>Not treatment.</strong> InkWell is a wellness journaling tool. It doesn't diagnose, treat, or replace therapy. The protocol is yours.</span>
+                    <span><strong>Not treatment.</strong> InkWell is a wellness journaling tool. It doesn't diagnose, treat, or replace therapy. The interventions are yours.</span>
                 </div>
                 <div class="scope-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M4.9 4.9l14.2 14.2"></path></svg>

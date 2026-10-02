@@ -457,6 +457,50 @@ html[data-theme='dark'] #calendarContainer .iw-cal td:hover .iw-cal-day.has-entr
 }
 
 /* ─────────────────────────────────────────────────────────────────
+   COMPONENT: FEEL CHECK — five quiet dots. A feel, never a score.
+   ───────────────────────────────────────────────────────────────── */
+.feel-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  flex-wrap: wrap;
+  padding: 0.55em 0.9em;
+  margin: 0 0 1em 0;
+  background: var(--bg-muted);
+  border-radius: 10px;
+}
+.feel-q { font-family: var(--body-font); font-size: 0.86rem; color: var(--font-secondary); }
+.feel-scale { display: inline-flex; align-items: center; gap: 0.35em; }
+.feel-end { font-size: 0.7rem; color: var(--font-muted); }
+.feel-dot {
+  width: 1.7em; height: 1.7em;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-medium);
+  background: var(--bg-card);
+  color: var(--font-secondary);
+  font-family: var(--body-font);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+.feel-dot:hover { border-color: var(--brand-primary); }
+.feel-dot.sel { background: var(--brand-primary); border-color: var(--brand-primary); color: #fff; }
+.feel-skip { font-size: 0.7rem; color: var(--font-muted); font-style: italic; margin-left: auto; }
+
+/* ─────────────────────────────────────────────────────────────────
+   SURFACE: the writing field is WRITING — serif, generous, alive.
+   Your words are the product; they should look like words, not form data.
+   ───────────────────────────────────────────────────────────────── */
+#journal, textarea#journal,
+html[data-theme='dark'] #journal {
+  font-family: var(--serif-font) !important;
+  font-size: 1.06rem !important;
+  line-height: 1.7 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
    COMPONENT: COACH MARK — one sentence, anchored to the thing itself.
    The entire onboarding voice: quiet, pointed, dismissible.
    ───────────────────────────────────────────────────────────────── */

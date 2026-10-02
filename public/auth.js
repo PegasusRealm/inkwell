@@ -1424,6 +1424,8 @@ async function signIn() {
       
       if (err.code === "permission-denied") {
         showToast("reCAPTCHA verification failed. Please try again.", "error");
+      } else if (err.code === "auth/invalid-credential") {
+        showToast("Login failed. If you signed up with Google or Apple, use the Continue with Google/Apple button below instead.", "error");
       } else {
         showToast("Error signing in: " + err.message, "error");
       }

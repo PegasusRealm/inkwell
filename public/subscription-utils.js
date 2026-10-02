@@ -423,111 +423,74 @@ async function checkUpgradeSuccess() {
  * Open the subscription selection modal
  * This is the main entry point for upgrading subscriptions
  */
-function openSubscriptionModal() {
-  // Create the modal if it doesn't exist
-  let modal = document.getElementById('subscriptionSelectionModal');
-  if (!modal) {
-    createSubscriptionSelectionModal();
-    modal = document.getElementById('subscriptionSelectionModal');
-  }
-  
-  // Show the modal
-  modal.style.display = 'flex';
+async function openSubscriptionModal() {
+  // Already on Plus? Say thank you, not "pay us". (Adam, 2026-07-04)
+  let tier = 'free';
+  try { tier = (await getUserSubscriptionData())?.tier || 'free'; } catch (e) {}
+  document.getElementById('subscriptionSelectionModal')?.remove();
+  createSubscriptionSelectionModal(['plus', 'connect', 'plus_annual'].includes(tier));
+  document.getElementById('subscriptionSelectionModal').style.display = 'flex';
 }
 
 /**
- * Create the subscription selection modal with all plan options
+ * Subscription modal — rebuilt 2026-07-04 on the v2 design language.
+ * Token-driven (works in every theme), no gradients, no purple, no emojis.
+ * Purchase actions are structural = teal. Free tier stated plainly.
  */
-function createSubscriptionSelectionModal() {
-  const modalHTML = `
-    <div id="subscriptionSelectionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; overflow-y: auto; padding: 1.5rem;">
-      <div style="max-width: 1000px; width: 100%; margin: auto; background: linear-gradient(180deg, #fefefe 0%, #f8fafc 100%); border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255,255,255,0.1); overflow: hidden;">
-        
-        <!-- Premium Header with Coral/Purple Gradient -->
-        <div style="background: linear-gradient(135deg, #D49489 0%, #B07A9E 40%, #805AD5 100%); padding: 2.5rem 2rem; text-align: center; position: relative; overflow: hidden;">
-          <!-- Decorative circles -->
-          <div style="position: absolute; top: -30px; left: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
-          <div style="position: absolute; bottom: -40px; right: -40px; width: 150px; height: 150px; background: rgba(255,255,255,0.08); border-radius: 50%;"></div>
-          <div style="position: absolute; top: 50%; right: 15%; width: 60px; height: 60px; background: rgba(255,255,255,0.06); border-radius: 50%;"></div>
-          
-          <button onclick="document.getElementById('subscriptionSelectionModal').style.display='none'" style="position: absolute; top: 1.25rem; right: 1.25rem; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 1.5rem; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; backdrop-filter: blur(4px); box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 10;" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">&times;</button>
-          
-          <div style="position: relative; z-index: 1;">
-            <!-- Logo - 180px (3x original) -->
-            <div style="margin-bottom: 0.5rem;">
-              <img src="InkWell-Logo.png" alt="InkWell" style="height: 180px; filter: brightness(0) invert(1) drop-shadow(0 4px 8px rgba(0,0,0,0.3));" onerror="this.outerHTML='<span style=\\'font-family: Cormorant Garamond, Georgia, serif; font-size: 3.5rem; font-weight: 700; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.3);\\'>InkWell</span>'">
-            </div>
-            <!-- Tagline -->
-            <h2 style="margin: 0 0 0.5rem; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.6rem; font-weight: 500; color: #ffffff; letter-spacing: 0.5px; text-shadow: 0 2px 8px rgba(0,0,0,0.25);">Elevate Your Journaling Experience</h2>
-            <p style="margin: 0; color: rgba(255,255,255,0.95); font-size: 1rem; max-width: 500px; margin: 0 auto; text-shadow: 0 1px 4px rgba(0,0,0,0.2);">Unlock the full power of AI-guided self-discovery and personal growth</p>
-          </div>
-        </div>
-        
-        <!-- Plans Grid -->
-        <div style="padding: 2rem 1.5rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem;">
-          
-          <!-- Plus Monthly - Sophy Coral -->
-          <div style="border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; background: white; transition: all 0.3s; position: relative;" onmouseover="this.style.borderColor='#D49489'; this.style.boxShadow='0 8px 30px rgba(212,148,137,0.2)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
-            <div style="text-align: center; margin-bottom: 1.25rem;">
-              <h3 style="margin: 0 0 0.25rem; color: #1e293b; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.35rem; font-weight: 600;">Plus Monthly</h3>
-              <p style="margin: 0; color: #64748b; font-size: 0.85rem;">Flexible month-to-month</p>
-            </div>
-            <div style="text-align: center; margin: 1.25rem 0; padding: 1rem 0; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9;">
-              <span style="font-size: 2.5rem; font-weight: 700; color: #D49489; font-family: 'Cormorant Garamond', Georgia, serif;">$6.99</span>
-              <span style="color: #64748b; font-size: 0.95rem;">/month</span>
-            </div>
-            <ul style="list-style: none; padding: 0; margin: 0 0 1.25rem; font-size: 0.875rem; color: #475569;">
-              <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #D49489; font-weight: 600;">✓</span> Unlimited AI insights</li>
-              <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #D49489; font-weight: 600;">✓</span> SMS notifications</li>
-              <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #D49489; font-weight: 600;">✓</span> Weekly email insights</li>
-              <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #D49489; font-weight: 600;">✓</span> Priority support</li>
-            </ul>
-            <div style="background: linear-gradient(135deg, #fdf5f4 0%, #fbe9e6 100%); padding: 0.6rem; border-radius: 8px; margin-bottom: 1rem; text-align: center;">
-              <span style="font-size: 0.8rem; color: #C2867D; font-weight: 500;">🎁 7-day free trial included</span>
-            </div>
-            <button onclick="startUpgradeFlow('plus')" style="width: 100%; padding: 0.875rem; background: linear-gradient(135deg, #D49489 0%, #C2867D 100%); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: all 0.2s; box-shadow: 0 4px 14px rgba(212,148,137,0.35);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(212,148,137,0.45)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 14px rgba(212,148,137,0.35)';">
-              Start Free Trial
-            </button>
-          </div>
-          
-          <!-- Plus Annual - BEST VALUE - Sophy Coral -->
-          <div style="border: 2px solid #D49489; border-radius: 16px; padding: 1.5rem; background: linear-gradient(180deg, #fefefe 0%, #fdf5f4 100%); position: relative; transform: scale(1.02); box-shadow: 0 8px 30px rgba(212,148,137,0.25);">
-            <div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #D49489 0%, #C2867D 100%); color: white; padding: 0.4rem 1.25rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 12px rgba(212,148,137,0.3);">✨ Best Value</div>
-            <div style="text-align: center; margin-bottom: 1.25rem; margin-top: 0.5rem;">
-              <h3 style="margin: 0 0 0.25rem; color: #1e293b; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.35rem; font-weight: 600;">Plus Annual</h3>
-              <p style="margin: 0; color: #D49489; font-size: 0.85rem; font-weight: 600;">Save $34 a year</p>
-            </div>
-            <div style="text-align: center; margin: 1.25rem 0; padding: 1rem 0; border-top: 1px solid #fbe9e6; border-bottom: 1px solid #fbe9e6;">
-              <span style="font-size: 2.5rem; font-weight: 700; color: #D49489; font-family: 'Cormorant Garamond', Georgia, serif;">$49.99</span>
-              <span style="color: #64748b; font-size: 0.95rem;">/year</span>
-              <div style="margin-top: 0.25rem; font-size: 0.8rem; color: #C2867D;">Just $4.17/month</div>
-            </div>
-            <ul style="list-style: none; padding: 0; margin: 0 0 1.25rem; font-size: 0.875rem; color: #475569;">
-              <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #D49489; font-weight: 600;">✓</span> Everything in Monthly</li>
-              <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #D49489; font-weight: 600;">✓</span> 40% off the monthly rate</li>
-              <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #D49489; font-weight: 600;">✓</span> Lock in your rate</li>
-              <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #D49489; font-weight: 600;">✓</span> Priority support</li>
-            </ul>
-            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 0.6rem; border-radius: 8px; margin-bottom: 1rem; text-align: center;">
-              <span style="font-size: 0.8rem; color: #92400e; font-weight: 600;">🎁 7-day free trial included</span>
-            </div>
-            <button onclick="startUpgradeFlow('plus_annual')" style="width: 100%; padding: 0.875rem; background: linear-gradient(135deg, #D49489 0%, #C2867D 100%); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: all 0.2s; box-shadow: 0 4px 14px rgba(212,148,137,0.4);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(212,148,137,0.5)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 14px rgba(212,148,137,0.4)';">
-              Start Free Trial
-            </button>
-          </div>
-          
-        </div>
-        
-        <!-- Footer -->
-        <div style="padding: 1.25rem 2rem; text-align: center; background: #f8fafc; border-top: 1px solid #e2e8f0;">
-          <p style="margin: 0; color: #64748b; font-size: 0.85rem;">✨ All Plus plans include a 7-day free trial • Cancel anytime • Secure payment via Stripe</p>
-        </div>
-        
+function createSubscriptionSelectionModal(alreadyPlus) {
+  const panelOpen = `
+    <div id="subscriptionSelectionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(12, 18, 19, 0.72); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; overflow-y: auto; padding: 1.5rem;">
+      <div style="max-width: 720px; width: 100%; margin: auto; background: var(--bg-card); color: var(--font-main); border: 1px solid var(--border-light); border-radius: 16px; box-shadow: 0 32px 80px -24px rgba(0,0,0,0.5); position: relative; padding: 2rem 1.75rem 1.5rem;">
+        <button onclick="document.getElementById('subscriptionSelectionModal').style.display='none'" aria-label="Close" style="position: absolute; top: 0.9rem; right: 1rem; background: none; border: none; color: var(--font-muted); font-size: 1.4rem; cursor: pointer; line-height: 1; padding: 0.2em;">&times;</button>`;
+  const panelClose = `
       </div>
-    </div>
-  `;
-  
-  document.body.insertAdjacentHTML('beforeend', modalHTML);
+    </div>`;
+
+  let body;
+  if (alreadyPlus) {
+    body = `
+        <h2 style="margin: 0 0 0.4rem; font-family: var(--title-font); font-size: 1.5rem; font-weight: 500; color: var(--font-main); text-align: center;">You are already on Plus</h2>
+        <p style="margin: 0 0 1.2rem; text-align: center; color: var(--font-secondary); font-size: 0.95rem; line-height: 1.6;">
+          Thank you for backing InkWell. Everything unlocks for you already.<br>
+          Looking for something Plus does not do yet? Tell the team and we will try to build it into a future release.
+        </p>
+        <div style="display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap;">
+          <a href="mailto:support@inkwelljournal.io?subject=InkWell%20feature%20idea" class="btn" style="text-decoration: none; display: inline-flex; align-items: center;">Email the team</a>
+          <button class="btn btn-gray" onclick="document.getElementById('subscriptionSelectionModal').style.display='none'">Close</button>
+        </div>`;
+  } else {
+    const feature = (t) => `<li style="margin-bottom: 0.35rem; color: var(--font-secondary); font-size: 0.9rem;">${t}</li>`;
+    const features = feature('Unlimited Sophy prompts, reflections, and insights') +
+      feature('Weekly and monthly pattern insights by email') +
+      feature('SMS nudges and milestone messages') +
+      feature('Personalized practices drawn from your own journal') +
+      feature('Full data export');
+    body = `
+        <h2 style="margin: 0 0 0.3rem; font-family: var(--title-font); font-size: 1.5rem; font-weight: 500; color: var(--font-main); text-align: center;">Go further with Plus</h2>
+        <p style="margin: 0 0 1.4rem; text-align: center; color: var(--font-secondary); font-size: 0.95rem;">More of Sophy. Deeper patterns. The journal that keeps learning you.</p>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 240px; border: 1px solid var(--border-light); border-radius: 14px; padding: 1.25rem;">
+            <div style="font-family: var(--body-font); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--font-muted); margin-bottom: 0.5rem;">Monthly</div>
+            <div style="font-family: var(--title-font); font-size: 2rem; color: var(--font-main);">$6.99<span style="font-size: 0.9rem; color: var(--font-muted);"> /month</span></div>
+            <ul style="margin: 0.9rem 0 1.1rem; padding-left: 1.1rem;">${features}</ul>
+            <button class="btn" style="width: 100%;" onclick="startUpgradeFlow('plus')">Start 7-day free trial</button>
+          </div>
+          <div style="flex: 1; min-width: 240px; border: 1.5px solid var(--brand-primary); border-radius: 14px; padding: 1.25rem; position: relative;">
+            <span style="position: absolute; top: -0.7em; left: 1rem; background: var(--brand-primary); color: #fff; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25em 0.7em; border-radius: 999px;">Best value</span>
+            <div style="font-family: var(--body-font); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--font-muted); margin-bottom: 0.5rem;">Annual</div>
+            <div style="font-family: var(--title-font); font-size: 2rem; color: var(--font-main);">$49.99<span style="font-size: 0.9rem; color: var(--font-muted);"> /year</span></div>
+            <div style="font-size: 0.82rem; color: var(--brand-primary); font-weight: 600; margin-top: 0.15rem;">Save $34 a year, about $4.17 a month</div>
+            <ul style="margin: 0.9rem 0 1.1rem; padding-left: 1.1rem;">${features}</ul>
+            <button class="btn" style="width: 100%;" onclick="startUpgradeFlow('plus_annual')">Start 7-day free trial</button>
+          </div>
+        </div>
+        <p style="margin: 1.2rem 0 0; text-align: center; color: var(--font-muted); font-size: 0.8rem;">
+          7-day free trial on both. Cancel anytime. Secure payment via Stripe.<br>
+          The free journal stays fully functional, forever. Plus just goes deeper.
+        </p>`;
+  }
+
+  document.body.insertAdjacentHTML('beforeend', panelOpen + body + panelClose);
 }
 
 // Expose functions globally
