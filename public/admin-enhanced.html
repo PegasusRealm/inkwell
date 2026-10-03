@@ -660,7 +660,8 @@
         if(!confirm(`Firestore-only: ${label}? This does NOT change Stripe billing.`)) return;
         // NOTE: sets subscriptionTier + subscriptionStatus. Dropped the legacy betaProgress.tierOverride
         // nested write (a likely rules-rejection source). Grants the tier until manually reverted.
-        await writeUser(uid, { subscriptionTier:tier, subscriptionStatus:'active' },
+        // 2026-10-03: also marks the tier as admin-set, so the RevenueCat webhook never takes it away.
+        await writeUser(uid, { subscriptionTier:tier, subscriptionStatus:'active', subscriptionSource:'admin', subscriptionPlatform:'admin' },
             tier==='free' ? 'Set to free (Firestore only)' : 'Comped to Plus (Firestore only)');
     };
     window.setCohort = async (uid, code)=>{
