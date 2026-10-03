@@ -73,13 +73,18 @@ service cloud.firestore {
         request.resource.data.get('special_code', 'beta') == 'beta' &&  // mobile email sign-up still sends 'beta' (see note)
         !request.resource.data.keys().hasAny(['interactionsThisMonth', 'interactionsLimit',
           'extraInteractionsPurchased', 'isPractitioner', 'accountType', 'role', 'roles',
-          'usedFreeMonthCode', 'giftedBy']);
+          'usedFreeMonthCode', 'giftedBy', 'betaProgress', 'subscriptionSource',
+          'revenuecatTier', 'revenuecatSyncedAt', 'revenuecatLastReason']);
       // After sign-up: locked fields never change, except stepping DOWN to the defaults,
       // which the mobile Google/Apple log-in writes on every log-in (separate bug, see note).
+      // 2026-10-03: subscriptionSource and the revenuecat* fields are set only by the server
+      // (RevenueCat webhook). betaProgress is a legacy admin override the phone app still trusts.
       allow update: if request.auth != null && request.auth.uid == userId &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['special_code',
           'interactionsThisMonth', 'interactionsLimit', 'extraInteractionsPurchased',
-          'isPractitioner', 'accountType', 'role', 'roles', 'usedFreeMonthCode', 'giftedBy']) &&
+          'isPractitioner', 'accountType', 'role', 'roles', 'usedFreeMonthCode', 'giftedBy',
+          'betaProgress', 'subscriptionSource', 'revenuecatTier', 'revenuecatSyncedAt',
+          'revenuecatLastReason']) &&
         (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['userRole']) ||
           request.resource.data.get('userRole', '') == 'journaler') &&
         (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['subscriptionTier']) ||
