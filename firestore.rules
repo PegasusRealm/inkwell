@@ -39,7 +39,10 @@ service cloud.firestore {
       
       // Allow authenticated users to LIST coaches (for coach selection dropdown)
       // This allows the query: where("userRole", "==", "coach")
-      allow list: if request.auth != null;
+      // SECURITY 2026-10-01: was "if request.auth != null", which let any signed-in
+      // user download every user profile. Now only coach profiles can be listed.
+      allow list: if request.auth != null &&
+        (resource.data.userRole == "coach" || resource.data.accountType == "coach");  // app.html runs both searches
       
       // Allow authenticated users to read coach profiles (for coach selection)
       // Coaches are readable if they haven't explicitly opted out
@@ -55,8 +58,39 @@ service cloud.firestore {
         resource.data.connectedPractitioner.practitionerId == request.auth.uid || // allow coaches to read their connected clients
         resource.data.connectedPractitioner.email == request.auth.token.email // match by email
       );
-      // Allow users to write/update all their own data (including phone, smsPreferences, timezone, etc.)
-      allow write: if request.auth != null && request.auth.uid == userId;
+      // Users write their own data (phone, smsPreferences, timezone, etc.), EXCEPT the
+      // fields that grant access or money. SECURITY 2026-10-01: before this, any user could
+      // set userRole "admin" (read every journal), "coach", special_code "alpha" (80% off
+      // forever), their own subscription tier, or reset their usage counters.
+      // Server code (Admin SDK) and admins are unaffected.
+      // On sign-up only the defaults the apps already send are accepted.
+      allow create: if request.auth != null && request.auth.uid == userId &&
+        request.resource.data.get('userRole', 'journaler') == 'journaler' &&
+        request.resource.data.get('subscriptionTier', 'free') == 'free' &&
+        request.resource.data.get('subscriptionStatus', 'active') == 'active' &&
+        request.resource.data.get('stripeCustomerId', null) == null &&
+        request.resource.data.get('stripeSubscriptionId', null) == null &&
+        request.resource.data.get('special_code', 'beta') == 'beta' &&  // mobile email sign-up still sends 'beta' (see note)
+        !request.resource.data.keys().hasAny(['interactionsThisMonth', 'interactionsLimit',
+          'extraInteractionsPurchased', 'isPractitioner', 'accountType', 'role', 'roles',
+          'usedFreeMonthCode', 'giftedBy']);
+      // After sign-up: locked fields never change, except stepping DOWN to the defaults,
+      // which the mobile Google/Apple log-in writes on every log-in (separate bug, see note).
+      allow update: if request.auth != null && request.auth.uid == userId &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['special_code',
+          'interactionsThisMonth', 'interactionsLimit', 'extraInteractionsPurchased',
+          'isPractitioner', 'accountType', 'role', 'roles', 'usedFreeMonthCode', 'giftedBy']) &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['userRole']) ||
+          request.resource.data.get('userRole', '') == 'journaler') &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['subscriptionTier']) ||
+          request.resource.data.get('subscriptionTier', '') == 'free') &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['subscriptionStatus']) ||
+          request.resource.data.get('subscriptionTier', 'free') == 'free') &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['stripeCustomerId']) ||
+          request.resource.data.get('stripeCustomerId', null) == null) &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['stripeSubscriptionId']) ||
+          request.resource.data.get('stripeSubscriptionId', null) == null);
+      allow delete: if request.auth != null && request.auth.uid == userId;
       // Allow admins to write/update any user doc (for tier overrides, etc.)
       allow write: if request.auth != null && isAdmin(request.auth.uid);
     }
@@ -295,8 +329,10 @@ service cloud.firestore {
     
     // Gift Memberships collection (for gift codes)
     match /giftMemberships/{giftId} {
-      // Allow authenticated users to create gift memberships
-      allow create: if request.auth != null;
+      // SECURITY 2026-10-01: clients could create their own gift codes (e.g. 99% off
+      // for 3 months). No app screen creates them; gift codes are made only by the
+      // server (Admin SDK), so browser creation is closed.
+      allow create: if false;
       
       // Allow creators to read their own gift codes
       allow read: if request.auth != null && resource.data.createdBy == request.auth.uid;
